@@ -17,6 +17,7 @@
     authFirstName: '',
     openTallyRow: null,
     editMode: false,        // Admin bearbeitet den Kiosk direkt
+    lastAdd: null,          // { ids, until, text } – Storno-Stempel auf dem Deckel
   };
 
   // ---------- Formatierung ----------
@@ -292,7 +293,13 @@
       : '<em>Noch leer</em>';
     const dateLabel = new Date().toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'long', timeZone: cfg.timeZone });
     const label = `Mein Bierdeckel heute: ${euro(totalToday)}. ${monthName(open.month, false)} gesamt ${euro(open.totalCents)}.`;
+    const storno = state.lastAdd && state.lastAdd.until > Date.now() ? state.lastAdd : null;
     return `
+      <div class="deckel-wrap">
+      ${storno ? `
+        <button type="button" class="storno" data-action="storno" data-until="${storno.until}" aria-label="${esc(storno.text)} stornieren">
+          <span class="storno-ring"></span><span class="storno-label">Storno</span><small>${Math.ceil((storno.until - Date.now()) / 1000)}</small>
+        </button>` : ''}
       <a class="deckel" href="#abrechnungen" aria-label="${esc(label)}">
         <div class="deckel-face">
           <div class="deckel-top">${logo('ball', 'deckel-ball')}<span class="coaster-kicker">Mein Bierdeckel</span><span class="deckel-month">${esc(dateLabel)}</span></div>
@@ -300,7 +307,8 @@
           <div class="coaster-strokes">${strokes}</div>
           <span class="coaster-note">${esc(monthName(open.month, false))} gesamt <b>${euro(open.totalCents)}</b><br>Einzug am ${esc(nextMonthDebit(open.month))}</span>
         </div>
-      </a>`;
+      </a>
+      </div>`;
   }
 
   const isEditing = () => state.editMode && state.member.isAdmin;
@@ -417,8 +425,14 @@
         const ids = await api.addToTab(p.id, qty);
         closeSheet();
         if (navigator.vibrate) navigator.vibrate(12);
-        showUndoToast(`${qty > 1 ? qty + ' × ' : ''}${p.name} auf deinem Deckel`, ids);
-        renderView();
+        const text = `${qty > 1 ? qty + ' × ' : ''}${p.name}`;
+        state.lastAdd = { ids, until: Date.now() + cfg.undoSeconds * 1000, text };
+        toast(`${text} auf deinem Deckel`, true);
+        await renderView();
+        // Hoch zum Deckel: neuer Strich und Storno-Stempel sind sofort sichtbar.
+        window.scrollTo({ top: 0, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+        const d = document.querySelector('a.deckel');
+        if (d) { d.classList.add('wobble'); setTimeout(() => d.classList.remove('wobble'), 600); }
       } catch (err) {
         e.currentTarget.disabled = false;
         toast(err.message);
@@ -487,7 +501,7 @@
                 <div class="line">
                   <span class="line-time">${timeOf(i.createdAt)}</span>
                   <span class="line-name">${i.qty > 1 ? `${i.qty} × ` : ''}${esc(i.productName)}</span>
-                  ${until > now ? `<button type="button" class="undo-chip" data-action="undo" data-ids="${esc(i.ids.join(','))}" data-until="${until}">zurück</button>` : ''}
+                  ${until > now ? `<button type="button" class="undo-chip" data-action="undo" data-ids="${esc(i.ids.join(','))}" data-until="${until}">stornieren</button>` : ''}
                   <span class="line-price">${euro(i.priceCents)}</span>
                 </div>`;
             }).join('')}
@@ -805,40 +819,31 @@
   }
 
   let toastTimer = null;
-  function toast(text) {
-    clearInterval(toastTimer);
-    $toast.innerHTML = `<div class="toast"><span>${esc(text)}</span></div>`;
-    toastTimer = setTimeout(() => { $toast.innerHTML = ''; }, 3200);
-  }
-  function showUndoToast(text, ids) {
-    clearInterval(toastTimer);
+  function toast(text, ok = false) {
     clearTimeout(toastTimer);
-    const until = Date.now() + cfg.undoSeconds * 1000;
-    $toast.innerHTML = `<div class="toast">${icon.check}<span>${esc(text)}</span><button type="button" data-undo>Rückgängig <small></small></button></div>`;
-    const small = $toast.querySelector('small');
-    const tick = () => {
-      const left = Math.ceil((until - Date.now()) / 1000);
-      if (left <= 0 || !$toast.querySelector('[data-undo]')) { clearInterval(toastTimer); $toast.innerHTML = ''; return; }
-      small.textContent = left;
-    };
-    tick();
-    toastTimer = setInterval(tick, 500);
-    $toast.querySelector('[data-undo]').addEventListener('click', async () => {
-      clearInterval(toastTimer);
-      try {
-        await api.undo(ids);
-        toast('Zurückgenommen');
-      } catch (err) { toast(err.message); }
-      renderView();
-    });
+    $toast.innerHTML = `<div class="toast">${ok ? icon.check : ''}<span>${esc(text)}</span></div>`;
+    toastTimer = setTimeout(() => { $toast.innerHTML = ''; }, 2500);
   }
 
-  // Rücknahme-Knöpfe in der Abrechnung verschwinden nach Ablauf von selbst.
-  setInterval(() => {
+  // Storno-Knöpfe laufen nach einer Minute ab: in der Abrechnung und als Stempel auf dem Deckel.
+  function tickStorno() {
+    const now = Date.now();
     document.querySelectorAll('.undo-chip[data-until]').forEach((b) => {
-      if (Number(b.dataset.until) <= Date.now()) b.remove();
+      if (Number(b.dataset.until) <= now) b.remove();
     });
-  }, 1000);
+    const badge = document.querySelector('.storno[data-until]');
+    if (!badge) return;
+    const left = Number(badge.dataset.until) - now;
+    if (left <= 0) {
+      state.lastAdd = null;
+      badge.classList.add('gone');
+      setTimeout(() => badge.remove(), 250);
+      return;
+    }
+    badge.style.setProperty('--p', (left / (cfg.undoSeconds * 1000)).toFixed(3));
+    badge.querySelector('small').textContent = Math.ceil(left / 1000);
+  }
+  setInterval(tickStorno, 250);
 
   // ---------- Ereignisse ----------
   document.addEventListener('submit', (e) => {
@@ -993,9 +998,15 @@
     } else if (action === 'tally-row') {
       state.openTallyRow = state.openTallyRow === el.dataset.key ? null : el.dataset.key;
       renderView('strichliste');
+    } else if (action === 'storno') {
+      const last = state.lastAdd;
+      el.disabled = true;
+      state.lastAdd = null;
+      try { if (last) await api.undo(last.ids); toast(`${last ? last.text : 'Eintrag'} storniert`, true); } catch (err) { toast(err.message); }
+      renderView();
     } else if (action === 'undo') {
       el.disabled = true;
-      try { await api.undo(el.dataset.ids.split(',')); toast('Zurückgenommen'); } catch (err) { toast(err.message); }
+      try { await api.undo(el.dataset.ids.split(',')); state.lastAdd = null; toast('Storniert', true); } catch (err) { toast(err.message); }
       renderView();
     }
   });

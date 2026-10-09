@@ -538,3 +538,29 @@ button.shop-card { border: 0; text-align: left; font: inherit; }
 /* Reiter, der eine andere App öffnet (Padel-Buchung) */
 .tab.external { color: var(--signal); }
 .tab.external svg { stroke-width: 1.9; }
+
+/* ---------- Storno-Stempel auf dem Bierdeckel (60 Sekunden) ---------- */
+.deckel-wrap { position: relative; width: min(74vw, 268px); margin: 10px auto 8px; }
+.deckel-wrap .deckel { margin: 0; }
+.storno {
+  --p: 1;
+  position: absolute; z-index: 3; top: -14px; right: -22px;
+  width: 74px; height: 74px; border-radius: 50%; border: 0; padding: 0;
+  display: grid; place-content: center; justify-items: center; gap: 0;
+  background: var(--signal); color: #fff;
+  box-shadow: 0 0 0 3px var(--bg), 0 8px 18px rgba(0, 0, 0, .22);
+  transform: rotate(10deg);
+  animation: storno-in .35s cubic-bezier(.3, 1.5, .5, 1);
+  transition: opacity .25s ease, transform .25s ease;
+}
+.storno.gone { opacity: 0; transform: rotate(10deg) scale(.6); }
+.storno:active { transform: rotate(10deg) scale(.94); }
+.storno-ring {
+  position: absolute; inset: 5px; border-radius: 50%;
+  background: conic-gradient(rgba(255, 255, 255, .9) calc(var(--p) * 360deg), rgba(255, 255, 255, .18) 0);
+  -webkit-mask: radial-gradient(circle, transparent 62%, #000 63%);
+  mask: radial-gradient(circle, transparent 62%, #000 63%);
+}
+.storno-label { font-size: .7rem; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; line-height: 1; }
+.storno small { font-size: .78rem; font-weight: 700; opacity: .85; font-variant-numeric: tabular-nums; line-height: 1.2; }
+@keyframes storno-in { from { transform: rotate(-20deg) scale(.3); opacity: 0; } }

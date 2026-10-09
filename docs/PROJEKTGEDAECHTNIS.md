@@ -50,7 +50,10 @@ Präsentation vor dem Vorstand; bei Zustimmung wird daraus der Echtbetrieb.
 
 - Anmeldung über E-Mail aus der Mitgliederliste, Passwort beim ersten Mal,
   einmalige Zustimmung (Kioskordnung, Lastschrift, Sichtbarkeit Strichliste).
-- Anschreiben mit Anzahl (Runde), Rücknahme 60 Sekunden.
+- Anschreiben mit Anzahl (Runde). Danach: kurze Bestätigung (2,5 s), Seite
+  scrollt zum Deckel, roter **Storno-Stempel** auf der rechten oberen Deckelecke
+  mit ablaufendem Ring (60 s). In der Abrechnung heißt es „stornieren“.
+  Deckel bleibt bewusst zentriert.
 - **Strichliste**: letzte 7 Kalendertage, alphabetisch nach Nachname, nur Striche.
 - **Meine Abrechnungen**: laufender Monat, abgeschlossene Monate.
 - **Verwaltung → Kiosk bearbeiten** (direkt am Kiosk, wie ihn Mitglieder sehen):
