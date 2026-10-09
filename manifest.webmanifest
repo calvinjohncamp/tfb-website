@@ -1,0 +1,17 @@
+{
+  "id": "./",
+  "name": "TFB-Kiosk",
+  "short_name": "TFB-Kiosk",
+  "description": "Kiosk und digitale Strichliste der Tennisfreunde Bielstein.",
+  "lang": "de-DE",
+  "start_url": "./#kiosk",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#F5F0E6",
+  "theme_color": "#1F4D3A",
+  "icons": [
+    { "src": "assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
