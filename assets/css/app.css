@@ -75,14 +75,14 @@ svg { display: block; }
 .hero-logo { width: min(78%, 320px); color: var(--logo); }
 .auth-hero .app-label { margin: 6px 0 0; padding-left: .32em; color: var(--signal); }
 .consent-mark { width: 96px; color: var(--logo); }
-.brand { display: flex; align-items: flex-end; gap: 14px; text-decoration: none; color: var(--logo); min-width: 0; }
+.brand { display: flex; align-items: flex-end; gap: 14px; text-decoration: none; color: var(--logo); min-width: 0; flex: 1; }
 .header-mark { height: 38px; display: block; }
 .header-mark { flex: none; }
 /* Grundlinie von KIOSK genau auf die Unterkante von TFB.: Abstand unter der Grundlinie ausgleichen */
 .brand .app-label { line-height: 1; margin-bottom: -.14em; flex: none; }
 /* Schriftzug rechts daneben, auf derselben Linie; auf schmalen Handys bricht BIELSTEIN darunter um */
-.brand-tagline { display: flex; flex-wrap: wrap; align-items: flex-end; align-content: flex-end; column-gap: 9px; row-gap: 5px; margin-left: -3px; min-width: 0; }
-.header-tagline { height: 7.5px; color: var(--logo); display: block; }
+.brand-tagline { display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: flex-end; align-content: flex-end; column-gap: 10px; row-gap: 5px; margin-left: auto; min-width: 0; }
+.header-tagline { height: 8.25px; color: var(--logo); display: block; }
 .coaster-ball { width: 26px; color: #7A5A2E; opacity: .8; margin-bottom: 2px; }
 
 /* ---------- Karten, Knöpfe, Felder ---------- */
@@ -562,5 +562,5 @@ button.shop-card { border: 0; text-align: left; font: inherit; }
   mask: radial-gradient(circle, transparent 62%, #000 63%);
 }
 .storno-label { font-size: .6rem; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; line-height: 1; }
-.storno small { font-size: .78rem; font-weight: 700; opacity: .7; font-variant-numeric: tabular-nums; line-height: 1; margin-top: 6px; }
+.storno small { font-size: .6rem; font-weight: 800; opacity: .7; font-variant-numeric: tabular-nums; line-height: 1; margin-top: 10px; }
 @keyframes storno-in { from { transform: rotate(-20deg) scale(.3); opacity: 0; } }

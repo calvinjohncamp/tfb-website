@@ -35,9 +35,10 @@ Präsentation vor dem Vorstand; bei Zustimmung wird daraus der Echtbetrieb.
 - **Bierdeckel „Stapel“**: zwei eckige Deckel, hinten die Markenfarbe. Zeigt das
   **heutige Datum** und die Striche/Summe **von heute**; darunter Monatssumme
   und Einzugstermin.
-- Kopfzeile: großes „TFB.“-Logo, rechts daneben „KIOSK“ und der originale
-  Schriftzug „Tennisfreunde Bielstein“ – alles exakt auf der Grundlinie von „TFB.“.
-  Ist zu wenig Platz, bricht „TENNISFREUNDE“ über „BIELSTEIN“ um. Rechts Profilbild.
+- Kopfzeile: großes „TFB.“-Logo, rechts daneben „KIOSK“; der originale Schriftzug
+  „Tennisfreunde Bielstein“ steht rechtsbündig vor dem Profilbild (Abstand 14 px
+  wie Ball↔KIOSK). Alles exakt auf der Grundlinie von „TFB.“. Ist zu wenig Platz,
+  bricht „TENNISFREUNDE“ über „BIELSTEIN“ um.
 - Unterseiten (Strichliste, Abrechnungen, Verwaltung) haben oben rechts ein
   Schließen-Kreuz zurück zum Kiosk; das TFB.-Logo führt ebenfalls zum Kiosk.
 - **Signalfarbe Sandplatz-Rot `#C4553A`** (CSS `--signal`): „KIOSK“, Striche, „bald“.
