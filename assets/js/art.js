@@ -80,12 +80,14 @@
       <circle cx="29" cy="33.6" r="1.1" fill="${line}"/><circle cx="35" cy="33.6" r="1.1" fill="${line}"/>
       <path d="M24.5 38.5c3-3 5.5-2.2 7.5-.3 2-1.9 4.5-2.7 7.5.3-2 2.6-5 2.8-7.5 1-2.5 1.8-5.5 1.6-7.5-1z" fill="${line}"/>
       <path d="M27.5 44.5l4.5 2.3 4.5-2.3v5l-4.5-2.3-4.5 2.3z" fill="#D2202F" stroke="${line}" stroke-width="1.5" stroke-linejoin="round"/>`,
+    // Goldbär: hoch und schlank, kleine Ohren, Ärmchen eng am Bauch, stämmige Füße
     bear: (c) => {
-      const b = '<circle cx="21.5" cy="11" r="5.5"/><circle cx="42.5" cy="11" r="5.5"/>'
-        + '<ellipse cx="32" cy="20.5" rx="12.5" ry="10.5"/><ellipse cx="32" cy="42" rx="13" ry="13.5"/>'
-        + '<ellipse cx="18.5" cy="35" rx="4.5" ry="7.5" transform="rotate(40 18.5 35)"/>'
-        + '<ellipse cx="45.5" cy="35" rx="4.5" ry="7.5" transform="rotate(-40 45.5 35)"/>'
-        + '<ellipse cx="23.5" cy="55" rx="6.5" ry="4.5"/><ellipse cx="40.5" cy="55" rx="6.5" ry="4.5"/>';
+      const b = '<circle cx="24.5" cy="9.5" r="4.3"/><circle cx="39.5" cy="9.5" r="4.3"/>'
+        + '<ellipse cx="32" cy="17.5" rx="10.5" ry="9.5"/>'
+        + '<ellipse cx="32" cy="39" rx="11.5" ry="15.5"/>'
+        + '<ellipse cx="21.8" cy="32.5" rx="3.8" ry="6.2" transform="rotate(18 21.8 32.5)"/>'
+        + '<ellipse cx="42.2" cy="32.5" rx="3.8" ry="6.2" transform="rotate(-18 42.2 32.5)"/>'
+        + '<ellipse cx="25.5" cy="54.5" rx="5.6" ry="5"/><ellipse cx="38.5" cy="54.5" rx="5.6" ry="5"/>';
       return `<g fill="${line}" stroke="${line}" stroke-width="6" stroke-linejoin="round">${b}</g><g fill="${c}">${b}</g>`;
     },
     sausage: (c) => `

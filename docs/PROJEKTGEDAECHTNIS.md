@@ -95,3 +95,4 @@ Im Demo-Modus liegen alle Daten nur im Browser des Geräts. Demo-Zugang:
 - **09.10.2026** – Symbole reduziert: Goldbär als reine Silhouette, Hanuta als
   quadratische Waffel mit Nusscreme-Schicht, Snickers/Mars mit schrägem
   Logo-Feld, Red Bull nur noch blau-silbernes Karo. Hotdog und Pringles bleiben.
+  Goldbär danach schlanker (aufrecht, kleine Ohren, Ärmchen am Körper) – kein Teddy.
