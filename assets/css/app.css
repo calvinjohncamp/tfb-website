@@ -3,9 +3,10 @@
    als schmale App-Spalte. Bewusst ohne externe Schriften (keine Google-Fonts-Abfrage). */
 
 :root {
-  --green: #1F4D3A;
-  --green-2: #2B6A50;
-  --green-soft: #E3EDE6;
+  --brand: #2A2D2E;            /* Markenfarbe, im Profil wählbar */
+  --green: var(--brand);
+  --green-2: var(--brand);
+  --green-soft: color-mix(in srgb, var(--brand) 9%, #fff);
   --clay: #C4553A;
   --clay-soft: #F6E2DA;
   --cream: #F5F0E6;
@@ -16,7 +17,7 @@
   --line: #E5DDCD;
   --cardboard: #EBD9B8;
   --cardboard-2: #DCC398;
-  --shadow: 0 1px 2px rgba(28, 37, 32, .06), 0 8px 24px rgba(28, 37, 32, .07);
+  --shadow: 0 0 0 1px #ECE8E0, 0 6px 18px rgba(28, 37, 32, .06);
   --radius: 18px;
   --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
@@ -25,18 +26,12 @@
   --tabbar-h: 64px;
   color-scheme: light;
 
-  /* Gestaltungs-Varianten (Profil → Gestaltung ausprobieren) */
-  --bg: var(--cream);
-  --topbar: rgba(245, 240, 230, .92);
+  --bg: #FBFBF8;              /* Kreideweiß */
+  --topbar: rgba(251, 251, 248, .92);
   --on-bg: var(--ink);
   --on-bg-muted: var(--muted);
-  --logo: var(--green);
+  --logo: var(--brand);
 }
-[data-bg="kreide"] { --bg: #FBFBF8; --topbar: rgba(251, 251, 248, .92); }
-[data-bg="grau"] { --bg: #E8EBE9; --topbar: rgba(232, 235, 233, .92); }
-[data-bg="gruen"] { --bg: #1F4D3A; --topbar: rgba(31, 77, 58, .94); --on-bg: #F5F0E6; --on-bg-muted: rgba(245, 240, 230, .72); }
-[data-logo="anthrazit"] { --logo: #2A2D2E; }
-[data-bg="gruen"][data-logo] { --logo: #F5F0E6; }
 
 * { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
@@ -186,6 +181,20 @@ svg { display: block; }
 .seg { display: flex; flex-wrap: wrap; gap: 6px; }
 .seg button { border: 1.5px solid rgba(31, 77, 58, .25); background: #fff; border-radius: 99px; padding: 6px 12px; font-size: .85rem; font-weight: 600; }
 .seg button.on { background: var(--green); border-color: var(--green); color: #fff; }
+.look-row small { font-size: .78rem; }
+.swatches { display: flex; flex-wrap: wrap; gap: 8px; }
+.swatch {
+  width: 34px; height: 34px; border-radius: 50%; border: 0; padding: 0;
+  background: var(--c); box-shadow: 0 0 0 2px #fff, 0 0 0 3px rgba(0,0,0,.08);
+  cursor: pointer; position: relative;
+}
+.swatch.on { box-shadow: 0 0 0 2px #fff, 0 0 0 4.5px var(--c); }
+.swatch.custom {
+  background: conic-gradient(#E74C3C, #F1C40F, #2ECC71, #3498DB, #9B59B6, #E74C3C);
+  display: grid; place-items: center;
+}
+.swatch.custom::after { content: ""; width: 14px; height: 14px; border-radius: 50%; background: var(--c); box-shadow: 0 0 0 2px #fff; }
+.swatch.custom input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
 .demo-ribbon { margin: 0 16px; padding: 6px 12px; border-radius: 10px; background: rgba(235,217,184,.45); color: #7A6440; font-size: .75rem; font-weight: 600; text-align: center; }
 
 .view { padding: 16px 16px calc(var(--tabbar-h) + 28px + var(--safe-bottom)); }
@@ -210,30 +219,85 @@ svg { display: block; }
 
 .section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin: 28px 2px 10px; }
 
-/* ---------- Bierdeckel ---------- */
-.coaster {
-  display: block; width: min(78vw, 270px); aspect-ratio: 1; margin: 6px auto 4px;
-  border-radius: 50%; text-decoration: none;
-  background:
-    radial-gradient(circle at 30% 25%, rgba(255,255,255,.35), transparent 55%),
-    repeating-radial-gradient(circle at 50% 50%, var(--cardboard) 0 3px, #E6D2AE 3px 4px);
-  box-shadow: 0 2px 0 var(--cardboard-2), 0 14px 30px rgba(120, 90, 40, .22);
-  padding: 12px;
+/* ---------- Bierdeckel (fünf eckige Varianten) ---------- */
+.deckel {
+  --size: min(74vw, 268px);
+  --deckel-ink: #6B5433;
+  --stroke-color: var(--clay);
+  position: relative; display: block; width: var(--size); aspect-ratio: 1;
+  margin: 10px auto 8px; text-decoration: none; color: var(--deckel-ink);
   transition: transform .15s ease;
 }
-.coaster:active { transform: scale(.98) rotate(-2deg); }
-.coaster-ring {
-  height: 100%; border-radius: 50%;
-  border: 2px dashed rgba(122, 90, 46, .45);
-  display: grid; align-content: center; justify-items: center; gap: 6px;
-  text-align: center; padding: 18px;
+.deckel:active { transform: scale(.98) rotate(-1.5deg); }
+.deckel-face {
+  position: relative; z-index: 1; height: 100%;
+  display: grid; align-content: center; justify-items: center; gap: 8px; text-align: center;
+  padding: 22px;
 }
-.coaster-kicker { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: #7A5A2E; }
-.coaster-amount { font-family: var(--serif); font-size: 2.3rem; color: var(--green); letter-spacing: -.02em; }
+.deckel-top { display: grid; justify-items: center; gap: 4px; }
+.deckel-ball { width: 24px; color: currentColor; opacity: .85; }
+.coaster-kicker { font-size: .7rem; font-weight: 800; text-transform: uppercase; letter-spacing: .14em; }
+.deckel-month { font-family: var(--hand); font-size: 1.05rem; line-height: 1; }
+.coaster-amount { font-family: var(--serif); font-size: 2.4rem; line-height: 1; letter-spacing: -.02em; color: var(--brand); }
 .coaster-strokes { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; max-width: 200px; min-height: 30px; }
-.coaster-strokes .bundle { height: 30px; width: auto !important; stroke: var(--clay); stroke-width: 2.8; }
-.coaster-strokes em { font-family: var(--hand); font-style: normal; color: #7A5A2E; font-size: 1.05rem; }
-.coaster-note { font-size: .74rem; color: #7A5A2E; }
+.coaster-strokes .bundle { height: 30px; width: auto !important; stroke: var(--stroke-color); stroke-width: 2.8; }
+.coaster-strokes em { font-family: var(--hand); font-style: normal; font-size: 1.05rem; }
+.coaster-note { font-size: .74rem; opacity: .85; }
+
+/* 1 · Pappe: klassischer quadratischer Deckel mit Faserstruktur und Prägerand */
+.deckel--pappe .deckel-face {
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at 25% 20%, rgba(255,255,255,.4), transparent 55%),
+    repeating-linear-gradient(115deg, rgba(122,90,46,.05) 0 2px, transparent 2px 5px),
+    var(--cardboard);
+  box-shadow: inset 0 0 0 10px var(--cardboard), inset 0 0 0 12px rgba(122,90,46,.35), 0 2px 0 var(--cardboard-2), 0 14px 30px rgba(120,90,40,.2);
+}
+
+/* 2 · Linie: weiß, kräftige Kontur, harter Versatzschatten */
+.deckel--linie { --deckel-ink: var(--ink); }
+.deckel--linie .deckel-face {
+  background: #fff; border: 3px solid var(--ink); border-radius: 12px;
+  box-shadow: 7px 7px 0 var(--brand);
+}
+
+/* 3 · Plattencover: vollflächig in Markenfarbe, Schallplatte schaut heraus */
+.deckel--cover { --deckel-ink: #F5F0E6; --stroke-color: #F5F0E6; transform: rotate(-2deg); }
+.deckel--cover::after {
+  content: ""; position: absolute; z-index: 0; top: 6%; right: -14%; width: 88%; aspect-ratio: 1; border-radius: 50%;
+  background:
+    radial-gradient(circle, var(--clay) 0 15%, #111 15.5% 17%, transparent 17.5%),
+    repeating-radial-gradient(circle, #1a1a1a 0 2px, #262626 2px 3px);
+  box-shadow: 0 10px 24px rgba(0,0,0,.25);
+}
+.deckel--cover .deckel-face {
+  background:
+    linear-gradient(135deg, rgba(255,255,255,.12), transparent 45%),
+    var(--brand);
+  border-radius: 4px; box-shadow: 0 18px 36px rgba(0,0,0,.25);
+}
+.deckel--cover .coaster-amount { color: #fff; }
+.deckel--cover:active { transform: rotate(-3deg) scale(.98); }
+
+/* 4 · Wellenrand: Papierdeckel mit gewelltem Rand */
+.deckel--welle .deckel-shape {
+  position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0;
+  fill: #F4ECDD; stroke: rgba(107, 84, 51, .45); stroke-width: 1.2;
+  filter: drop-shadow(0 12px 18px rgba(120, 90, 40, .18));
+}
+.deckel--welle .deckel-face { position: absolute; inset: 16px; height: auto; border: 1.5px dashed rgba(107, 84, 51, .35); border-radius: 6px; padding: 16px; }
+
+/* 5 · Stapel: zwei Deckel übereinander, hinten die Markenfarbe */
+.deckel--stapel { --deckel-ink: var(--ink); }
+.deckel--stapel::before {
+  content: ""; position: absolute; inset: 0; z-index: 0; border-radius: 14px;
+  background: var(--brand); transform: rotate(7deg) translate(8px, 4px);
+  box-shadow: 0 12px 26px rgba(0,0,0,.18);
+}
+.deckel--stapel .deckel-face {
+  background: #fff; border-radius: 14px; transform: rotate(-3deg);
+  box-shadow: 0 0 0 1px #E6E1D6, 0 10px 24px rgba(0,0,0,.12);
+}
 
 /* ---------- Striche ---------- */
 .bundle { fill: none; stroke: var(--ink); stroke-width: 2.4; stroke-linecap: round; flex: none; }
@@ -266,10 +330,7 @@ svg { display: block; }
 }
 .shop-art { height: 84px; margin-bottom: 8px; filter: saturate(.75); }
 .shop-art .art { width: 56px; height: 56px; }
-.has-photo { background: #ddd; overflow: hidden; }
-.has-photo .photo { width: 100%; height: 100%; object-fit: cover; display: block; }
-.tile-art.has-photo { aspect-ratio: 4 / 3; }
-.pick-art.has-photo { width: 100%; height: auto; aspect-ratio: 16 / 10; border-radius: 18px; max-width: 360px; }
+
 
 /* ---------- Kiosk-Kacheln ---------- */
 .tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
@@ -385,17 +446,6 @@ svg { display: block; }
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
 
-/* ---------- Texte direkt auf dem Hintergrund (für dunklen Vereinsgrün-Hintergrund) ---------- */
-.view-head h1, .section-head h2, .auth-hero, .consent > .auth-hero h1 { color: var(--on-bg); }
-.view-head .muted, .section-head .muted, .shop > .muted, .view > .fineprint, .view > section > .empty, .auth-hero p { color: var(--on-bg-muted); }
-[data-bg="gruen"] .demo-ribbon { background: rgba(255, 255, 255, .12); color: var(--on-bg); }
-[data-bg="gruen"] .demo-hint { background: rgba(255, 255, 255, .08); border-color: rgba(245, 240, 230, .3); color: var(--on-bg-muted); }
-[data-bg="gruen"] .demo-hint .link, [data-bg="gruen"] .consent > .link { color: var(--on-bg); }
-[data-bg="gruen"] .auth-hero .app-label, [data-bg="gruen"] .brand .app-label { color: #F2A48E; }
-[data-bg="gruen"] .avatar { box-shadow: 0 0 0 2px var(--bg), 0 0 0 3.5px rgba(245, 240, 230, .45); }
-[data-bg="gruen"] .tile, [data-bg="gruen"] .shop-card, [data-bg="gruen"] .card { box-shadow: 0 10px 28px rgba(0, 0, 0, .18); }
-[data-bg="gruen"] .coaster { box-shadow: 0 2px 0 var(--cardboard-2), 0 18px 40px rgba(0, 0, 0, .35); }
-[data-bg="kreide"] .tile, [data-bg="kreide"] .shop-card, [data-bg="kreide"] .card { box-shadow: 0 0 0 1px #ECE8E0, 0 6px 18px rgba(28, 37, 32, .06); }
 
 /* ---------- Bild groß ansehen ---------- */
 .lightbox {
@@ -422,25 +472,3 @@ svg { display: block; }
 }
 .lightbox-close svg { width: 20px; height: 20px; fill: none; stroke: #F5F0E6; stroke-width: 2.2; stroke-linecap: round; }
 
-/* ---------- Bierdeckel im Zunft-Kölsch-Look ---------- */
-.zunft { display: grid; justify-items: center; gap: 14px; text-decoration: none; margin: 8px 0 4px; }
-.zunft-card {
-  position: relative; width: min(64vw, 220px); aspect-ratio: 1;
-  transform: rotate(-4deg);
-  border-radius: 14px; overflow: hidden;
-  box-shadow: 0 2px 0 rgba(0, 0, 0, .06), 0 16px 34px rgba(60, 40, 20, .22);
-  transition: transform .15s ease;
-}
-.zunft:active .zunft-card { transform: rotate(-6deg) scale(.98); }
-.zunft-card img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.zunft-strokes {
-  position: absolute; left: 9%; top: 7%; width: 34%;
-  display: flex; flex-wrap: wrap; gap: 4px;
-  transform: rotate(-3deg);
-}
-.zunft-strokes .bundle { height: 22px; width: auto !important; stroke: #3A3A3A; stroke-width: 2.2; opacity: .85; }
-.zunft-strokes em { font-family: var(--hand); font-style: normal; color: #3A3A3A; font-size: .95rem; }
-.zunft-meta { display: grid; justify-items: center; gap: 2px; text-align: center; }
-.zunft-meta .coaster-kicker, .zunft-meta .coaster-note { color: var(--on-bg-muted); }
-.zunft-meta .coaster-amount { color: var(--on-bg); }
-[data-bg="kreide"] .zunft-meta .coaster-amount, [data-bg="creme"] .zunft-meta .coaster-amount, [data-bg="grau"] .zunft-meta .coaster-amount { color: var(--green); }

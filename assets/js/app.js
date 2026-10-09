@@ -44,31 +44,24 @@
   const avatarFace = (m) => (m.avatar ? `<img src="${esc(m.avatar)}" alt="">` : esc(initials(m)));
 
   // ---------- Gestaltung ausprobieren (nur auf diesem Gerät gemerkt) ----------
-  const LOOK_KEY = 'tfb_kiosk_look_v1';
-  const LOOK_OPTIONS = {
-    art: [['gezeichnet', 'Gezeichnet'], ['foto', 'Fotos']],
-    logo: [['gruen', 'Vereinsgrün'], ['anthrazit', 'Anthrazit']],
-    bg: [['creme', 'Creme'], ['kreide', 'Kreideweiß'], ['grau', 'Hellgrau'], ['gruen', 'Vereinsgrün']],
-    coaster: [['pappe', 'Neutral'], ['zunft', 'Zunft Kölsch']],
-  };
-  const look = { art: 'gezeichnet', logo: 'gruen', bg: 'kreide', coaster: 'pappe' };
+  // Später wandert das in den Admin-Bereich und gilt dann für alle.
+  const LOOK_KEY = 'tfb_kiosk_look_v2';
+  const BRAND_COLORS = [
+    ['#2A2D2E', 'Anthrazit'], ['#1F4D3A', 'Vereinsgrün'], ['#C4553A', 'Sandplatz'], ['#1E5F74', 'Petrol'],
+    ['#22355E', 'Nachtblau'], ['#6B2E4F', 'Pflaume'], ['#5E6B2A', 'Moos'], ['#D9902B', 'Senf'],
+  ];
+  const COASTERS = [['pappe', 'Pappe'], ['linie', 'Linie'], ['cover', 'Plattencover'], ['welle', 'Wellenrand'], ['stapel', 'Stapel']];
+  const look = { brand: '#2A2D2E', coaster: 'pappe' };
   try { Object.assign(look, JSON.parse(localStorage.getItem(LOOK_KEY) || '{}')); } catch (_) {}
+  if (!/^#[0-9a-f]{6}$/i.test(look.brand)) look.brand = '#2A2D2E';
+  if (!COASTERS.some(([id]) => id === look.coaster)) look.coaster = 'pappe';
+  function saveLook() { try { localStorage.setItem(LOOK_KEY, JSON.stringify(look)); } catch (_) {} }
   function applyLook() {
-    const root = document.documentElement;
-    root.dataset.art = look.art;
-    root.dataset.logo = look.logo;
-    root.dataset.bg = look.bg;
-    const meta = document.querySelector('meta[name=theme-color]');
-    if (meta) meta.content = getComputedStyle(root).getPropertyValue('--bg').trim() || '#1F4D3A';
+    document.documentElement.style.setProperty('--brand', look.brand);
   }
   applyLook();
 
-  // Produktbild: Foto, wenn gewünscht und vorhanden – sonst Zeichnung.
-  function visual(p) {
-    if (look.art === 'foto' && p.photo) return `<img class="photo" src="${esc(p.photo)}" alt="" loading="lazy">`;
-    return TFB.art(p.art, p.color);
-  }
-  const visualClass = (p) => (look.art === 'foto' && p.photo ? ' has-photo' : '');
+  const visual = (p) => TFB.art(p.art, p.color);
   const strokesWord = (n) => (n === 1 ? '1 Strich' : `${n} Striche`);
 
   // ---------- Icons ----------
@@ -271,26 +264,15 @@
       ? TFB.strokes(Math.min(count, 25), state.member.id + open.month) + (count > 25 ? `<em>+${count - 25}</em>` : '')
       : '<em>Noch leer</em>';
     const label = `Mein Bierdeckel: ${euro(open.totalCents)} im ${monthName(open.month, false)}`;
-    if (look.coaster === 'zunft') {
-      // Wie in der Kneipe: Striche mit Bleistift auf den Rand des echten Zunft-Deckels.
-      return `
-        <a class="zunft" href="#abrechnungen" aria-label="${esc(label)}">
-          <div class="zunft-card">
-            <img src="assets/brand/zunft-bierdeckel.webp" alt="">
-            <div class="zunft-strokes">${count ? strokes : ''}</div>
-          </div>
-          <div class="zunft-meta">
-            <span class="coaster-kicker">Mein Bierdeckel · ${esc(monthName(open.month, false))}</span>
-            <strong class="coaster-amount">${euro(open.totalCents)}</strong>
-            <span class="coaster-note">${strokesWord(count)} · Einzug am ${esc(nextMonthDebit(open.month))}</span>
-          </div>
-        </a>`;
-    }
+    const ball = logo('ball', 'deckel-ball');
+    const back = look.coaster === 'welle'
+      ? `<svg class="deckel-shape" viewBox="-11 -11 222 222" aria-hidden="true"><path d="${TFB.scallopSquare(200, 10)}"/></svg>`
+      : '';
     return `
-      <a class="coaster" href="#abrechnungen" aria-label="${esc(label)}">
-        <div class="coaster-ring">
-          ${logo('ball', 'coaster-ball')}
-          <span class="coaster-kicker">Mein Bierdeckel · ${esc(monthName(open.month, false))}</span>
+      <a class="deckel deckel--${esc(look.coaster)}" href="#abrechnungen" aria-label="${esc(label)}">
+        ${back}
+        <div class="deckel-face">
+          <div class="deckel-top">${ball}<span class="coaster-kicker">Mein Bierdeckel</span><span class="deckel-month">${esc(monthName(open.month, false))}</span></div>
           <strong class="coaster-amount">${euro(open.totalCents)}</strong>
           <div class="coaster-strokes">${strokes}</div>
           <span class="coaster-note">Einzug am ${esc(nextMonthDebit(open.month))}</span>
@@ -313,7 +295,7 @@
         <div class="shop-strip">
           ${shop.items.map((item) => `
             <div class="shop-card" aria-disabled="true">
-              <div class="shop-art${visualClass(item)}" style="--tint:${esc(item.color)}">${visual(item)}</div>
+              <div class="shop-art" style="--tint:${esc(item.color)}">${visual(item)}</div>
               <strong>${esc(item.name)}</strong>
               <span>${esc(item.detail)}</span>
               <b>${euro(item.price)}</b>
@@ -330,7 +312,7 @@
             <div class="tiles">
               ${items.map((p) => `
                 <button class="tile" type="button" data-action="pick" data-id="${esc(p.id)}">
-                  <div class="tile-art${visualClass(p)}" style="--tint:${esc(p.color)}">${visual(p)}</div>
+                  <div class="tile-art" style="--tint:${esc(p.color)}">${visual(p)}</div>
                   <div class="tile-text"><strong>${esc(p.name)}</strong><span>${esc(p.detail)}</span></div>
                   <div class="tile-foot"><b>${euro(p.price)}</b><span class="tile-add">${icon.plus}</span></div>
                 </button>`).join('')}
@@ -353,7 +335,7 @@
     };
     openSheet(`
       <div class="pick">
-        <div class="pick-art${visualClass(p)}" style="--tint:${esc(p.color)}">${visual(p)}</div>
+        <div class="pick-art" style="--tint:${esc(p.color)}">${visual(p)}</div>
         <h2>${esc(p.name)}</h2>
         <p class="muted">${esc(p.detail)} · ${euro(p.price)}</p>
         <div class="stepper" role="group" aria-label="Anzahl">
@@ -497,14 +479,23 @@
 
         <div class="card soft lookbox">
           <strong>Gestaltung ausprobieren</strong>
-          <p class="small muted">Nur zum Vergleichen – wirkt sofort und bleibt auf diesem Gerät.</p>
-          ${Object.entries({ art: 'Produktbilder', coaster: 'Bierdeckel', logo: 'Logofarbe', bg: 'Hintergrund' }).map(([key, label]) => `
-            <div class="look-row">
-              <span>${label}</span>
-              <div class="seg" role="group" aria-label="${label}">
-                ${LOOK_OPTIONS[key].map(([value, text]) => `<button type="button" class="${look[key] === value ? 'on' : ''}" data-action="look" data-key="${key}" data-value="${value}">${text}</button>`).join('')}
-              </div>
-            </div>`).join('')}
+          <p class="small muted">Wirkt sofort und bleibt auf diesem Gerät. Später im Admin für alle.</p>
+          <div class="look-row">
+            <span>Markenfarbe</span>
+            <div class="swatches" role="group" aria-label="Markenfarbe">
+              ${BRAND_COLORS.map(([hex, name]) => `<button type="button" class="swatch ${look.brand.toLowerCase() === hex.toLowerCase() ? 'on' : ''}" style="--c:${hex}" data-action="brand" data-value="${hex}" title="${name}" aria-label="${name}"></button>`).join('')}
+              <label class="swatch custom ${BRAND_COLORS.some(([hex]) => hex.toLowerCase() === look.brand.toLowerCase()) ? '' : 'on'}" title="Eigene Farbe (mit Pipette)" style="--c:${look.brand}">
+                <input type="color" value="${esc(look.brand)}" data-brand-picker aria-label="Eigene Farbe wählen">
+              </label>
+            </div>
+            <small class="muted">${esc((BRAND_COLORS.find(([hex]) => hex.toLowerCase() === look.brand.toLowerCase()) || [0, 'Eigene Farbe ' + look.brand.toUpperCase()])[1])}</small>
+          </div>
+          <div class="look-row">
+            <span>Bierdeckel</span>
+            <div class="seg" role="group" aria-label="Bierdeckel">
+              ${COASTERS.map(([value, text]) => `<button type="button" class="${look.coaster === value ? 'on' : ''}" data-action="coaster" data-value="${value}">${text}</button>`).join('')}
+            </div>
+          </div>
         </div>
         <div class="card soft install">
           <strong>Als App aufs Handy</strong>
@@ -642,7 +633,21 @@
     if (btn) btn.innerHTML = avatarFace(state.member);
   }
 
+  // Eigene Markenfarbe: live beim Ziehen, gespeichert beim Loslassen.
+  document.addEventListener('input', (e) => {
+    if (!e.target.matches('[data-brand-picker]')) return;
+    look.brand = e.target.value;
+    applyLook();
+    e.target.parentElement.style.setProperty('--c', look.brand);
+  });
+
   document.addEventListener('change', async (e) => {
+    if (e.target.matches('[data-brand-picker]')) {
+      saveLook();
+      openProfile();
+      renderView();
+      return;
+    }
     if (e.target.matches('[data-avatar-input]') && e.target.files[0]) {
       try {
         const file = e.target.files[0];
@@ -682,11 +687,11 @@
       state.authEmail = '';
       render();
       toast('Demo-Daten wurden neu erzeugt.');
-    } else if (action === 'look') {
-      look[el.dataset.key] = el.dataset.value;
-      try { localStorage.setItem(LOOK_KEY, JSON.stringify(look)); } catch (_) {}
+    } else if (action === 'brand' || action === 'coaster') {
+      look[action] = el.dataset.value;
+      saveLook();
       applyLook();
-      el.parentElement.querySelectorAll('button').forEach((b) => b.classList.toggle('on', b === el));
+      openProfile();
       renderView();
     } else if (action === 'avatar-zoom') {
       openLightbox(state.member.avatarLarge || state.member.avatar, `${state.member.firstName} ${state.member.lastName}`);
