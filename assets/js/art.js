@@ -17,12 +17,6 @@
       </g>`;
   }
 
-  // Umriss eines echten Gummibärchens (Vorderansicht, 64er-Raster).
-  const BEAR = 'M27 8C29 7.2 35 7.2 37 8C38.5 5 43.5 3.5 44.5 8.5C46.5 11.5 46.5 16 44.5 19C47 21 49 24 48.5 28'
-    + 'C48 31 46.5 32 46 33C47.5 38 48 45 47 50C47 55 46 59 41.5 59.5C38 60 34.5 59 33.5 56Q32 54.5 30.5 56'
-    + 'C29.5 59 26 60 22.5 59.5C18 59 17 55 17 50C16 45 16.5 38 18 33C17.5 32 16 31 15.5 28'
-    + 'C15 24 17 21 19.5 19C17.5 16 17.5 11.5 19.5 8.5C20.5 3.5 25.5 5 27 8Z';
-
   const shapes = {
     // Snickers: braune Folie, blaues Logo-Feld mit weißem Rand
     snickers: () => riegel('#4A2A1A', '#1F5FB0', '#FFFDF5'),
@@ -86,31 +80,24 @@
       <circle cx="29" cy="33.6" r="1.1" fill="${line}"/><circle cx="35" cy="33.6" r="1.1" fill="${line}"/>
       <path d="M24.5 38.5c3-3 5.5-2.2 7.5-.3 2-1.9 4.5-2.7 7.5.3-2 2.6-5 2.8-7.5 1-2.5 1.8-5.5 1.6-7.5-1z" fill="${line}"/>
       <path d="M27.5 44.5l4.5 2.3 4.5-2.3v5l-4.5-2.3-4.5 2.3z" fill="#D2202F" stroke="${line}" stroke-width="1.5" stroke-linejoin="round"/>`,
-    // Gummibär – fünf Varianten zur Auswahl (danach bleibt eine übrig).
-    // 1 · Silhouette: eine durchgehende Kontur, flache Ohr-Noppen, Halskerbe, Fußkerbe
-    bear: (c) => `<path d="${BEAR}" fill="${c}" stroke="${line}" stroke-width="3" stroke-linejoin="round"/>`,
-    // 2 · Relief: wie 1, dazu Schnäuzchen und Bauch als feine Prägung
-    bear2: (c) => `
-      <path d="${BEAR}" fill="${c}" stroke="${line}" stroke-width="3" stroke-linejoin="round"/>
-      <ellipse cx="32" cy="15.8" rx="4.2" ry="3.1" fill="none" stroke="${line}" stroke-width="1.6" opacity=".35"/>
-      <ellipse cx="32" cy="41" rx="8.2" ry="10" fill="none" stroke="${line}" stroke-width="1.6" opacity=".35"/>
-      <path d="M21 25c1.5 3.5 2 7 1.5 10.5M43 25c-1.5 3.5-2 7-1.5 10.5" fill="none" stroke="${line}" stroke-width="1.6" stroke-linecap="round" opacity=".35"/>`,
-    // 3 · Block: kantiger Indie-Stempel aus abgerundeten Rechtecken
-    bear3: (c) => {
-      const b = '<rect x="18.5" y="4" width="8" height="7" rx="2.5"/><rect x="37.5" y="4" width="8" height="7" rx="2.5"/>'
-        + '<rect x="17" y="7" width="30" height="17" rx="7"/><rect x="16" y="21" width="32" height="32" rx="8"/>'
-        + '<rect x="17" y="47" width="13.5" height="12.5" rx="5"/><rect x="33.5" y="47" width="13.5" height="12.5" rx="5"/>';
-      return `<g fill="${line}" stroke="${line}" stroke-width="6" stroke-linejoin="round">${b}</g><g fill="${c}">${b}</g>`;
+    // Gummibär: runder Kopf und Ohren, breiter Po, Ärmchen und Beinchen als helle Bögen, freundliches Gesicht
+    bear: (c) => {
+      const b = '<circle cx="20.5" cy="11" r="6.3"/><circle cx="43.5" cy="11" r="6.3"/>'
+        + '<ellipse cx="32" cy="19.5" rx="14" ry="11.5"/>'
+        + '<ellipse cx="32" cy="36" rx="11.5" ry="8"/>'
+        + '<circle cx="20" cy="38" r="6.2"/><circle cx="44" cy="38" r="6.2"/>'
+        + '<circle cx="23" cy="52" r="8.2"/><circle cx="41" cy="52" r="8.2"/>'
+        + '<rect x="21" y="40" width="22" height="20" rx="4"/>';
+      return `
+        <g fill="${line}" stroke="${line}" stroke-width="6" stroke-linejoin="round">${b}</g>
+        <g fill="${c}">${b}</g>
+        <path d="M22.6 31.5c-4.6 2.6-5.4 9.2-1.2 12.6M41.4 31.5c4.6 2.6 5.4 9.2 1.2 12.6" fill="none" stroke="#FFFDF5" stroke-width="2.4" stroke-linecap="round"/>
+        <path d="M21.5 48.5c4 .4 6.6 3.4 6.6 8M42.5 48.5c-4 .4-6.6 3.4-6.6 8" fill="none" stroke="#FFFDF5" stroke-width="2.4" stroke-linecap="round"/>
+        <path d="M16.6 11.2c.2-2.4 1.6-4 3.6-4.6" fill="none" stroke="#FFFDF5" stroke-width="2.2" stroke-linecap="round" opacity=".85"/>
+        <circle cx="26.8" cy="17.5" r="1.9" fill="${line}"/><circle cx="37.2" cy="17.5" r="1.9" fill="${line}"/>
+        <ellipse cx="32" cy="21.6" rx="2.5" ry="1.8" fill="${line}"/>
+        <path d="M28.6 24.2c1.2 1.8 2.4 1.8 3.4.4 1 1.4 2.2 1.4 3.4-.4" fill="none" stroke="${line}" stroke-width="1.6" stroke-linecap="round"/>`;
     },
-    // 4 · Trio: drei Bärchen wie in der Tüte – grün, Produktfarbe, rot
-    bear4: (c) => `
-      <g transform="translate(-5.5 17) scale(.62)"><path d="${BEAR}" fill="#6E9E2E" stroke="${line}" stroke-width="4.6" stroke-linejoin="round"/></g>
-      <g transform="translate(29.5 17) scale(.62)"><path d="${BEAR}" fill="#D2202F" stroke="${line}" stroke-width="4.6" stroke-linejoin="round"/></g>
-      <g transform="translate(12 21) scale(.62)"><path d="${BEAR}" fill="${c}" stroke="${line}" stroke-width="4.6" stroke-linejoin="round"/></g>`,
-    // 5 · Glanz: wie 1, mit einer hellen Lichtkante für das Durchscheinende
-    bear5: (c) => `
-      <path d="${BEAR}" fill="${c}" stroke="${line}" stroke-width="3" stroke-linejoin="round"/>
-      <path d="M21.2 29c-1.2 6-.8 12 1 18M22 12.5c1-2 2.6-3 4.6-3.2" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" opacity=".6"/>`,
     sausage: (c) => `
       <ellipse cx="32" cy="45" rx="27" ry="9" fill="#FFFDF5" stroke="${line}" stroke-width="3"/>
       <g transform="rotate(-8 32 34)">
@@ -177,7 +164,7 @@
     ['cola', 'Cola-Flasche'], ['water', 'Wasserflasche'], ['can', 'Dose'], ['slimcan', 'Schlanke Dose'],
     ['redbull', 'Red Bull'], ['cup', 'Tasse'], ['bar', 'Riegel'], ['snickers', 'Snickers'], ['mars', 'Mars'],
     ['wafer', 'Waffel (quadratisch)'], ['bag', 'Chipstüte'], ['tube', 'Chipsdose'],
-    ['bear', 'Gummibär 1 · Silhouette'], ['bear2', 'Gummibär 2 · Relief'], ['bear3', 'Gummibär 3 · Block'], ['bear4', 'Gummibär 4 · Trio'], ['bear5', 'Gummibär 5 · Glanz'], ['hotdog', 'Hotdog'], ['sausage', 'Würstchen'], ['cone', 'Eis'], ['ball', 'Tennisball'], ['grip', 'Griffband'],
+    ['bear', 'Gummibär'], ['hotdog', 'Hotdog'], ['sausage', 'Würstchen'], ['cone', 'Eis'], ['ball', 'Tennisball'], ['grip', 'Griffband'],
     ['shirt', 'Shirt'], ['cap', 'Cap'],
   ];
 
