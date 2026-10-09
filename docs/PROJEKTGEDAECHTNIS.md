@@ -92,3 +92,6 @@ Im Demo-Modus liegen alle Daten nur im Browser des Geräts. Demo-Zugang:
   Originalfarben, Hanuta quadratisch, Goldbär, Bockwurst als Hotdog, Pringles mit
   Mr. P, Red Bull mit Karo, Sonne und Bullen. Alkoholfrei steht jetzt vorne:
   Gerolsteiner, Coca-Cola, Fanta, Sportsfreund, Red Bull.
+- **09.10.2026** – Symbole reduziert: Goldbär als reine Silhouette, Hanuta als
+  quadratische Waffel mit Nusscreme-Schicht, Snickers/Mars mit schrägem
+  Logo-Feld, Red Bull nur noch blau-silbernes Karo. Hotdog und Pringles bleiben.

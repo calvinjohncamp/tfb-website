@@ -6,31 +6,27 @@
 
 
   // Länglicher Schokoriegel in Folie: gezackte Enden statt Striche, Logo-Feld in der Mitte.
-  function riegel(wrap, label, labelStroke, inner) {
+  function riegel(wrap, label, labelStroke) {
     return `
       <g transform="rotate(-14 32 32)">
         <path d="M11 24.5L5 22.5l2.2 3.4L4 28.6l3 2.6-3 2.6 3 2.6-3.2 2.7 2.2 3.4 6-2z" fill="${wrap}" stroke="${line}" stroke-width="2.4" stroke-linejoin="round"/>
         <path d="M53 24.5l6-2-2.2 3.4 3.2 2.7-3 2.6 3 2.6-3 2.6 3.2 2.7-2.2 3.4-6-2z" fill="${wrap}" stroke="${line}" stroke-width="2.4" stroke-linejoin="round"/>
         <rect x="10" y="22.5" width="44" height="19" rx="5" fill="${wrap}" stroke="${line}" stroke-width="3"/>
-        <path d="M14 26h36" stroke="rgba(255,255,255,.3)" stroke-width="2" stroke-linecap="round"/>
-        <rect x="18" y="27" width="28" height="10" rx="5" fill="${label}" stroke="${labelStroke}" stroke-width="2"/>
-        ${inner || ''}
+        <path d="M14 26h36" stroke="rgba(255,255,255,.28)" stroke-width="2" stroke-linecap="round"/>
+        <path d="M19 26.8h30l-4.6 10.4H14.4z" fill="${label}" stroke="${labelStroke}" stroke-width="2.2" stroke-linejoin="round"/>
       </g>`;
   }
 
   const shapes = {
-    // Snickers: braune Folie, blaues Logo mit weißem Rand
-    snickers: () => riegel('#4A2A1A', '#1F5FB0', '#FFFDF5', '<path d="M22 32h20" stroke="#FFFDF5" stroke-width="2.4" stroke-linecap="round" stroke-dasharray="3.2 1.6"/>'),
-    // Mars: schwarze Folie, rotes Logo mit goldenem Rand
-    mars: () => riegel('#151515', '#D2202F', '#E8B22B', '<path d="M24 32h16" stroke="#FFFDF5" stroke-width="2.4" stroke-linecap="round" stroke-dasharray="3.2 1.6"/>'),
-    // Red Bull: blau-silbernes Karo, gelbe Sonne, zwei rote Bullen
+    // Snickers: braune Folie, blaues Logo-Feld mit weißem Rand
+    snickers: () => riegel('#4A2A1A', '#1F5FB0', '#FFFDF5'),
+    // Mars: schwarze Folie, rotes Logo-Feld mit goldenem Rand
+    mars: () => riegel('#151515', '#D2202F', '#E8B22B'),
+    // Red Bull: blau-silbernes Karo
     redbull: () => `
       <path d="M21 10h22v45a3 3 0 0 1-3 3H24a3 3 0 0 1-3-3z" fill="#C9CED6"/>
       <path d="M21 10h11v23H21z" fill="#1E3A8A"/>
       <path d="M32 33h11v22a3 3 0 0 1-3 3h-8z" fill="#1E3A8A"/>
-      <circle cx="32" cy="33" r="6.5" fill="#F2C230" stroke="${line}" stroke-width="1.6"/>
-      <g transform="translate(21.4 40.2) rotate(-16) scale(.68)"><path d="M0 6.5c.3-2.6 2.4-4.2 5-4.2h2.6L10 .6l.4 2.2 1.3.6-.9 1.6-1.8.6-.6 2.6H6.9l-.3-1.6H3.3l-.6 1.6H1.1z" fill="#D2202F" stroke="${line}" stroke-width=".9" stroke-linejoin="round"/></g>
-      <g transform="translate(42.6 40.2) rotate(16) scale(-.68 .68)"><path d="M0 6.5c.3-2.6 2.4-4.2 5-4.2h2.6L10 .6l.4 2.2 1.3.6-.9 1.6-1.8.6-.6 2.6H6.9l-.3-1.6H3.3l-.6 1.6H1.1z" fill="#D2202F" stroke="${line}" stroke-width=".9" stroke-linejoin="round"/></g>
       <path d="M22 6h20l1 4H21z" fill="#D9D4CA" stroke="${line}" stroke-width="3" stroke-linejoin="round"/>
       <path d="M21 10h22v45a3 3 0 0 1-3 3H24a3 3 0 0 1-3-3z" fill="none" stroke="${line}" stroke-width="3" stroke-linejoin="round"/>
       <path d="M25 14v12" stroke="rgba(255,255,255,.55)" stroke-width="2.5" stroke-linecap="round"/>`,
@@ -68,14 +64,13 @@
       <path d="M24 6h16l1 4H23z" fill="#D9D4CA" stroke="${line}" stroke-width="3" stroke-linejoin="round"/>
       <path d="M23 40l18-12v8L23 48z" fill="#E8B22B" stroke="${line}" stroke-width="2" stroke-linejoin="round"/>
       <path d="M27 16v14" stroke="${glass}" stroke-width="3" stroke-linecap="round"/>`,
-    wafer: (c) => `
-      <g transform="rotate(-8 32 32)">
-        <rect x="11" y="11" width="42" height="42" rx="4" fill="#FFFDF5" stroke="${line}" stroke-width="3"/>
-        <path d="M11 15a4 4 0 0 1 4-4h34a4 4 0 0 1 4 4v9H11z" fill="${c}" stroke="${line}" stroke-width="3" stroke-linejoin="round"/>
-        <circle cx="44" cy="17.5" r="3" fill="#B5763A" stroke="${line}" stroke-width="1.6"/>
-        <path d="M17 17.5h16" stroke="#FFFDF5" stroke-width="2.6" stroke-linecap="round"/>
-        <rect x="17" y="29" width="30" height="18" rx="2" fill="#C98B4A" stroke="${line}" stroke-width="2.5"/>
-        <path d="M17 35h30M17 41h30M24.5 29v18M32 29v18M39.5 29v18" stroke="#8A5A2B" stroke-width="1.6"/>
+    wafer: () => `
+      <g transform="rotate(-10 32 34)">
+        <rect x="13" y="21" width="38" height="34" rx="4" fill="#D9A45F" stroke="${line}" stroke-width="3"/>
+        <rect x="13" y="17" width="38" height="34" rx="4" fill="#6B3E1E" stroke="${line}" stroke-width="3"/>
+        <rect x="13" y="12" width="38" height="34" rx="4" fill="#E2B06A" stroke="${line}" stroke-width="3"/>
+        <path d="M22.5 12v34M32 12v34M41.5 12v34M13 20.5h38M13 29h38M13 37.5h38" stroke="#B07A38" stroke-width="2"/>
+        <rect x="13" y="12" width="38" height="34" rx="4" fill="none" stroke="${line}" stroke-width="3"/>
       </g>`,
     tube: (c) => `
       <path d="M20 12h24v42a4 4 0 0 1-4 4H24a4 4 0 0 1-4-4z" fill="${c}" stroke="${line}" stroke-width="3" stroke-linejoin="round"/>
@@ -91,13 +86,7 @@
         + '<ellipse cx="18.5" cy="35" rx="4.5" ry="7.5" transform="rotate(40 18.5 35)"/>'
         + '<ellipse cx="45.5" cy="35" rx="4.5" ry="7.5" transform="rotate(-40 45.5 35)"/>'
         + '<ellipse cx="23.5" cy="55" rx="6.5" ry="4.5"/><ellipse cx="40.5" cy="55" rx="6.5" ry="4.5"/>';
-      return `
-        <g fill="${line}" stroke="${line}" stroke-width="6" stroke-linejoin="round">${b}</g>
-        <g fill="${c}">${b}</g>
-        <ellipse cx="32" cy="43" rx="8" ry="8.5" fill="#fff" opacity=".2"/>
-        <ellipse cx="32" cy="24.5" rx="5" ry="3.6" fill="#fff" opacity=".28"/>
-        <circle cx="27.3" cy="18.5" r="1.4" fill="${line}" opacity=".75"/><circle cx="36.7" cy="18.5" r="1.4" fill="${line}" opacity=".75"/>
-        <path d="M23.5 15c1.5-3 4-4.5 7-4.8M22.5 39c.4-3 2-5 4.5-6" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" opacity=".7"/>`;
+      return `<g fill="${line}" stroke="${line}" stroke-width="6" stroke-linejoin="round">${b}</g><g fill="${c}">${b}</g>`;
     },
     sausage: (c) => `
       <ellipse cx="32" cy="45" rx="27" ry="9" fill="#FFFDF5" stroke="${line}" stroke-width="3"/>
@@ -140,7 +129,7 @@
       <path d="M15 30h28" stroke="${c}" stroke-width="5"/>
       <path d="M8 56h42" stroke="${line}" stroke-width="3" stroke-linecap="round"/>
       <path d="M23 9c-3 4 3 6 0 11M31 7c-3 4 3 7 0 12" fill="none" stroke="${line}" stroke-width="2.5" stroke-linecap="round" opacity=".55"/>`,
-    bar: (c) => riegel(c, '#FFFDF5', 'rgba(0,0,0,.15)'),
+    bar: (c) => riegel(c, '#FFFDF5', 'rgba(0,0,0,.18)'),
     bag: (c) => `
       <path d="M16 10c6 2 26 2 32 0l-2 6c3 10 3 22 0 32l2 6c-6-2-26-2-32 0l2-6c-3-10-3-22 0-32z" fill="${c}" stroke="${line}" stroke-width="3" stroke-linejoin="round"/>
       <ellipse cx="32" cy="32" rx="9" ry="7" fill="#F2D06B" stroke="${line}" stroke-width="2.5"/>`,
