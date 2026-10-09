@@ -54,6 +54,8 @@ Präsentation vor dem Vorstand; bei Zustimmung wird daraus der Echtbetrieb.
   scrollt zum Deckel, roter **Storno-Stempel** auf der rechten oberen Deckelecke
   mit ablaufendem Ring (60 s). In der Abrechnung heißt es „stornieren“.
   Deckel bleibt bewusst zentriert.
+- Erzquell-Flasche als gemeinsame Form für Malzbier, Sportsfreund und Radler
+  (`erzquell()` in art.js) – nur die Farben unterscheiden sich.
 - **Strichliste**: letzte 7 Kalendertage, alphabetisch nach Nachname, nur Striche.
 - **Meine Abrechnungen**: laufender Monat, abgeschlossene Monate.
 - **Verwaltung → Kiosk bearbeiten** (direkt am Kiosk, wie ihn Mitglieder sehen):

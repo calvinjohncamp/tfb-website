@@ -24,15 +24,22 @@
     return `<image href="${TFB.brandMarkWhite}" x="${x}" y="${y}" width="${w}" height="${h.toFixed(2)}"${extra}/>`;
   }
 
+  // Schlanke 0,5-l-Flasche der Erzquell Brauerei: Flasche, Halsfolie, Oval-Etikett, Ring, zwei Schriftstriche.
+  function erzquell(bottle, foil, label, ring, marks) {
+    return `
+      <path d="M28.5 4h7v13c0 3.5 5.5 6 5.5 13v24a5 5 0 0 1-5 5h-8a5 5 0 0 1-5-5V30c0-7 5.5-9.5 5.5-13z" fill="${bottle}" stroke="${line}" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M28.5 4h7v12.5h-7z" fill="${foil}" stroke="${line}" stroke-width="2.4" stroke-linejoin="round"/>
+      <ellipse cx="32" cy="41.5" rx="7.4" ry="11" fill="${label}" stroke="${line}" stroke-width="2.4"/>
+      <ellipse cx="32" cy="41.5" rx="5" ry="8" fill="none" stroke="${ring}" stroke-width="1.6"/>
+      <path d="M29.6 39.5h4.8M29.2 43.5h5.6" stroke="${marks}" stroke-width="2" stroke-linecap="round"/>
+      <path d="M26 27c-.9 1.5-1.3 3-1.3 5" stroke="rgba(255,255,255,.35)" stroke-width="2.5" stroke-linecap="round" fill="none"/>`;
+  }
+
   const shapes = {
-    // Malzbier im Stil des Bielsteiner Golden Malz: braune Flasche, goldene Halsfolie, goldenes Oval-Etikett
-    malz: (c) => `
-      <path d="M28.5 4h7v13c0 3.5 5.5 6 5.5 13v24a5 5 0 0 1-5 5h-8a5 5 0 0 1-5-5V30c0-7 5.5-9.5 5.5-13z" fill="${c}" stroke="${line}" stroke-width="3" stroke-linejoin="round"/>
-      <path d="M28.5 4h7v12.5h-7z" fill="#E8B22B" stroke="${line}" stroke-width="2.4" stroke-linejoin="round"/>
-      <ellipse cx="32" cy="41.5" rx="7.4" ry="11" fill="#F2C230" stroke="${line}" stroke-width="2.4"/>
-      <ellipse cx="32" cy="41.5" rx="5" ry="8" fill="none" stroke="#B5462F" stroke-width="1.6"/>
-      <path d="M29.6 39.5h4.8M29.2 43.5h5.6" stroke="#6B3E1E" stroke-width="2" stroke-linecap="round"/>
-      <path d="M26 27c-.9 1.5-1.3 3-1.3 5" stroke="rgba(255,255,255,.35)" stroke-width="2.5" stroke-linecap="round" fill="none"/>`,
+    // Erzquell-Flasche (Golden Malz, Sportsfreund, Radler): gleiche Form, gleiche Etikettlage, nur andere Farben
+    malz: (c) => erzquell(c, '#E8B22B', '#F2C230', '#B5462F', '#6B3E1E'),
+    sportsfreund: (c) => erzquell(c, '#1F3A6E', '#F4F1EA', '#1F3A6E', '#C8202F'),
+    radler: (c) => erzquell(c, '#F4F1EA', '#F4F1EA', '#2E7D32', '#F2C230'),
     padel: (c) => `
       <g transform="rotate(-32 32 32)">
         <path d="M32 4c9.5 0 15 6.5 15 15.5 0 8-3.8 14.6-9 18.2L35 42h-6l-3-4.3c-5.2-3.6-9-10.2-9-18.2C17 10.5 22.5 4 32 4z" fill="${c}" stroke="${line}" stroke-width="3" stroke-linejoin="round"/>
@@ -190,7 +197,7 @@
 
   // Auswahl im Admin: Schlüssel und Bezeichnung jedes Symbols.
   TFB.artKinds = [
-    ['stange', 'Kölschglas'], ['kranz', 'Kölschkranz'], ['weizen', 'Weizenglas'], ['beer', 'Bierkrug'], ['bottle', 'Bierflasche'], ['malz', 'Malzbier'],
+    ['stange', 'Kölschglas'], ['kranz', 'Kölschkranz'], ['weizen', 'Weizenglas'], ['beer', 'Bierkrug'], ['bottle', 'Bierflasche'], ['malz', 'Malzbier'], ['sportsfreund', 'Sportsfreund'], ['radler', 'Radler'],
     ['cola', 'Cola-Flasche'], ['water', 'Wasserflasche'], ['can', 'Dose'], ['slimcan', 'Schlanke Dose'],
     ['redbull', 'Red Bull'], ['cup', 'Tasse'], ['bar', 'Riegel'], ['snickers', 'Snickers'], ['mars', 'Mars'],
     ['wafer', 'Waffel (quadratisch)'], ['bag', 'Chipstüte'], ['tube', 'Chipsdose'],

@@ -12,7 +12,7 @@
 
   // ---------- Startsortiment (wie im bisherigen Kiosk, im Admin frei änderbar) ----------
   // Bereiche erscheinen in dieser Reihenfolge. status 'soon' = nur Vorschau ("bald").
-  const CATALOG_VERSION = 7;
+  const CATALOG_VERSION = 8;
   const DEFAULT_CATALOG = {
     sections: [
       { id: 'alkoholfrei', title: 'Alkoholfrei', note: 'Für die Seitenwechsel', status: 'open' },
@@ -23,12 +23,12 @@
     products: [
       { id: 'koelsch', section: 'bier', name: 'Kölsch', detail: 'Ein frisches Kölsch aus Bielstein.', price: 200, art: 'stange', color: '#E9B949' },
       { id: 'koelsch-kranz', section: 'bier', name: 'Kölsch-Kranz', detail: '10 Gläser für die ganze Runde.', price: 2000, art: 'kranz', color: '#E9B949' },
-      { id: 'radler', section: 'bier', name: 'Radler', detail: 'Erfrischend und fruchtig.', price: 200, art: 'bottle', color: '#F0C93A' },
+      { id: 'radler', section: 'bier', name: 'Radler', detail: 'Erfrischend und fruchtig.', price: 200, art: 'radler', color: '#7A4A1E' },
       { id: 'weissbier', section: 'bier', name: 'Weißbier', detail: 'Alkoholfrei, bayrisch herb.', price: 200, art: 'weizen', color: '#E3A33B' },
       { id: 'gerolsteiner', section: 'alkoholfrei', name: 'Gerolsteiner', detail: 'Mineralwasser Medium.', price: 200, art: 'water', color: '#7FB7D9' },
       { id: 'coca-cola', section: 'alkoholfrei', name: 'Coca-Cola', detail: 'Eiskalt genießen.', price: 280, art: 'cola', color: '#B7282E' },
       { id: 'fanta', section: 'alkoholfrei', name: 'Fanta Orange', detail: 'Fruchtig frisch.', price: 200, art: 'cola', color: '#F08A24' },
-      { id: 'sportsfreund', section: 'alkoholfrei', name: 'Sportsfreund', detail: 'Isotonisch und alkoholfrei.', price: 200, art: 'water', color: '#5BB98B' },
+      { id: 'sportsfreund', section: 'alkoholfrei', name: 'Sportsfreund', detail: 'Isotonisch und alkoholfrei.', price: 200, art: 'sportsfreund', color: '#5A2A1A' },
       { id: 'malzbier', section: 'alkoholfrei', name: 'Malzbier', detail: 'Golden Malz aus Bielstein.', price: 200, art: 'malz', color: '#3B2314' },
       { id: 'red-bull', section: 'alkoholfrei', name: 'Red Bull', detail: 'Verleiht Flügel.', price: 200, art: 'redbull', color: '#1E3A8A' },
       { id: 'snickers', section: 'snacks', name: 'Snickers', detail: 'Und der Hunger ist gegessen.', price: 100, art: 'snickers', color: '#5A3825' },
@@ -179,6 +179,15 @@
       const fresh = clone(DEFAULT_CATALOG.products.find((p) => p.id === 'malzbier'));
       const at = cat.products.findIndex((p) => p.id === 'red-bull');
       if (at >= 0) cat.products.splice(at, 0, fresh); else cat.products.push(fresh);
+    }
+    db.catalogVersion = 7;
+    save(db);
+  }
+  // Version 7 → 8: Radler und Sportsfreund in der Erzquell-Flasche wie das Malzbier.
+  if (db.catalog && db.catalogVersion === 7) {
+    for (const [id, art, color] of [['radler', 'radler', '#7A4A1E'], ['sportsfreund', 'sportsfreund', '#5A2A1A']]) {
+      const p = db.catalog.products.find((x) => x.id === id);
+      if (p) Object.assign(p, { art, color });
     }
     db.catalogVersion = CATALOG_VERSION;
     save(db);
