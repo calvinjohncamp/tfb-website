@@ -12,7 +12,7 @@
 
   // ---------- Startsortiment (wie im bisherigen Kiosk, im Admin frei änderbar) ----------
   // Bereiche erscheinen in dieser Reihenfolge. status 'soon' = nur Vorschau ("bald").
-  const CATALOG_VERSION = 5;
+  const CATALOG_VERSION = 6;
   const DEFAULT_CATALOG = {
     sections: [
       { id: 'alkoholfrei', title: 'Alkoholfrei', note: 'Für die Seitenwechsel', status: 'open' },
@@ -38,8 +38,8 @@
       { id: 'haribo', section: 'snacks', name: 'Haribo Colorado', detail: 'Süße Evergreens.', price: 250, art: 'bear', color: '#E8B22B' },
       { id: 'bockwurst', section: 'snacks', name: 'Bockwurst', detail: 'Dicke Sauerländer · Dose mit 5 Stück.', price: 1000, art: 'hotdog', color: '#B5462F' },
       { id: 'cornetto', section: 'snacks', name: 'Cornetto', detail: 'Vanille-Nuss. So schmeckt der Sommer.', price: 300, art: 'cone', color: '#D9A066' },
-      { id: 'baelle', section: 'shop', name: 'Tennisbälle', detail: '4er-Dose', price: 1200, art: 'ball', color: '#D7E04B' },
-      { id: 'padelbaelle', section: 'shop', name: 'Padelbälle', detail: '3er-Dose', price: 900, art: 'ball', color: '#E6E04A' },
+      { id: 'baelle', section: 'shop', name: 'Tennisbälle', detail: '4er-Dose', price: 1200, art: 'ball', color: '#F2D21B' },
+      { id: 'padelbaelle', section: 'shop', name: 'Padelbälle', detail: '3er-Dose', price: 900, art: 'ball', color: '#F08A24' },
       { id: 'padel-schlaeger', section: 'shop', name: 'Padel-Schläger', detail: 'HEAD Speed Pro', price: 15900, art: 'padel', color: '#C4553A' },
       { id: 'griffband', section: 'shop', name: 'Overgrip', detail: '3er-Pack', price: 900, art: 'grip', color: '#F4F1EA' },
       { id: 'shirt', section: 'shop', name: 'Vereinsshirt', detail: 'Mit TFB-Logo', price: 2500, art: 'shirt', color: '#2A2D2E' },
@@ -159,6 +159,15 @@
     }
     const cap = cat.products.find((p) => p.id === 'cap');
     if (cap) Object.assign(cap, { color: '#1F2A44', detail: 'Basecap mit TFB-Logo' });
+    db.catalogVersion = 5;
+    save(db);
+  }
+  // Version 5 → 6: Tennisbälle gelb, Padelbälle orange – damit man sie auseinanderhält.
+  if (db.catalog && db.catalogVersion === 5) {
+    for (const [id, color] of [['baelle', '#F2D21B'], ['padelbaelle', '#F08A24']]) {
+      const p = db.catalog.products.find((x) => x.id === id);
+      if (p) p.color = color;
+    }
     db.catalogVersion = CATALOG_VERSION;
     save(db);
   }

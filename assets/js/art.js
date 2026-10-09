@@ -168,7 +168,7 @@
       <path d="M15 19c9 6 9 20 0 26M49 19c-9 6-9 20 0 26" fill="none" stroke="#FFFDF5" stroke-width="3"/>`,
     grip: (c) => `
       <rect x="12" y="20" width="40" height="24" rx="12" fill="${c}" stroke="${line}" stroke-width="3"/>
-      <path d="M22 20l-6 24M31 20l-6 24M40 20l-6 24M49 22l-5 20" stroke="${line}" stroke-width="2" opacity=".5"/>`,
+      <path d="M26 20.5l-4.5 23M33 20.5l-4.5 23M40 20.5l-4.5 23M46 22l-3.5 20.5" stroke="${line}" stroke-width="2" stroke-linecap="round" opacity=".5"/>`,
     shirt: (c) => `
       <path d="M22 9l-13 8 5 10 6-3v31h24V24l6 3 5-10-13-8c-2 4-6 6-10 6s-8-2-10-6z" fill="${c}" stroke="${line}" stroke-width="3" stroke-linejoin="round"/>
       ${brandMark(23.5, 27, 17)}`,
@@ -176,7 +176,6 @@
       <path d="M15 42c-1-15 9.5-26.5 23-26.5S59.5 26 59 41c-9 2.6-34.5 3.2-44 1z" fill="${c}" stroke="${line}" stroke-width="3" stroke-linejoin="round"/>
       <path d="M38 15.5c-5.5 5-8.4 14-8.6 27.6M38 15.5c5.8 5.4 9 14.3 9.6 26.8" fill="none" stroke="${line}" stroke-width="1.6" opacity=".45"/>
       <path d="M17.5 40.5C11 40.6 4.6 42.6 3.4 45.4c-.9 2.3 5.3 3.4 14.2 2.4 8.6-1 15-3.2 18.6-5.4-6.4.1-12.9-.6-18.7-1.9z" fill="${c}" stroke="${line}" stroke-width="3" stroke-linejoin="round"/>
-      <path d="M8 45.6c5-1.3 11-1.7 16-1.5" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" opacity=".35"/>
       <circle cx="38" cy="15.5" r="2.4" fill="${c}" stroke="${line}" stroke-width="2"/>
       ${brandMark(17.5, 27.5, 13.5, ' transform="rotate(-6 24 30)"')}`,
   };

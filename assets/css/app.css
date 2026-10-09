@@ -7,7 +7,8 @@
   --green: var(--brand);
   --green-2: var(--brand);
   --green-soft: color-mix(in srgb, var(--brand) 9%, #fff);
-  --clay: #C4553A;
+  --signal: #C4553A;           /* Signalfarbe Sandplatz-Rot: KIOSK-Schriftzug, Striche, „bald“ */
+  --clay: var(--signal);
   --clay-soft: #F6E2DA;
   --cream: #F5F0E6;
   --paper: #FFFDF7;
@@ -69,10 +70,10 @@ svg { display: block; }
 .boot-mark { width: 120px; }
 .app-label {
   font-size: .78rem; font-weight: 600; text-transform: uppercase; letter-spacing: .32em;
-  color: var(--clay);
+  color: var(--signal);
 }
 .hero-logo { width: min(78%, 320px); color: var(--logo); }
-.auth-hero .app-label { margin: 6px 0 0; padding-left: .32em; color: var(--clay); }
+.auth-hero .app-label { margin: 6px 0 0; padding-left: .32em; color: var(--signal); }
 .consent-mark { width: 96px; color: var(--logo); }
 .brand { display: flex; align-items: flex-end; gap: 14px; text-decoration: none; color: var(--logo); }
 .header-mark { height: 38px; display: block; }
