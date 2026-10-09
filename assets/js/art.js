@@ -27,13 +27,12 @@
   const shapes = {
     // Malzbier im Stil des Bielsteiner Golden Malz: braune Flasche, goldene Halsfolie, goldenes Oval-Etikett
     malz: (c) => `
-      <path d="M27.5 4h9v13c0 3.5 6.5 6 6.5 13v24a5 5 0 0 1-5 5H26a5 5 0 0 1-5-5V30c0-7 6.5-9.5 6.5-13z" fill="${c}" stroke="${line}" stroke-width="3" stroke-linejoin="round"/>
-      <path d="M27.5 4h9v12.5h-9z" fill="#E8B22B" stroke="${line}" stroke-width="2.4" stroke-linejoin="round"/>
-      <ellipse cx="32" cy="12" rx="3.2" ry="2.6" fill="#FFFDF5" stroke="${line}" stroke-width="1.4"/>
-      <ellipse cx="32" cy="41.5" rx="9.2" ry="11.5" fill="#F2C230" stroke="${line}" stroke-width="2.4"/>
-      <ellipse cx="32" cy="41.5" rx="6.4" ry="8.4" fill="none" stroke="#B5462F" stroke-width="1.6"/>
-      <path d="M29 39.5h6M28.5 43.5h7" stroke="#6B3E1E" stroke-width="2" stroke-linecap="round"/>
-      <path d="M24.5 27c-1 1.5-1.5 3-1.5 5" stroke="rgba(255,255,255,.35)" stroke-width="2.5" stroke-linecap="round" fill="none"/>`,
+      <path d="M28.5 4h7v13c0 3.5 5.5 6 5.5 13v24a5 5 0 0 1-5 5h-8a5 5 0 0 1-5-5V30c0-7 5.5-9.5 5.5-13z" fill="${c}" stroke="${line}" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M28.5 4h7v12.5h-7z" fill="#E8B22B" stroke="${line}" stroke-width="2.4" stroke-linejoin="round"/>
+      <ellipse cx="32" cy="41.5" rx="7.4" ry="11" fill="#F2C230" stroke="${line}" stroke-width="2.4"/>
+      <ellipse cx="32" cy="41.5" rx="5" ry="8" fill="none" stroke="#B5462F" stroke-width="1.6"/>
+      <path d="M29.6 39.5h4.8M29.2 43.5h5.6" stroke="#6B3E1E" stroke-width="2" stroke-linecap="round"/>
+      <path d="M26 27c-.9 1.5-1.3 3-1.3 5" stroke="rgba(255,255,255,.35)" stroke-width="2.5" stroke-linecap="round" fill="none"/>`,
     padel: (c) => `
       <g transform="rotate(-32 32 32)">
         <path d="M32 4c9.5 0 15 6.5 15 15.5 0 8-3.8 14.6-9 18.2L35 42h-6l-3-4.3c-5.2-3.6-9-10.2-9-18.2C17 10.5 22.5 4 32 4z" fill="${c}" stroke="${line}" stroke-width="3" stroke-linejoin="round"/>

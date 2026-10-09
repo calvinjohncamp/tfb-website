@@ -245,7 +245,8 @@
       <header class="topbar">
         <a class="brand" href="#kiosk">
           ${logo('mark', 'header-mark')}
-          <span class="brand-text">${logo('tagline', 'header-tagline')}<span class="app-label">Kiosk</span></span>
+          <span class="app-label">Kiosk</span>
+          <span class="brand-tagline" aria-label="${esc(cfg.clubName)}">${logo('tagline1', 'header-tagline')}${logo('tagline2', 'header-tagline')}</span>
         </a>
         <button class="avatar" type="button" data-action="profile" aria-label="Profil">${avatarFace(state.member)}</button>
       </header>
@@ -258,6 +259,13 @@
       </nav>`;
     return renderView(view);
   }
+
+  // Kopf der Unterseiten mit Schließen-Kreuz oben rechts (zurück zum Kiosk).
+  const viewHead = (title, sub) => `
+    <header class="view-head">
+      <div><h1>${title}</h1><p class="muted">${sub}</p></div>
+      <a class="view-close" href="#kiosk" aria-label="Schließen und zurück zum Kiosk">${icon.close}</a>
+    </header>`;
 
   async function renderView(view = currentView()) {
     const $view = document.getElementById('view');
@@ -424,10 +432,7 @@
     const from = new Date(Date.now() - (cfg.tallyDays - 1) * 864e5);
     const range = `${from.toLocaleDateString('de-DE', { day: 'numeric', month: 'short', timeZone: cfg.timeZone })} – heute`;
     return `
-      <header class="view-head">
-        <h1>Strichliste</h1>
-        <p class="muted">Letzte ${cfg.tallyDays} Tage · ${esc(range)}</p>
-      </header>
+      ${viewHead('Strichliste', `Letzte ${cfg.tallyDays} Tage · ${esc(range)}`)}
       <section class="paper">
         ${rows.length ? rows.map((r, i) => {
           const key = `${r.lastName}|${r.firstName}`;
@@ -464,10 +469,7 @@
     }
     const now = Date.now();
     return `
-      <header class="view-head">
-        <h1>Meine Abrechnungen</h1>
-        <p class="muted">Nur für dich sichtbar</p>
-      </header>
+      ${viewHead('Meine Abrechnungen', 'Nur für dich sichtbar')}
 
       <section class="card month-card">
         <div class="month-top">
@@ -531,10 +533,7 @@
     const cat = state.catalog;
     const active = cat.products.filter((p) => p.active).length;
     return `
-      <header class="view-head">
-        <h1>Verwaltung</h1>
-        <p class="muted">Nur für Admins sichtbar</p>
-      </header>
+      ${viewHead('Verwaltung', 'Nur für Admins sichtbar')}
       <section class="card admin-card">
         <h2>Sortiment</h2>
         <p class="muted">${active} Artikel in ${cat.sections.length} Bereichen. Artikel, Preise, Symbole und Reihenfolge änderst du direkt am Kiosk – so, wie die Mitglieder ihn sehen.</p>

@@ -16,11 +16,14 @@ magick $SRC -trim +repage -resize 900x  PNG32:$B/tfb-logo.png
 magick $SRC -crop 1830x700+80+60 +repage -trim +repage -resize 600x PNG32:$B/tfb-mark.png
 magick $SRC -crop 300x300+1600+450 +repage -trim +repage -resize 160x PNG32:$B/tfb-ball.png
 magick $SRC -crop 1840x130+80+775 +repage -trim +repage -resize 900x PNG32:$B/tfb-tagline.png
+# Einzelne Wörter, damit der Schriftzug auf schmalen Handys umbrechen kann
+magick $B/tfb-tagline.png -crop 540x200+0+0 +repage -trim +repage PNG32:$B/tfb-tagline1.png
+magick $B/tfb-tagline.png -crop 400x200+540+0 +repage -trim +repage PNG32:$B/tfb-tagline2.png
 
 css=assets/css/brand.css
 {
   echo "/* Automatisch erzeugt von tools/build-brand.sh – nicht von Hand bearbeiten. */"
-  for n in logo mark ball tagline; do
+  for n in logo mark ball tagline tagline1 tagline2; do
     f=$B/tfb-$n.png
     w=$(magick identify -format %w $f); h=$(magick identify -format %h $f)
     # Maske: Graustufen-Alpha als weißes Motiv auf Schwarz (Luminanz-Maske)

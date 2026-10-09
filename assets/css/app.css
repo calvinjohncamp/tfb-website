@@ -75,11 +75,14 @@ svg { display: block; }
 .hero-logo { width: min(78%, 320px); color: var(--logo); }
 .auth-hero .app-label { margin: 6px 0 0; padding-left: .32em; color: var(--signal); }
 .consent-mark { width: 96px; color: var(--logo); }
-.brand { display: flex; align-items: flex-end; gap: 14px; text-decoration: none; color: var(--logo); }
+.brand { display: flex; align-items: flex-end; gap: 14px; text-decoration: none; color: var(--logo); min-width: 0; }
 .header-mark { height: 38px; display: block; }
-.brand .app-label { line-height: 1; margin-bottom: 1px; }
-.brand-text { display: grid; justify-items: start; gap: 6px; }
-.header-tagline { height: 7.5px; color: var(--logo); }
+.header-mark { flex: none; }
+/* Grundlinie von KIOSK genau auf die Unterkante von TFB.: Abstand unter der Grundlinie ausgleichen */
+.brand .app-label { line-height: 1; margin-bottom: -.14em; flex: none; }
+/* Schriftzug rechts daneben, auf derselben Linie; auf schmalen Handys bricht BIELSTEIN darunter um */
+.brand-tagline { display: flex; flex-wrap: wrap; align-items: flex-end; align-content: flex-end; column-gap: 9px; row-gap: 5px; margin-left: -3px; min-width: 0; }
+.header-tagline { height: 7.5px; color: var(--logo); display: block; }
 .coaster-ball { width: 26px; color: #7A5A2E; opacity: .8; margin-bottom: 2px; }
 
 /* ---------- Karten, Knöpfe, Felder ---------- */
@@ -154,7 +157,7 @@ svg { display: block; }
 /* ---------- Rahmen ---------- */
 .topbar {
   position: sticky; top: 0; z-index: 10;
-  display: flex; align-items: center; justify-content: space-between;
+  display: flex; align-items: center; justify-content: space-between; gap: 14px;
   padding: calc(12px + env(safe-area-inset-top, 0px)) 16px 12px;
   background: var(--topbar);
   backdrop-filter: saturate(1.4) blur(12px);
@@ -209,7 +212,13 @@ svg { display: block; }
 .demo-ribbon { margin: 0 16px; padding: 6px 12px; border-radius: 10px; background: rgba(235,217,184,.45); color: #7A6440; font-size: .75rem; font-weight: 600; text-align: center; }
 
 .view { padding: 16px 16px calc(var(--tabbar-h) + 28px + var(--safe-bottom)); }
-.view-head { margin: 6px 0 16px; }
+.view-head { margin: 6px 0 16px; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.view-close {
+  flex: none; width: 40px; height: 40px; border-radius: 50%; margin-top: 2px;
+  display: grid; place-items: center; background: #fff; box-shadow: 0 0 0 1px #E6E1D6, 0 4px 12px rgba(0,0,0,.06);
+}
+.view-close svg { width: 18px; height: 18px; fill: none; stroke: var(--ink); stroke-width: 2.4; stroke-linecap: round; }
+.view-close:active { transform: scale(.94); }
 .view-head p { margin-top: 4px; }
 .loading { height: 240px; border-radius: var(--radius); background: linear-gradient(90deg, rgba(0,0,0,.03), rgba(0,0,0,.06), rgba(0,0,0,.03)); background-size: 200% 100%; animation: shimmer 1.2s infinite linear; }
 @keyframes shimmer { to { background-position: -200% 0; } }
