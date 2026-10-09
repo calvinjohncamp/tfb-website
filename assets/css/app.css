@@ -236,7 +236,6 @@ svg { display: block; }
   margin: 10px auto 8px; text-decoration: none; color: var(--deckel-ink);
   transition: transform .15s ease;
 }
-.deckel:active { transform: scale(.98) rotate(-1.5deg); }
 .deckel-face {
   position: relative; z-index: 1; height: 100%;
   display: grid; align-content: center; justify-items: center; gap: 8px; text-align: center;
@@ -260,6 +259,24 @@ svg { display: block; }
 .deckel .deckel-face {
   background: #fff; border-radius: 14px; transform: rotate(-3deg);
   box-shadow: 0 0 0 1px #E6E1D6, 0 10px 24px rgba(0,0,0,.12);
+  transition: transform .35s cubic-bezier(.3, 1.4, .5, 1), box-shadow .35s ease;
+}
+/* Maus darüber: vorderer Deckel kippt leicht nach rechts, der farbige bleibt sichtbar */
+@media (hover: hover) {
+  .deckel:hover .deckel-face {
+    transform: rotate(1.5deg) translateY(-2px);
+    box-shadow: 0 0 0 1px #E6E1D6, 0 16px 30px rgba(0,0,0,.16);
+  }
+}
+/* Antippen/Klicken: kurzes Wackeln, danach öffnet sich die Abrechnung */
+.deckel.wobble .deckel-face { animation: deckel-wobble .5s ease-in-out; }
+@keyframes deckel-wobble {
+  0%   { transform: rotate(-3deg); }
+  20%  { transform: rotate(4deg) scale(.98); }
+  40%  { transform: rotate(-6deg) scale(.98); }
+  60%  { transform: rotate(3deg); }
+  80%  { transform: rotate(-4deg); }
+  100% { transform: rotate(-3deg); }
 }
 
 /* ---------- Striche ---------- */

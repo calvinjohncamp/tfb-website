@@ -97,3 +97,6 @@ Im Demo-Modus liegen alle Daten nur im Browser des Geräts. Demo-Zugang:
   Logo-Feld, Red Bull nur noch blau-silbernes Karo. Hotdog und Pringles bleiben.
   Gummibär final im klassischen Gummibärchen-Stil (Vorlage vom Nutzer, eigene
   Zeichnung): runde Ohren mit Glanz, Gesicht, Ärmchen/Beinchen als helle Bögen.
+- **09.10.2026** – Bierdeckel lebendig: mit der Maus darüber kippt der vordere
+  Deckel leicht nach rechts und zurück; beim Antippen wackelt er kurz, dann
+  öffnet sich die Abrechnung. Bei „Bewegung reduzieren“ ohne Animation.

@@ -930,6 +930,16 @@
   });
 
   document.addEventListener('click', async (e) => {
+    // Bierdeckel: erst kurz wackeln lassen, dann zur Abrechnung.
+    const deckel = e.target.closest('a.deckel');
+    if (deckel) {
+      e.preventDefault();
+      if (deckel.classList.contains('wobble')) return;
+      const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      deckel.classList.add('wobble');
+      setTimeout(() => { location.hash = '#abrechnungen'; }, reduce ? 0 : 480);
+      return;
+    }
     const el = e.target.closest('[data-action]');
     if (!el) return;
     const action = el.dataset.action;
