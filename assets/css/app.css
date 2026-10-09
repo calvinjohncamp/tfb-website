@@ -548,8 +548,7 @@ button.shop-card { border: 0; text-align: left; font: inherit; }
   width: 74px; height: 74px; border-radius: 50%; border: 0; padding: 0;
   display: grid; place-content: center; justify-items: center; gap: 0;
   background: #F1F1EE; color: var(--ink);
-  border: 2px solid var(--ink);
-  box-shadow: 0 0 0 3px var(--bg), 0 6px 14px rgba(0, 0, 0, .14);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, .14);
   transform: rotate(10deg);
   animation: storno-in .35s cubic-bezier(.3, 1.5, .5, 1);
   transition: opacity .25s ease, transform .25s ease;
@@ -563,5 +562,5 @@ button.shop-card { border: 0; text-align: left; font: inherit; }
   mask: radial-gradient(circle, transparent 62%, #000 63%);
 }
 .storno-label { font-size: .6rem; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; line-height: 1; }
-.storno small { font-size: .78rem; font-weight: 700; opacity: .7; font-variant-numeric: tabular-nums; line-height: 1.2; }
+.storno small { font-size: .78rem; font-weight: 700; opacity: .7; font-variant-numeric: tabular-nums; line-height: 1; margin-top: 6px; }
 @keyframes storno-in { from { transform: rotate(-20deg) scale(.3); opacity: 0; } }

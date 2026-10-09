@@ -51,7 +51,7 @@ Präsentation vor dem Vorstand; bei Zustimmung wird daraus der Echtbetrieb.
 - Anmeldung über E-Mail aus der Mitgliederliste, Passwort beim ersten Mal,
   einmalige Zustimmung (Kioskordnung, Lastschrift, Sichtbarkeit Strichliste).
 - Anschreiben mit Anzahl (Runde). Danach: kurze Bestätigung (2,5 s), Seite
-  scrollt zum Deckel, dezenter **Storno-Stempel** (hellgrau, schwarzer Rand,
+  scrollt zum Deckel, dezenter **Storno-Stempel** (hellgrau, ohne Außenrand,
   anthrazit Ring) auf der rechten oberen Deckelecke, **30 Sekunden**
   (`undoSeconds` in config.js). In der Abrechnung heißt es „stornieren“.
   Deckel bleibt bewusst zentriert.
