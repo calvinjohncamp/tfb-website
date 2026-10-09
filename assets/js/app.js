@@ -41,6 +41,33 @@
     return new Date(iso).toLocaleDateString('de-DE', { weekday: 'short', day: 'numeric', month: 'short', timeZone: cfg.timeZone });
   }
   const initials = (m) => ((m.firstName || '')[0] || '') + ((m.lastName || '')[0] || '');
+  const avatarFace = (m) => (m.avatar ? `<img src="${esc(m.avatar)}" alt="">` : esc(initials(m)));
+
+  // ---------- Gestaltung ausprobieren (nur auf diesem Gerät gemerkt) ----------
+  const LOOK_KEY = 'tfb_kiosk_look_v1';
+  const LOOK_OPTIONS = {
+    art: [['gezeichnet', 'Gezeichnet'], ['foto', 'Fotos']],
+    logo: [['gruen', 'Vereinsgrün'], ['anthrazit', 'Anthrazit']],
+    bg: [['creme', 'Creme'], ['kreide', 'Kreideweiß'], ['grau', 'Hellgrau'], ['gruen', 'Vereinsgrün']],
+  };
+  const look = { art: 'gezeichnet', logo: 'gruen', bg: 'creme' };
+  try { Object.assign(look, JSON.parse(localStorage.getItem(LOOK_KEY) || '{}')); } catch (_) {}
+  function applyLook() {
+    const root = document.documentElement;
+    root.dataset.art = look.art;
+    root.dataset.logo = look.logo;
+    root.dataset.bg = look.bg;
+    const meta = document.querySelector('meta[name=theme-color]');
+    if (meta) meta.content = getComputedStyle(root).getPropertyValue('--bg').trim() || '#1F4D3A';
+  }
+  applyLook();
+
+  // Produktbild: Foto, wenn gewünscht und vorhanden – sonst Zeichnung.
+  function visual(p) {
+    if (look.art === 'foto' && p.photo) return `<img class="photo" src="${esc(p.photo)}" alt="" loading="lazy">`;
+    return TFB.art(p.art, p.color);
+  }
+  const visualClass = (p) => (look.art === 'foto' && p.photo ? ' has-photo' : '');
   const strokesWord = (n) => (n === 1 ? '1 Strich' : `${n} Striche`);
 
   // ---------- Icons ----------
@@ -52,6 +79,7 @@
     minus: '<svg viewBox="0 0 24 24"><path d="M5 12h14"/></svg>',
     check: '<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
     close: '<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+    camera: '<svg viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>',
     chevron: '<svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg>',
   };
 
@@ -212,7 +240,7 @@
     $app.innerHTML = `
       <header class="topbar">
         <a class="brand" href="#kiosk">${logo('mark', 'header-mark')}<span class="app-label">Kiosk</span></a>
-        <button class="avatar" type="button" data-action="profile" aria-label="Profil">${esc(initials(state.member))}</button>
+        <button class="avatar" type="button" data-action="profile" aria-label="Profil">${avatarFace(state.member)}</button>
       </header>
       ${api.mode === 'demo' ? '<div class="demo-ribbon">Demo-Modus · Daten nur auf diesem Gerät</div>' : ''}
       <main class="view" id="view" data-view="${view}"><div class="loading"></div></main>
@@ -260,7 +288,7 @@
         <div class="shop-strip">
           ${shop.items.map((item) => `
             <div class="shop-card" aria-disabled="true">
-              <div class="shop-art" style="--tint:${esc(item.color)}">${TFB.art(item.art, item.color)}</div>
+              <div class="shop-art${visualClass(item)}" style="--tint:${esc(item.color)}">${visual(item)}</div>
               <strong>${esc(item.name)}</strong>
               <span>${esc(item.detail)}</span>
               <b>${euro(item.price)}</b>
@@ -277,7 +305,7 @@
             <div class="tiles">
               ${items.map((p) => `
                 <button class="tile" type="button" data-action="pick" data-id="${esc(p.id)}">
-                  <div class="tile-art" style="--tint:${esc(p.color)}">${TFB.art(p.art, p.color)}</div>
+                  <div class="tile-art${visualClass(p)}" style="--tint:${esc(p.color)}">${visual(p)}</div>
                   <div class="tile-text"><strong>${esc(p.name)}</strong><span>${esc(p.detail)}</span></div>
                   <div class="tile-foot"><b>${euro(p.price)}</b><span class="tile-add">${icon.plus}</span></div>
                 </button>`).join('')}
@@ -300,7 +328,7 @@
     };
     openSheet(`
       <div class="pick">
-        <div class="pick-art" style="--tint:${esc(p.color)}">${TFB.art(p.art, p.color)}</div>
+        <div class="pick-art${visualClass(p)}" style="--tint:${esc(p.color)}">${visual(p)}</div>
         <h2>${esc(p.name)}</h2>
         <p class="muted">${esc(p.detail)} · ${euro(p.price)}</p>
         <div class="stepper" role="group" aria-label="Anzahl">
@@ -429,9 +457,26 @@
     const m = state.member;
     openSheet(`
       <div class="profile">
-        <div class="avatar lg">${esc(initials(m))}</div>
+        <label class="avatar lg avatar-upload" title="Profilbild ändern">
+          ${avatarFace(m)}
+          <span class="avatar-edit" aria-hidden="true">${icon.camera}</span>
+          <input type="file" accept="image/*" data-avatar-input hidden>
+        </label>
         <h2>${esc(m.firstName)} ${esc(m.lastName)}</h2>
         <p class="muted">${esc(m.email)}<br>Mitgliedsnummer ${esc(m.memberNo)}</p>
+        ${m.avatar ? '<button type="button" class="link center small" data-action="avatar-remove">Profilbild entfernen</button>' : '<p class="muted small">Tippe auf den Kreis, um ein Profilbild zu wählen.</p>'}
+
+        <div class="card soft lookbox">
+          <strong>Gestaltung ausprobieren</strong>
+          <p class="small muted">Nur zum Vergleichen – wirkt sofort und bleibt auf diesem Gerät.</p>
+          ${Object.entries({ art: 'Produktbilder', logo: 'Logofarbe', bg: 'Hintergrund' }).map(([key, label]) => `
+            <div class="look-row">
+              <span>${label}</span>
+              <div class="seg" role="group" aria-label="${label}">
+                ${LOOK_OPTIONS[key].map(([value, text]) => `<button type="button" class="${look[key] === value ? 'on' : ''}" data-action="look" data-key="${key}" data-value="${value}">${text}</button>`).join('')}
+              </div>
+            </div>`).join('')}
+        </div>
         <div class="card soft install">
           <strong>Als App aufs Handy</strong>
           <p class="small">iPhone: Teilen-Symbol → „Zum Home-Bildschirm“.<br>Android: Menü ⋮ → „App installieren“.</p>
@@ -507,7 +552,38 @@
     }
   });
 
-  document.addEventListener('change', (e) => {
+  // Profilbild: mittig quadratisch zuschneiden, auf 256 px verkleinern, als JPEG speichern.
+  function shrinkImage(file, size = 256) {
+    return new Promise((resolve, reject) => {
+      const url = URL.createObjectURL(file);
+      const img = new Image();
+      img.onload = () => {
+        const side = Math.min(img.naturalWidth, img.naturalHeight);
+        const canvas = document.createElement('canvas');
+        canvas.width = canvas.height = size;
+        canvas.getContext('2d').drawImage(img, (img.naturalWidth - side) / 2, (img.naturalHeight - side) / 2, side, side, 0, 0, size, size);
+        URL.revokeObjectURL(url);
+        resolve(canvas.toDataURL('image/jpeg', 0.85));
+      };
+      img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Dieses Bild lässt sich nicht öffnen.')); };
+      img.src = url;
+    });
+  }
+  function refreshAvatars() {
+    const btn = document.querySelector('.topbar .avatar');
+    if (btn) btn.innerHTML = avatarFace(state.member);
+  }
+
+  document.addEventListener('change', async (e) => {
+    if (e.target.matches('[data-avatar-input]') && e.target.files[0]) {
+      try {
+        state.member = await api.setAvatar(await shrinkImage(e.target.files[0]));
+        refreshAvatars();
+        openProfile();
+        toast('Profilbild gespeichert');
+      } catch (err) { toast(err.message); }
+      return;
+    }
     if (e.target.name === 'agree') e.target.form.querySelector('button[type=submit]').disabled = !e.target.checked;
   });
 
@@ -536,6 +612,16 @@
       state.authEmail = '';
       render();
       toast('Demo-Daten wurden neu erzeugt.');
+    } else if (action === 'look') {
+      look[el.dataset.key] = el.dataset.value;
+      try { localStorage.setItem(LOOK_KEY, JSON.stringify(look)); } catch (_) {}
+      applyLook();
+      el.parentElement.querySelectorAll('button').forEach((b) => b.classList.toggle('on', b === el));
+      renderView();
+    } else if (action === 'avatar-remove') {
+      state.member = await api.setAvatar(null);
+      refreshAvatars();
+      openProfile();
     } else if (action === 'tally-row') {
       state.openTallyRow = state.openTallyRow === el.dataset.key ? null : el.dataset.key;
       renderView('strichliste');

@@ -19,17 +19,17 @@
   ];
 
   const PRODUCTS = [
-    { id: 'koelsch', section: 'bier', name: 'Kölsch', detail: '0,33 l Flasche', price: 200, art: 'beer', color: '#E9B949' },
+    { id: 'koelsch', section: 'bier', name: 'Kölsch', detail: '0,33 l Flasche', price: 200, art: 'beer', color: '#E9B949', photo: 'assets/products/koelsch.jpg' },
     { id: 'pils', section: 'bier', name: 'Pils', detail: '0,33 l Flasche', price: 200, art: 'bottle', color: '#3F7A4A' },
     { id: 'radler', section: 'bier', name: 'Radler', detail: '0,33 l Flasche', price: 200, art: 'bottle', color: '#F0C93A' },
     { id: 'bier-af', section: 'bier', name: 'Bier alkoholfrei', detail: '0,33 l Flasche', price: 200, art: 'bottle', color: '#2F5D8A' },
-    { id: 'wasser', section: 'alkoholfrei', name: 'Wasser', detail: '0,5 l still oder spritzig', price: 100, art: 'water', color: '#7FB7D9' },
-    { id: 'apfelschorle', section: 'alkoholfrei', name: 'Apfelschorle', detail: '0,5 l Flasche', price: 150, art: 'water', color: '#E3A33B' },
-    { id: 'cola', section: 'alkoholfrei', name: 'Cola', detail: '0,33 l Dose', price: 150, art: 'can', color: '#B7282E' },
-    { id: 'iso', section: 'alkoholfrei', name: 'Iso-Drink', detail: '0,5 l Flasche', price: 200, art: 'water', color: '#5BB98B' },
-    { id: 'kaffee', section: 'heiss', name: 'Kaffee', detail: 'Tasse', price: 100, art: 'cup', color: '#6B4226' },
-    { id: 'riegel', section: 'snacks', name: 'Schokoriegel', detail: 'Stück', price: 100, art: 'bar', color: '#5A3825' },
-    { id: 'chips', section: 'snacks', name: 'Chips', detail: 'kleine Tüte', price: 150, art: 'bag', color: '#E07A2F' },
+    { id: 'wasser', section: 'alkoholfrei', name: 'Wasser', detail: '0,5 l still oder spritzig', price: 100, art: 'water', color: '#7FB7D9', photo: 'assets/products/wasser.jpg' },
+    { id: 'apfelschorle', section: 'alkoholfrei', name: 'Apfelschorle', detail: '0,5 l Flasche', price: 150, art: 'water', color: '#E3A33B', photo: 'assets/products/schorle.jpg' },
+    { id: 'cola', section: 'alkoholfrei', name: 'Cola', detail: '0,33 l Dose', price: 150, art: 'can', color: '#B7282E', photo: 'assets/products/cola.jpg' },
+    { id: 'iso', section: 'alkoholfrei', name: 'Iso-Drink', detail: '0,5 l Flasche', price: 200, art: 'water', color: '#5BB98B', photo: 'assets/products/iso.jpg' },
+    { id: 'kaffee', section: 'heiss', name: 'Kaffee', detail: 'Tasse', price: 100, art: 'cup', color: '#6B4226', photo: 'assets/products/kaffee.jpg' },
+    { id: 'riegel', section: 'snacks', name: 'Schokoriegel', detail: 'Stück', price: 100, art: 'bar', color: '#5A3825', photo: 'assets/products/riegel.jpg' },
+    { id: 'chips', section: 'snacks', name: 'Chips', detail: 'kleine Tüte', price: 150, art: 'bag', color: '#E07A2F', photo: 'assets/products/chips.jpg' },
   ];
 
   // Vereinsshop: wird oben angeteasert, ist aber noch nicht eröffnet.
@@ -202,6 +202,7 @@
       firstName: member.firstName,
       lastName: member.lastName,
       email: member.email,
+      avatar: (account && account.avatar) || null,
       hasConsent: Boolean(account && account.consentVersion === cfg.consentVersion),
     };
   }
@@ -259,6 +260,18 @@
       const account = accountOf(member.id);
       account.consentVersion = cfg.consentVersion;
       account.consentedAt = new Date().toISOString();
+      save(db);
+      return publicMember(member);
+    },
+
+    // Profilbild als kleines, bereits verkleinertes Bild (data-URL); null entfernt es.
+    async setAvatar(dataUrl) {
+      const member = requireMember();
+      if (dataUrl && (!/^data:image\/(jpeg|png|webp);base64,/.test(dataUrl) || dataUrl.length > 400000)) {
+        throw new Error('Dieses Bild lässt sich nicht verwenden.');
+      }
+      const account = accountOf(member.id);
+      account.avatar = dataUrl || null;
       save(db);
       return publicMember(member);
     },
