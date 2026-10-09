@@ -82,6 +82,13 @@
   }
 
   async function hash(text) {
+    // Beim Öffnen per Doppelklick (file://) fehlt in manchen Browsern crypto.subtle.
+    // Für den Demo-Modus reicht dann eine einfache Prüfsumme.
+    if (!(crypto && crypto.subtle)) {
+      let h = 2166136261;
+      for (const ch of 'tfb-demo:' + text) h = Math.imul(h ^ ch.charCodeAt(0), 16777619) >>> 0;
+      return 'f' + h.toString(16);
+    }
     const bytes = await crypto.subtle.digest('SHA-256', new TextEncoder().encode('tfb-demo:' + text));
     return Array.from(new Uint8Array(bytes)).map((b) => b.toString(16).padStart(2, '0')).join('');
   }
