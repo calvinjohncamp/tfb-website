@@ -8,7 +8,7 @@
   const $sheet = document.getElementById('sheet-root');
   const $toast = document.getElementById('toast-root');
 
-  const VIEWS = ['kiosk', 'strichliste', 'abrechnungen'];
+  const VIEWS = ['kiosk', 'strichliste', 'abrechnungen', 'verwaltung'];
   const state = {
     member: null,
     catalog: null,
@@ -16,6 +16,7 @@
     authEmail: '',
     authFirstName: '',
     openTallyRow: null,
+    editMode: false,        // Admin bearbeitet den Kiosk direkt
   };
 
   // ---------- Formatierung ----------
@@ -43,8 +44,8 @@
   const initials = (m) => ((m.firstName || '')[0] || '') + ((m.lastName || '')[0] || '');
   const avatarFace = (m) => (m.avatar ? `<img src="${esc(m.avatar)}" alt="">` : esc(initials(m)));
 
-  // ---------- Gestaltung ausprobieren (nur auf diesem Gerät gemerkt) ----------
-  // Später wandert das in den Admin-Bereich und gilt dann für alle.
+  // ---------- Markenfarbe (Verwaltung) ----------
+  // Im Demo-Modus nur auf diesem Gerät gemerkt; mit Supabase gilt sie für alle.
   const LOOK_KEY = 'tfb_kiosk_look_v3';
   const BRAND_COLORS = [['#000000', 'Schwarz'], ['#2A2D2E', 'Anthrazit'], ['#C4553A', 'Sandplatz-Rot']];
   const FREE_SLOTS = 4;
@@ -75,6 +76,11 @@
     close: '<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>',
     camera: '<svg viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>',
     chevron: '<svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg>',
+    back: '<svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg>',
+    up: '<svg viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></svg>',
+    down: '<svg viewBox="0 0 24 24"><path d="M12 5v14M6 13l6 6 6-6"/></svg>',
+    pencil: '<svg viewBox="0 0 24 24"><path d="M5 19l1.2-4.2L15.5 5.5a2.1 2.1 0 0 1 3 3L9.2 17.8z"/><path d="M13.5 7.5l3 3"/></svg>',
+    admin: '<svg viewBox="0 0 24 24"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2.2"/><circle cx="9" cy="17" r="2.2"/></svg>',
   };
 
   // Logo-Bausteine aus brand.css; die Farbe kommt jeweils aus `color`.
@@ -90,6 +96,7 @@
 
   function currentView() {
     const v = location.hash.replace('#', '');
+    if (v === 'verwaltung' && !(state.member && state.member.isAdmin)) return 'kiosk';
     return VIEWS.includes(v) ? v : 'kiosk';
   }
 
@@ -230,6 +237,7 @@
       ['kiosk', 'Kiosk', icon.kiosk],
       ['strichliste', 'Strichliste', icon.tally],
       ['abrechnungen', 'Abrechnungen', icon.receipt],
+      ...(state.member.isAdmin ? [['verwaltung', 'Verwaltung', icon.admin]] : []),
     ];
     $app.innerHTML = `
       <header class="topbar">
@@ -238,7 +246,7 @@
       </header>
       ${api.mode === 'demo' ? '<div class="demo-ribbon">Demo-Modus · Daten nur auf diesem Gerät</div>' : ''}
       <main class="view" id="view" data-view="${view}"><div class="loading"></div></main>
-      <nav class="tabbar" aria-label="Bereiche">
+      <nav class="tabbar" aria-label="Bereiche" style="grid-template-columns:repeat(${tabs.length},1fr)">
         ${tabs.map(([id, label, ic]) => `
           <a href="#${id}" class="tab ${id === view ? 'active' : ''}" ${id === view ? 'aria-current="page"' : ''}>${ic}<span>${label}</span></a>`).join('')}
       </nav>`;
@@ -251,6 +259,7 @@
     try {
       if (view === 'kiosk') $view.innerHTML = await kioskView();
       else if (view === 'strichliste') $view.innerHTML = await tallyView();
+      else if (view === 'verwaltung') $view.innerHTML = adminView();
       else $view.innerHTML = await statementsView();
     } catch (err) {
       $view.innerHTML = `<div class="card error-card"><h2>Das hat nicht geklappt</h2><p>${esc(err.message)}</p></div>`;
@@ -258,64 +267,114 @@
   }
 
   // ---------- Kiosk ----------
+  // Der Bierdeckel gilt – wie in der Kneipe – für heute; der Monat steht klein darunter.
   function coasterMarkup(open) {
-    const count = open.items.length;
+    const today = dayKey(new Date().toISOString());
+    const todays = open.items.filter((i) => dayKey(i.createdAt) === today);
+    const count = todays.length;
+    const totalToday = todays.reduce((sum, i) => sum + i.priceCents, 0);
     const strokes = count
-      ? TFB.strokes(Math.min(count, 25), state.member.id + open.month) + (count > 25 ? `<em>+${count - 25}</em>` : '')
+      ? TFB.strokes(Math.min(count, 25), state.member.id + today) + (count > 25 ? `<em>+${count - 25}</em>` : '')
       : '<em>Noch leer</em>';
-    const label = `Mein Bierdeckel: ${euro(open.totalCents)} im ${monthName(open.month, false)}`;
-    const ball = logo('ball', 'deckel-ball');
+    const dateLabel = new Date().toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'long', timeZone: cfg.timeZone });
+    const label = `Mein Bierdeckel heute: ${euro(totalToday)}. ${monthName(open.month, false)} gesamt ${euro(open.totalCents)}.`;
     return `
       <a class="deckel" href="#abrechnungen" aria-label="${esc(label)}">
         <div class="deckel-face">
-          <div class="deckel-top">${ball}<span class="coaster-kicker">Mein Bierdeckel</span><span class="deckel-month">${esc(monthName(open.month, false))}</span></div>
-          <strong class="coaster-amount">${euro(open.totalCents)}</strong>
+          <div class="deckel-top">${logo('ball', 'deckel-ball')}<span class="coaster-kicker">Mein Bierdeckel</span><span class="deckel-month">${esc(dateLabel)}</span></div>
+          <strong class="coaster-amount">${euro(totalToday)}</strong>
           <div class="coaster-strokes">${strokes}</div>
-          <span class="coaster-note">Einzug am ${esc(nextMonthDebit(open.month))}</span>
+          <span class="coaster-note">${esc(monthName(open.month, false))} gesamt <b>${euro(open.totalCents)}</b><br>Einzug am ${esc(nextMonthDebit(open.month))}</span>
         </div>
       </a>`;
   }
 
+  const isEditing = () => state.editMode && state.member.isAdmin;
+
   async function kioskView() {
     const open = await api.myOpenMonth();
-    const { sections, products, shop } = state.catalog;
+    const cat = state.catalog;
+    const edit = isEditing();
     return `
-      ${coasterMarkup(open)}
+      ${edit ? `
+        <div class="editbar">
+          <div><strong>Kiosk bearbeiten</strong><span>Artikel antippen zum Ändern · Pfeile zum Sortieren</span></div>
+          <button type="button" class="btn primary" data-action="edit-done">Fertig</button>
+        </div>` : coasterMarkup(open)}
+      ${cat.sections.map((section, index) => sectionMarkup(section, index, cat, edit)).join('')}
+      ${edit ? `<button type="button" class="btn block add-section" data-action="section-new">${icon.plus} Neuer Bereich</button>` : ''}`;
+  }
 
-      <section class="shop">
-        <div class="section-head">
-          <h2>${esc(shop.title)}</h2>
-          ${shop.status === 'soon' ? '<span class="pill soon">Bald</span>' : ''}
+  function sectionMarkup(section, index, cat, edit) {
+    const items = cat.products.filter((p) => p.section === section.id && (edit || p.active));
+    if (!items.length && !edit) return '';
+    const soon = section.status === 'soon';
+    const tools = edit ? `
+      <div class="section-tools">
+        <button type="button" data-action="section-move" data-id="${esc(section.id)}" data-dir="-1" ${index === 0 ? 'disabled' : ''} aria-label="Bereich nach oben">${icon.up}</button>
+        <button type="button" data-action="section-move" data-id="${esc(section.id)}" data-dir="1" ${index === cat.sections.length - 1 ? 'disabled' : ''} aria-label="Bereich nach unten">${icon.down}</button>
+        <button type="button" data-action="section-edit" data-id="${esc(section.id)}" aria-label="Bereich bearbeiten">${icon.pencil}</button>
+      </div>` : '';
+    const head = `
+      <div class="section-head ${edit ? 'editing' : ''}">
+        <h2>${esc(section.title)}</h2>
+        ${soon ? '<span class="pill soon">Bald</span>' : ''}
+        ${!soon && section.note && !edit ? `<span class="muted small">${esc(section.note)}</span>` : ''}
+        ${tools}
+      </div>
+      ${soon && section.note ? `<p class="muted small section-note">${esc(section.note)}</p>` : ''}`;
+    const addTile = edit ? `<button type="button" class="${soon ? 'shop-card' : 'tile'} tile-new" data-action="product-new" data-section="${esc(section.id)}">${icon.plus}<span>Artikel</span></button>` : '';
+    if (soon) {
+      return `
+        <section class="shop">
+          ${head}
+          <div class="shop-strip">
+            ${items.map((p, i) => edit ? editWrap(p, i, items.length, shopCard(p, true)) : shopCard(p, false)).join('')}
+            ${addTile}
+          </div>
+        </section>`;
+    }
+    return `
+      <section class="menu">
+        ${head}
+        <div class="tiles">
+          ${items.map((p, i) => edit ? editWrap(p, i, items.length, tile(p, true)) : tile(p, false)).join('')}
+          ${addTile}
         </div>
-        <p class="muted small">${esc(shop.text)}</p>
-        <div class="shop-strip">
-          ${shop.items.map((item) => `
-            <div class="shop-card" aria-disabled="true">
-              <div class="shop-art" style="--tint:${esc(item.color)}">${visual(item)}</div>
-              <strong>${esc(item.name)}</strong>
-              <span>${esc(item.detail)}</span>
-              <b>${euro(item.price)}</b>
-            </div>`).join('')}
-        </div>
-      </section>
+      </section>`;
+  }
 
-      ${sections.map((section) => {
-        const items = products.filter((p) => p.section === section.id);
-        if (!items.length) return '';
-        return `
-          <section class="menu">
-            <div class="section-head"><h2>${esc(section.title)}</h2>${section.note ? `<span class="muted small">${esc(section.note)}</span>` : ''}</div>
-            <div class="tiles">
-              ${items.map((p) => `
-                <button class="tile" type="button" data-action="pick" data-id="${esc(p.id)}">
-                  <div class="tile-art" style="--tint:${esc(p.color)}">${visual(p)}</div>
-                  <div class="tile-text"><strong>${esc(p.name)}</strong><span>${esc(p.detail)}</span></div>
-                  <div class="tile-foot"><b>${euro(p.price)}</b><span class="tile-add">${icon.plus}</span></div>
-                </button>`).join('')}
-            </div>
-          </section>`;
-      }).join('')}
-      <p class="fineprint">Sortiment und Preise sind Beispiele, bis die echte Strichliste übernommen ist.</p>`;
+  function tile(p, edit) {
+    return `
+      <button class="tile" type="button" data-action="${edit ? 'product-edit' : 'pick'}" data-id="${esc(p.id)}">
+        <div class="tile-art" style="--tint:${esc(p.color)}">${visual(p)}</div>
+        <div class="tile-text"><strong>${esc(p.name)}</strong><span>${esc(p.detail)}</span></div>
+        <div class="tile-foot"><b>${euro(p.price)}</b><span class="tile-add">${edit ? icon.pencil : icon.plus}</span></div>
+      </button>`;
+  }
+
+  function shopCard(p, edit) {
+    const tag = edit ? 'button' : 'div';
+    return `
+      <${tag} class="shop-card" ${edit ? `type="button" data-action="product-edit" data-id="${esc(p.id)}"` : 'aria-disabled="true"'}>
+        <div class="shop-art" style="--tint:${esc(p.color)}">${visual(p)}</div>
+        <strong>${esc(p.name)}</strong>
+        <span>${esc(p.detail)}</span>
+        <b>${euro(p.price)}</b>
+      </${tag}>`;
+  }
+
+  // Im Bearbeitungsmodus: Kachel plus Pfeile zum Verschieben innerhalb des Bereichs.
+  function editWrap(p, index, total, inner) {
+    return `
+      <div class="edit-wrap ${p.active ? '' : 'is-hidden'}">
+        ${inner}
+        ${p.active ? '' : '<span class="hidden-badge">ausgeblendet</span>'}
+        <div class="move-tools">
+          <button type="button" data-action="product-move" data-id="${esc(p.id)}" data-dir="-1" ${index === 0 ? 'disabled' : ''} aria-label="Nach vorne">${icon.back}</button>
+          <button type="button" data-action="product-move" data-id="${esc(p.id)}" data-dir="1" ${index === total - 1 ? 'disabled' : ''} aria-label="Nach hinten">${icon.chevron}</button>
+        </div>
+      </div>`;
   }
 
   function openPick(productId) {
@@ -455,6 +514,237 @@
       <p class="fineprint">Der Verein zieht den Betrag eines Monats zum ${cfg.debitDayOfMonth}. des Folgemonats über dein bestehendes SEPA-Mandat ein.</p>`;
   }
 
+  // ---------- Verwaltung (nur Admins) ----------
+  function brandSwatches() {
+    return `
+      <div class="swatches" role="group" aria-label="Markenfarbe">
+        ${BRAND_COLORS.map(([hex, name]) => `<button type="button" class="swatch ${same(look.brand, hex) ? 'on' : ''}" style="--c:${hex}" data-action="brand" data-value="${hex}" title="${name}" aria-label="${name}"></button>`).join('')}
+        <span class="swatch-gap" aria-hidden="true"></span>
+        ${look.custom.map((hex, i) => hex
+          ? `<span class="swatch-slot">
+               <button type="button" class="swatch ${same(look.brand, hex) ? 'on' : ''}" style="--c:${hex}" data-action="brand" data-value="${hex}" aria-label="Eigene Farbe ${hex}"></button>
+               <button type="button" class="swatch-clear" data-action="slot-clear" data-slot="${i}" aria-label="Farbe entfernen">${icon.close}</button>
+             </span>`
+          : `<label class="swatch empty" title="Freies Feld: Farbe wählen oder mit Pipette aufnehmen">
+               ${icon.plus}
+               <input type="color" value="${esc(look.brand)}" data-slot-picker="${i}" aria-label="Freies Farbfeld belegen">
+             </label>`).join('')}
+      </div>
+      <small class="muted">${esc(colorName(look.brand))}</small>`;
+  }
+
+  function adminView() {
+    const cat = state.catalog;
+    const active = cat.products.filter((p) => p.active).length;
+    return `
+      <header class="view-head">
+        <h1>Verwaltung</h1>
+        <p class="muted">Nur für Admins sichtbar</p>
+      </header>
+      <section class="card admin-card">
+        <h2>Sortiment</h2>
+        <p class="muted">${active} Artikel in ${cat.sections.length} Bereichen. Artikel, Preise, Symbole und Reihenfolge änderst du direkt am Kiosk – so, wie die Mitglieder ihn sehen.</p>
+        <button type="button" class="btn primary block" data-action="edit-start">${icon.pencil} Kiosk bearbeiten</button>
+      </section>
+      <section class="card admin-card">
+        <h2>Markenfarbe</h2>
+        <p class="muted">Färbt Logo, Bierdeckel und Akzente. Freie Felder mit Farbwähler oder Pipette belegen, mit × wieder leeren.</p>
+        ${brandSwatches()}
+      </section>
+      <section class="card admin-card later">
+        <h2>Kommt später</h2>
+        <ul>
+          <li>Mitgliederliste aus Excel übernehmen</li>
+          <li>Monatsabschluss und Lastschrift-Export für den Kassenwart</li>
+          <li>Rollen für Kassenwart und Vorstand</li>
+        </ul>
+      </section>`;
+  }
+
+  async function commitCatalog(next, message) {
+    try {
+      state.catalog = await api.saveCatalog(next);
+      if (message) toast(message);
+    } catch (err) {
+      toast(err.message);
+    }
+    renderView();
+  }
+
+  function moveProduct(id, dir) {
+    const next = JSON.parse(JSON.stringify(state.catalog));
+    const p = next.products.find((x) => x.id === id);
+    const siblings = next.products.filter((x) => x.section === p.section);
+    const target = siblings[siblings.indexOf(p) + dir];
+    if (!target) return;
+    const a = next.products.indexOf(p);
+    const b = next.products.indexOf(target);
+    [next.products[a], next.products[b]] = [next.products[b], next.products[a]];
+    commitCatalog(next);
+  }
+
+  function moveSection(id, dir) {
+    const next = JSON.parse(JSON.stringify(state.catalog));
+    const a = next.sections.findIndex((x) => x.id === id);
+    const b = a + dir;
+    if (b < 0 || b >= next.sections.length) return;
+    [next.sections[a], next.sections[b]] = [next.sections[b], next.sections[a]];
+    commitCatalog(next);
+  }
+
+  const PRODUCT_COLORS = ['#E9B949', '#F0C93A', '#E3A33B', '#F08A24', '#C4553A', '#B7282E', '#6B2E4F',
+    '#2E4E9E', '#2F5D8A', '#7FB7D9', '#5BB98B', '#5E6B2A', '#5A3825', '#2A2D2E'];
+  const parsePrice = (text) => {
+    const v = Number(String(text).trim().replace(/\s|€/g, '').replace(',', '.'));
+    return Number.isFinite(v) ? Math.round(v * 100) : NaN;
+  };
+  const priceText = (cents) => (cents / 100).toFixed(2).replace('.', ',');
+
+  function openProductEditor(id, sectionId) {
+    const original = state.catalog.products.find((x) => x.id === id);
+    const draft = original
+      ? { ...original }
+      : { id: 'p-' + Date.now().toString(36), section: sectionId, name: '', detail: '', price: 200, art: 'bottle', color: '#C4553A', active: true };
+    const sections = state.catalog.sections;
+    openSheet(`
+      <form class="editor" data-editor="product" novalidate>
+        <h2>${original ? 'Artikel bearbeiten' : 'Neuer Artikel'}</h2>
+        <div class="editor-preview" data-preview></div>
+        <label class="field"><span>Name</span>
+          <input name="name" maxlength="40" value="${esc(draft.name)}" placeholder="z. B. Chipsfrisch" required>
+        </label>
+        <label class="field"><span>Zusatzzeile</span>
+          <input name="detail" maxlength="80" value="${esc(draft.detail)}" placeholder="z. B. Ungarisch · 175 g">
+        </label>
+        <div class="field-row">
+          <label class="field"><span>Preis in €</span>
+            <input name="price" inputmode="decimal" value="${priceText(draft.price)}" required>
+          </label>
+          <label class="field"><span>Bereich</span>
+            <select name="section">${sections.map((x) => `<option value="${esc(x.id)}" ${x.id === draft.section ? 'selected' : ''}>${esc(x.title)}</option>`).join('')}</select>
+          </label>
+        </div>
+        <div class="field"><span>Symbol</span>
+          <div class="symbol-grid">
+            ${TFB.artKinds.map(([kind, label]) => `<button type="button" class="symbol ${kind === draft.art ? 'on' : ''}" data-art="${kind}" title="${label}" aria-label="${label}">${TFB.art(kind, draft.color)}</button>`).join('')}
+          </div>
+        </div>
+        <div class="field"><span>Farbe</span>
+          <div class="swatches">
+            ${PRODUCT_COLORS.map((hex) => `<button type="button" class="swatch ${same(hex, draft.color) ? 'on' : ''}" style="--c:${hex}" data-color="${hex}" aria-label="Farbe ${hex}"></button>`).join('')}
+            <label class="swatch empty" title="Eigene Farbe oder Pipette">${icon.plus}<input type="color" value="${esc(draft.color)}" data-color-picker aria-label="Eigene Farbe"></label>
+          </div>
+        </div>
+        <label class="agree"><input type="checkbox" name="active" ${draft.active ? 'checked' : ''}><span>Im Kiosk sichtbar</span></label>
+        <p class="form-error" role="alert"></p>
+        <button type="submit" class="btn primary block">Speichern</button>
+        ${original ? '<button type="button" class="btn block danger" data-delete>Artikel löschen</button>' : ''}
+      </form>`);
+
+    const form = $sheet.querySelector('[data-editor]');
+    const preview = () => {
+      form.querySelector('[data-preview]').innerHTML = tile(draft, false).replace('data-action="pick"', 'tabindex="-1"');
+      form.querySelectorAll('.symbol').forEach((b) => {
+        b.classList.toggle('on', b.dataset.art === draft.art);
+        b.innerHTML = TFB.art(b.dataset.art, draft.color);
+      });
+      form.querySelectorAll('[data-color]').forEach((b) => b.classList.toggle('on', same(b.dataset.color, draft.color)));
+    };
+    preview();
+    form.addEventListener('input', (e) => {
+      const t = e.target;
+      if (t.name === 'name' || t.name === 'detail') draft[t.name] = t.value;
+      if (t.name === 'price') { const c = parsePrice(t.value); if (Number.isFinite(c)) draft.price = c; }
+      if (t.matches('[data-color-picker]')) draft.color = t.value;
+      preview();
+    });
+    form.addEventListener('change', (e) => {
+      if (e.target.name === 'section') draft.section = e.target.value;
+      if (e.target.name === 'active') draft.active = e.target.checked;
+    });
+    form.addEventListener('click', (e) => {
+      const sym = e.target.closest('[data-art]');
+      const col = e.target.closest('[data-color]');
+      if (sym) { draft.art = sym.dataset.art; preview(); }
+      if (col) { draft.color = col.dataset.color; preview(); }
+      const del = e.target.closest('[data-delete]');
+      if (del) {
+        if (!del.dataset.armed) { del.dataset.armed = '1'; del.textContent = 'Wirklich löschen? Nochmal tippen'; return; }
+        const next = JSON.parse(JSON.stringify(state.catalog));
+        next.products = next.products.filter((x) => x.id !== draft.id);
+        closeSheet();
+        commitCatalog(next, `„${draft.name}“ gelöscht`);
+      }
+    });
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const err = form.querySelector('.form-error');
+      draft.name = draft.name.trim();
+      draft.price = parsePrice(form.elements.price.value);
+      if (!draft.name) { err.textContent = 'Bitte einen Namen eingeben.'; return; }
+      if (!Number.isFinite(draft.price) || draft.price < 0 || draft.price > 50000) { err.textContent = 'Bitte einen gültigen Preis eingeben, z. B. 2,50.'; return; }
+      const next = JSON.parse(JSON.stringify(state.catalog));
+      const i = next.products.findIndex((x) => x.id === draft.id);
+      if (i >= 0 && next.products[i].section === draft.section) next.products[i] = draft;
+      else {
+        if (i >= 0) next.products.splice(i, 1);
+        next.products.push(draft); // neu oder in anderen Bereich verschoben: hinten anstellen
+      }
+      closeSheet();
+      commitCatalog(next, original ? 'Gespeichert' : `„${draft.name}“ angelegt`);
+    });
+  }
+
+  function openSectionEditor(id) {
+    const original = state.catalog.sections.find((x) => x.id === id);
+    const draft = original ? { ...original } : { id: 's-' + Date.now().toString(36), title: '', note: '', status: 'open' };
+    const used = original ? state.catalog.products.filter((p) => p.section === id).length : 0;
+    openSheet(`
+      <form class="editor" data-editor="section" novalidate>
+        <h2>${original ? 'Bereich bearbeiten' : 'Neuer Bereich'}</h2>
+        <label class="field"><span>Name</span><input name="title" maxlength="40" value="${esc(draft.title)}" placeholder="z. B. Heißgetränke" required></label>
+        <label class="field"><span>Hinweis (optional)</span><input name="note" maxlength="120" value="${esc(draft.note)}" placeholder="z. B. Kalt aus dem Kühlschrank"></label>
+        <div class="field"><span>Status</span>
+          <div class="seg">
+            <button type="button" class="${draft.status === 'open' ? 'on' : ''}" data-status="open">Geöffnet</button>
+            <button type="button" class="${draft.status === 'soon' ? 'on' : ''}" data-status="soon">Bald (nur Vorschau)</button>
+          </div>
+        </div>
+        <p class="form-error" role="alert"></p>
+        <button type="submit" class="btn primary block">Speichern</button>
+        ${original ? (used
+          ? `<p class="fineprint">Zum Löschen zuerst die ${used} Artikel verschieben oder löschen.</p>`
+          : '<button type="button" class="btn block danger" data-delete>Bereich löschen</button>') : ''}
+      </form>`);
+    const form = $sheet.querySelector('[data-editor]');
+    form.addEventListener('click', (e) => {
+      const st = e.target.closest('[data-status]');
+      if (st) {
+        draft.status = st.dataset.status;
+        form.querySelectorAll('[data-status]').forEach((b) => b.classList.toggle('on', b === st));
+      }
+      const del = e.target.closest('[data-delete]');
+      if (del) {
+        if (!del.dataset.armed) { del.dataset.armed = '1'; del.textContent = 'Wirklich löschen? Nochmal tippen'; return; }
+        const next = JSON.parse(JSON.stringify(state.catalog));
+        next.sections = next.sections.filter((x) => x.id !== id);
+        closeSheet();
+        commitCatalog(next, 'Bereich gelöscht');
+      }
+    });
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      draft.title = form.elements.title.value.trim();
+      draft.note = form.elements.note.value.trim();
+      if (!draft.title) { form.querySelector('.form-error').textContent = 'Bitte einen Namen eingeben.'; return; }
+      const next = JSON.parse(JSON.stringify(state.catalog));
+      const i = next.sections.findIndex((x) => x.id === draft.id);
+      if (i >= 0) next.sections[i] = draft; else next.sections.push(draft);
+      closeSheet();
+      commitCatalog(next, original ? 'Gespeichert' : `Bereich „${draft.title}“ angelegt`);
+    });
+  }
+
   // ---------- Profil ----------
   function openProfile() {
     const m = state.member;
@@ -473,27 +763,6 @@
         <p class="muted">${esc(m.email)}<br>Mitgliedsnummer ${esc(m.memberNo)}</p>
         ${m.avatar ? '<button type="button" class="link center small" data-action="avatar-remove">Profilbild entfernen</button>' : '<p class="muted small">Tippe auf die Kamera, um ein Profilbild zu wählen.</p>'}
 
-        <div class="card soft lookbox">
-          <strong>Gestaltung ausprobieren</strong>
-          <p class="small muted">Wirkt sofort und bleibt auf diesem Gerät. Später im Admin für alle.</p>
-          <div class="look-row">
-            <span>Markenfarbe</span>
-            <div class="swatches" role="group" aria-label="Markenfarbe">
-              ${BRAND_COLORS.map(([hex, name]) => `<button type="button" class="swatch ${same(look.brand, hex) ? 'on' : ''}" style="--c:${hex}" data-action="brand" data-value="${hex}" title="${name}" aria-label="${name}"></button>`).join('')}
-              <span class="swatch-gap" aria-hidden="true"></span>
-              ${look.custom.map((hex, i) => hex
-                ? `<span class="swatch-slot">
-                     <button type="button" class="swatch ${same(look.brand, hex) ? 'on' : ''}" style="--c:${hex}" data-action="brand" data-value="${hex}" aria-label="Eigene Farbe ${hex}"></button>
-                     <button type="button" class="swatch-clear" data-action="slot-clear" data-slot="${i}" aria-label="Farbe entfernen">${icon.close}</button>
-                   </span>`
-                : `<label class="swatch empty" title="Freies Feld: Farbe wählen oder mit Pipette aufnehmen">
-                     ${icon.plus}
-                     <input type="color" value="${esc(look.brand)}" data-slot-picker="${i}" aria-label="Freies Farbfeld belegen">
-                   </label>`).join('')}
-            </div>
-            <small class="muted">${esc(colorName(look.brand))}</small>
-          </div>
-        </div>
         <div class="card soft install">
           <strong>Als App aufs Handy</strong>
           <p class="small">iPhone: Teilen-Symbol → „Zum Home-Bildschirm“.<br>Android: Menü ⋮ → „App installieren“.</p>
@@ -580,6 +849,7 @@
 
   // ---------- Ereignisse ----------
   document.addEventListener('submit', (e) => {
+    if (e.target.closest('[data-editor]')) return; // Editoren haben eigene Handler
     const form = e.target.closest('form[data-form]');
     if (!form) return;
     e.preventDefault();
@@ -642,7 +912,7 @@
       look.brand = e.target.value;
       saveLook();
       applyLook();
-      openProfile();
+      renderView();
       return;
     }
     if (e.target.matches('[data-avatar-input]') && e.target.files[0]) {
@@ -688,14 +958,27 @@
       look.brand = el.dataset.value;
       saveLook();
       applyLook();
-      openProfile();
+      renderView();
     } else if (action === 'slot-clear') {
       const removed = look.custom[Number(el.dataset.slot)];
       look.custom[Number(el.dataset.slot)] = null;
       if (removed && same(removed, look.brand)) look.brand = '#2A2D2E';
       saveLook();
       applyLook();
-      openProfile();
+      renderView();
+    } else if (action === 'edit-start') {
+      state.editMode = true;
+      if (currentView() === 'kiosk') renderView(); else location.hash = '#kiosk';
+    } else if (action === 'edit-done') {
+      state.editMode = false;
+      renderView();
+      window.scrollTo(0, 0);
+    } else if (action === 'product-edit') openProductEditor(el.dataset.id);
+    else if (action === 'product-new') openProductEditor(null, el.dataset.section);
+    else if (action === 'product-move') moveProduct(el.dataset.id, Number(el.dataset.dir));
+    else if (action === 'section-move') moveSection(el.dataset.id, Number(el.dataset.dir));
+    else if (action === 'section-edit') openSectionEditor(el.dataset.id);
+    else if (action === 'section-new') { openSectionEditor(null);
     } else if (action === 'avatar-zoom') {
       openLightbox(state.member.avatarLarge || state.member.avatar, `${state.member.firstName} ${state.member.lastName}`);
     } else if (action === 'lightbox-close') {
@@ -728,6 +1011,7 @@
       if (active) t.setAttribute('aria-current', 'page'); else t.removeAttribute('aria-current');
     });
     document.getElementById('view').dataset.view = view;
+    if (view !== 'kiosk') state.editMode = false;
     closeSheet();
     window.scrollTo(0, 0);
     renderView(view);

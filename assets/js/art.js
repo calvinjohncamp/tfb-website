@@ -5,6 +5,59 @@
   const glass = 'rgba(255,255,255,.55)';
 
   const shapes = {
+    stange: (c) => `
+      <path d="M23 13h18v41a3 3 0 0 1-3 3H26a3 3 0 0 1-3-3z" fill="${c}" stroke="${line}" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M21 14c-1-5 3-8 6-7 2-3 8-3 10 0 3-1 7 2 6 7z" fill="#FFFDF5" stroke="${line}" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M28 20v30" stroke="${glass}" stroke-width="3" stroke-linecap="round"/>
+      <circle cx="35" cy="30" r="1.3" fill="#FFFDF5" opacity=".8"/><circle cx="33" cy="40" r="1" fill="#FFFDF5" opacity=".8"/><circle cx="36" cy="46" r="1.2" fill="#FFFDF5" opacity=".8"/>`,
+    weizen: (c) => `
+      <path d="M21 13h22c0 7-3 11-3 17 0 6 5 9 5 17v6a4 4 0 0 1-4 4H23a4 4 0 0 1-4-4v-6c0-8 5-11 5-17 0-6-3-10-3-17z" fill="${c}" stroke="${line}" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M19 14c-1-6 4-9 8-8 3-3 9-3 11 0 4-1 8 3 6 8z" fill="#FFFDF5" stroke="${line}" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M26 20c0 4 2 7 2 10" stroke="${glass}" stroke-width="3" stroke-linecap="round" fill="none"/>`,
+    cola: (c) => `
+      <path d="M28 4h8v7c0 3 5 5 5 11 0 4-3 6-3 9 0 3 4 5 4 10v13a5 5 0 0 1-5 5H27a5 5 0 0 1-5-5V41c0-5 4-7 4-10 0-3-3-5-3-9 0-6 5-8 5-11z" fill="${c}" stroke="${line}" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M23 36c6 3 12-3 18 0" fill="none" stroke="#FFFDF5" stroke-width="3" stroke-linecap="round"/>
+      <rect x="27" y="2" width="10" height="5" rx="1.5" fill="${line}"/>
+      <path d="M27 17c-1 2-2 3-2 5" stroke="${glass}" stroke-width="3" stroke-linecap="round" fill="none"/>`,
+    slimcan: (c) => `
+      <path d="M23 10h18v45a3 3 0 0 1-3 3H26a3 3 0 0 1-3-3z" fill="${c}" stroke="${line}" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M24 6h16l1 4H23z" fill="#D9D4CA" stroke="${line}" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M23 40l18-12v8L23 48z" fill="#E8B22B" stroke="${line}" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M27 16v14" stroke="${glass}" stroke-width="3" stroke-linecap="round"/>`,
+    wafer: (c) => `
+      <g transform="rotate(-14 32 32)">
+        <rect x="8" y="20" width="48" height="24" rx="3" fill="${c}" stroke="${line}" stroke-width="3"/>
+        <rect x="18" y="25" width="28" height="14" rx="2" fill="#E9C38A" stroke="${line}" stroke-width="2.5"/>
+        <path d="M18 30h28M18 34h28" stroke="#8A5A2B" stroke-width="2"/>
+        <path d="M8 26l-3-2M8 32h-4M8 38l-3 2M56 26l3-2M56 32h4M56 38l3 2" stroke="${line}" stroke-width="2.5" stroke-linecap="round"/>
+      </g>`,
+    tube: (c) => `
+      <path d="M20 12h24v42a4 4 0 0 1-4 4H24a4 4 0 0 1-4-4z" fill="${c}" stroke="${line}" stroke-width="3" stroke-linejoin="round"/>
+      <ellipse cx="32" cy="11" rx="12" ry="4" fill="#D9D4CA" stroke="${line}" stroke-width="3"/>
+      <circle cx="32" cy="33" r="7" fill="#FFFDF5" stroke="${line}" stroke-width="2.5"/>
+      <path d="M29 32h.1M35 32h.1M29.5 35.5c1.5 1.2 3.5 1.2 5 0" stroke="${line}" stroke-width="2" stroke-linecap="round" fill="none"/>`,
+    bear: (c) => `
+      <circle cx="23" cy="13" r="5" fill="${c}" stroke="${line}" stroke-width="3"/>
+      <circle cx="41" cy="13" r="5" fill="${c}" stroke="${line}" stroke-width="3"/>
+      <circle cx="32" cy="20" r="11" fill="${c}" stroke="${line}" stroke-width="3"/>
+      <path d="M21 31c-6 3-6 9-2 11M43 31c6 3 6 9 2 11" fill="none" stroke="${line}" stroke-width="3" stroke-linecap="round"/>
+      <path d="M20 46c0-10 5-15 12-15s12 5 12 15c0 7-5 12-12 12s-12-5-12-12z" fill="${c}" stroke="${line}" stroke-width="3"/>
+      <path d="M28 18h.1M36 18h.1" stroke="${line}" stroke-width="3" stroke-linecap="round"/>
+      <path d="M26 41v.1M38 41v.1" stroke="${glass}" stroke-width="4" stroke-linecap="round"/>`,
+    sausage: (c) => `
+      <ellipse cx="32" cy="45" rx="27" ry="9" fill="#FFFDF5" stroke="${line}" stroke-width="3"/>
+      <g transform="rotate(-8 32 34)">
+        <rect x="9" y="33" width="46" height="11" rx="5.5" fill="${c}" stroke="${line}" stroke-width="3"/>
+        <rect x="11" y="22" width="44" height="11" rx="5.5" fill="${c}" stroke="${line}" stroke-width="3"/>
+        <path d="M16 26c3-2 5 2 8 0s5 2 8 0 5 2 8 0 5 2 8 0" fill="none" stroke="#E8B22B" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M16 37h30" stroke="${glass}" stroke-width="2.5" stroke-linecap="round"/>
+      </g>`,
+    cone: (c) => `
+      <path d="M20 28h24L32 60z" fill="#E3B26B" stroke="${line}" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M24 34l14 8M22 30l20 12M40 34l-14 8M42 30L22 42" stroke="#A8732E" stroke-width="2"/>
+      <path d="M18 29c-2-9 4-17 14-17s16 8 14 17z" fill="#FFF4DD" stroke="${line}" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M20 26c4-2 8 1 12-1s8-2 12 1" fill="none" stroke="${c}" stroke-width="4" stroke-linecap="round"/>
+      <circle cx="28" cy="17" r="1.6" fill="${c}"/><circle cx="35" cy="15" r="1.6" fill="${c}"/><circle cx="38" cy="21" r="1.4" fill="${c}"/>`,
     beer: (c) => `
       <path d="M17 18h24v34a5 5 0 0 1-5 5H22a5 5 0 0 1-5-5z" fill="${c}"/>
       <path d="M41 25h5a6 6 0 0 1 6 6v8a6 6 0 0 1-6 6h-5" fill="none" stroke="${line}" stroke-width="3"/>
@@ -55,6 +108,15 @@
       <path d="M8 40h36c6 0 12 2 14 6H8z" fill="${c}" stroke="${line}" stroke-width="3" stroke-linejoin="round"/>
       <circle cx="32" cy="15" r="2.5" fill="${line}"/>`,
   };
+
+  // Auswahl im Admin: Schlüssel und Bezeichnung jedes Symbols.
+  TFB.artKinds = [
+    ['stange', 'Kölschglas'], ['weizen', 'Weizenglas'], ['beer', 'Bierkrug'], ['bottle', 'Bierflasche'],
+    ['cola', 'Cola-Flasche'], ['water', 'Wasserflasche'], ['can', 'Dose'], ['slimcan', 'Schlanke Dose'],
+    ['cup', 'Tasse'], ['bar', 'Riegel'], ['wafer', 'Waffel'], ['bag', 'Chipstüte'], ['tube', 'Chipsdose'],
+    ['bear', 'Gummibär'], ['sausage', 'Würstchen'], ['cone', 'Eis'], ['ball', 'Tennisball'], ['grip', 'Griffband'],
+    ['shirt', 'Shirt'], ['cap', 'Cap'],
+  ];
 
   TFB.art = function (kind, color) {
     const draw = shapes[kind] || shapes.bottle;

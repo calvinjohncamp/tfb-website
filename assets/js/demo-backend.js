@@ -10,40 +10,40 @@
   const SESSION_KEY = 'tfb_kiosk_demo_session_v1';
   const DAY = 24 * 60 * 60 * 1000;
 
-  // ---------- Beispielsortiment (bis das Foto der echten Strichliste da ist) ----------
-  const SECTIONS = [
-    { id: 'bier', title: 'Bier', note: 'Kalt aus dem Kühlschrank' },
-    { id: 'alkoholfrei', title: 'Alkoholfrei', note: 'Für die Seitenwechsel' },
-    { id: 'heiss', title: 'Heißgetränke', note: '' },
-    { id: 'snacks', title: 'Snacks', note: '' },
-  ];
-
-  const PRODUCTS = [
-    { id: 'koelsch', section: 'bier', name: 'Kölsch', detail: '0,33 l Flasche', price: 200, art: 'beer', color: '#E9B949' },
-    { id: 'pils', section: 'bier', name: 'Pils', detail: '0,33 l Flasche', price: 200, art: 'bottle', color: '#3F7A4A' },
-    { id: 'radler', section: 'bier', name: 'Radler', detail: '0,33 l Flasche', price: 200, art: 'bottle', color: '#F0C93A' },
-    { id: 'bier-af', section: 'bier', name: 'Bier alkoholfrei', detail: '0,33 l Flasche', price: 200, art: 'bottle', color: '#2F5D8A' },
-    { id: 'wasser', section: 'alkoholfrei', name: 'Wasser', detail: '0,5 l still oder spritzig', price: 100, art: 'water', color: '#7FB7D9' },
-    { id: 'apfelschorle', section: 'alkoholfrei', name: 'Apfelschorle', detail: '0,5 l Flasche', price: 150, art: 'water', color: '#E3A33B' },
-    { id: 'cola', section: 'alkoholfrei', name: 'Cola', detail: '0,33 l Dose', price: 150, art: 'can', color: '#B7282E' },
-    { id: 'iso', section: 'alkoholfrei', name: 'Iso-Drink', detail: '0,5 l Flasche', price: 200, art: 'water', color: '#5BB98B' },
-    { id: 'kaffee', section: 'heiss', name: 'Kaffee', detail: 'Tasse', price: 100, art: 'cup', color: '#6B4226' },
-    { id: 'riegel', section: 'snacks', name: 'Schokoriegel', detail: 'Stück', price: 100, art: 'bar', color: '#5A3825' },
-    { id: 'chips', section: 'snacks', name: 'Chips', detail: 'kleine Tüte', price: 150, art: 'bag', color: '#E07A2F' },
-  ];
-
-  // Vereinsshop: wird oben angeteasert, ist aber noch nicht eröffnet.
-  const SHOP = {
-    title: 'Vereinsshop',
-    status: 'soon',
-    text: 'Bälle, Griffbänder und Vereinskleidung – bald direkt hier.',
-    items: [
-      { id: 'baelle', name: 'Tennisbälle', detail: '4er-Dose', price: 1200, art: 'ball', color: '#D7E04B' },
-      { id: 'griffband', name: 'Overgrip', detail: '3er-Pack', price: 900, art: 'grip', color: '#F4F1EA' },
-      { id: 'shirt', name: 'Vereinsshirt', detail: 'TFB-Logo', price: 2500, art: 'shirt', color: '#1F4D3A' },
-      { id: 'cap', name: 'Vereinscap', detail: 'Einheitsgröße', price: 1800, art: 'cap', color: '#B5462F' },
+  // ---------- Startsortiment (wie im bisherigen Kiosk, im Admin frei änderbar) ----------
+  // Bereiche erscheinen in dieser Reihenfolge. status 'soon' = nur Vorschau ("bald").
+  const CATALOG_VERSION = 2;
+  const DEFAULT_CATALOG = {
+    sections: [
+      { id: 'bier', title: 'Bier', note: 'Frisch gezapft und kalt', status: 'open' },
+      { id: 'alkoholfrei', title: 'Alkoholfrei', note: 'Für die Seitenwechsel', status: 'open' },
+      { id: 'snacks', title: 'Snacks & Eis', note: '', status: 'open' },
+      { id: 'shop', title: 'Vereinsshop', note: 'Bälle, Griffbänder und Vereinskleidung – bald direkt hier.', status: 'soon' },
     ],
+    products: [
+      { id: 'koelsch', section: 'bier', name: 'Kölsch', detail: 'Ein frisches Kölsch aus Bielstein.', price: 200, art: 'stange', color: '#E9B949' },
+      { id: 'radler', section: 'bier', name: 'Radler', detail: 'Erfrischend und fruchtig.', price: 200, art: 'bottle', color: '#F0C93A' },
+      { id: 'weissbier', section: 'bier', name: 'Weißbier', detail: 'Alkoholfrei, bayrisch herb.', price: 200, art: 'weizen', color: '#E3A33B' },
+      { id: 'sportsfreund', section: 'alkoholfrei', name: 'Sportsfreund', detail: 'Isotonisch und alkoholfrei.', price: 200, art: 'water', color: '#5BB98B' },
+      { id: 'gerolsteiner', section: 'alkoholfrei', name: 'Gerolsteiner', detail: 'Mineralwasser Medium.', price: 200, art: 'water', color: '#7FB7D9' },
+      { id: 'coca-cola', section: 'alkoholfrei', name: 'Coca-Cola', detail: 'Eiskalt genießen.', price: 280, art: 'cola', color: '#B7282E' },
+      { id: 'fanta', section: 'alkoholfrei', name: 'Fanta Orange', detail: 'Fruchtig frisch.', price: 200, art: 'cola', color: '#F08A24' },
+      { id: 'red-bull', section: 'alkoholfrei', name: 'Red Bull', detail: 'Verleiht Flügel.', price: 200, art: 'slimcan', color: '#2E4E9E' },
+      { id: 'snickers', section: 'snacks', name: 'Snickers', detail: 'Und der Hunger ist gegessen.', price: 100, art: 'bar', color: '#5A3825' },
+      { id: 'mars', section: 'snacks', name: 'Mars', detail: '… macht mobil.', price: 100, art: 'bar', color: '#2B2B2B' },
+      { id: 'hanuta', section: 'snacks', name: 'Hanuta', detail: 'Für dich gebacken.', price: 100, art: 'wafer', color: '#2F5D8A' },
+      { id: 'pringles', section: 'snacks', name: 'Pringles', detail: 'Heute schon gepoppt?', price: 300, art: 'tube', color: '#C8202F' },
+      { id: 'chipsfrisch', section: 'snacks', name: 'Chipsfrisch', detail: 'Ungarisch. Oft kopiert, nie erreicht.', price: 250, art: 'bag', color: '#E07A2F' },
+      { id: 'haribo', section: 'snacks', name: 'Haribo Colorado', detail: 'Süße Evergreens.', price: 250, art: 'bear', color: '#E8B22B' },
+      { id: 'bockwurst', section: 'snacks', name: 'Bockwurst', detail: 'Dicke Sauerländer · Dose mit 5 Stück.', price: 1000, art: 'sausage', color: '#B5462F' },
+      { id: 'cornetto', section: 'snacks', name: 'Cornetto', detail: 'Vanille-Nuss. So schmeckt der Sommer.', price: 300, art: 'cone', color: '#D9A066' },
+      { id: 'baelle', section: 'shop', name: 'Tennisbälle', detail: '4er-Dose', price: 1200, art: 'ball', color: '#D7E04B' },
+      { id: 'griffband', section: 'shop', name: 'Overgrip', detail: '3er-Pack', price: 900, art: 'grip', color: '#F4F1EA' },
+      { id: 'shirt', section: 'shop', name: 'Vereinsshirt', detail: 'Mit TFB-Logo', price: 2500, art: 'shirt', color: '#2A2D2E' },
+      { id: 'cap', section: 'shop', name: 'Vereinscap', detail: 'Einheitsgröße', price: 1800, art: 'cap', color: '#C4553A' },
+    ].map((p) => ({ active: true, ...p })),
   };
+  const clone = (v) => JSON.parse(JSON.stringify(v));
 
   // Erfundene Beispielmitglieder – keine echten Personen.
   const DEMO_MEMBERS = [
@@ -113,6 +113,14 @@
     try { localStorage.setItem(STORE_KEY, JSON.stringify(db)); return true; } catch (_) { return false; }
   }
   let db = load();
+  // Ältere Demo-Stände bekommen das neue Sortiment, ohne Striche und Profilbilder zu verlieren.
+  if (!db.catalog || db.catalogVersion !== CATALOG_VERSION) {
+    db.catalog = clone(DEFAULT_CATALOG);
+    db.catalogVersion = CATALOG_VERSION;
+    const admin = db.members.find((m) => m.id === 'm-demo');
+    if (admin) admin.isAdmin = true;
+    save(db);
+  }
 
   function seed() {
     const now = Date.now();
@@ -124,7 +132,7 @@
       email: `${firstName}.${lastName}`.toLowerCase().replace(/ü/g, 'ue').replace(/ä/g, 'ae').replace(/ö/g, 'oe') + '@beispiel.de',
       active: true,
     }));
-    members.push({ id: 'm-demo', memberNo: '1099', ...DEMO_LOGIN, active: true });
+    members.push({ id: 'm-demo', memberNo: '1099', ...DEMO_LOGIN, active: true, isAdmin: true });
 
     // Beispielmitglieder haben schon zugestimmt, Max Mustermann noch nicht.
     const accounts = members
@@ -134,7 +142,8 @@
     const items = [];
     const r = rng(20261009);
     const pick = (list) => list[Math.floor(r() * list.length)];
-    const popular = ['koelsch', 'koelsch', 'koelsch', 'pils', 'wasser', 'wasser', 'apfelschorle', 'cola', 'bier-af', 'radler', 'iso', 'kaffee', 'riegel'];
+    const popular = ['koelsch', 'koelsch', 'koelsch', 'koelsch', 'radler', 'weissbier', 'gerolsteiner', 'gerolsteiner', 'sportsfreund', 'coca-cola', 'fanta', 'snickers', 'haribo'];
+    const PRODUCTS = DEFAULT_CATALOG.products;
 
     // Etwa zehn Tage Betrieb: nicht jeder ist jeden Tag da.
     for (let d = 10; d >= 0; d--) {
@@ -160,7 +169,7 @@
       statements.push({ id: uid(), memberId: 'm-demo', month: previousMonthKey(current, back), totalCents: total, itemCount: count, status: state });
     });
 
-    return { version: 1, members, accounts, items, statements, createdAt: new Date(now).toISOString() };
+    return { version: 1, members, accounts, items, statements, catalog: clone(DEFAULT_CATALOG), catalogVersion: CATALOG_VERSION, createdAt: new Date(now).toISOString() };
   }
 
   function makeItem(memberId, product, date) {
@@ -202,6 +211,7 @@
       firstName: member.firstName,
       lastName: member.lastName,
       email: member.email,
+      isAdmin: Boolean(member.isAdmin),
       avatar: (account && account.avatar) || null,
       avatarLarge: (account && (account.avatarLarge || account.avatar)) || null,
       hasConsent: Boolean(account && account.consentVersion === cfg.consentVersion),
@@ -285,15 +295,41 @@
     },
 
     async catalog() {
-      return { sections: SECTIONS, products: PRODUCTS, shop: SHOP };
+      return clone(db.catalog);
+    },
+
+    // Admin: ganzes Sortiment speichern (Reihenfolge der Arrays = Anzeige-Reihenfolge).
+    async saveCatalog(catalog) {
+      const member = requireMember();
+      if (!member.isAdmin) throw new Error('Nur Admins dürfen das Sortiment ändern.');
+      const sections = (catalog.sections || []).map((x) => ({
+        id: String(x.id), title: String(x.title || '').trim().slice(0, 40),
+        note: String(x.note || '').trim().slice(0, 120), status: x.status === 'soon' ? 'soon' : 'open',
+      }));
+      if (sections.some((x) => !x.id || !x.title)) throw new Error('Jeder Bereich braucht einen Namen.');
+      const ids = new Set(sections.map((x) => x.id));
+      const products = (catalog.products || []).map((p) => ({
+        id: String(p.id), section: String(p.section), name: String(p.name || '').trim().slice(0, 40),
+        detail: String(p.detail || '').trim().slice(0, 80), price: Math.round(Number(p.price)),
+        art: String(p.art || 'bottle'), color: /^#[0-9a-f]{6}$/i.test(p.color) ? p.color : '#C4553A', active: p.active !== false,
+      }));
+      for (const p of products) {
+        if (!p.name) throw new Error('Jeder Artikel braucht einen Namen.');
+        if (!ids.has(p.section)) throw new Error(`„${p.name}“ hat keinen gültigen Bereich.`);
+        if (!Number.isFinite(p.price) || p.price < 0 || p.price > 50000) throw new Error(`Preis von „${p.name}“ ist ungültig.`);
+      }
+      db.catalog = { sections, products };
+      save(db);
+      return clone(db.catalog);
     },
 
     // Striche auf den eigenen Bierdeckel setzen. Preis kommt immer aus dem Katalog.
     async addToTab(productId, quantity = 1) {
       const member = requireMember();
       if (!publicMember(member).hasConsent) throw new Error('Bitte zuerst der Kioskordnung zustimmen.');
-      const product = PRODUCTS.find((p) => p.id === productId);
-      if (!product) throw new Error('Diesen Artikel gibt es nicht mehr.');
+      const product = db.catalog.products.find((p) => p.id === productId && p.active);
+      const section = product && db.catalog.sections.find((x) => x.id === product.section);
+      if (!product || !section || section.status !== 'open') throw new Error('Diesen Artikel gibt es gerade nicht.');
       const qty = Math.max(1, Math.min(cfg.maxQuantity, Math.floor(Number(quantity) || 1)));
       const now = new Date();
       const created = Array.from({ length: qty }, () => makeItem(member.id, product, now));

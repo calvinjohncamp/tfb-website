@@ -435,3 +435,65 @@ svg { display: block; }
 }
 .lightbox-close svg { width: 20px; height: 20px; fill: none; stroke: #F5F0E6; stroke-width: 2.2; stroke-linecap: round; }
 
+
+/* ---------- Verwaltung ---------- */
+.admin-card { display: grid; gap: 10px; margin-bottom: 14px; }
+.admin-card .btn svg, .add-section svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.admin-card.later { background: transparent; box-shadow: none; border: 1.5px dashed var(--line); }
+.admin-card.later ul { margin: 0; padding-left: 18px; color: var(--muted); line-height: 1.7; }
+
+/* ---------- Bearbeitungsmodus am Kiosk ---------- */
+.editbar {
+  position: sticky; top: 76px; z-index: 8;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  background: var(--ink); color: #fff; border-radius: 16px; padding: 12px 12px 12px 16px;
+  box-shadow: 0 10px 24px rgba(0,0,0,.18); margin-bottom: 4px;
+}
+.editbar div { display: grid; gap: 2px; }
+.editbar span { font-size: .78rem; opacity: .75; }
+.editbar .btn { min-height: 40px; background: #fff; color: var(--ink); border-color: #fff; }
+.section-head.editing { align-items: center; }
+.section-head.editing h2 { margin-right: auto; }
+.section-tools { display: flex; gap: 6px; }
+.section-tools button, .move-tools button {
+  width: 34px; height: 34px; border-radius: 10px; border: 1.5px solid var(--line); background: #fff;
+  display: grid; place-items: center; padding: 0;
+}
+.section-tools button:disabled, .move-tools button:disabled { opacity: .3; cursor: default; }
+.section-tools svg, .move-tools svg { width: 18px; height: 18px; fill: none; stroke: var(--ink); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.section-note { margin: -4px 2px 4px; }
+.edit-wrap { position: relative; display: grid; }
+.edit-wrap > .tile, .edit-wrap > .shop-card { outline: 2px dashed color-mix(in srgb, var(--brand) 35%, transparent); outline-offset: -2px; }
+.edit-wrap.is-hidden > .tile, .edit-wrap.is-hidden > .shop-card { opacity: .45; }
+.hidden-badge { position: absolute; top: 10px; left: 10px; font-size: .66rem; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; background: var(--ink); color: #fff; padding: 3px 7px; border-radius: 6px; }
+.move-tools { position: absolute; top: 8px; right: 8px; display: flex; gap: 4px; }
+.move-tools button { width: 30px; height: 30px; border-radius: 9px; box-shadow: 0 2px 6px rgba(0,0,0,.08); }
+.tile-new {
+  display: grid; place-items: center; align-content: center; gap: 6px; min-height: 180px;
+  background: transparent; box-shadow: none; border: 2px dashed var(--line); color: var(--muted); font-weight: 700;
+}
+.tile-new svg { width: 26px; height: 26px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; }
+.shop-card.tile-new { min-height: 0; }
+.shop-card.tile-new::after, button.shop-card::after { content: none; }
+button.shop-card { border: 0; text-align: left; font: inherit; }
+.add-section { margin-top: 26px; border-style: dashed; color: var(--muted); }
+
+/* ---------- Editoren ---------- */
+.editor { display: grid; gap: 4px; text-align: left; }
+.editor h2 { margin-bottom: 8px; }
+.editor-preview { width: 52%; max-width: 210px; margin: 0 auto 6px; pointer-events: none; }
+.editor-preview .tile { width: 100%; }
+.editor .field { margin: 10px 0; }
+.field-row { display: grid; grid-template-columns: 1fr 1.3fr; gap: 10px; }
+.field select {
+  width: 100%; min-height: 50px; padding: 0 12px; border: 1.5px solid var(--line); border-radius: 12px;
+  background: var(--paper); font-size: 16px; appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%), linear-gradient(135deg, var(--muted) 50%, transparent 50%);
+  background-position: calc(100% - 18px) 22px, calc(100% - 13px) 22px; background-size: 5px 5px; background-repeat: no-repeat;
+}
+.symbol-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(52px, 1fr)); gap: 8px; }
+.symbol { aspect-ratio: 1; border-radius: 12px; border: 1.5px solid var(--line); background: #fff; padding: 6px; display: grid; place-items: center; }
+.symbol .art { width: 100%; height: 100%; }
+.symbol.on { border-color: var(--brand); box-shadow: 0 0 0 2px var(--brand); }
+.btn.danger { color: var(--clay); border-color: var(--clay-soft); margin-top: 6px; }
+.seg button { cursor: pointer; }

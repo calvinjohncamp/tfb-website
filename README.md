@@ -9,6 +9,8 @@ Digitale Strichliste und Kiosk der Tennisfreunde Bielstein – als App auf dem H
 - Admin-Bereich: Produkte, Gestaltung, Mitgliederliste (Excel-Upload), Monatsabschluss
 
 Eigenständiges Projekt, strikt getrennt von Padel Bielstein.
+
+**Aktueller Stand, Entscheidungen und offene Punkte:** [`docs/PROJEKTGEDAECHTNIS.md`](docs/PROJEKTGEDAECHTNIS.md)
 Mitgliederdaten gehören niemals in dieses Repository.
 
 ## Stand
