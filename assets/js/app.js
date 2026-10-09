@@ -49,8 +49,9 @@
     art: [['gezeichnet', 'Gezeichnet'], ['foto', 'Fotos']],
     logo: [['gruen', 'Vereinsgrün'], ['anthrazit', 'Anthrazit']],
     bg: [['creme', 'Creme'], ['kreide', 'Kreideweiß'], ['grau', 'Hellgrau'], ['gruen', 'Vereinsgrün']],
+    coaster: [['pappe', 'Neutral'], ['zunft', 'Zunft Kölsch']],
   };
-  const look = { art: 'gezeichnet', logo: 'gruen', bg: 'creme' };
+  const look = { art: 'gezeichnet', logo: 'gruen', bg: 'kreide', coaster: 'pappe' };
   try { Object.assign(look, JSON.parse(localStorage.getItem(LOOK_KEY) || '{}')); } catch (_) {}
   function applyLook() {
     const root = document.documentElement;
@@ -264,20 +265,44 @@
   }
 
   // ---------- Kiosk ----------
-  async function kioskView() {
-    const open = await api.myOpenMonth();
-    const { sections, products, shop } = state.catalog;
+  function coasterMarkup(open) {
     const count = open.items.length;
+    const strokes = count
+      ? TFB.strokes(Math.min(count, 25), state.member.id + open.month) + (count > 25 ? `<em>+${count - 25}</em>` : '')
+      : '<em>Noch leer</em>';
+    const label = `Mein Bierdeckel: ${euro(open.totalCents)} im ${monthName(open.month, false)}`;
+    if (look.coaster === 'zunft') {
+      // Wie in der Kneipe: Striche mit Bleistift auf den Rand des echten Zunft-Deckels.
+      return `
+        <a class="zunft" href="#abrechnungen" aria-label="${esc(label)}">
+          <div class="zunft-card">
+            <img src="assets/brand/zunft-bierdeckel.webp" alt="">
+            <div class="zunft-strokes">${count ? strokes : ''}</div>
+          </div>
+          <div class="zunft-meta">
+            <span class="coaster-kicker">Mein Bierdeckel · ${esc(monthName(open.month, false))}</span>
+            <strong class="coaster-amount">${euro(open.totalCents)}</strong>
+            <span class="coaster-note">${strokesWord(count)} · Einzug am ${esc(nextMonthDebit(open.month))}</span>
+          </div>
+        </a>`;
+    }
     return `
-      <a class="coaster" href="#abrechnungen" aria-label="Mein Bierdeckel: ${euro(open.totalCents)} im ${monthName(open.month, false)}">
+      <a class="coaster" href="#abrechnungen" aria-label="${esc(label)}">
         <div class="coaster-ring">
           ${logo('ball', 'coaster-ball')}
           <span class="coaster-kicker">Mein Bierdeckel · ${esc(monthName(open.month, false))}</span>
           <strong class="coaster-amount">${euro(open.totalCents)}</strong>
-          <div class="coaster-strokes">${count ? TFB.strokes(Math.min(count, 25), state.member.id + open.month) + (count > 25 ? `<em>+${count - 25}</em>` : '') : '<em>Noch leer</em>'}</div>
+          <div class="coaster-strokes">${strokes}</div>
           <span class="coaster-note">Einzug am ${esc(nextMonthDebit(open.month))}</span>
         </div>
-      </a>
+      </a>`;
+  }
+
+  async function kioskView() {
+    const open = await api.myOpenMonth();
+    const { sections, products, shop } = state.catalog;
+    return `
+      ${coasterMarkup(open)}
 
       <section class="shop">
         <div class="section-head">
@@ -457,19 +482,23 @@
     const m = state.member;
     openSheet(`
       <div class="profile">
-        <label class="avatar lg avatar-upload" title="Profilbild ändern">
-          ${avatarFace(m)}
-          <span class="avatar-edit" aria-hidden="true">${icon.camera}</span>
-          <input type="file" accept="image/*" data-avatar-input hidden>
-        </label>
+        <div class="avatar lg">
+          ${m.avatar
+            ? `<button type="button" class="avatar-zoom" data-action="avatar-zoom" aria-label="Profilbild groß ansehen">${avatarFace(m)}</button>`
+            : `<span>${avatarFace(m)}</span>`}
+          <label class="avatar-edit" title="Profilbild ändern" aria-label="Profilbild ändern">
+            ${icon.camera}
+            <input type="file" accept="image/*" data-avatar-input hidden>
+          </label>
+        </div>
         <h2>${esc(m.firstName)} ${esc(m.lastName)}</h2>
         <p class="muted">${esc(m.email)}<br>Mitgliedsnummer ${esc(m.memberNo)}</p>
-        ${m.avatar ? '<button type="button" class="link center small" data-action="avatar-remove">Profilbild entfernen</button>' : '<p class="muted small">Tippe auf den Kreis, um ein Profilbild zu wählen.</p>'}
+        ${m.avatar ? '<button type="button" class="link center small" data-action="avatar-remove">Profilbild entfernen</button>' : '<p class="muted small">Tippe auf die Kamera, um ein Profilbild zu wählen.</p>'}
 
         <div class="card soft lookbox">
           <strong>Gestaltung ausprobieren</strong>
           <p class="small muted">Nur zum Vergleichen – wirkt sofort und bleibt auf diesem Gerät.</p>
-          ${Object.entries({ art: 'Produktbilder', logo: 'Logofarbe', bg: 'Hintergrund' }).map(([key, label]) => `
+          ${Object.entries({ art: 'Produktbilder', coaster: 'Bierdeckel', logo: 'Logofarbe', bg: 'Hintergrund' }).map(([key, label]) => `
             <div class="look-row">
               <span>${label}</span>
               <div class="seg" role="group" aria-label="${label}">
@@ -484,6 +513,28 @@
         <button type="button" class="btn block" data-action="logout">Abmelden</button>
         ${api.mode === 'demo' ? '<button type="button" class="link center" data-action="demo-reset">Demo-Daten zurücksetzen</button>' : ''}
       </div>`);
+  }
+
+  // ---------- Bild groß ansehen ----------
+  function openLightbox(src, caption) {
+    if (!src) return;
+    const box = document.createElement('div');
+    box.className = 'lightbox';
+    box.dataset.action = 'lightbox-close';
+    box.innerHTML = `
+      <figure role="dialog" aria-modal="true" aria-label="${esc(caption)}">
+        <img src="${esc(src)}" alt="Profilbild von ${esc(caption)}">
+        <figcaption>${logo('ball', 'lightbox-ball')}<span>${esc(caption)}</span></figcaption>
+      </figure>
+      <button type="button" class="lightbox-close" data-action="lightbox-close" aria-label="Schließen">${icon.close}</button>`;
+    document.body.appendChild(box);
+    requestAnimationFrame(() => box.classList.add('open'));
+  }
+  function closeLightbox() {
+    document.querySelectorAll('.lightbox').forEach((b) => {
+      b.classList.remove('open');
+      setTimeout(() => b.remove(), 200);
+    });
   }
 
   // ---------- Sheet & Toasts ----------
@@ -553,6 +604,23 @@
   });
 
   // Profilbild: mittig quadratisch zuschneiden, auf 256 px verkleinern, als JPEG speichern.
+  function loadImage(file) {
+    return new Promise((resolve, reject) => {
+      const url = URL.createObjectURL(file);
+      const img = new Image();
+      img.onload = () => { URL.revokeObjectURL(url); resolve(img); };
+      img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Dieses Bild lässt sich nicht öffnen.')); };
+      img.src = url;
+    });
+  }
+  function largeImage(img, maxSide = 1400) {
+    const scale = Math.min(1, maxSide / Math.max(img.naturalWidth, img.naturalHeight));
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.round(img.naturalWidth * scale);
+    canvas.height = Math.round(img.naturalHeight * scale);
+    canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+    return canvas.toDataURL('image/jpeg', 0.86);
+  }
   function shrinkImage(file, size = 256) {
     return new Promise((resolve, reject) => {
       const url = URL.createObjectURL(file);
@@ -577,7 +645,9 @@
   document.addEventListener('change', async (e) => {
     if (e.target.matches('[data-avatar-input]') && e.target.files[0]) {
       try {
-        state.member = await api.setAvatar(await shrinkImage(e.target.files[0]));
+        const file = e.target.files[0];
+        const [small, img] = await Promise.all([shrinkImage(file), loadImage(file)]);
+        state.member = await api.setAvatar(small, largeImage(img));
         refreshAvatars();
         openProfile();
         toast('Profilbild gespeichert');
@@ -618,6 +688,10 @@
       applyLook();
       el.parentElement.querySelectorAll('button').forEach((b) => b.classList.toggle('on', b === el));
       renderView();
+    } else if (action === 'avatar-zoom') {
+      openLightbox(state.member.avatarLarge || state.member.avatar, `${state.member.firstName} ${state.member.lastName}`);
+    } else if (action === 'lightbox-close') {
+      closeLightbox();
     } else if (action === 'avatar-remove') {
       state.member = await api.setAvatar(null);
       refreshAvatars();
@@ -632,7 +706,10 @@
     }
   });
 
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeSheet(); });
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    if (document.querySelector('.lightbox')) closeLightbox(); else closeSheet();
+  });
 
   window.addEventListener('hashchange', () => {
     if (!state.member || !state.member.hasConsent) return;

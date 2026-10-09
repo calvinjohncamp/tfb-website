@@ -110,7 +110,7 @@
     return fresh;
   }
   function save(db) {
-    try { localStorage.setItem(STORE_KEY, JSON.stringify(db)); } catch (_) {}
+    try { localStorage.setItem(STORE_KEY, JSON.stringify(db)); return true; } catch (_) { return false; }
   }
   let db = load();
 
@@ -203,6 +203,7 @@
       lastName: member.lastName,
       email: member.email,
       avatar: (account && account.avatar) || null,
+      avatarLarge: (account && (account.avatarLarge || account.avatar)) || null,
       hasConsent: Boolean(account && account.consentVersion === cfg.consentVersion),
     };
   }
@@ -264,15 +265,22 @@
       return publicMember(member);
     },
 
-    // Profilbild als kleines, bereits verkleinertes Bild (data-URL); null entfernt es.
-    async setAvatar(dataUrl) {
+    // Profilbild: kleines rundes Bild plus großes Original für die Vergrößerung
+    // (beides bereits im Browser verkleinert, als data-URL); null entfernt beide.
+    async setAvatar(small, large = null) {
       const member = requireMember();
-      if (dataUrl && (!/^data:image\/(jpeg|png|webp);base64,/.test(dataUrl) || dataUrl.length > 400000)) {
+      const ok = (url, max) => /^data:image\/(jpeg|png|webp);base64,/.test(url) && url.length <= max;
+      if (small && (!ok(small, 400000) || (large && !ok(large, 2500000)))) {
         throw new Error('Dieses Bild lässt sich nicht verwenden.');
       }
       const account = accountOf(member.id);
-      account.avatar = dataUrl || null;
-      save(db);
+      const before = { avatar: account.avatar, avatarLarge: account.avatarLarge };
+      account.avatar = small || null;
+      account.avatarLarge = small ? (large || small) : null;
+      if (!save(db)) {
+        Object.assign(account, before);
+        throw new Error('Das Bild ist zu groß für den Demo-Speicher.');
+      }
       return publicMember(member);
     },
 
