@@ -12,11 +12,11 @@
 
   // ---------- Startsortiment (wie im bisherigen Kiosk, im Admin frei änderbar) ----------
   // Bereiche erscheinen in dieser Reihenfolge. status 'soon' = nur Vorschau ("bald").
-  const CATALOG_VERSION = 3;
+  const CATALOG_VERSION = 4;
   const DEFAULT_CATALOG = {
     sections: [
-      { id: 'bier', title: 'Bier', note: 'Frisch gezapft und kalt', status: 'open' },
       { id: 'alkoholfrei', title: 'Alkoholfrei', note: 'Für die Seitenwechsel', status: 'open' },
+      { id: 'bier', title: 'Bier', note: 'Frisch gezapft und kalt', status: 'open' },
       { id: 'snacks', title: 'Snacks & Eis', note: '', status: 'open' },
       { id: 'shop', title: 'Vereinsshop', note: 'Bälle, Griffbänder und Vereinskleidung – bald direkt hier.', status: 'soon' },
     ],
@@ -25,18 +25,18 @@
       { id: 'koelsch-kranz', section: 'bier', name: 'Kölsch-Kranz', detail: '10 Gläser für die ganze Runde.', price: 2000, art: 'kranz', color: '#E9B949' },
       { id: 'radler', section: 'bier', name: 'Radler', detail: 'Erfrischend und fruchtig.', price: 200, art: 'bottle', color: '#F0C93A' },
       { id: 'weissbier', section: 'bier', name: 'Weißbier', detail: 'Alkoholfrei, bayrisch herb.', price: 200, art: 'weizen', color: '#E3A33B' },
-      { id: 'sportsfreund', section: 'alkoholfrei', name: 'Sportsfreund', detail: 'Isotonisch und alkoholfrei.', price: 200, art: 'water', color: '#5BB98B' },
       { id: 'gerolsteiner', section: 'alkoholfrei', name: 'Gerolsteiner', detail: 'Mineralwasser Medium.', price: 200, art: 'water', color: '#7FB7D9' },
       { id: 'coca-cola', section: 'alkoholfrei', name: 'Coca-Cola', detail: 'Eiskalt genießen.', price: 280, art: 'cola', color: '#B7282E' },
       { id: 'fanta', section: 'alkoholfrei', name: 'Fanta Orange', detail: 'Fruchtig frisch.', price: 200, art: 'cola', color: '#F08A24' },
-      { id: 'red-bull', section: 'alkoholfrei', name: 'Red Bull', detail: 'Verleiht Flügel.', price: 200, art: 'slimcan', color: '#2E4E9E' },
-      { id: 'snickers', section: 'snacks', name: 'Snickers', detail: 'Und der Hunger ist gegessen.', price: 100, art: 'bar', color: '#5A3825' },
-      { id: 'mars', section: 'snacks', name: 'Mars', detail: '… macht mobil.', price: 100, art: 'bar', color: '#2B2B2B' },
-      { id: 'hanuta', section: 'snacks', name: 'Hanuta', detail: 'Für dich gebacken.', price: 100, art: 'wafer', color: '#2F5D8A' },
+      { id: 'sportsfreund', section: 'alkoholfrei', name: 'Sportsfreund', detail: 'Isotonisch und alkoholfrei.', price: 200, art: 'water', color: '#5BB98B' },
+      { id: 'red-bull', section: 'alkoholfrei', name: 'Red Bull', detail: 'Verleiht Flügel.', price: 200, art: 'redbull', color: '#1E3A8A' },
+      { id: 'snickers', section: 'snacks', name: 'Snickers', detail: 'Und der Hunger ist gegessen.', price: 100, art: 'snickers', color: '#5A3825' },
+      { id: 'mars', section: 'snacks', name: 'Mars', detail: '… macht mobil.', price: 100, art: 'mars', color: '#C8202F' },
+      { id: 'hanuta', section: 'snacks', name: 'Hanuta', detail: 'Quadratisch, praktisch, für dich gebacken.', price: 100, art: 'wafer', color: '#1E4FA0' },
       { id: 'pringles', section: 'snacks', name: 'Pringles', detail: 'Heute schon gepoppt?', price: 300, art: 'tube', color: '#C8202F' },
       { id: 'chipsfrisch', section: 'snacks', name: 'Chipsfrisch', detail: 'Ungarisch. Oft kopiert, nie erreicht.', price: 250, art: 'bag', color: '#E07A2F' },
       { id: 'haribo', section: 'snacks', name: 'Haribo Colorado', detail: 'Süße Evergreens.', price: 250, art: 'bear', color: '#E8B22B' },
-      { id: 'bockwurst', section: 'snacks', name: 'Bockwurst', detail: 'Dicke Sauerländer · Dose mit 5 Stück.', price: 1000, art: 'sausage', color: '#B5462F' },
+      { id: 'bockwurst', section: 'snacks', name: 'Bockwurst', detail: 'Dicke Sauerländer · Dose mit 5 Stück.', price: 1000, art: 'hotdog', color: '#B5462F' },
       { id: 'cornetto', section: 'snacks', name: 'Cornetto', detail: 'Vanille-Nuss. So schmeckt der Sommer.', price: 300, art: 'cone', color: '#D9A066' },
       { id: 'baelle', section: 'shop', name: 'Tennisbälle', detail: '4er-Dose', price: 1200, art: 'ball', color: '#D7E04B' },
       { id: 'griffband', section: 'shop', name: 'Overgrip', detail: '3er-Pack', price: 900, art: 'grip', color: '#F4F1EA' },
@@ -121,6 +121,25 @@
     if (!db.catalog.products.some((p) => p.id === kranz.id)) {
       const at = db.catalog.products.findIndex((p) => p.id === 'koelsch');
       db.catalog.products.splice(at >= 0 ? at + 1 : 0, 0, clone(kranz));
+    }
+    db.catalogVersion = 3;
+    save(db);
+  }
+  // Version 3 → 4: Alkoholfrei nach vorn, feste Reihenfolge dort, neue Riegel-/Dosen-/Hotdog-Symbole.
+  if (db.catalog && db.catalogVersion === 3) {
+    const cat = db.catalog;
+    const af = cat.sections.findIndex((x) => x.id === 'alkoholfrei');
+    if (af > 0) cat.sections.unshift(...cat.sections.splice(af, 1));
+    const wanted = ['gerolsteiner', 'coca-cola', 'fanta', 'sportsfreund', 'red-bull'];
+    const slots = cat.products.map((p, i) => (p.section === 'alkoholfrei' ? i : -1)).filter((i) => i >= 0);
+    const group = slots.map((i) => cat.products[i]);
+    const rank = (p) => (wanted.includes(p.id) ? wanted.indexOf(p.id) : wanted.length);
+    group.sort((a, b) => rank(a) - rank(b));
+    slots.forEach((slot, k) => { cat.products[slot] = group[k]; });
+    for (const fresh of DEFAULT_CATALOG.products) {
+      if (!['snickers', 'mars', 'hanuta', 'bockwurst', 'red-bull'].includes(fresh.id)) continue;
+      const p = cat.products.find((x) => x.id === fresh.id);
+      if (p) Object.assign(p, { art: fresh.art, color: fresh.color, detail: fresh.id === 'hanuta' ? fresh.detail : p.detail });
     }
     db.catalogVersion = CATALOG_VERSION;
     save(db);

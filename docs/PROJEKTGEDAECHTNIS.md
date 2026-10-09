@@ -51,8 +51,8 @@ Präsentation vor dem Vorstand; bei Zustimmung wird daraus der Echtbetrieb.
   Artikel anlegen/ändern/löschen/ausblenden (Name, Zusatzzeile, Preis, Bereich,
   Symbol, Farbe), Artikel und **Bereiche** per Pfeil sortieren, Bereiche
   anlegen/umbenennen/löschen, Status „Geöffnet“ oder „Bald (nur Vorschau)“.
-- Sortiment übernommen aus dem bisherigen Padel-Kiosk (ohne Padel-Artikel);
-  Vereinsshop (Bälle, Overgrip, Shirt, Cap) als „bald“ ganz unten.
+- Sortiment übernommen aus dem bisherigen Padel-Kiosk (ohne Padel-Artikel).
+  Reihenfolge: Alkoholfrei, Bier, Snacks & Eis, Vereinsshop („bald“) ganz unten.
 
 Im Demo-Modus liegen alle Daten nur im Browser des Geräts. Demo-Zugang:
 `max@tfb-demo.de` (ist Admin). Datenschicht: `assets/js/demo-backend.js`
@@ -88,3 +88,7 @@ Im Demo-Modus liegen alle Daten nur im Browser des Geräts. Demo-Zugang:
 - **09.10.2026** – Kölsch-Kranz (10 Gläser, 20,00 € wie im Padel-Kiosk) mit
   eigenem Symbol direkt neben dem Kölsch (2,00 €). Ein Kranz zählt auf der
   Strichliste als ein Strich „Kölsch-Kranz“.
+- **09.10.2026** – Symbole nachgeschärft: Snickers/Mars als längliche Riegel in
+  Originalfarben, Hanuta quadratisch, Goldbär, Bockwurst als Hotdog, Pringles mit
+  Mr. P, Red Bull mit Karo, Sonne und Bullen. Alkoholfrei steht jetzt vorne:
+  Gerolsteiner, Coca-Cola, Fanta, Sportsfreund, Red Bull.
