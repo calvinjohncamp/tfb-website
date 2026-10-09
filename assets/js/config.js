@@ -10,6 +10,9 @@ TFB.config = {
   // 'demo' = alle Daten bleiben auf diesem Gerät (bis Supabase verfügbar ist).
   backend: 'demo',
 
+  // Werbung für die Padel-Buchungs-App des Vereins (eigener Reiter unten).
+  padelUrl: 'https://padel-bielstein.de',
+
   timeZone: 'Europe/Berlin',
   tallyDays: 7,          // Strichliste zeigt immer die letzten 7 Tage
   undoSeconds: 60,       // so lange lässt sich ein Strich zurücknehmen

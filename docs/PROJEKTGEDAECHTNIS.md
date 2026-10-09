@@ -38,8 +38,8 @@ Präsentation vor dem Vorstand; bei Zustimmung wird daraus der Echtbetrieb.
 - Kopfzeile: großes „TFB.“-Logo, daneben „KIOSK“ unten bündig, rechts Profilbild.
 - **Signalfarbe Sandplatz-Rot `#C4553A`** (CSS `--signal`): „KIOSK“, Striche, „bald“.
   Bleibt fest, auch wenn die Markenfarbe geändert wird.
-- Drei Reiter für alle: **Kiosk · Strichliste · Abrechnungen**. Admins sehen
-  zusätzlich **Verwaltung**.
+- Reiter für alle: **Kiosk · Strichliste · Abrechnungen · Padel** (Link zur
+  Padel-Buchungs-App). Admins sehen zusätzlich **Verwaltung**.
 - Profilbild hochladen; Antippen im Profil zeigt es groß (ganzes Originalbild).
 
 ## Funktionen, die stehen (Demo-Modus)
@@ -108,3 +108,7 @@ Im Demo-Modus liegen alle Daten nur im Browser des Geräts. Demo-Zugang:
   Weiß (`assets/js/brand-data.js`, erzeugt von `tools/build-brand.sh`).
   Danach: Kappe ohne Glanzstreifen am Schirm, Overgrip-Linien innerhalb der Rolle,
   Tennisbälle gelb, Padelbälle orange.
+- **09.10.2026** – Kopfzeile: originaler Schriftzug „Tennisfreunde Bielstein“
+  (aus dem Logo, `tfb-tagline`) über „KIOSK“. Neuer Reiter **Padel** öffnet
+  padel-bielstein.de in neuem Fenster (`padelUrl` in config.js). Malzbier
+  (Golden Malz aus Bielstein, eigenes Symbol, 2,00 € vorläufig) bei Alkoholfrei.

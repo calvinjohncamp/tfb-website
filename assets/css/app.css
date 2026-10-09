@@ -78,6 +78,8 @@ svg { display: block; }
 .brand { display: flex; align-items: flex-end; gap: 14px; text-decoration: none; color: var(--logo); }
 .header-mark { height: 38px; display: block; }
 .brand .app-label { line-height: 1; margin-bottom: 1px; }
+.brand-text { display: grid; justify-items: start; gap: 6px; }
+.header-tagline { height: 7.5px; color: var(--logo); }
 .coaster-ball { width: 26px; color: #7A5A2E; opacity: .8; margin-bottom: 2px; }
 
 /* ---------- Karten, Knöpfe, Felder ---------- */
@@ -523,3 +525,7 @@ button.shop-card { border: 0; text-align: left; font: inherit; }
   font-size: .68rem; font-weight: 800; text-transform: uppercase; letter-spacing: .08em;
   color: var(--clay); background: var(--clay-soft); padding: 5px 9px; border-radius: 8px;
 }
+
+/* Reiter, der eine andere App öffnet (Padel-Buchung) */
+.tab.external { color: var(--signal); }
+.tab.external svg { stroke-width: 1.9; }

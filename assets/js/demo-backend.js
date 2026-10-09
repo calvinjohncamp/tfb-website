@@ -12,7 +12,7 @@
 
   // ---------- Startsortiment (wie im bisherigen Kiosk, im Admin frei änderbar) ----------
   // Bereiche erscheinen in dieser Reihenfolge. status 'soon' = nur Vorschau ("bald").
-  const CATALOG_VERSION = 6;
+  const CATALOG_VERSION = 7;
   const DEFAULT_CATALOG = {
     sections: [
       { id: 'alkoholfrei', title: 'Alkoholfrei', note: 'Für die Seitenwechsel', status: 'open' },
@@ -29,6 +29,7 @@
       { id: 'coca-cola', section: 'alkoholfrei', name: 'Coca-Cola', detail: 'Eiskalt genießen.', price: 280, art: 'cola', color: '#B7282E' },
       { id: 'fanta', section: 'alkoholfrei', name: 'Fanta Orange', detail: 'Fruchtig frisch.', price: 200, art: 'cola', color: '#F08A24' },
       { id: 'sportsfreund', section: 'alkoholfrei', name: 'Sportsfreund', detail: 'Isotonisch und alkoholfrei.', price: 200, art: 'water', color: '#5BB98B' },
+      { id: 'malzbier', section: 'alkoholfrei', name: 'Malzbier', detail: 'Golden Malz aus Bielstein.', price: 200, art: 'malz', color: '#3B2314' },
       { id: 'red-bull', section: 'alkoholfrei', name: 'Red Bull', detail: 'Verleiht Flügel.', price: 200, art: 'redbull', color: '#1E3A8A' },
       { id: 'snickers', section: 'snacks', name: 'Snickers', detail: 'Und der Hunger ist gegessen.', price: 100, art: 'snickers', color: '#5A3825' },
       { id: 'mars', section: 'snacks', name: 'Mars', detail: '… macht mobil.', price: 100, art: 'mars', color: '#C8202F' },
@@ -167,6 +168,17 @@
     for (const [id, color] of [['baelle', '#F2D21B'], ['padelbaelle', '#F08A24']]) {
       const p = db.catalog.products.find((x) => x.id === id);
       if (p) p.color = color;
+    }
+    db.catalogVersion = 6;
+    save(db);
+  }
+  // Version 6 → 7: Malzbier (Golden Malz) im Bereich Alkoholfrei, vor Red Bull.
+  if (db.catalog && db.catalogVersion === 6) {
+    const cat = db.catalog;
+    if (!cat.products.some((p) => p.id === 'malzbier') && cat.sections.some((x) => x.id === 'alkoholfrei')) {
+      const fresh = clone(DEFAULT_CATALOG.products.find((p) => p.id === 'malzbier'));
+      const at = cat.products.findIndex((p) => p.id === 'red-bull');
+      if (at >= 0) cat.products.splice(at, 0, fresh); else cat.products.push(fresh);
     }
     db.catalogVersion = CATALOG_VERSION;
     save(db);

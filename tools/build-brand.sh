@@ -1,6 +1,6 @@
 #!/bin/zsh
 # Erzeugt aus dem Original-Logo (schwarz, transparenter Hintergrund) die App-Bausteine:
-#  - assets/brand/tfb-logo|mark|ball.png   zugeschnitten
+#  - assets/brand/tfb-logo|mark|ball|tagline.png   zugeschnitten (tagline = Schriftzug)
 #  - assets/css/brand.css                  Logos als einfärbbare Masken (data-URI,
 #                                          damit es auch per Doppelklick/file:// läuft)
 #  - assets/icons/icon-*.png               App-Symbol
@@ -15,11 +15,12 @@ alpha(){ magick "$@" -alpha extract -strip -define png:compression-level=9 PNG8:
 magick $SRC -trim +repage -resize 900x  PNG32:$B/tfb-logo.png
 magick $SRC -crop 1830x700+80+60 +repage -trim +repage -resize 600x PNG32:$B/tfb-mark.png
 magick $SRC -crop 300x300+1600+450 +repage -trim +repage -resize 160x PNG32:$B/tfb-ball.png
+magick $SRC -crop 1840x130+80+775 +repage -trim +repage -resize 900x PNG32:$B/tfb-tagline.png
 
 css=assets/css/brand.css
 {
   echo "/* Automatisch erzeugt von tools/build-brand.sh – nicht von Hand bearbeiten. */"
-  for n in logo mark ball; do
+  for n in logo mark ball tagline; do
     f=$B/tfb-$n.png
     w=$(magick identify -format %w $f); h=$(magick identify -format %h $f)
     # Maske: Graustufen-Alpha als weißes Motiv auf Schwarz (Luminanz-Maske)

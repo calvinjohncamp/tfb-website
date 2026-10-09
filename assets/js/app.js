@@ -80,6 +80,7 @@
     up: '<svg viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></svg>',
     down: '<svg viewBox="0 0 24 24"><path d="M12 5v14M6 13l6 6 6-6"/></svg>',
     pencil: '<svg viewBox="0 0 24 24"><path d="M5 19l1.2-4.2L15.5 5.5a2.1 2.1 0 0 1 3 3L9.2 17.8z"/><path d="M13.5 7.5l3 3"/></svg>',
+    padel: '<svg viewBox="0 0 24 24"><path d="M10.3 14.4c-2.1-1.6-2.4-5-.4-7.9 1.9-2.8 5-4.1 7.4-3.1 2.5 1 3.4 4 2.1 7-1.2 2.8-4 4.9-6.6 5-1 0-1.9-.3-2.5-1z"/><path d="M10.3 14.4L5.4 19.3" stroke-width="3.4"/><path d="M13.8 7.4h.01M16.6 7.6h.01M12.6 10.2h.01M15.4 10.4h.01" stroke-width="2.3"/></svg>',
     admin: '<svg viewBox="0 0 24 24"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2.2"/><circle cx="9" cy="17" r="2.2"/></svg>',
   };
 
@@ -237,18 +238,23 @@
       ['kiosk', 'Kiosk', icon.kiosk],
       ['strichliste', 'Strichliste', icon.tally],
       ['abrechnungen', 'Abrechnungen', icon.receipt],
+      ['padel', 'Padel', icon.padel, cfg.padelUrl],
       ...(state.member.isAdmin ? [['verwaltung', 'Verwaltung', icon.admin]] : []),
     ];
     $app.innerHTML = `
       <header class="topbar">
-        <a class="brand" href="#kiosk">${logo('mark', 'header-mark')}<span class="app-label">Kiosk</span></a>
+        <a class="brand" href="#kiosk">
+          ${logo('mark', 'header-mark')}
+          <span class="brand-text">${logo('tagline', 'header-tagline')}<span class="app-label">Kiosk</span></span>
+        </a>
         <button class="avatar" type="button" data-action="profile" aria-label="Profil">${avatarFace(state.member)}</button>
       </header>
       ${api.mode === 'demo' ? '<div class="demo-ribbon">Demo-Modus · Daten nur auf diesem Gerät</div>' : ''}
       <main class="view" id="view" data-view="${view}"><div class="loading"></div></main>
       <nav class="tabbar" aria-label="Bereiche" style="grid-template-columns:repeat(${tabs.length},1fr)">
-        ${tabs.map(([id, label, ic]) => `
-          <a href="#${id}" class="tab ${id === view ? 'active' : ''}" ${id === view ? 'aria-current="page"' : ''}>${ic}<span>${label}</span></a>`).join('')}
+        ${tabs.map(([id, label, ic, url]) => url
+          ? `<a href="${esc(url)}" class="tab external" target="_blank" rel="noopener" aria-label="${label} – Buchungs-App öffnen (neues Fenster)">${ic}<span>${label}</span></a>`
+          : `<a href="#${id}" class="tab ${id === view ? 'active' : ''}" ${id === view ? 'aria-current="page"' : ''}>${ic}<span>${label}</span></a>`).join('')}
       </nav>`;
     return renderView(view);
   }
