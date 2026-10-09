@@ -55,7 +55,8 @@
     chevron: '<svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg>',
   };
 
-  const crest = (size = '') => `<div class="crest ${size}" aria-hidden="true"><span>TFB</span></div>`;
+  // Logo-Bausteine aus brand.css; die Farbe kommt jeweils aus `color`.
+  const logo = (part, cls = '') => `<span class="tfb-${part} ${cls}" role="img" aria-label="${esc(cfg.clubName)}"></span>`;
 
   // ---------- Start ----------
   async function boot() {
@@ -123,9 +124,8 @@
     $app.innerHTML = `
       <main class="auth">
         <section class="auth-hero">
-          ${crest('lg')}
-          <h1>${esc(cfg.appName)}</h1>
-          <p>${esc(cfg.clubName)}</p>
+          ${logo('logo', 'hero-logo')}
+          <p class="app-label">Kiosk</p>
         </section>
         <form class="card auth-card" data-form="auth" novalidate>
           ${body}
@@ -177,7 +177,7 @@
     $app.innerHTML = `
       <main class="consent">
         <section class="auth-hero compact">
-          ${crest()}
+          ${logo('mark', 'consent-mark')}
           <h1>Schön, dass du da bist, ${esc(m.firstName)}!</h1>
         </section>
         <form class="card" data-form="consent">
@@ -211,7 +211,7 @@
     ];
     $app.innerHTML = `
       <header class="topbar">
-        <div class="brand">${crest('sm')}<div><strong>${esc(cfg.appName)}</strong><span>${esc(cfg.clubName)}</span></div></div>
+        <a class="brand" href="#kiosk">${logo('mark', 'header-mark')}<span class="app-label">Kiosk</span></a>
         <button class="avatar" type="button" data-action="profile" aria-label="Profil">${esc(initials(state.member))}</button>
       </header>
       ${api.mode === 'demo' ? '<div class="demo-ribbon">Demo-Modus · Daten nur auf diesem Gerät</div>' : ''}
@@ -243,6 +243,7 @@
     return `
       <a class="coaster" href="#abrechnungen" aria-label="Mein Bierdeckel: ${euro(open.totalCents)} im ${monthName(open.month, false)}">
         <div class="coaster-ring">
+          ${logo('ball', 'coaster-ball')}
           <span class="coaster-kicker">Mein Bierdeckel · ${esc(monthName(open.month, false))}</span>
           <strong class="coaster-amount">${euro(open.totalCents)}</strong>
           <div class="coaster-strokes">${count ? TFB.strokes(Math.min(count, 25), state.member.id + open.month) + (count > 25 ? `<em>+${count - 25}</em>` : '') : '<em>Noch leer</em>'}</div>
