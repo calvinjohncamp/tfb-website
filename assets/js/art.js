@@ -5,6 +5,12 @@
   const glass = 'rgba(255,255,255,.55)';
 
   const shapes = {
+    kranz: (c) => `
+      <path d="M32 3v40" stroke="${line}" stroke-width="3" stroke-linecap="round"/>
+      <circle cx="32" cy="6.5" r="4" fill="none" stroke="${line}" stroke-width="3"/>
+      <g opacity=".75"><rect x="13.5" y="19" width="9" height="27" rx="1.5" fill="${c}" stroke="${line}" stroke-width="2.4"/><path d="M12.5 20c0-3 2-4 5.5-4s5.5 1 5.5 4z" fill="#FFFDF5" stroke="${line}" stroke-width="2.2" stroke-linejoin="round"/></g><g opacity=".75"><rect x="27.5" y="19" width="9" height="27" rx="1.5" fill="${c}" stroke="${line}" stroke-width="2.4"/><path d="M26.5 20c0-3 2-4 5.5-4s5.5 1 5.5 4z" fill="#FFFDF5" stroke="${line}" stroke-width="2.2" stroke-linejoin="round"/></g><g opacity=".75"><rect x="41.5" y="19" width="9" height="27" rx="1.5" fill="${c}" stroke="${line}" stroke-width="2.4"/><path d="M40.5 20c0-3 2-4 5.5-4s5.5 1 5.5 4z" fill="#FFFDF5" stroke="${line}" stroke-width="2.2" stroke-linejoin="round"/></g>
+      <g opacity="1"><rect x="6.5" y="25" width="9" height="29" rx="1.5" fill="${c}" stroke="${line}" stroke-width="2.4"/><path d="M5.5 26c0-3 2-4 5.5-4s5.5 1 5.5 4z" fill="#FFFDF5" stroke="${line}" stroke-width="2.2" stroke-linejoin="round"/></g><g opacity="1"><rect x="20.5" y="25" width="9" height="29" rx="1.5" fill="${c}" stroke="${line}" stroke-width="2.4"/><path d="M19.5 26c0-3 2-4 5.5-4s5.5 1 5.5 4z" fill="#FFFDF5" stroke="${line}" stroke-width="2.2" stroke-linejoin="round"/></g><g opacity="1"><rect x="34.5" y="25" width="9" height="29" rx="1.5" fill="${c}" stroke="${line}" stroke-width="2.4"/><path d="M33.5 26c0-3 2-4 5.5-4s5.5 1 5.5 4z" fill="#FFFDF5" stroke="${line}" stroke-width="2.2" stroke-linejoin="round"/></g><g opacity="1"><rect x="48.5" y="25" width="9" height="29" rx="1.5" fill="${c}" stroke="${line}" stroke-width="2.4"/><path d="M47.5 26c0-3 2-4 5.5-4s5.5 1 5.5 4z" fill="#FFFDF5" stroke="${line}" stroke-width="2.2" stroke-linejoin="round"/></g>
+      <path d="M4 54c0 4 13 6 28 6s28-2 28-6" fill="none" stroke="${line}" stroke-width="3" stroke-linecap="round"/>`,
     stange: (c) => `
       <path d="M23 13h18v41a3 3 0 0 1-3 3H26a3 3 0 0 1-3-3z" fill="${c}" stroke="${line}" stroke-width="3" stroke-linejoin="round"/>
       <path d="M21 14c-1-5 3-8 6-7 2-3 8-3 10 0 3-1 7 2 6 7z" fill="#FFFDF5" stroke="${line}" stroke-width="3" stroke-linejoin="round"/>
@@ -111,7 +117,7 @@
 
   // Auswahl im Admin: Schlüssel und Bezeichnung jedes Symbols.
   TFB.artKinds = [
-    ['stange', 'Kölschglas'], ['weizen', 'Weizenglas'], ['beer', 'Bierkrug'], ['bottle', 'Bierflasche'],
+    ['stange', 'Kölschglas'], ['kranz', 'Kölschkranz'], ['weizen', 'Weizenglas'], ['beer', 'Bierkrug'], ['bottle', 'Bierflasche'],
     ['cola', 'Cola-Flasche'], ['water', 'Wasserflasche'], ['can', 'Dose'], ['slimcan', 'Schlanke Dose'],
     ['cup', 'Tasse'], ['bar', 'Riegel'], ['wafer', 'Waffel'], ['bag', 'Chipstüte'], ['tube', 'Chipsdose'],
     ['bear', 'Gummibär'], ['sausage', 'Würstchen'], ['cone', 'Eis'], ['ball', 'Tennisball'], ['grip', 'Griffband'],

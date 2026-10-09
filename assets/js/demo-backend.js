@@ -12,7 +12,7 @@
 
   // ---------- Startsortiment (wie im bisherigen Kiosk, im Admin frei änderbar) ----------
   // Bereiche erscheinen in dieser Reihenfolge. status 'soon' = nur Vorschau ("bald").
-  const CATALOG_VERSION = 2;
+  const CATALOG_VERSION = 3;
   const DEFAULT_CATALOG = {
     sections: [
       { id: 'bier', title: 'Bier', note: 'Frisch gezapft und kalt', status: 'open' },
@@ -22,6 +22,7 @@
     ],
     products: [
       { id: 'koelsch', section: 'bier', name: 'Kölsch', detail: 'Ein frisches Kölsch aus Bielstein.', price: 200, art: 'stange', color: '#E9B949' },
+      { id: 'koelsch-kranz', section: 'bier', name: 'Kölsch-Kranz', detail: '10 Gläser für die ganze Runde.', price: 2000, art: 'kranz', color: '#E9B949' },
       { id: 'radler', section: 'bier', name: 'Radler', detail: 'Erfrischend und fruchtig.', price: 200, art: 'bottle', color: '#F0C93A' },
       { id: 'weissbier', section: 'bier', name: 'Weißbier', detail: 'Alkoholfrei, bayrisch herb.', price: 200, art: 'weizen', color: '#E3A33B' },
       { id: 'sportsfreund', section: 'alkoholfrei', name: 'Sportsfreund', detail: 'Isotonisch und alkoholfrei.', price: 200, art: 'water', color: '#5BB98B' },
@@ -114,6 +115,16 @@
   }
   let db = load();
   // Ältere Demo-Stände bekommen das neue Sortiment, ohne Striche und Profilbilder zu verlieren.
+  // Version 2 → 3: Kölsch-Kranz direkt hinter dem Kölsch ergänzen, eigene Änderungen bleiben.
+  if (db.catalog && db.catalogVersion === 2) {
+    const kranz = DEFAULT_CATALOG.products.find((p) => p.id === 'koelsch-kranz');
+    if (!db.catalog.products.some((p) => p.id === kranz.id)) {
+      const at = db.catalog.products.findIndex((p) => p.id === 'koelsch');
+      db.catalog.products.splice(at >= 0 ? at + 1 : 0, 0, clone(kranz));
+    }
+    db.catalogVersion = CATALOG_VERSION;
+    save(db);
+  }
   if (!db.catalog || db.catalogVersion !== CATALOG_VERSION) {
     db.catalog = clone(DEFAULT_CATALOG);
     db.catalogVersion = CATALOG_VERSION;

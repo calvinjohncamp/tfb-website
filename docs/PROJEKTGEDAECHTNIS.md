@@ -85,3 +85,6 @@ Im Demo-Modus liegen alle Daten nur im Browser des Geräts. Demo-Zugang:
   Tagesdatum), Profilbild mit Vergrößerung, Verwaltung mit Kiosk-Bearbeitung
   und sortierbaren Bereichen, echtes Startsortiment mit neuen Symbolen.
   Gestaltung damit grob abgeschlossen.
+- **09.10.2026** – Kölsch-Kranz (10 Gläser, 20,00 € wie im Padel-Kiosk) mit
+  eigenem Symbol direkt neben dem Kölsch (2,00 €). Ein Kranz zählt auf der
+  Strichliste als ein Strich „Kölsch-Kranz“.
