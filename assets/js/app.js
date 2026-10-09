@@ -45,16 +45,14 @@
 
   // ---------- Gestaltung ausprobieren (nur auf diesem Gerät gemerkt) ----------
   // Später wandert das in den Admin-Bereich und gilt dann für alle.
-  const LOOK_KEY = 'tfb_kiosk_look_v2';
-  const BRAND_COLORS = [
-    ['#2A2D2E', 'Anthrazit'], ['#1F4D3A', 'Vereinsgrün'], ['#C4553A', 'Sandplatz'], ['#1E5F74', 'Petrol'],
-    ['#22355E', 'Nachtblau'], ['#6B2E4F', 'Pflaume'], ['#5E6B2A', 'Moos'], ['#D9902B', 'Senf'],
-  ];
-  const COASTERS = [['pappe', 'Pappe'], ['linie', 'Linie'], ['cover', 'Plattencover'], ['welle', 'Wellenrand'], ['stapel', 'Stapel']];
-  const look = { brand: '#2A2D2E', coaster: 'pappe' };
+  const LOOK_KEY = 'tfb_kiosk_look_v3';
+  const BRAND_COLORS = [['#000000', 'Schwarz'], ['#2A2D2E', 'Anthrazit'], ['#C4553A', 'Sandplatz-Rot']];
+  const FREE_SLOTS = 4;
+  const isHex = (v) => /^#[0-9a-f]{6}$/i.test(String(v || ''));
+  const look = { brand: '#2A2D2E', custom: [] };
   try { Object.assign(look, JSON.parse(localStorage.getItem(LOOK_KEY) || '{}')); } catch (_) {}
-  if (!/^#[0-9a-f]{6}$/i.test(look.brand)) look.brand = '#2A2D2E';
-  if (!COASTERS.some(([id]) => id === look.coaster)) look.coaster = 'pappe';
+  if (!isHex(look.brand)) look.brand = '#2A2D2E';
+  look.custom = Array.from({ length: FREE_SLOTS }, (_, i) => (isHex(look.custom[i]) ? look.custom[i] : null));
   function saveLook() { try { localStorage.setItem(LOOK_KEY, JSON.stringify(look)); } catch (_) {} }
   function applyLook() {
     document.documentElement.style.setProperty('--brand', look.brand);
@@ -62,6 +60,8 @@
   applyLook();
 
   const visual = (p) => TFB.art(p.art, p.color);
+  const same = (a, b) => String(a).toLowerCase() === String(b).toLowerCase();
+  const colorName = (hex) => (BRAND_COLORS.find(([h]) => same(h, hex)) || [0, `Eigene Farbe ${hex.toUpperCase()}`])[1];
   const strokesWord = (n) => (n === 1 ? '1 Strich' : `${n} Striche`);
 
   // ---------- Icons ----------
@@ -265,12 +265,8 @@
       : '<em>Noch leer</em>';
     const label = `Mein Bierdeckel: ${euro(open.totalCents)} im ${monthName(open.month, false)}`;
     const ball = logo('ball', 'deckel-ball');
-    const back = look.coaster === 'welle'
-      ? `<svg class="deckel-shape" viewBox="-11 -11 222 222" aria-hidden="true"><path d="${TFB.scallopSquare(200, 10)}"/></svg>`
-      : '';
     return `
-      <a class="deckel deckel--${esc(look.coaster)}" href="#abrechnungen" aria-label="${esc(label)}">
-        ${back}
+      <a class="deckel" href="#abrechnungen" aria-label="${esc(label)}">
         <div class="deckel-face">
           <div class="deckel-top">${ball}<span class="coaster-kicker">Mein Bierdeckel</span><span class="deckel-month">${esc(monthName(open.month, false))}</span></div>
           <strong class="coaster-amount">${euro(open.totalCents)}</strong>
@@ -483,18 +479,19 @@
           <div class="look-row">
             <span>Markenfarbe</span>
             <div class="swatches" role="group" aria-label="Markenfarbe">
-              ${BRAND_COLORS.map(([hex, name]) => `<button type="button" class="swatch ${look.brand.toLowerCase() === hex.toLowerCase() ? 'on' : ''}" style="--c:${hex}" data-action="brand" data-value="${hex}" title="${name}" aria-label="${name}"></button>`).join('')}
-              <label class="swatch custom ${BRAND_COLORS.some(([hex]) => hex.toLowerCase() === look.brand.toLowerCase()) ? '' : 'on'}" title="Eigene Farbe (mit Pipette)" style="--c:${look.brand}">
-                <input type="color" value="${esc(look.brand)}" data-brand-picker aria-label="Eigene Farbe wählen">
-              </label>
+              ${BRAND_COLORS.map(([hex, name]) => `<button type="button" class="swatch ${same(look.brand, hex) ? 'on' : ''}" style="--c:${hex}" data-action="brand" data-value="${hex}" title="${name}" aria-label="${name}"></button>`).join('')}
+              <span class="swatch-gap" aria-hidden="true"></span>
+              ${look.custom.map((hex, i) => hex
+                ? `<span class="swatch-slot">
+                     <button type="button" class="swatch ${same(look.brand, hex) ? 'on' : ''}" style="--c:${hex}" data-action="brand" data-value="${hex}" aria-label="Eigene Farbe ${hex}"></button>
+                     <button type="button" class="swatch-clear" data-action="slot-clear" data-slot="${i}" aria-label="Farbe entfernen">${icon.close}</button>
+                   </span>`
+                : `<label class="swatch empty" title="Freies Feld: Farbe wählen oder mit Pipette aufnehmen">
+                     ${icon.plus}
+                     <input type="color" value="${esc(look.brand)}" data-slot-picker="${i}" aria-label="Freies Farbfeld belegen">
+                   </label>`).join('')}
             </div>
-            <small class="muted">${esc((BRAND_COLORS.find(([hex]) => hex.toLowerCase() === look.brand.toLowerCase()) || [0, 'Eigene Farbe ' + look.brand.toUpperCase()])[1])}</small>
-          </div>
-          <div class="look-row">
-            <span>Bierdeckel</span>
-            <div class="seg" role="group" aria-label="Bierdeckel">
-              ${COASTERS.map(([value, text]) => `<button type="button" class="${look.coaster === value ? 'on' : ''}" data-action="coaster" data-value="${value}">${text}</button>`).join('')}
-            </div>
+            <small class="muted">${esc(colorName(look.brand))}</small>
           </div>
         </div>
         <div class="card soft install">
@@ -633,19 +630,19 @@
     if (btn) btn.innerHTML = avatarFace(state.member);
   }
 
-  // Eigene Markenfarbe: live beim Ziehen, gespeichert beim Loslassen.
+  // Freies Farbfeld: live ausprobieren beim Ziehen, belegen beim Bestätigen.
   document.addEventListener('input', (e) => {
-    if (!e.target.matches('[data-brand-picker]')) return;
-    look.brand = e.target.value;
-    applyLook();
-    e.target.parentElement.style.setProperty('--c', look.brand);
+    if (!e.target.matches('[data-slot-picker]')) return;
+    document.documentElement.style.setProperty('--brand', e.target.value);
   });
 
   document.addEventListener('change', async (e) => {
-    if (e.target.matches('[data-brand-picker]')) {
+    if (e.target.matches('[data-slot-picker]')) {
+      look.custom[Number(e.target.dataset.slotPicker)] = e.target.value;
+      look.brand = e.target.value;
       saveLook();
+      applyLook();
       openProfile();
-      renderView();
       return;
     }
     if (e.target.matches('[data-avatar-input]') && e.target.files[0]) {
@@ -687,12 +684,18 @@
       state.authEmail = '';
       render();
       toast('Demo-Daten wurden neu erzeugt.');
-    } else if (action === 'brand' || action === 'coaster') {
-      look[action] = el.dataset.value;
+    } else if (action === 'brand') {
+      look.brand = el.dataset.value;
       saveLook();
       applyLook();
       openProfile();
-      renderView();
+    } else if (action === 'slot-clear') {
+      const removed = look.custom[Number(el.dataset.slot)];
+      look.custom[Number(el.dataset.slot)] = null;
+      if (removed && same(removed, look.brand)) look.brand = '#2A2D2E';
+      saveLook();
+      applyLook();
+      openProfile();
     } else if (action === 'avatar-zoom') {
       openLightbox(state.member.avatarLarge || state.member.avatar, `${state.member.firstName} ${state.member.lastName}`);
     } else if (action === 'lightbox-close') {

@@ -182,19 +182,27 @@ svg { display: block; }
 .seg button { border: 1.5px solid rgba(31, 77, 58, .25); background: #fff; border-radius: 99px; padding: 6px 12px; font-size: .85rem; font-weight: 600; }
 .seg button.on { background: var(--green); border-color: var(--green); color: #fff; }
 .look-row small { font-size: .78rem; }
-.swatches { display: flex; flex-wrap: wrap; gap: 8px; }
+.swatches { display: flex; flex-wrap: wrap; gap: 7px; align-items: center; }
 .swatch {
-  width: 34px; height: 34px; border-radius: 50%; border: 0; padding: 0;
+  width: 31px; height: 31px; border-radius: 50%; border: 0; padding: 0;
   background: var(--c); box-shadow: 0 0 0 2px #fff, 0 0 0 3px rgba(0,0,0,.08);
   cursor: pointer; position: relative;
 }
 .swatch.on { box-shadow: 0 0 0 2px #fff, 0 0 0 4.5px var(--c); }
-.swatch.custom {
-  background: conic-gradient(#E74C3C, #F1C40F, #2ECC71, #3498DB, #9B59B6, #E74C3C);
-  display: grid; place-items: center;
+.swatch-gap { width: 1px; height: 26px; align-self: center; background: rgba(0,0,0,.12); margin: 0 2px; }
+.swatch-slot { position: relative; display: inline-block; }
+.swatch-clear {
+  position: absolute; top: -6px; right: -6px; width: 18px; height: 18px; border-radius: 50%;
+  border: 0; padding: 0; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.25);
+  display: grid; place-items: center; cursor: pointer;
 }
-.swatch.custom::after { content: ""; width: 14px; height: 14px; border-radius: 50%; background: var(--c); box-shadow: 0 0 0 2px #fff; }
-.swatch.custom input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+.swatch-clear svg { width: 10px; height: 10px; fill: none; stroke: var(--ink); stroke-width: 3; stroke-linecap: round; }
+.swatch.empty {
+  background: transparent; box-shadow: none; border: 1.5px dashed rgba(0,0,0,.28);
+  display: grid; place-items: center; color: var(--muted);
+}
+.swatch.empty svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; }
+.swatch.empty input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
 .demo-ribbon { margin: 0 16px; padding: 6px 12px; border-radius: 10px; background: rgba(235,217,184,.45); color: #7A6440; font-size: .75rem; font-weight: 600; text-align: center; }
 
 .view { padding: 16px 16px calc(var(--tabbar-h) + 28px + var(--safe-bottom)); }
@@ -219,10 +227,10 @@ svg { display: block; }
 
 .section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin: 28px 2px 10px; }
 
-/* ---------- Bierdeckel (fünf eckige Varianten) ---------- */
+/* ---------- Bierdeckel: zwei Deckel übereinander, hinten die Markenfarbe ---------- */
 .deckel {
   --size: min(74vw, 268px);
-  --deckel-ink: #6B5433;
+  --deckel-ink: var(--ink);
   --stroke-color: var(--clay);
   position: relative; display: block; width: var(--size); aspect-ratio: 1;
   margin: 10px auto 8px; text-decoration: none; color: var(--deckel-ink);
@@ -244,57 +252,12 @@ svg { display: block; }
 .coaster-strokes em { font-family: var(--hand); font-style: normal; font-size: 1.05rem; }
 .coaster-note { font-size: .74rem; opacity: .85; }
 
-/* 1 · Pappe: klassischer quadratischer Deckel mit Faserstruktur und Prägerand */
-.deckel--pappe .deckel-face {
-  border-radius: 18px;
-  background:
-    radial-gradient(circle at 25% 20%, rgba(255,255,255,.4), transparent 55%),
-    repeating-linear-gradient(115deg, rgba(122,90,46,.05) 0 2px, transparent 2px 5px),
-    var(--cardboard);
-  box-shadow: inset 0 0 0 10px var(--cardboard), inset 0 0 0 12px rgba(122,90,46,.35), 0 2px 0 var(--cardboard-2), 0 14px 30px rgba(120,90,40,.2);
-}
-
-/* 2 · Linie: weiß, kräftige Kontur, harter Versatzschatten */
-.deckel--linie { --deckel-ink: var(--ink); }
-.deckel--linie .deckel-face {
-  background: #fff; border: 3px solid var(--ink); border-radius: 12px;
-  box-shadow: 7px 7px 0 var(--brand);
-}
-
-/* 3 · Plattencover: vollflächig in Markenfarbe, Schallplatte schaut heraus */
-.deckel--cover { --deckel-ink: #F5F0E6; --stroke-color: #F5F0E6; transform: rotate(-2deg); }
-.deckel--cover::after {
-  content: ""; position: absolute; z-index: 0; top: 6%; right: -14%; width: 88%; aspect-ratio: 1; border-radius: 50%;
-  background:
-    radial-gradient(circle, var(--clay) 0 15%, #111 15.5% 17%, transparent 17.5%),
-    repeating-radial-gradient(circle, #1a1a1a 0 2px, #262626 2px 3px);
-  box-shadow: 0 10px 24px rgba(0,0,0,.25);
-}
-.deckel--cover .deckel-face {
-  background:
-    linear-gradient(135deg, rgba(255,255,255,.12), transparent 45%),
-    var(--brand);
-  border-radius: 4px; box-shadow: 0 18px 36px rgba(0,0,0,.25);
-}
-.deckel--cover .coaster-amount { color: #fff; }
-.deckel--cover:active { transform: rotate(-3deg) scale(.98); }
-
-/* 4 · Wellenrand: Papierdeckel mit gewelltem Rand */
-.deckel--welle .deckel-shape {
-  position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0;
-  fill: #F4ECDD; stroke: rgba(107, 84, 51, .45); stroke-width: 1.2;
-  filter: drop-shadow(0 12px 18px rgba(120, 90, 40, .18));
-}
-.deckel--welle .deckel-face { position: absolute; inset: 16px; height: auto; border: 1.5px dashed rgba(107, 84, 51, .35); border-radius: 6px; padding: 16px; }
-
-/* 5 · Stapel: zwei Deckel übereinander, hinten die Markenfarbe */
-.deckel--stapel { --deckel-ink: var(--ink); }
-.deckel--stapel::before {
+.deckel::before {
   content: ""; position: absolute; inset: 0; z-index: 0; border-radius: 14px;
   background: var(--brand); transform: rotate(7deg) translate(8px, 4px);
   box-shadow: 0 12px 26px rgba(0,0,0,.18);
 }
-.deckel--stapel .deckel-face {
+.deckel .deckel-face {
   background: #fff; border-radius: 14px; transform: rotate(-3deg);
   box-shadow: 0 0 0 1px #E6E1D6, 0 10px 24px rgba(0,0,0,.12);
 }

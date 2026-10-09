@@ -61,19 +61,6 @@
     return `<svg class="art" viewBox="0 0 64 64" aria-hidden="true">${draw(color || '#C8553D')}</svg>`;
   };
 
-  // Quadratischer Bierdeckel mit Wellenrand (Halbkreise nach außen), für viewBox -r..size+r.
-  TFB.scallopSquare = function (size = 200, bumps = 10) {
-    const w = size / bumps;
-    const r = (w / 2).toFixed(2);
-    const arc = (dx, dy) => `a${r} ${r} 0 0 1 ${dx} ${dy}`;
-    let d = 'M0 0';
-    for (let i = 0; i < bumps; i++) d += arc(w, 0);
-    for (let i = 0; i < bumps; i++) d += arc(0, w);
-    for (let i = 0; i < bumps; i++) d += arc(-w, 0);
-    for (let i = 0; i < bumps; i++) d += arc(0, -w);
-    return d + 'Z';
-  };
-
   // Strichliste: echte Striche, jeder fünfte quer durch das Bündel.
   // Leicht verwackelt, damit es nach Kuli auf Papier aussieht – aber stabil je Zeile.
   TFB.strokes = function (count, seedText = '') {
