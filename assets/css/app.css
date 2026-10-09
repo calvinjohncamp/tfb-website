@@ -561,6 +561,8 @@ button.shop-card { border: 0; text-align: left; font: inherit; }
   -webkit-mask: radial-gradient(circle, transparent 62%, #000 63%);
   mask: radial-gradient(circle, transparent 62%, #000 63%);
 }
-.storno-label { font-size: .6rem; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; line-height: 1; }
-.storno small { font-size: .6rem; font-weight: 800; opacity: .7; font-variant-numeric: tabular-nums; line-height: 1; margin-top: 10px; }
+/* Beide Zeilen fest um die Ringmitte: STORNO knapp darüber, Sekunden knapp darunter */
+.storno-label, .storno small { position: absolute; left: 0; right: 0; text-align: center; line-height: 1; }
+.storno-label { bottom: calc(50% + 2px); font-size: .6rem; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; }
+.storno small { top: calc(50% + 5px); font-size: .6rem; font-weight: 800; opacity: .7; font-variant-numeric: tabular-nums; }
 @keyframes storno-in { from { transform: rotate(-20deg) scale(.3); opacity: 0; } }
