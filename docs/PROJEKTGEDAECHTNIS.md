@@ -100,3 +100,7 @@ Im Demo-Modus liegen alle Daten nur im Browser des Geräts. Demo-Zugang:
 - **09.10.2026** – Bierdeckel lebendig: mit der Maus darüber kippt der vordere
   Deckel leicht nach rechts und zurück; beim Antippen wackelt er kurz, dann
   öffnet sich die Abrechnung. Bei „Bewegung reduzieren“ ohne Animation.
+- **09.10.2026** – Vereinsshop mit gleich großen Kacheln (Preis + „bald“ statt
+  Plus). Neu: Padelbälle (9 €) und Padel-Schläger (159 €) neben den
+  Tennisbällen. Vereinsshirt und navyblaue Basecap tragen das echte TFB.-Logo in
+  Weiß (`assets/js/brand-data.js`, erzeugt von `tools/build-brand.sh`).

@@ -323,45 +323,33 @@
         ${tools}
       </div>
       ${soon && section.note ? `<p class="muted small section-note">${esc(section.note)}</p>` : ''}`;
-    const addTile = edit ? `<button type="button" class="${soon ? 'shop-card' : 'tile'} tile-new" data-action="product-new" data-section="${esc(section.id)}">${icon.plus}<span>Artikel</span></button>` : '';
-    if (soon) {
-      return `
-        <section class="shop">
-          ${head}
-          <div class="shop-strip">
-            ${items.map((p, i) => edit ? editWrap(p, i, items.length, shopCard(p, true)) : shopCard(p, false)).join('')}
-            ${addTile}
-          </div>
-        </section>`;
-    }
+    const addTile = edit ? `<button type="button" class="tile tile-new" data-action="product-new" data-section="${esc(section.id)}">${icon.plus}<span>Artikel</span></button>` : '';
     return `
-      <section class="menu">
+      <section class="menu ${soon ? 'is-soon' : ''}">
         ${head}
         <div class="tiles">
-          ${items.map((p, i) => edit ? editWrap(p, i, items.length, tile(p, true)) : tile(p, false)).join('')}
+          ${items.map((p, i) => edit ? editWrap(p, i, items.length, tile(p, true)) : tile(p, false, soon)).join('')}
           ${addTile}
         </div>
       </section>`;
   }
 
-  function tile(p, edit) {
+  // Kachel – bei Bereichen mit Status "bald" gleich groß, aber nur zum Anschauen.
+  function tile(p, edit, soon = false) {
+    if (soon) {
+      return `
+        <div class="tile is-soon" aria-disabled="true">
+          <div class="tile-art" style="--tint:${esc(p.color)}">${visual(p)}</div>
+          <div class="tile-text"><strong>${esc(p.name)}</strong><span>${esc(p.detail)}</span></div>
+          <div class="tile-foot"><b>${euro(p.price)}</b><span class="soon-tag">bald</span></div>
+        </div>`;
+    }
     return `
       <button class="tile" type="button" data-action="${edit ? 'product-edit' : 'pick'}" data-id="${esc(p.id)}">
         <div class="tile-art" style="--tint:${esc(p.color)}">${visual(p)}</div>
         <div class="tile-text"><strong>${esc(p.name)}</strong><span>${esc(p.detail)}</span></div>
         <div class="tile-foot"><b>${euro(p.price)}</b><span class="tile-add">${edit ? icon.pencil : icon.plus}</span></div>
       </button>`;
-  }
-
-  function shopCard(p, edit) {
-    const tag = edit ? 'button' : 'div';
-    return `
-      <${tag} class="shop-card" ${edit ? `type="button" data-action="product-edit" data-id="${esc(p.id)}"` : 'aria-disabled="true"'}>
-        <div class="shop-art" style="--tint:${esc(p.color)}">${visual(p)}</div>
-        <strong>${esc(p.name)}</strong>
-        <span>${esc(p.detail)}</span>
-        <b>${euro(p.price)}</b>
-      </${tag}>`;
   }
 
   // Im Bearbeitungsmodus: Kachel plus Pfeile zum Verschieben innerhalb des Bereichs.

@@ -514,3 +514,11 @@ button.shop-card { border: 0; text-align: left; font: inherit; }
 .symbol.on { border-color: var(--brand); box-shadow: 0 0 0 2px var(--brand); }
 .btn.danger { color: var(--clay); border-color: var(--clay-soft); margin-top: 6px; }
 .seg button { cursor: pointer; }
+
+/* ---------- Bereiche mit Status "bald": gleich große Kacheln, nur zum Anschauen ---------- */
+.tile.is-soon { cursor: default; }
+.tile.is-soon .tile-foot b { color: var(--muted); }
+.soon-tag {
+  font-size: .68rem; font-weight: 800; text-transform: uppercase; letter-spacing: .08em;
+  color: var(--clay); background: var(--clay-soft); padding: 5px 9px; border-radius: 8px;
+}

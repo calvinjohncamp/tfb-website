@@ -12,7 +12,7 @@
 
   // ---------- Startsortiment (wie im bisherigen Kiosk, im Admin frei änderbar) ----------
   // Bereiche erscheinen in dieser Reihenfolge. status 'soon' = nur Vorschau ("bald").
-  const CATALOG_VERSION = 4;
+  const CATALOG_VERSION = 5;
   const DEFAULT_CATALOG = {
     sections: [
       { id: 'alkoholfrei', title: 'Alkoholfrei', note: 'Für die Seitenwechsel', status: 'open' },
@@ -39,9 +39,11 @@
       { id: 'bockwurst', section: 'snacks', name: 'Bockwurst', detail: 'Dicke Sauerländer · Dose mit 5 Stück.', price: 1000, art: 'hotdog', color: '#B5462F' },
       { id: 'cornetto', section: 'snacks', name: 'Cornetto', detail: 'Vanille-Nuss. So schmeckt der Sommer.', price: 300, art: 'cone', color: '#D9A066' },
       { id: 'baelle', section: 'shop', name: 'Tennisbälle', detail: '4er-Dose', price: 1200, art: 'ball', color: '#D7E04B' },
+      { id: 'padelbaelle', section: 'shop', name: 'Padelbälle', detail: '3er-Dose', price: 900, art: 'ball', color: '#E6E04A' },
+      { id: 'padel-schlaeger', section: 'shop', name: 'Padel-Schläger', detail: 'HEAD Speed Pro', price: 15900, art: 'padel', color: '#C4553A' },
       { id: 'griffband', section: 'shop', name: 'Overgrip', detail: '3er-Pack', price: 900, art: 'grip', color: '#F4F1EA' },
       { id: 'shirt', section: 'shop', name: 'Vereinsshirt', detail: 'Mit TFB-Logo', price: 2500, art: 'shirt', color: '#2A2D2E' },
-      { id: 'cap', section: 'shop', name: 'Vereinscap', detail: 'Einheitsgröße', price: 1800, art: 'cap', color: '#C4553A' },
+      { id: 'cap', section: 'shop', name: 'Vereinscap', detail: 'Basecap mit TFB-Logo', price: 1800, art: 'cap', color: '#1F2A44' },
     ].map((p) => ({ active: true, ...p })),
   };
   const clone = (v) => JSON.parse(JSON.stringify(v));
@@ -141,6 +143,22 @@
       const p = cat.products.find((x) => x.id === fresh.id);
       if (p) Object.assign(p, { art: fresh.art, color: fresh.color, detail: fresh.id === 'hanuta' ? fresh.detail : p.detail });
     }
+    db.catalogVersion = 4;
+    save(db);
+  }
+  // Version 4 → 5: Padelbälle und Padel-Schläger im Vereinsshop, Kappe als navyblaue Basecap.
+  if (db.catalog && db.catalogVersion === 4) {
+    const cat = db.catalog;
+    let after = cat.products.findIndex((p) => p.id === 'baelle');
+    for (const id of ['padelbaelle', 'padel-schlaeger']) {
+      if (cat.products.some((p) => p.id === id)) continue;
+      const fresh = clone(DEFAULT_CATALOG.products.find((p) => p.id === id));
+      if (!cat.sections.some((x) => x.id === fresh.section)) continue;
+      if (after < 0) { cat.products.push(fresh); continue; }
+      cat.products.splice(++after, 0, fresh);
+    }
+    const cap = cat.products.find((p) => p.id === 'cap');
+    if (cap) Object.assign(cap, { color: '#1F2A44', detail: 'Basecap mit TFB-Logo' });
     db.catalogVersion = CATALOG_VERSION;
     save(db);
   }

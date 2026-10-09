@@ -39,3 +39,11 @@ magick $I/icon-512.png -resize 192x192 $I/icon-192.png
 magick -size 180x180 xc:"$GREEN" \( $B/tfb-mark.png -resize 136x -fill "$CREAM" -colorize 100 \) -gravity center -composite $I/icon-180.png
 magick -size 64x64 xc:none -fill "$GREEN" -draw "roundrectangle 0,0 63,63 14,14" \( $B/tfb-ball.png -resize 44x -fill "$CREAM" -colorize 100 \) -gravity center -composite $I/favicon-64.png
 ls -la $css $I
+
+# Weißes "TFB."-Zeichen für Symbole (Kappe, Shirt) als data-URI, damit es auch per Doppelklick lädt
+WHITE=$(magick $B/tfb-mark.png -resize 220x -fill white -colorize 100 -strip -define png:compression-level=9 PNG32:- | base64 | tr -d '\n')
+printf '%s\n' "// Automatisch erzeugt von tools/build-brand.sh – nicht von Hand bearbeiten." \
+  "window.TFB = window.TFB || {};" \
+  "TFB.brandMarkWhite = 'data:image/png;base64,$WHITE';" \
+  "TFB.brandMarkRatio = $(magick identify -format '%[fx:w/h]' $B/tfb-mark.png);" > assets/js/brand-data.js
+ls -la assets/js/brand-data.js

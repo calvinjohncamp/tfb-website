@@ -17,7 +17,27 @@
       </g>`;
   }
 
+  // Echtes TFB.-Zeichen in Weiß (aus brand-data.js) – nur für Vereinsartikel wie Kappe und Shirt.
+  function brandMark(x, y, w, extra = '') {
+    if (!TFB.brandMarkWhite) return `<text x="${x + w / 2}" y="${y + w / 4}" text-anchor="middle" font-size="${w / 3}" font-weight="800" fill="#FFFDF5" font-family="system-ui"${extra}>TFB</text>`;
+    const h = w / (TFB.brandMarkRatio || 2.7);
+    return `<image href="${TFB.brandMarkWhite}" x="${x}" y="${y}" width="${w}" height="${h.toFixed(2)}"${extra}/>`;
+  }
+
   const shapes = {
+    padel: (c) => `
+      <g transform="rotate(-32 32 32)">
+        <path d="M32 4c9.5 0 15 6.5 15 15.5 0 8-3.8 14.6-9 18.2L35 42h-6l-3-4.3c-5.2-3.6-9-10.2-9-18.2C17 10.5 22.5 4 32 4z" fill="${c}" stroke="${line}" stroke-width="3" stroke-linejoin="round"/>
+        <g fill="${line}" opacity=".55">
+          <circle cx="27" cy="13" r="1.4"/><circle cx="32" cy="12" r="1.4"/><circle cx="37" cy="13" r="1.4"/>
+          <circle cx="24.5" cy="18.5" r="1.4"/><circle cx="29.5" cy="18" r="1.4"/><circle cx="34.5" cy="18" r="1.4"/><circle cx="39.5" cy="18.5" r="1.4"/>
+          <circle cx="27" cy="23.5" r="1.4"/><circle cx="32" cy="23.5" r="1.4"/><circle cx="37" cy="23.5" r="1.4"/>
+          <circle cx="29.5" cy="28.5" r="1.4"/><circle cx="34.5" cy="28.5" r="1.4"/>
+        </g>
+        <path d="M29 42h6v16a3 3 0 0 1-6 0z" fill="#2A2D2E" stroke="${line}" stroke-width="3" stroke-linejoin="round"/>
+        <path d="M29.5 46l5-2M29.5 50l5-2M29.5 54l5-2" stroke="#FFFDF5" stroke-width="1.3" opacity=".6"/>
+        <path d="M30 60c-3 3-3 5 2 5s5-2 2-5" fill="none" stroke="${line}" stroke-width="2" stroke-linecap="round"/>
+      </g>`,
     // Snickers: braune Folie, blaues Logo-Feld mit weißem Rand
     snickers: () => riegel('#4A2A1A', '#1F5FB0', '#FFFDF5'),
     // Mars: schwarze Folie, rotes Logo-Feld mit goldenem Rand
@@ -151,11 +171,14 @@
       <path d="M22 20l-6 24M31 20l-6 24M40 20l-6 24M49 22l-5 20" stroke="${line}" stroke-width="2" opacity=".5"/>`,
     shirt: (c) => `
       <path d="M22 9l-13 8 5 10 6-3v31h24V24l6 3 5-10-13-8c-2 4-6 6-10 6s-8-2-10-6z" fill="${c}" stroke="${line}" stroke-width="3" stroke-linejoin="round"/>
-      <text x="32" y="40" text-anchor="middle" font-size="8" font-weight="800" fill="#FFFDF5" font-family="system-ui">TFB</text>`,
+      ${brandMark(23.5, 27, 17)}`,
     cap: (c) => `
-      <path d="M12 40c0-14 9-24 20-24s20 10 20 24z" fill="${c}" stroke="${line}" stroke-width="3" stroke-linejoin="round"/>
-      <path d="M8 40h36c6 0 12 2 14 6H8z" fill="${c}" stroke="${line}" stroke-width="3" stroke-linejoin="round"/>
-      <circle cx="32" cy="15" r="2.5" fill="${line}"/>`,
+      <path d="M15 42c-1-15 9.5-26.5 23-26.5S59.5 26 59 41c-9 2.6-34.5 3.2-44 1z" fill="${c}" stroke="${line}" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M38 15.5c-5.5 5-8.4 14-8.6 27.6M38 15.5c5.8 5.4 9 14.3 9.6 26.8" fill="none" stroke="${line}" stroke-width="1.6" opacity=".45"/>
+      <path d="M17.5 40.5C11 40.6 4.6 42.6 3.4 45.4c-.9 2.3 5.3 3.4 14.2 2.4 8.6-1 15-3.2 18.6-5.4-6.4.1-12.9-.6-18.7-1.9z" fill="${c}" stroke="${line}" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M8 45.6c5-1.3 11-1.7 16-1.5" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" opacity=".35"/>
+      <circle cx="38" cy="15.5" r="2.4" fill="${c}" stroke="${line}" stroke-width="2"/>
+      ${brandMark(17.5, 27.5, 13.5, ' transform="rotate(-6 24 30)"')}`,
   };
 
   // Auswahl im Admin: Schlüssel und Bezeichnung jedes Symbols.
@@ -164,7 +187,7 @@
     ['cola', 'Cola-Flasche'], ['water', 'Wasserflasche'], ['can', 'Dose'], ['slimcan', 'Schlanke Dose'],
     ['redbull', 'Red Bull'], ['cup', 'Tasse'], ['bar', 'Riegel'], ['snickers', 'Snickers'], ['mars', 'Mars'],
     ['wafer', 'Waffel (quadratisch)'], ['bag', 'Chipstüte'], ['tube', 'Chipsdose'],
-    ['bear', 'Gummibär'], ['hotdog', 'Hotdog'], ['sausage', 'Würstchen'], ['cone', 'Eis'], ['ball', 'Tennisball'], ['grip', 'Griffband'],
+    ['bear', 'Gummibär'], ['hotdog', 'Hotdog'], ['sausage', 'Würstchen'], ['cone', 'Eis'], ['ball', 'Ball'], ['padel', 'Padel-Schläger'], ['grip', 'Griffband'],
     ['shirt', 'Shirt'], ['cap', 'Cap'],
   ];
 
