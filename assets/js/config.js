@@ -15,7 +15,7 @@ TFB.config = {
 
   timeZone: 'Europe/Berlin',
   tallyDays: 7,          // Strichliste zeigt immer die letzten 7 Tage
-  undoSeconds: 60,       // so lange lässt sich ein Strich zurücknehmen
+  undoSeconds: 30,       // so lange lässt sich ein Strich stornieren
   maxQuantity: 12,       // größte Runde in einem Schritt
   debitDayOfMonth: 5,    // Lastschrift-Einzug für den Vormonat
 

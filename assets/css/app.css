@@ -539,7 +539,7 @@ button.shop-card { border: 0; text-align: left; font: inherit; }
 .tab.external { color: var(--signal); }
 .tab.external svg { stroke-width: 1.9; }
 
-/* ---------- Storno-Stempel auf dem Bierdeckel (60 Sekunden) ---------- */
+/* ---------- Storno-Stempel auf dem Bierdeckel (Dauer: undoSeconds in config.js) ---------- */
 .deckel-wrap { position: relative; width: min(74vw, 268px); margin: 10px auto 8px; }
 .deckel-wrap .deckel { margin: 0; }
 .storno {
@@ -547,8 +547,9 @@ button.shop-card { border: 0; text-align: left; font: inherit; }
   position: absolute; z-index: 3; top: -14px; right: -22px;
   width: 74px; height: 74px; border-radius: 50%; border: 0; padding: 0;
   display: grid; place-content: center; justify-items: center; gap: 0;
-  background: var(--signal); color: #fff;
-  box-shadow: 0 0 0 3px var(--bg), 0 8px 18px rgba(0, 0, 0, .22);
+  background: #F1F1EE; color: var(--ink);
+  border: 2px solid var(--ink);
+  box-shadow: 0 0 0 3px var(--bg), 0 6px 14px rgba(0, 0, 0, .14);
   transform: rotate(10deg);
   animation: storno-in .35s cubic-bezier(.3, 1.5, .5, 1);
   transition: opacity .25s ease, transform .25s ease;
@@ -557,10 +558,10 @@ button.shop-card { border: 0; text-align: left; font: inherit; }
 .storno:active { transform: rotate(10deg) scale(.94); }
 .storno-ring {
   position: absolute; inset: 5px; border-radius: 50%;
-  background: conic-gradient(rgba(255, 255, 255, .9) calc(var(--p) * 360deg), rgba(255, 255, 255, .18) 0);
+  background: conic-gradient(#2A2D2E calc(var(--p) * 360deg), rgba(42, 45, 46, .12) 0);
   -webkit-mask: radial-gradient(circle, transparent 62%, #000 63%);
   mask: radial-gradient(circle, transparent 62%, #000 63%);
 }
-.storno-label { font-size: .7rem; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; line-height: 1; }
-.storno small { font-size: .78rem; font-weight: 700; opacity: .85; font-variant-numeric: tabular-nums; line-height: 1.2; }
+.storno-label { font-size: .6rem; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; line-height: 1; }
+.storno small { font-size: .78rem; font-weight: 700; opacity: .7; font-variant-numeric: tabular-nums; line-height: 1.2; }
 @keyframes storno-in { from { transform: rotate(-20deg) scale(.3); opacity: 0; } }

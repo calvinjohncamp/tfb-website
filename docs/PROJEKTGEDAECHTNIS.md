@@ -51,8 +51,9 @@ Präsentation vor dem Vorstand; bei Zustimmung wird daraus der Echtbetrieb.
 - Anmeldung über E-Mail aus der Mitgliederliste, Passwort beim ersten Mal,
   einmalige Zustimmung (Kioskordnung, Lastschrift, Sichtbarkeit Strichliste).
 - Anschreiben mit Anzahl (Runde). Danach: kurze Bestätigung (2,5 s), Seite
-  scrollt zum Deckel, roter **Storno-Stempel** auf der rechten oberen Deckelecke
-  mit ablaufendem Ring (60 s). In der Abrechnung heißt es „stornieren“.
+  scrollt zum Deckel, dezenter **Storno-Stempel** (hellgrau, schwarzer Rand,
+  anthrazit Ring) auf der rechten oberen Deckelecke, **30 Sekunden**
+  (`undoSeconds` in config.js). In der Abrechnung heißt es „stornieren“.
   Deckel bleibt bewusst zentriert.
 - Erzquell-Flasche als gemeinsame Form für Malzbier, Sportsfreund und Radler
   (`erzquell()` in art.js) – nur die Farben unterscheiden sich.
