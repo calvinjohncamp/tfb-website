@@ -91,6 +91,28 @@ Im Demo-Modus liegen alle Daten nur im Browser des Geräts. Demo-Zugang:
 8. Passwort-vergessen per Mail, Datenschutzhinweis/Kioskordnung als Text.
 9. Optional: Logo als Vektordatei (SVG/PDF) für Druck und große Flächen.
 
+## Eingefrorener Stand 09.10.2026 (Git-Tag `stand-2026-10-09`)
+
+Gestaltung für heute abgeschlossen und vom Nutzer abgenommen. Ausgangspunkt
+für die nächste Sitzung:
+
+- Startseite: Bierdeckel „Stapel“ mit Tagesdatum, Kipp-/Wackel-Effekt und
+  dezentem Storno-Stempel (30 s); darunter Alkoholfrei, Bier, Snacks & Eis,
+  Vereinsshop („bald“, volle Kacheln).
+- Kopfzeile: TFB. · KIOSK (Signal-Rot) · Schriftzug Tennisfreunde Bielstein ·
+  Profilbild (mit Vergrößerung).
+- Reiter: Kiosk · Strichliste · Abrechnungen · Padel (Link) · Verwaltung (Admin).
+- Verwaltung: Kiosk direkt bearbeiten (Artikel, Bereiche, Reihenfolge, Symbole,
+  Farben), Markenfarbe (Schwarz, Anthrazit, Sandplatz-Rot + 4 freie Felder).
+- 25+ eigene Indie-Symbole, u. a. Kölschstange/-kranz, Erzquell-Flasche
+  (Malzbier, Sportsfreund, Radler), Riegel, Hanuta, Goldbär, Hotdog, Basecap/Shirt
+  mit TFB-Logo, Padel-Schläger.
+- Weiterhin Demo-Modus (Daten im Browser). Offene Punkte siehe oben.
+
+**Nächste Schritte (Vorschlag):** Foto der Papier-Strichliste → echtes Sortiment
+und Preise (u. a. Malzbier-Preis prüfen); danach Supabase, Mitgliederimport,
+Monatsabschluss.
+
 ## Verlauf
 
 - **09.10.2026** – Projektstart aus der Padel-Kopie. Demo-Oberfläche, neues

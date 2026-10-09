@@ -15,15 +15,9 @@ Mitgliederdaten gehören niemals in dieses Repository.
 
 ## Stand
 
-Schritt 1 (Oberfläche im Demo-Modus) ist umgesetzt:
-
-- Anmeldung per E-Mail aus der Mitgliederliste, Passwort beim ersten Mal festlegen
-- Einmalige Zustimmung (Kioskordnung, Lastschrift, Sichtbarkeit der Strichliste)
-- Kiosk als Startseite mit Bierdeckel, Vereinsshop-Vorschau („bald“) und Sortiment
-- Anschreiben mit Anzahl (Runde), Rücknahme innerhalb von 60 Sekunden
-- Strichliste: letzte 7 Kalendertage, alphabetisch nach Nachname, Fünferbündel
-- Meine Abrechnungen: laufender Monat und abgeschlossene Monate
-- Als App installierbar (Manifest, Service Worker, vorläufiges Symbol)
+Eingefroren am 09.10.2026 (Git-Tag `stand-2026-10-09`): Gestaltung abgeschlossen,
+Demo-Modus mit Kiosk, Strichliste, Abrechnungen, Padel-Link und Verwaltung.
+Details, Entscheidungen und offene Punkte: [`docs/PROJEKTGEDAECHTNIS.md`](docs/PROJEKTGEDAECHTNIS.md).
 
 Im Demo-Modus liegen alle Daten nur im Browser des Geräts. Die gesamte
 Datenhaltung läuft über `TFB.api` (`assets/js/demo-backend.js`); für Supabase
@@ -45,9 +39,12 @@ Dann http://localhost:5180 öffnen. Demo-Zugang: `max@tfb-demo.de`
 | `index.html` | Gerüst |
 | `assets/js/config.js` | Vereinsdaten, Fristen, Einwilligungstext |
 | `assets/js/demo-backend.js` | Datenschicht Demo-Modus inkl. Beispieldaten |
+| `assets/js/brand-data.js` | Weißes TFB.-Zeichen für Symbole (erzeugt) |
 | `assets/js/art.js` | Gezeichnete Produktbilder und Striche |
 | `assets/js/app.js` | Oberfläche und Abläufe |
 | `assets/css/app.css` | Gestaltung |
+| `assets/css/brand.css` | Logo-Bausteine als einfärbbare Masken (erzeugt) |
+| `tools/build-brand.sh` | Erzeugt Logo-Bausteine und App-Symbol aus dem Original |
 | `sw.js`, `manifest.webmanifest` | Installation als App |
 
 ## Nächste Schritte
