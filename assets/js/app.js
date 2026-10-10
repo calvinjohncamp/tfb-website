@@ -13,7 +13,7 @@
   // Reiter unten: Kiosk zuerst, dann die Vereinsseiten, dann der Padel-Link.
   const areaOf = (view) => (KIOSK_AREA.includes(view) ? 'kiosk' : view);
   // Wort neben dem Logo: der aktuelle Bereich
-  const AREA_LABEL = { kiosk: 'Kiosk', aktuell: 'News', sport: 'Sport', verein: 'Verein', verwaltung: 'Verwaltung' };
+  const AREA_LABEL = { kiosk: 'Kiosk', aktuell: 'Aktuell', sport: 'Sport', verein: 'Verein', verwaltung: 'Verwaltung' };
   const state = {
     member: null,
     catalog: null,
@@ -101,14 +101,14 @@
   async function boot() {
     state.catalog = await api.catalog();
     state.member = await api.session();
-    if (!location.hash) history.replaceState(null, '', state.member ? '#kiosk' : '#aktuell');
+    if (!location.hash) history.replaceState(null, '', '#kiosk');   // Kiosk ist immer die Startseite
     render();
   }
 
   function currentView() {
     const v = location.hash.replace('#', '');
     if (v === 'verwaltung' && !(state.member && state.member.isAdmin)) return 'aktuell';
-    return VIEWS.includes(v) ? v : (state.member ? 'kiosk' : 'aktuell');
+    return VIEWS.includes(v) ? v : 'kiosk';
   }
 
   async function render() {
@@ -247,7 +247,7 @@
     const area = areaOf(view);
     const tabs = [
       ['kiosk', 'Kiosk', icon.kiosk],
-      ['aktuell', 'News', icon.news],
+      ['aktuell', 'Aktuell', icon.news],
       ['sport', 'Sport', icon.sport],
       ['verein', 'Verein', icon.club],
       ['padel', 'Padel', icon.padel, cfg.padelUrl],
@@ -255,7 +255,7 @@
     $app.innerHTML = `
       <header class="topbar">
         <div class="topbar-row">
-          <a class="brand" href="${state.member ? '#kiosk' : '#aktuell'}" aria-label="${esc(cfg.clubName)} – Startseite">
+          <a class="brand" href="#kiosk" aria-label="${esc(cfg.clubName)} – Startseite">
             ${logo('logo', 'header-logo')}
           </a>
           ${state.member

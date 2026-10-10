@@ -8,9 +8,9 @@ TFB.siteSeed = {
   version: 1,
   pages: {
     aktuell: {
-      title: 'News',
+      title: 'Aktuell',
       intro: 'Neuigkeiten, Termine und Geschichten von der Anlage.',
-      partnerKicker: 'Die News werden dir präsentiert von',
+      partnerKicker: 'Aktuelles wird dir präsentiert von',
       blocks: [
         { id: 'b-termine', type: 'heading', title: 'Nächste Termine' },
         { id: 'e-1', type: 'event', date: '2026-10-17', time: '15:00', title: 'Saisonabschluss mit Kranzrunde', place: 'Tennisanlage, Jahnstraße', text: 'Wir lassen die Sommersaison gemeinsam ausklingen. Der Kiosk ist geöffnet, der erste Kranz geht aufs Haus.' },

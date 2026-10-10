@@ -204,10 +204,10 @@
     db.site = clone(TFB.siteSeed);
     save(db);
   }
-  // „Aktuell“ heißt jetzt „News“ (Titel und Partner-Zeile), eigene Inhalte bleiben.
-  if (db.site && db.site.pages && db.site.pages.aktuell && db.site.pages.aktuell.title === 'Aktuell') {
-    db.site.pages.aktuell.title = 'News';
-    db.site.pages.aktuell.partnerKicker = 'Die News werden dir präsentiert von';
+  // Seite heißt (wieder) „Aktuell“ – Titel und Partner-Zeile angleichen, eigene Inhalte bleiben.
+  if (db.site && db.site.pages && db.site.pages.aktuell && db.site.pages.aktuell.title === 'News') {
+    db.site.pages.aktuell.title = 'Aktuell';
+    db.site.pages.aktuell.partnerKicker = 'Aktuelles wird dir präsentiert von';
     save(db);
   }
   if (!db.catalog || db.catalogVersion !== CATALOG_VERSION) {
