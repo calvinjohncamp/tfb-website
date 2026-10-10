@@ -3,6 +3,27 @@
 Kurzer Einstieg für jede neue Arbeitssitzung. Oben steht der aktuelle Stand,
 unten die offenen Punkte. Neues bitte oben bei „Verlauf“ ergänzen.
 
+## Neu ab 10.10.2026: Vereinswebsite im selben Projekt (Vorführversion für den Vorstand)
+
+- Reiter: **Kiosk · Aktuell · Sport · Verein · Padel**. Kiosk zuerst; nur der
+  Kiosk-Bereich braucht Anmeldung (Umschalter Kiosk · Strichliste · Abrechnungen).
+  Gäste landen auf „Aktuell“, Mitglieder im Kiosk. Wort neben dem Logo = Bereich.
+- Verwaltung jetzt über das Profilbild (unten ist kein Platz mehr); dort auch
+  „Website bearbeiten“. Admins sehen auf jeder Seite einen Stift.
+- Seiten aus **Bausteinen** (`assets/js/site.js`, Startinhalte `assets/data/site-seed.js`):
+  Beitrag (Foto, Datum, Text), Termin, Text, Zwischenüberschrift, Foto, Galerie,
+  Ansprechpartner, Zahlen, Knopf, Mannschaften. Direkt auf der Seite bearbeiten,
+  Pfeile zum Sortieren. Fotos werden beim Hochladen auf max. 1600 px verkleinert
+  und im Browser-Bildspeicher (IndexedDB) abgelegt.
+- **Partner:** zwei Logos je Seite, Gestaltung und Rotation 1:1 aus der Padel-App
+  (`assets/js/partner-rotation.js`, Daten `assets/data/partners.js`, Logos
+  `assets/partners/`, 38 Partner, Gewichte Premium 3 · Partner 3 · Regional 1).
+- **Mannschaften** aus nuLiga (TVM, Verein 35703): `python3 tools/update-teams.py`
+  schreibt `assets/data/teams.js`. nuLiga braucht dafür eine Sitzung (Cookie);
+  später als täglicher Serverdienst. Spielerlisten werden nur verlinkt.
+- Inhalte: Termine/Beiträge sind Beispiele; Vorstand mit Platzhaltern
+  (keine Kontaktdaten Einzelner übernommen).
+
 ## Worum es geht
 
 Eigenständige Handy-App für die **Tennisfreunde Bielstein (TFB)**: Kiosk und
@@ -148,3 +169,6 @@ Monatsabschluss.
 - **10.10.2026** – Gerolsteiner als eigenes Symbol nach dem Produktfoto aus dem
   Padel-Kiosk: schlanke Gourmet-Glasflasche, dunkle Kappe wie bei Cola, weißes Etikett
   mit rotem Stern und türkiser Welle.
+- **10.10.2026** – Vereinswebsite-Gerüst im Kiosk-Look: Aktuell, Sport, Verein,
+  Bausteine mit Bearbeitung und Foto-Upload, Galerie mit Großansicht,
+  Mannschaften aus nuLiga, Partner-Duo mit Rotation wie in der Padel-App.

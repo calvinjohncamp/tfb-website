@@ -199,6 +199,11 @@
     db.catalogVersion = CATALOG_VERSION;
     save(db);
   }
+  // Website-Inhalte (Aktuell, Sport, Verein) einmalig aus den Startinhalten anlegen.
+  if (!db.site && TFB.siteSeed) {
+    db.site = clone(TFB.siteSeed);
+    save(db);
+  }
   if (!db.catalog || db.catalogVersion !== CATALOG_VERSION) {
     db.catalog = clone(DEFAULT_CATALOG);
     db.catalogVersion = CATALOG_VERSION;
@@ -268,6 +273,22 @@
       status: 'open',
     };
   }
+
+  // ---------- Bildspeicher für hochgeladene Fotos (IndexedDB) ----------
+  const IMG_DB = 'tfb_kiosk_images';
+  function imgStore(mode) {
+    return new Promise((resolve, reject) => {
+      if (!window.indexedDB) return reject(new Error('Dieser Browser kann keine Fotos speichern.'));
+      const req = indexedDB.open(IMG_DB, 1);
+      req.onupgradeneeded = () => req.result.createObjectStore('images');
+      req.onerror = () => reject(new Error('Der Bildspeicher ist nicht erreichbar.'));
+      req.onsuccess = () => resolve(req.result.transaction('images', mode).objectStore('images'));
+    });
+  }
+  const done = (req) => new Promise((resolve, reject) => {
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error || new Error('Bildspeicher-Fehler'));
+  });
 
   // ---------- Sitzung ----------
   function sessionMemberId() {
@@ -379,6 +400,44 @@
       return publicMember(member);
     },
 
+    // ---------- Website ----------
+    async site() {
+      return clone(db.site || TFB.siteSeed);
+    },
+
+    async saveSite(site) {
+      const member = requireMember();
+      if (!member.isAdmin) throw new Error('Nur Admins dürfen die Seiten ändern.');
+      if (!site || !site.pages) throw new Error('Ungültige Seiteninhalte.');
+      const before = db.site;
+      db.site = clone(site);
+      if (!save(db)) { db.site = before; throw new Error('Speichern nicht möglich – der Gerätespeicher ist voll.'); }
+      return clone(db.site);
+    },
+
+    // Foto ablegen (bereits verkleinert, data-URL) → Kennung "img:<id>"
+    async putImage(dataUrl) {
+      const member = requireMember();
+      if (!member.isAdmin) throw new Error('Nur Admins dürfen Fotos hochladen.');
+      if (!/^data:image\/(jpeg|png|webp);base64,/.test(dataUrl)) throw new Error('Dieses Bild lässt sich nicht verwenden.');
+      const id = 'img:' + uid();
+      await done((await imgStore('readwrite')).put(dataUrl, id));
+      return id;
+    },
+
+    // Alle abgelegten Fotos als { "img:<id>": dataUrl } (für die Anzeige)
+    async images() {
+      // Manche Browser beantworten den Bildspeicher bei lokal geöffneten Dateien nie –
+      // dann nach kurzer Zeit ohne Fotos weitermachen statt hängen zu bleiben.
+      const read = (async () => {
+        const store = await imgStore('readonly');
+        const [keys, values] = await Promise.all([done(store.getAllKeys()), done(store.getAll())]);
+        return Object.fromEntries(keys.map((k, i) => [k, values[i]]));
+      })();
+      const timeout = new Promise((resolve) => setTimeout(() => resolve(null), 1500));
+      try { return (await Promise.race([read, timeout])) || {}; } catch (_) { return {}; }
+    },
+
     async catalog() {
       return clone(db.catalog);
     },
@@ -487,6 +546,7 @@
 
     async resetDemo() {
       try { localStorage.removeItem(STORE_KEY); } catch (_) {}
+      try { indexedDB.deleteDatabase(IMG_DB); } catch (_) {}
       setSession(null);
       db = load();
     },

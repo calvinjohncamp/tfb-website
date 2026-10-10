@@ -8,7 +8,12 @@
   const $sheet = document.getElementById('sheet-root');
   const $toast = document.getElementById('toast-root');
 
-  const VIEWS = ['kiosk', 'strichliste', 'abrechnungen', 'verwaltung'];
+  const VIEWS = ['kiosk', 'strichliste', 'abrechnungen', 'aktuell', 'sport', 'verein', 'verwaltung'];
+  const KIOSK_AREA = ['kiosk', 'strichliste', 'abrechnungen'];   // nur mit Anmeldung
+  // Reiter unten: Kiosk zuerst, dann die Vereinsseiten, dann der Padel-Link.
+  const areaOf = (view) => (KIOSK_AREA.includes(view) ? 'kiosk' : view);
+  // Wort neben dem Logo: der aktuelle Bereich
+  const AREA_LABEL = { kiosk: 'Kiosk', aktuell: 'Aktuell', sport: 'Sport', verein: 'Verein', verwaltung: 'Verwaltung' };
   const state = {
     member: null,
     catalog: null,
@@ -82,6 +87,10 @@
     down: '<svg viewBox="0 0 24 24"><path d="M12 5v14M6 13l6 6 6-6"/></svg>',
     pencil: '<svg viewBox="0 0 24 24"><path d="M5 19l1.2-4.2L15.5 5.5a2.1 2.1 0 0 1 3 3L9.2 17.8z"/><path d="M13.5 7.5l3 3"/></svg>',
     padel: '<svg viewBox="0 0 24 24"><path d="M10.3 14.4c-2.1-1.6-2.4-5-.4-7.9 1.9-2.8 5-4.1 7.4-3.1 2.5 1 3.4 4 2.1 7-1.2 2.8-4 4.9-6.6 5-1 0-1.9-.3-2.5-1z"/><path d="M10.3 14.4L5.4 19.3" stroke-width="3.4"/><path d="M13.8 7.4h.01M16.6 7.6h.01M12.6 10.2h.01M15.4 10.4h.01" stroke-width="2.3"/></svg>',
+    news: '<svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 9.5h16M8.5 3v4M15.5 3v4M8 13.5h3M8 16.5h6"/></svg>',
+    sport: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M5.6 6.6c2.6 2.4 2.6 8.4 0 10.8M18.4 6.6c-2.6 2.4-2.6 8.4 0 10.8"/></svg>',
+    club: '<svg viewBox="0 0 24 24"><path d="M4 10.5L12 4l8 6.5M6 9.2V20h12V9.2M10 20v-5h4v5"/></svg>',
+    user: '<svg viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="3.6"/><path d="M5 20c.8-3.8 3.6-5.8 7-5.8s6.2 2 7 5.8"/></svg>',
     admin: '<svg viewBox="0 0 24 24"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2.2"/><circle cx="9" cy="17" r="2.2"/></svg>',
   };
 
@@ -92,25 +101,23 @@
   async function boot() {
     state.catalog = await api.catalog();
     state.member = await api.session();
-    if (!location.hash) history.replaceState(null, '', '#kiosk');
+    if (!location.hash) history.replaceState(null, '', state.member ? '#kiosk' : '#aktuell');
     render();
   }
 
   function currentView() {
     const v = location.hash.replace('#', '');
-    if (v === 'verwaltung' && !(state.member && state.member.isAdmin)) return 'kiosk';
-    return VIEWS.includes(v) ? v : 'kiosk';
+    if (v === 'verwaltung' && !(state.member && state.member.isAdmin)) return 'aktuell';
+    return VIEWS.includes(v) ? v : (state.member ? 'kiosk' : 'aktuell');
   }
 
   async function render() {
     closeSheet();
-    if (!state.member) return renderAuth();
-    if (!state.member.hasConsent) return renderConsent();
     return renderShell();
   }
 
   // ---------- Anmeldung ----------
-  function renderAuth(error = '') {
+  function showAuth(error = '') {
     const s = state.authStep;
     let body = '';
     if (s === 'email') {
@@ -152,12 +159,14 @@
         <button type="button" class="btn block" data-action="auth-back">Andere E-Mail versuchen</button>`;
     }
 
-    $app.innerHTML = `
-      <main class="auth">
-        <section class="auth-hero">
-          ${logo('logo', 'hero-logo')}
-          <p class="app-label">Kiosk</p>
-        </section>
+    const $view = document.getElementById('view');
+    if (!$view) return;
+    $view.innerHTML = `
+      <section class="auth inline">
+        <header class="auth-intro">
+          ${logo('ball', 'auth-ball')}
+          <div><h1>Der TFB-Kiosk</h1><p class="muted">Für Mitglieder: Getränke anschreiben, Strichliste, Abrechnungen.</p></div>
+        </header>
         <form class="card auth-card" data-form="auth" novalidate>
           ${body}
           <p class="form-error" role="alert">${esc(error)}</p>
@@ -168,8 +177,8 @@
             <p>Alle Daten bleiben auf diesem Gerät. Zum Ausprobieren:</p>
             <button type="button" class="link" data-action="demo-fill">${esc(api.demoLogin.email)}</button>
           </aside>` : ''}
-      </main>`;
-    const input = $app.querySelector('input');
+      </section>`;
+    const input = $view.querySelector('input');
     if (input && s !== 'email') input.focus();
   }
 
@@ -185,7 +194,7 @@
         const res = await api.lookupEmail(email);
         state.authFirstName = res.firstName || '';
         state.authStep = !res.known ? 'unknown' : res.hasPassword ? 'password' : 'create';
-        return renderAuth();
+        return showAuth();
       }
       if (state.authStep === 'password') {
         state.member = await api.signIn(state.authEmail, String(data.get('password') || ''));
@@ -198,15 +207,15 @@
       state.authStep = 'email';
       render();
     } catch (err) {
-      renderAuth(err.message);
+      showAuth(err.message);
     }
   }
 
   // ---------- Einmalige Zustimmung ----------
-  function renderConsent() {
+  function consentMarkup() {
     const m = state.member;
-    $app.innerHTML = `
-      <main class="consent">
+    return `
+      <section class="consent inline">
         <section class="auth-hero compact">
           ${logo('mark', 'consent-mark')}
           <h1>Schön, dass du da bist, ${esc(m.firstName)}!</h1>
@@ -229,53 +238,79 @@
           <p class="form-error" role="alert"></p>
         </form>
         <button class="link center" type="button" data-action="logout">Abmelden</button>
-      </main>`;
+      </section>`;
   }
 
   // ---------- App-Rahmen ----------
   function renderShell() {
     const view = currentView();
+    const area = areaOf(view);
     const tabs = [
       ['kiosk', 'Kiosk', icon.kiosk],
-      ['strichliste', 'Strichliste', icon.tally],
-      ['abrechnungen', 'Abrechnungen', icon.receipt],
+      ['aktuell', 'Aktuell', icon.news],
+      ['sport', 'Sport', icon.sport],
+      ['verein', 'Verein', icon.club],
       ['padel', 'Padel', icon.padel, cfg.padelUrl],
-      ...(state.member.isAdmin ? [['verwaltung', 'Verwaltung', icon.admin]] : []),
     ];
     $app.innerHTML = `
       <header class="topbar">
         <a class="brand" href="#kiosk">
           ${logo('mark', 'header-mark')}
-          <span class="app-label">Kiosk</span>
+          <span class="app-label" data-area-label>${AREA_LABEL[area] || 'Kiosk'}</span>
           <span class="brand-tagline" aria-label="${esc(cfg.clubName)}">${logo('tagline1', 'header-tagline')}${logo('tagline2', 'header-tagline')}</span>
         </a>
-        <button class="avatar" type="button" data-action="profile" aria-label="Profil">${avatarFace(state.member)}</button>
+        ${state.member
+          ? `<button class="avatar" type="button" data-action="profile" aria-label="Profil">${avatarFace(state.member)}</button>`
+          : `<button class="avatar guest" type="button" data-action="login" aria-label="Anmelden">${icon.user}</button>`}
       </header>
       ${api.mode === 'demo' ? '<div class="demo-ribbon">Demo-Modus · Daten nur auf diesem Gerät</div>' : ''}
       <main class="view" id="view" data-view="${view}"><div class="loading"></div></main>
       <nav class="tabbar" aria-label="Bereiche" style="grid-template-columns:repeat(${tabs.length},1fr)">
         ${tabs.map(([id, label, ic, url]) => url
           ? `<a href="${esc(url)}" class="tab external" target="_blank" rel="noopener" aria-label="${label} – Buchungs-App öffnen (neues Fenster)">${ic}<span>${label}</span></a>`
-          : `<a href="#${id}" class="tab ${id === view ? 'active' : ''}" ${id === view ? 'aria-current="page"' : ''}>${ic}<span>${label}</span></a>`).join('')}
+          : `<a href="#${id}" class="tab ${id === area ? 'active' : ''}" ${id === area ? 'aria-current="page"' : ''}>${ic}<span>${label}</span></a>`).join('')}
       </nav>`;
     return renderView(view);
   }
 
   // Kopf der Unterseiten mit Schließen-Kreuz oben rechts (zurück zum Kiosk).
-  const viewHead = (title, sub) => `
+  const viewHead = (title, sub, close = true) => `
     <header class="view-head">
       <div><h1>${title}</h1><p class="muted">${sub}</p></div>
-      <a class="view-close" href="#kiosk" aria-label="Schließen und zurück zum Kiosk">${icon.close}</a>
+      ${close ? `<a class="view-close" href="#kiosk" aria-label="Schließen und zurück zum Kiosk">${icon.close}</a>` : ''}
     </header>`;
+
+  // Umschalter innerhalb des Kiosk-Bereichs
+  const kioskNav = (view) => `
+    <nav class="subnav" aria-label="Kiosk">
+      ${[['kiosk', 'Kiosk'], ['strichliste', 'Strichliste'], ['abrechnungen', 'Abrechnungen']].map(([id, label]) =>
+        `<a href="#${id}" class="${id === view ? 'on' : ''}" ${id === view ? 'aria-current="page"' : ''}>${label}</a>`).join('')}
+    </nav>`;
+
+  // Zwei Partner je Seite – Rotation wie in der Padel-App (partner-rotation.js)
+  function partnerSlot(page, kicker) {
+    const pair = TFB.partnerPair ? TFB.partnerPair(page) : [];
+    if (!pair.length) return '';
+    const tile = (p) => {
+      const img = `<img src="${esc(p.logo)}" alt="${esc(p.name)}" decoding="async">`;
+      return p.url
+        ? `<a class="pbsp-tile" href="${esc(p.url)}" target="_blank" rel="noopener noreferrer nofollow" title="${esc(p.name)}">${img}</a>`
+        : `<div class="pbsp-tile" title="${esc(p.name)}">${img}</div>`;
+    };
+    return `<section class="pbsp-slot" aria-label="Partner"><div class="pbsp-kicker">${esc(kicker)}</div><div class="pbsp-duo">${pair.map(tile).join('')}</div></section>`;
+  }
 
   async function renderView(view = currentView()) {
     const $view = document.getElementById('view');
     if (!$view) return;
     try {
-      if (view === 'kiosk') $view.innerHTML = await kioskView();
-      else if (view === 'strichliste') $view.innerHTML = await tallyView();
-      else if (view === 'verwaltung') $view.innerHTML = adminView();
-      else $view.innerHTML = await statementsView();
+      if (KIOSK_AREA.includes(view)) {
+        if (!state.member) return showAuth();
+        if (!state.member.hasConsent) { $view.innerHTML = consentMarkup(); return; }
+        const body = view === 'kiosk' ? await kioskView() : view === 'strichliste' ? await tallyView() : await statementsView();
+        $view.innerHTML = kioskNav(view) + body;
+      } else if (view === 'verwaltung') $view.innerHTML = adminView();
+      else if (TFB.views && TFB.views[view]) $view.innerHTML = await TFB.views[view]();
     } catch (err) {
       $view.innerHTML = `<div class="card error-card"><h2>Das hat nicht geklappt</h2><p>${esc(err.message)}</p></div>`;
     }
@@ -322,7 +357,7 @@
         <div class="editbar">
           <div><strong>Kiosk bearbeiten</strong><span>Artikel antippen zum Ändern · Pfeile zum Sortieren</span></div>
           <button type="button" class="btn primary" data-action="edit-done">Fertig</button>
-        </div>` : coasterMarkup(open)}
+        </div>` : coasterMarkup(open) + partnerSlot('kiosk', 'Der TFB-Kiosk wird dir präsentiert von')}
       ${cat.sections.map((section, index) => sectionMarkup(section, index, cat, edit)).join('')}
       ${edit ? `<button type="button" class="btn block add-section" data-action="section-new">${icon.plus} Neuer Bereich</button>` : ''}`;
   }
@@ -447,6 +482,7 @@
     const range = `${from.toLocaleDateString('de-DE', { day: 'numeric', month: 'short', timeZone: cfg.timeZone })} – heute`;
     return `
       ${viewHead('Strichliste', `Letzte ${cfg.tallyDays} Tage · ${esc(range)}`)}
+      ${partnerSlot('strichliste', 'Die Strichliste wird dir präsentiert von')}
       <section class="paper">
         ${rows.length ? rows.map((r, i) => {
           const key = `${r.lastName}|${r.firstName}`;
@@ -484,6 +520,7 @@
     const now = Date.now();
     return `
       ${viewHead('Meine Abrechnungen', 'Nur für dich sichtbar')}
+      ${partnerSlot('abrechnungen', 'Deine Abrechnung wird dir präsentiert von')}
 
       <section class="card month-card">
         <div class="month-top">
@@ -548,6 +585,13 @@
     const active = cat.products.filter((p) => p.active).length;
     return `
       ${viewHead('Verwaltung', 'Nur für Admins sichtbar')}
+      <section class="card admin-card">
+        <h2>Website</h2>
+        <p class="muted">Seiten direkt bearbeiten: Bausteine anlegen, Fotos hochladen, Texte und Termine pflegen.</p>
+        <div class="admin-links">
+          ${['aktuell', 'sport', 'verein'].map((p) => `<button type="button" class="btn" data-action="site-edit" data-page="${p}">${icon.pencil} ${p[0].toUpperCase() + p.slice(1)}</button>`).join('')}
+        </div>
+      </section>
       <section class="card admin-card">
         <h2>Sortiment</h2>
         <p class="muted">${active} Artikel in ${cat.sections.length} Bereichen. Artikel, Preise, Symbole und Reihenfolge änderst du direkt am Kiosk – so, wie die Mitglieder ihn sehen.</p>
@@ -774,6 +818,7 @@
           <strong>Als App aufs Handy</strong>
           <p class="small">iPhone: Teilen-Symbol → „Zum Home-Bildschirm“.<br>Android: Menü ⋮ → „App installieren“.</p>
         </div>
+        ${m.isAdmin ? `<a class="btn primary block" href="#verwaltung" data-action="close-sheet">${icon.admin} Verwaltung</a>` : ''}
         <button type="button" class="btn block" data-action="logout">Abmelden</button>
         ${api.mode === 'demo' ? '<button type="button" class="link center" data-action="demo-reset">Demo-Daten zurücksetzen</button>' : ''}
       </div>`);
@@ -944,12 +989,13 @@
     if (action === 'pick') openPick(el.dataset.id);
     else if (action === 'profile') openProfile();
     else if (action === 'close-sheet') closeSheet();
-    else if (action === 'auth-back') { state.authStep = 'email'; renderAuth(); }
+    else if (action === 'auth-back') { state.authStep = 'email'; showAuth(); }
+    else if (action === 'login') { if (currentView() === 'kiosk') renderView(); else location.hash = '#kiosk'; }
     else if (action === 'forgot') toast('Passwort-Zurücksetzen per Mail kommt mit dem Echtbetrieb.');
     else if (action === 'demo-fill') {
       state.authEmail = api.demoLogin.email;
       state.authStep = 'email';
-      renderAuth();
+      showAuth();
     } else if (action === 'logout') {
       await api.signOut();
       state.member = null;
@@ -1004,6 +1050,8 @@
       state.lastAdd = null;
       try { if (last) await api.undo(last.ids); toast(`${last ? last.text : 'Eintrag'} storniert`, true); } catch (err) { toast(err.message); }
       renderView();
+    } else if (TFB.actions && TFB.actions[action]) {
+      TFB.actions[action](el, e);
     } else if (action === 'undo') {
       el.disabled = true;
       try { await api.undo(el.dataset.ids.split(',')); state.lastAdd = null; toast('Storniert', true); } catch (err) { toast(err.message); }
@@ -1017,14 +1065,15 @@
   });
 
   window.addEventListener('hashchange', () => {
-    if (!state.member || !state.member.hasConsent) return;
     const view = currentView();
     document.querySelectorAll('.tabbar .tab').forEach((t) => {
-      const active = t.getAttribute('href') === '#' + view;
+      const active = t.getAttribute('href') === '#' + areaOf(view);
       t.classList.toggle('active', active);
       if (active) t.setAttribute('aria-current', 'page'); else t.removeAttribute('aria-current');
     });
     document.getElementById('view').dataset.view = view;
+    const label = document.querySelector('[data-area-label]');
+    if (label) label.textContent = AREA_LABEL[areaOf(view)] || 'Kiosk';
     if (view !== 'kiosk') state.editMode = false;
     closeSheet();
     window.scrollTo(0, 0);
@@ -1033,8 +1082,11 @@
 
   // Beim Zurückkehren in die App frische Zahlen zeigen (Strichliste rollt weiter).
   document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible' && state.member && state.member.hasConsent && !$sheet.innerHTML) renderView();
+    if (document.visibilityState === 'visible' && !$sheet.innerHTML && !document.querySelector('.editing-page')) renderView();
   });
+
+  // Schnittstelle für die Vereinsseiten (site.js)
+  TFB.ui = { state, api, cfg, esc, icon, logo, viewHead, partnerSlot, openSheet, closeSheet, toast, renderView, currentView, loadImage, largeImage, openLightbox };
 
   if ('serviceWorker' in navigator && location.protocol === 'https:') {
     navigator.serviceWorker.register('sw.js').catch(() => {});
