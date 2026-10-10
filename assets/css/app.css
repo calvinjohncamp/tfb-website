@@ -731,3 +731,25 @@ button.shop-card { border: 0; text-align: left; font: inherit; }
   .topnav .tab { padding: 10px 7px 11px; gap: 4px; font-size: .8rem; }
   .topnav .tab svg { width: 16px; height: 16px; }
 }
+
+/* ---------- Kopfzeile 2: Logo + Profilbild, darunter ruhiges Schrift-Menü ---------- */
+.header-logo { height: 65px; }
+.topbar .avatar { width: 58px; height: 58px; font-size: 1.15rem; }
+.topnav {
+  justify-content: space-between; gap: 2px; margin: 10px -16px 0; padding: 0 10px;
+  border-bottom: 0;
+}
+.topnav .tab {
+  flex: 1 0 auto; padding: 10px 6px 12px;
+  font-size: .74rem; font-weight: 700; letter-spacing: .16em; text-transform: uppercase;
+  color: #8A8F8A;
+}
+.topnav .tab:hover { color: var(--ink); }
+.topnav .tab.active { color: var(--signal); }
+.topnav .tab.active::after { content: none; }
+.topnav .tab.external { color: #8A8F8A; }
+.topnav .tab.external small { font-size: .85em; margin-left: 3px; letter-spacing: 0; }
+.editbar { top: 136px; }
+@media (max-width: 400px) {
+  .topnav .tab { padding: 10px 4px 12px; font-size: .68rem; letter-spacing: .12em; }
+}

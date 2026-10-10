@@ -257,7 +257,6 @@
         <div class="topbar-row">
           <a class="brand" href="${state.member ? '#kiosk' : '#aktuell'}" aria-label="${esc(cfg.clubName)} – Startseite">
             ${logo('logo', 'header-logo')}
-            <span class="app-label" data-area-label>${AREA_LABEL[area] || 'Kiosk'}</span>
           </a>
           ${state.member
             ? `<button class="avatar" type="button" data-action="profile" aria-label="Profil">${avatarFace(state.member)}</button>`
@@ -265,11 +264,10 @@
         </div>
         <nav class="topnav" aria-label="Bereiche">
           ${tabs.map(([id, label, ic, url]) => url
-            ? `<a href="${esc(url)}" class="tab external" target="_blank" rel="noopener" aria-label="${label} – Buchungs-App öffnen (neues Fenster)">${ic}<span>${label}</span></a>`
-            : `<a href="#${id}" class="tab ${id === area ? 'active' : ''}" ${id === area ? 'aria-current="page"' : ''}>${ic}<span>${label}</span></a>`).join('')}
+            ? `<a href="${esc(url)}" class="tab external" target="_blank" rel="noopener" aria-label="${label} – Buchungs-App öffnen (neues Fenster)">${label}<small aria-hidden="true">↗</small></a>`
+            : `<a href="#${id}" class="tab ${id === area ? 'active' : ''}" ${id === area ? 'aria-current="page"' : ''}>${label}</a>`).join('')}
         </nav>
       </header>
-      ${api.mode === 'demo' ? '<div class="demo-ribbon">Demo-Modus · Daten nur auf diesem Gerät</div>' : ''}
       <main class="view" id="view" data-view="${view}"><div class="loading"></div></main>`;
     return renderView(view);
   }
