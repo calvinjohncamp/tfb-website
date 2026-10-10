@@ -5,7 +5,12 @@ unten die offenen Punkte. Neues bitte oben bei „Verlauf“ ergänzen.
 
 ## Neu ab 10.10.2026: Vereinswebsite im selben Projekt (Vorführversion für den Vorstand)
 
-- Reiter: **Kiosk · Aktuell · Sport · Verein · Padel**. Kiosk zuerst; nur der
+- **Kopfzeile (10.10.):** komplettes Vereinslogo (TFB. + Schriftzug), daneben der
+  Bereich (KIOSK, NEWS, SPORT, VEREIN) auf der Grundlinie von „TFB.●“, rechts
+  Profilbild. **Menü oben** direkt unter dem Logo (statt Reiter unten), bleibt
+  beim Scrollen sichtbar. „Aktuell“ heißt jetzt **News**. Partner stehen auf
+  jeder Seite **ganz unten**.
+- Reiter: **Kiosk · News · Sport · Verein · Padel**. Kiosk zuerst; nur der
   Kiosk-Bereich braucht Anmeldung (Umschalter Kiosk · Strichliste · Abrechnungen).
   Gäste landen auf „Aktuell“, Mitglieder im Kiosk. Wort neben dem Logo = Bereich.
 - Verwaltung jetzt über das Profilbild (unten ist kein Platz mehr); dort auch

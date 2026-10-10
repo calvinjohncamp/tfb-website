@@ -166,10 +166,10 @@
           <div><h1>${esc(page.title)}</h1><p class="muted">${esc(page.intro)}</p></div>
           ${admin && !edit ? `<button type="button" class="view-close" data-action="site-edit" data-page="${key}" aria-label="Seite bearbeiten">${icon.pencil}</button>` : ''}
         </header>
-        ${partnerSlot(key, page.partnerKicker || 'Präsentiert von')}
         ${blocks}
         ${edit ? `<button type="button" class="btn block add-section" data-action="block-new">${icon.plus} Baustein hinzufügen</button>` : ''}
         ${key === 'aktuell' && !edit ? '<p class="fineprint">Vorführversion: Termine und Beiträge sind Beispiele.</p>' : ''}
+        ${edit ? '' : partnerSlot(key, page.partnerKicker || 'Präsentiert von')}
       </div>`;
   }
   ['aktuell', 'sport', 'verein'].forEach((key) => { TFB.views[key] = () => pageView(key); });

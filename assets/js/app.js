@@ -13,7 +13,7 @@
   // Reiter unten: Kiosk zuerst, dann die Vereinsseiten, dann der Padel-Link.
   const areaOf = (view) => (KIOSK_AREA.includes(view) ? 'kiosk' : view);
   // Wort neben dem Logo: der aktuelle Bereich
-  const AREA_LABEL = { kiosk: 'Kiosk', aktuell: 'Aktuell', sport: 'Sport', verein: 'Verein', verwaltung: 'Verwaltung' };
+  const AREA_LABEL = { kiosk: 'Kiosk', aktuell: 'News', sport: 'Sport', verein: 'Verein', verwaltung: 'Verwaltung' };
   const state = {
     member: null,
     catalog: null,
@@ -247,29 +247,30 @@
     const area = areaOf(view);
     const tabs = [
       ['kiosk', 'Kiosk', icon.kiosk],
-      ['aktuell', 'Aktuell', icon.news],
+      ['aktuell', 'News', icon.news],
       ['sport', 'Sport', icon.sport],
       ['verein', 'Verein', icon.club],
       ['padel', 'Padel', icon.padel, cfg.padelUrl],
     ];
     $app.innerHTML = `
       <header class="topbar">
-        <a class="brand" href="#kiosk">
-          ${logo('mark', 'header-mark')}
-          <span class="app-label" data-area-label>${AREA_LABEL[area] || 'Kiosk'}</span>
-          <span class="brand-tagline" aria-label="${esc(cfg.clubName)}">${logo('tagline1', 'header-tagline')}${logo('tagline2', 'header-tagline')}</span>
-        </a>
-        ${state.member
-          ? `<button class="avatar" type="button" data-action="profile" aria-label="Profil">${avatarFace(state.member)}</button>`
-          : `<button class="avatar guest" type="button" data-action="login" aria-label="Anmelden">${icon.user}</button>`}
+        <div class="topbar-row">
+          <a class="brand" href="${state.member ? '#kiosk' : '#aktuell'}" aria-label="${esc(cfg.clubName)} – Startseite">
+            ${logo('logo', 'header-logo')}
+            <span class="app-label" data-area-label>${AREA_LABEL[area] || 'Kiosk'}</span>
+          </a>
+          ${state.member
+            ? `<button class="avatar" type="button" data-action="profile" aria-label="Profil">${avatarFace(state.member)}</button>`
+            : `<button class="avatar guest" type="button" data-action="login" aria-label="Anmelden">${icon.user}</button>`}
+        </div>
+        <nav class="topnav" aria-label="Bereiche">
+          ${tabs.map(([id, label, ic, url]) => url
+            ? `<a href="${esc(url)}" class="tab external" target="_blank" rel="noopener" aria-label="${label} – Buchungs-App öffnen (neues Fenster)">${ic}<span>${label}</span></a>`
+            : `<a href="#${id}" class="tab ${id === area ? 'active' : ''}" ${id === area ? 'aria-current="page"' : ''}>${ic}<span>${label}</span></a>`).join('')}
+        </nav>
       </header>
       ${api.mode === 'demo' ? '<div class="demo-ribbon">Demo-Modus · Daten nur auf diesem Gerät</div>' : ''}
-      <main class="view" id="view" data-view="${view}"><div class="loading"></div></main>
-      <nav class="tabbar" aria-label="Bereiche" style="grid-template-columns:repeat(${tabs.length},1fr)">
-        ${tabs.map(([id, label, ic, url]) => url
-          ? `<a href="${esc(url)}" class="tab external" target="_blank" rel="noopener" aria-label="${label} – Buchungs-App öffnen (neues Fenster)">${ic}<span>${label}</span></a>`
-          : `<a href="#${id}" class="tab ${id === area ? 'active' : ''}" ${id === area ? 'aria-current="page"' : ''}>${ic}<span>${label}</span></a>`).join('')}
-      </nav>`;
+      <main class="view" id="view" data-view="${view}"><div class="loading"></div></main>`;
     return renderView(view);
   }
 
@@ -357,9 +358,9 @@
         <div class="editbar">
           <div><strong>Kiosk bearbeiten</strong><span>Artikel antippen zum Ändern · Pfeile zum Sortieren</span></div>
           <button type="button" class="btn primary" data-action="edit-done">Fertig</button>
-        </div>` : coasterMarkup(open) + partnerSlot('kiosk', 'Der TFB-Kiosk wird dir präsentiert von')}
+        </div>` : coasterMarkup(open)}
       ${cat.sections.map((section, index) => sectionMarkup(section, index, cat, edit)).join('')}
-      ${edit ? `<button type="button" class="btn block add-section" data-action="section-new">${icon.plus} Neuer Bereich</button>` : ''}`;
+      ${edit ? `<button type="button" class="btn block add-section" data-action="section-new">${icon.plus} Neuer Bereich</button>` : partnerSlot('kiosk', 'Der TFB-Kiosk wird dir präsentiert von')}`;
   }
 
   function sectionMarkup(section, index, cat, edit) {
@@ -482,7 +483,6 @@
     const range = `${from.toLocaleDateString('de-DE', { day: 'numeric', month: 'short', timeZone: cfg.timeZone })} – heute`;
     return `
       ${viewHead('Strichliste', `Letzte ${cfg.tallyDays} Tage · ${esc(range)}`)}
-      ${partnerSlot('strichliste', 'Die Strichliste wird dir präsentiert von')}
       <section class="paper">
         ${rows.length ? rows.map((r, i) => {
           const key = `${r.lastName}|${r.firstName}`;
@@ -496,7 +496,8 @@
             </button>`;
         }).join('') : '<p class="paper-empty">In den letzten sieben Tagen hat noch niemand angeschrieben.</p>'}
       </section>
-      <p class="fineprint">Ältere Striche verschwinden automatisch. Beträge siehst du nur für dich selbst unter „Abrechnungen“.</p>`;
+      <p class="fineprint">Ältere Striche verschwinden automatisch. Beträge siehst du nur für dich selbst unter „Abrechnungen“.</p>
+      ${partnerSlot('strichliste', 'Die Strichliste wird dir präsentiert von')}`;
   }
 
   // ---------- Abrechnungen ----------
@@ -520,7 +521,6 @@
     const now = Date.now();
     return `
       ${viewHead('Meine Abrechnungen', 'Nur für dich sichtbar')}
-      ${partnerSlot('abrechnungen', 'Deine Abrechnung wird dir präsentiert von')}
 
       <section class="card month-card">
         <div class="month-top">
@@ -558,7 +558,8 @@
             </div>
           </div>`).join('')}</div>` : '<p class="empty">Noch keine abgeschlossenen Monate.</p>'}
       </section>
-      <p class="fineprint">Der Verein zieht den Betrag eines Monats zum ${cfg.debitDayOfMonth}. des Folgemonats über dein bestehendes SEPA-Mandat ein.</p>`;
+      <p class="fineprint">Der Verein zieht den Betrag eines Monats zum ${cfg.debitDayOfMonth}. des Folgemonats über dein bestehendes SEPA-Mandat ein.</p>
+      ${partnerSlot('abrechnungen', 'Deine Abrechnung wird dir präsentiert von')}`;
   }
 
   // ---------- Verwaltung (nur Admins) ----------
@@ -1066,7 +1067,7 @@
 
   window.addEventListener('hashchange', () => {
     const view = currentView();
-    document.querySelectorAll('.tabbar .tab').forEach((t) => {
+    document.querySelectorAll('.topnav .tab').forEach((t) => {
       const active = t.getAttribute('href') === '#' + areaOf(view);
       t.classList.toggle('active', active);
       if (active) t.setAttribute('aria-current', 'page'); else t.removeAttribute('aria-current');
