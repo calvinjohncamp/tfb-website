@@ -307,7 +307,7 @@
         if (!state.member) return showAuth();
         if (!state.member.hasConsent) { $view.innerHTML = consentMarkup(); return; }
         const body = view === 'kiosk' ? await kioskView() : view === 'strichliste' ? await tallyView() : await statementsView();
-        $view.innerHTML = kioskNav(view) + body;
+        $view.innerHTML = body;
       } else if (view === 'verwaltung') $view.innerHTML = adminView();
       else if (TFB.views && TFB.views[view]) $view.innerHTML = await TFB.views[view]();
     } catch (err) {
@@ -356,7 +356,14 @@
         <div class="editbar">
           <div><strong>Kiosk bearbeiten</strong><span>Artikel antippen zum Ändern · Pfeile zum Sortieren</span></div>
           <button type="button" class="btn primary" data-action="edit-done">Fertig</button>
-        </div>` : coasterMarkup(open)}
+        </div>` : `
+        <div class="kiosk-hero">
+          ${coasterMarkup(open)}
+          <div class="kiosk-links">
+            <a class="kiosk-link" href="#strichliste">${icon.tally}<span>Strichliste</span></a>
+            <a class="kiosk-link" href="#abrechnungen">${icon.receipt}<span>Abrechnungen</span></a>
+          </div>
+        </div>`}
       ${cat.sections.map((section, index) => sectionMarkup(section, index, cat, edit)).join('')}
       ${edit ? `<button type="button" class="btn block add-section" data-action="section-new">${icon.plus} Neuer Bereich</button>` : partnerSlot('kiosk', 'Der TFB-Kiosk wird dir präsentiert von')}`;
   }

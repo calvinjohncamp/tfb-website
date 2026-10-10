@@ -10,7 +10,10 @@ unten die offenen Punkte. Neues bitte oben bei „Verlauf“ ergänzen.
   kein Demo-Hinweis. Darunter ein ruhiges **Schrift-Menü ohne Symbole**
   (Großbuchstaben, gesperrt), aktiver Bereich in Signal-Rot. KIOSK beginnt bündig
   mit dem Schriftzug im Logo, das „L“ von PADEL endet bündig mit dem Profilbild,
-  gleiche Abstände dazwischen. Bleibt beim Scrollen sichtbar. „Aktuell“ heißt
+  gleiche Abstände dazwischen. Abstand Logo → Menü = Menü → Inhalt (30 px).
+- **Kiosk-Kopf (10.10.):** kein Umschalter mehr. Bierdeckel links (176 px, Stapel
+  endet etwa zwischen den beiden Produktspalten), rechts daneben die Knöpfe
+  **Strichliste** und **Abrechnungen**. Diese Seiten schließen mit dem Kreuz. Bleibt beim Scrollen sichtbar. „Aktuell“ heißt
   jetzt **News**. Partner stehen auf jeder Seite **ganz unten**.
 - Reiter: **Kiosk · News · Sport · Verein · Padel**. Kiosk zuerst; nur der
   Kiosk-Bereich braucht Anmeldung (Umschalter Kiosk · Strichliste · Abrechnungen).

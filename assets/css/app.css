@@ -769,3 +769,41 @@ button.shop-card { border: 0; text-align: left; font: inherit; }
   .topnav .tab { padding: 10px 0 12px; font-size: .7rem; letter-spacing: .12em; }
   .topnav .tab:last-child { margin-right: -.12em; }
 }
+
+/* ---------- Abstand Logo → Menü = Abstand Menü → Inhalt (30 px) ---------- */
+.topnav { margin-top: 20px; }
+.editbar { top: 160px; }
+
+/* ---------- Kiosk-Kopf: Bierdeckel links, Strichliste/Abrechnungen rechts ---------- */
+.kiosk-hero { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 26px; margin: 4px 0 6px; }
+.kiosk-hero .deckel-wrap { width: 176px; margin: 4px 0 8px 2px; }
+.kiosk-hero .deckel { --size: 176px; }
+.kiosk-hero .deckel-face { padding: 14px 10px; gap: 5px; }
+.kiosk-hero .deckel-ball { width: 18px; }
+.kiosk-hero .coaster-kicker { font-size: .56rem; letter-spacing: .12em; }
+.kiosk-hero .deckel-month { font-size: .82rem; }
+.kiosk-hero .coaster-amount { font-size: 1.75rem; }
+.kiosk-hero .coaster-strokes { min-height: 22px; gap: 5px; max-width: 140px; }
+.kiosk-hero .coaster-strokes .bundle { height: 22px; stroke-width: 2.4; }
+.kiosk-hero .coaster-strokes em { font-size: .9rem; }
+.kiosk-hero .coaster-note { font-size: .6rem; line-height: 1.35; }
+.kiosk-hero .storno { width: 58px; height: 58px; top: -12px; right: -18px; }
+.kiosk-hero .storno-label, .kiosk-hero .storno small { font-size: .52rem; }
+.kiosk-links { display: grid; gap: 10px; }
+.kiosk-link {
+  display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 0 14px;
+  background: #fff; border-radius: 14px; box-shadow: 0 0 0 1px #E6E1D6, 0 6px 16px rgba(28, 37, 32, .06);
+  text-decoration: none; color: var(--ink); font-weight: 700; font-size: .9rem;
+  transition: transform .12s ease, box-shadow .2s ease;
+}
+.kiosk-link:hover { box-shadow: 0 0 0 1px #D9D2C4, 0 10px 22px rgba(28, 37, 32, .1); }
+.kiosk-link:active { transform: scale(.97); }
+.kiosk-link svg { width: 20px; height: 20px; flex: none; fill: none; stroke: var(--signal); stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+.kiosk-link span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* Knöpfe neben dem Deckel: passend in die rechte Spalte (Mobil ca. 149 px) */
+.kiosk-hero { gap: 16px; }
+.kiosk-link { min-width: 0; gap: 8px; padding: 0 10px; font-size: .84rem; }
+.kiosk-link svg { width: 18px; height: 18px; }
+@media (min-width: 420px) { .kiosk-hero { gap: 26px; } .kiosk-link { gap: 10px; padding: 0 14px; font-size: .9rem; } }
+.kiosk-hero .storno { right: -6px; }
+.kiosk-hero .storno-label { font-size: .47rem; letter-spacing: .03em; }
