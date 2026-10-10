@@ -145,3 +145,6 @@ Monatsabschluss.
   (aus dem Logo, `tfb-tagline`) über „KIOSK“. Neuer Reiter **Padel** öffnet
   padel-bielstein.de in neuem Fenster (`padelUrl` in config.js). Malzbier
   (Golden Malz aus Bielstein, eigenes Symbol, 2,00 € vorläufig) bei Alkoholfrei.
+- **10.10.2026** – Gerolsteiner als eigenes Symbol nach dem Produktfoto aus dem
+  Padel-Kiosk: schlanke Gourmet-Glasflasche, türkiser Verschluss, weißes Etikett
+  mit rotem Stern und türkiser Welle.

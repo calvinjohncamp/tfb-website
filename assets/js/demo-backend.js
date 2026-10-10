@@ -12,7 +12,7 @@
 
   // ---------- Startsortiment (wie im bisherigen Kiosk, im Admin frei änderbar) ----------
   // Bereiche erscheinen in dieser Reihenfolge. status 'soon' = nur Vorschau ("bald").
-  const CATALOG_VERSION = 8;
+  const CATALOG_VERSION = 9;
   const DEFAULT_CATALOG = {
     sections: [
       { id: 'alkoholfrei', title: 'Alkoholfrei', note: 'Für die Seitenwechsel', status: 'open' },
@@ -25,7 +25,7 @@
       { id: 'koelsch-kranz', section: 'bier', name: 'Kölsch-Kranz', detail: '10 Gläser für die ganze Runde.', price: 2000, art: 'kranz', color: '#E9B949' },
       { id: 'radler', section: 'bier', name: 'Radler', detail: 'Erfrischend und fruchtig.', price: 200, art: 'radler', color: '#7A4A1E' },
       { id: 'weissbier', section: 'bier', name: 'Weißbier', detail: 'Alkoholfrei, bayrisch herb.', price: 200, art: 'weizen', color: '#E3A33B' },
-      { id: 'gerolsteiner', section: 'alkoholfrei', name: 'Gerolsteiner', detail: 'Mineralwasser Medium.', price: 200, art: 'water', color: '#7FB7D9' },
+      { id: 'gerolsteiner', section: 'alkoholfrei', name: 'Gerolsteiner', detail: 'Mineralwasser Medium.', price: 200, art: 'gerolsteiner', color: '#CFE6E0' },
       { id: 'coca-cola', section: 'alkoholfrei', name: 'Coca-Cola', detail: 'Eiskalt genießen.', price: 280, art: 'cola', color: '#B7282E' },
       { id: 'fanta', section: 'alkoholfrei', name: 'Fanta Orange', detail: 'Fruchtig frisch.', price: 200, art: 'cola', color: '#F08A24' },
       { id: 'sportsfreund', section: 'alkoholfrei', name: 'Sportsfreund', detail: 'Isotonisch und alkoholfrei.', price: 200, art: 'sportsfreund', color: '#5A2A1A' },
@@ -189,6 +189,13 @@
       const p = db.catalog.products.find((x) => x.id === id);
       if (p) Object.assign(p, { art, color });
     }
+    db.catalogVersion = 8;
+    save(db);
+  }
+  // Version 8 → 9: Gerolsteiner als Gourmet-Glasflasche.
+  if (db.catalog && db.catalogVersion === 8) {
+    const p = db.catalog.products.find((x) => x.id === 'gerolsteiner');
+    if (p) Object.assign(p, { art: 'gerolsteiner', color: '#CFE6E0' });
     db.catalogVersion = CATALOG_VERSION;
     save(db);
   }

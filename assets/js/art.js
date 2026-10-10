@@ -36,6 +36,15 @@
   }
 
   const shapes = {
+    // Gerolsteiner Gourmet-Flasche: klares Glas, türkiser Verschluss, weißes Etikett mit rotem Stern und türkiser Welle
+    gerolsteiner: (c) => `
+      <path d="M28 9.5h8v8c0 4 6 5.5 6 11.5v26a4 4 0 0 1-4 4H26a4 4 0 0 1-4-4V29c0-6 6-7.5 6-11.5z" fill="${c}" stroke="${line}" stroke-width="3" stroke-linejoin="round"/>
+      <rect x="27" y="3" width="10" height="7" rx="1.8" fill="#4FBFB0" stroke="${line}" stroke-width="2.4"/>
+      <path d="M29.5 5v3M32 5v3M34.5 5v3" stroke="${line}" stroke-width="1.1" opacity=".45"/>
+      <path d="M22 32h20v13.5H22z" fill="#FFFFFF" stroke="${line}" stroke-width="2.2" stroke-linejoin="round"/>
+      <path d="M32 34l.9 2 2.2-.5-1.3 1.8 1.3 1.8-2.2-.5-.9 2-.9-2-2.2.5 1.3-1.8-1.3-1.8 2.2.5z" fill="#D2202F"/>
+      <path d="M23.1 42.2c3-1.9 6.2 1.4 8.9-.1 2.9-1.6 6-1.4 8.9.2v2.1H23.1z" fill="#4FBFB0"/>
+      <path d="M25.3 49v6M25.6 22c-1 1.6-1.5 3.4-1.5 5" stroke="rgba(255,255,255,.75)" stroke-width="2.2" stroke-linecap="round" fill="none"/>`,
     // Erzquell-Flasche (Golden Malz, Sportsfreund, Radler): gleiche Form, gleiche Etikettlage, nur andere Farben
     malz: (c) => erzquell(c, '#E8B22B', '#F2C230', '#B5462F', '#6B3E1E'),
     sportsfreund: (c) => erzquell(c, '#1F3A6E', '#F4F1EA', '#1F3A6E', '#C8202F'),
@@ -198,7 +207,7 @@
   // Auswahl im Admin: Schlüssel und Bezeichnung jedes Symbols.
   TFB.artKinds = [
     ['stange', 'Kölschglas'], ['kranz', 'Kölschkranz'], ['weizen', 'Weizenglas'], ['beer', 'Bierkrug'], ['bottle', 'Bierflasche'], ['malz', 'Malzbier'], ['sportsfreund', 'Sportsfreund'], ['radler', 'Radler'],
-    ['cola', 'Cola-Flasche'], ['water', 'Wasserflasche'], ['can', 'Dose'], ['slimcan', 'Schlanke Dose'],
+    ['cola', 'Cola-Flasche'], ['gerolsteiner', 'Gerolsteiner'], ['water', 'Wasserflasche'], ['can', 'Dose'], ['slimcan', 'Schlanke Dose'],
     ['redbull', 'Red Bull'], ['cup', 'Tasse'], ['bar', 'Riegel'], ['snickers', 'Snickers'], ['mars', 'Mars'],
     ['wafer', 'Waffel (quadratisch)'], ['bag', 'Chipstüte'], ['tube', 'Chipsdose'],
     ['bear', 'Gummibär'], ['hotdog', 'Hotdog'], ['sausage', 'Würstchen'], ['cone', 'Eis'], ['ball', 'Ball'], ['padel', 'Padel-Schläger'], ['grip', 'Griffband'],
