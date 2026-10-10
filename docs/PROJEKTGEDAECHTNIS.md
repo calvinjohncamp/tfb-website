@@ -18,9 +18,11 @@ unten die offenen Punkte. Neues bitte oben bei „Verlauf“ ergänzen.
 - **Raster für alle Geräte (10.10.):** Handy < 640 px wie bisher. iPad hochkant
   640–1023 px: bis 880 px breit, Sortiment 3 Spalten, Beiträge 2 Spalten, Vorstand
   3 Spalten, Mannschaftsführer sichtbar. Ab 1024 px (iPad quer/Desktop): bis 1200 px,
-  Kopf in einer Zeile (Logo · Menü · Profilbild), Kiosk mit feststehendem Deckel
+  Kopf in einer Zeile (Logo · Menü · Profilbild; Menü mittig zwischen Logo-Ende
+  und Profilbild, Grundlinie = Unterkante Schriftzug = Unterkante Profilbild), Kiosk mit feststehendem Deckel
   links und Sortiment rechts (4 Spalten), Vereinsseiten mit Terminspalte rechts,
   Texte zweispaltig, Vorstand 4 Spalten. Bearbeiten ab 640 px als Fenster in der Mitte.
+- Partner-Duo auf allen Geräten **linksbündig** (Text und Logos).
 - **Startseite ist immer der Kiosk** (auch für Gäste); beide Startdateien
   („TFB-Kiosk öffnen.html“, „TFB-Website öffnen.html“) öffnen den Kiosk. Menüpunkt heißt wieder **Aktuell**. Bleibt beim Scrollen sichtbar. Partner stehen
   auf jeder Seite **ganz unten**.

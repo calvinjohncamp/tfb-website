@@ -943,3 +943,20 @@ button.shop-card { border: 0; text-align: left; font: inherit; }
   .page-main > .block-heading:first-child, .page-aside > .block-heading:first-child { margin-top: 0 !important; }
   .page-main > section:first-child > h2:first-child { margin-top: 0; }
 }
+
+/* ---------- Feintuning Desktop (10.10.) ---------- */
+/* Fokusrahmen nur bei Tastaturbedienung, nicht nach Mausklick */
+.topnav .tab:focus:not(:focus-visible) { outline: none; }
+/* Partner überall linksbündig */
+.pbsp-slot .pbsp-kicker { text-align: left; }
+.pbsp-duo { margin-left: 0; margin-right: 0; }
+@media (min-width: 1024px) {
+  /* Menü mittig zwischen Logo-Ende und Profilbild, Abstände unverändert */
+  .topnav { justify-content: center; padding: 0; }
+  /* Grundlinie der Menüpunkte = Unterkante „TENNISFREUNDE BIELSTEIN“ = Unterkante Profilbild */
+  .topnav .tab, .topnav .tab:first-child, .topnav .tab:last-child { line-height: 1; margin-bottom: -.14em; }
+}
+@media (min-width: 1024px) {
+  /* Sperrung hinter dem letzten Buchstaben nicht mitzentrieren */
+  .topnav .tab:last-child { margin-right: -.18em; }
+}
