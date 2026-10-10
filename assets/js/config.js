@@ -10,8 +10,14 @@ TFB.config = {
   // 'demo' = alle Daten bleiben auf diesem Gerät (bis Supabase verfügbar ist).
   backend: 'demo',
 
-  // Werbung für die Padel-Buchungs-App des Vereins (eigener Reiter unten).
+  // Werbung für die Padel-Buchungs-App des Vereins (eigener Menüpunkt).
   padelUrl: 'https://padel-bielstein.de',
+
+  // Öffentliche Adresse nach der Veröffentlichung – für Einladungslinks in WhatsApp.
+  publicUrl: 'https://kiosk.joern-kaemper.de',
+
+  // Zusatzfunktionen, einzeln abschaltbar. treffen = Einladungen mit Zusage + WhatsApp (Vorführung).
+  features: { treffen: true },
 
   timeZone: 'Europe/Berlin',
   tallyDays: 7,          // Strichliste zeigt immer die letzten 7 Tage

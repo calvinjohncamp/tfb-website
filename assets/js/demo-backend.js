@@ -406,6 +406,31 @@
       return publicMember(member);
     },
 
+    // ---------- Mitgliedersuche (für „Treffen“) ----------
+    // Sucht in Vor-/Nachname und im Namensteil der E-Mail – gibt aber nur Namen zurück.
+    async searchMembers(query) {
+      requireMember();
+      const q = norm(query).replace(/[._-]+/g, ' ').replace(/\s+/g, ' ').trim();
+      if (q.length < 2) return [];
+      return db.members
+        .filter((m) => m.active)
+        .filter((m) => {
+          const local = norm(m.email).split('@')[0].replace(/[._-]+/g, ' ');
+          const name = norm(`${m.firstName} ${m.lastName}`);
+          return name.includes(q) || local.includes(q) || norm(m.lastName).startsWith(q);
+        })
+        .slice(0, 8)
+        .map((m) => ({ id: m.id, firstName: m.firstName, lastName: m.lastName }));
+    },
+    async memberNames(ids) {
+      requireMember();
+      return Object.fromEntries(db.members.filter((m) => ids.includes(m.id)).map((m) => [m.id, `${m.firstName} ${m.lastName}`]));
+    },
+    async allMemberIds() {
+      requireMember();
+      return db.members.filter((m) => m.active).map((m) => m.id);
+    },
+
     // ---------- Website ----------
     async site() {
       return clone(db.site || TFB.siteSeed);

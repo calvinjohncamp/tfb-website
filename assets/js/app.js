@@ -8,7 +8,7 @@
   const $sheet = document.getElementById('sheet-root');
   const $toast = document.getElementById('toast-root');
 
-  const VIEWS = ['kiosk', 'strichliste', 'abrechnungen', 'aktuell', 'sport', 'verein', 'verwaltung'];
+  const VIEWS = ['kiosk', 'strichliste', 'abrechnungen', 'aktuell', 'sport', 'verein', 'treffen', 'verwaltung'];
   const KIOSK_AREA = ['kiosk', 'strichliste', 'abrechnungen'];   // nur mit Anmeldung
   // Reiter unten: Kiosk zuerst, dann die Vereinsseiten, dann der Padel-Link.
   const areaOf = (view) => (KIOSK_AREA.includes(view) ? 'kiosk' : view);
@@ -106,7 +106,7 @@
   }
 
   function currentView() {
-    const v = location.hash.replace('#', '');
+    const v = location.hash.replace('#', '').split('/')[0];   // z. B. #treffen/<id>
     if (v === 'verwaltung' && !(state.member && state.member.isAdmin)) return 'aktuell';
     return VIEWS.includes(v) ? v : 'kiosk';
   }
@@ -250,6 +250,7 @@
       ['aktuell', 'Aktuell', icon.news],
       ['sport', 'Sport', icon.sport],
       ['verein', 'Verein', icon.club],
+      ...(cfg.features && cfg.features.treffen ? [['treffen', 'Treffen', icon.news]] : []),
       ['padel', 'Padel', icon.padel, cfg.padelUrl],
     ];
     $app.innerHTML = `

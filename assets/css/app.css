@@ -960,3 +960,75 @@ button.shop-card { border: 0; text-align: left; font: inherit; }
   /* Sperrung hinter dem letzten Buchstaben nicht mitzentrieren */
   .topnav .tab:last-child { margin-right: -.18em; }
 }
+
+/* ---------- Desktop: Menüschrift 20 % größer (vorgemerkt am 10.10.) ---------- */
+@media (min-width: 1024px) {
+  .topnav .tab, .topnav .tab:first-child, .topnav .tab:last-child { font-size: .96rem; }
+}
+
+/* =====================================================================
+   Treffen (Vorführung) – Einladungen mit Zusage, Versand über WhatsApp
+   Zum Entfernen diesen Abschnitt löschen (siehe assets/js/meet.js).
+   ===================================================================== */
+.meet-start { display: grid; gap: 12px; }
+.meet-start .btn svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; }
+.meet-templates { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+.meet-template { text-align: left; border: 0; background: #fff; border-radius: 14px; padding: 12px 14px; box-shadow: 0 0 0 1px #E6E1D6; display: grid; gap: 2px; }
+.meet-template strong { font-size: .92rem; }
+.meet-template span { font-size: .78rem; color: var(--muted); }
+.meet-template:hover { box-shadow: 0 0 0 1.5px var(--signal); }
+.meet-list { display: grid; gap: 12px; }
+.meet-card { padding: 14px; display: grid; gap: 12px; }
+.meet-card-main { display: flex; gap: 14px; align-items: center; text-decoration: none; color: inherit; }
+.meet-card-text { display: grid; gap: 2px; }
+.meet-card-text strong { font-size: 1.02rem; }
+.meet-card-text small { color: var(--muted); font-size: .82rem; }
+.meet-counts { font-size: .8rem; color: var(--muted); margin-top: 3px; }
+.meet-counts .yes { color: #1E7A46; }
+.meet-answer { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.meet-answer button { min-height: 44px; border-radius: 12px; border: 1.5px solid var(--line); background: #fff; font-weight: 700; }
+.meet-answer button.on.yes { background: #1E7A46; border-color: #1E7A46; color: #fff; }
+.meet-answer button.on.no { background: var(--ink); border-color: var(--ink); color: #fff; }
+.meet-my { padding: 12px; }
+.meet-tally { display: grid; gap: 10px; }
+.meet-tally .card { padding: 14px 16px; }
+.meet-tally h3 { margin-bottom: 6px; }
+.meet-tally ul { margin: 0; padding-left: 18px; line-height: 1.7; }
+.meet-tally em { font-style: normal; font-size: .66rem; font-weight: 800; text-transform: uppercase; background: var(--ink); color: #fff; padding: 1px 5px; border-radius: 5px; margin-left: 4px; }
+.meet-send { display: grid; gap: 10px; margin-top: 6px; }
+.btn.whatsapp { background: #25D366; border-color: #25D366; color: #fff; text-decoration: none; }
+.btn.whatsapp:hover { background: #1EBE5A; }
+.meet-send .btn, .meet-share .btn { text-decoration: none; }
+.danger-link { color: var(--clay); }
+.meet-phone { display: grid; gap: 6px; margin-top: 22px; }
+.meet-phone-row { display: flex; gap: 8px; }
+.meet-phone-row input { flex: 1; min-width: 0; min-height: 46px; padding: 0 12px; border: 1.5px solid var(--line); border-radius: 12px; font-size: 16px; background: var(--paper); }
+.meet-login { display: grid; gap: 12px; justify-items: start; }
+.meet-kinds { margin-bottom: 4px; }
+.meet-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.meet-chips .chip { display: inline-flex; align-items: center; gap: 6px; background: #EFEDE7; border-radius: 99px; padding: 5px 6px 5px 12px; font-size: .84rem; font-weight: 600; }
+.meet-chips .chip button { width: 20px; height: 20px; border-radius: 50%; border: 0; background: rgba(0,0,0,.12); padding: 0; line-height: 1; }
+.meet-editor [name=search] { width: 100%; min-height: 48px; padding: 0 14px; border: 1.5px solid var(--line); border-radius: 12px; font-size: 16px; background: var(--paper); }
+.meet-suggest { display: grid; gap: 4px; margin-top: 6px; }
+.meet-suggest button { display: flex; align-items: center; gap: 8px; text-align: left; border: 0; background: #fff; border-radius: 10px; padding: 10px 12px; box-shadow: 0 0 0 1px #E6E1D6; font-weight: 600; }
+.meet-suggest svg { width: 16px; height: 16px; fill: none; stroke: var(--signal); stroke-width: 2.4; stroke-linecap: round; }
+.meet-preview { background: #E7F7E7; border-radius: 12px; padding: 12px 14px; font-size: .9rem; line-height: 1.45; margin: 6px 0 12px; }
+@media (min-width: 1024px) {
+  .view[data-view="treffen"] { max-width: 860px; margin: 0 auto; }
+  .meet-tally { grid-template-columns: repeat(3, 1fr); }
+}
+/* Sechs Menüpunkte auf schmalen Handys: etwas enger gesperrt */
+@media (max-width: 400px) {
+  .topnav .tab { font-size: .66rem; letter-spacing: .09em; }
+  .topnav .tab:last-child { margin-right: -.09em; }
+}
+.meet-phone-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; }
+.meet-phone-row .btn { padding: 0 16px; }
+/* iPad quer (1024–1279 px): sechs Menüpunkte mit größerer Schrift passend setzen */
+@media (min-width: 1024px) and (max-width: 1279px) {
+  .topbar { column-gap: 36px; }
+  .topnav { gap: 22px; }
+  .topnav .tab, .topnav .tab:first-child, .topnav .tab:last-child { letter-spacing: .13em; }
+  .topnav .tab:last-child { margin-right: -.13em; }
+}
+.topnav { overflow: visible; }

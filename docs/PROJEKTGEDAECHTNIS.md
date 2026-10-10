@@ -23,6 +23,16 @@ unten die offenen Punkte. Neues bitte oben bei „Verlauf“ ergänzen.
   links und Sortiment rechts (4 Spalten), Vereinsseiten mit Terminspalte rechts,
   Texte zweispaltig, Vorstand 4 Spalten. Bearbeiten ab 640 px als Fenster in der Mitte.
 - Partner-Duo auf allen Geräten **linksbündig** (Text und Logos).
+- Menüschrift Desktop/iPad quer **20 % größer** (.96rem); 1024–1279 px etwas enger gesetzt.
+- **Treffen (Vorführung, 10.10.):** Menüpunkt zwischen Verein und Padel. Einladungen
+  mit Vorlagen (z. B. „Training Herren 40, Di 19:00“ = ein Tipp), Mitgliedersuche über
+  Echtname und E-Mail-Teil (nur Namen sichtbar), „Per WhatsApp senden“ (fertiger Text
+  + Link; mit freiwilliger Handynummer direkt an Einzelpersonen), Zusage/Absage mit
+  einem Tipp, Übersicht Dabei/Abgesagt/Offen, Erinnerung an Offene. In der Demo
+  antworten Eingeladene automatisch. **Schnell entfernbar:** `features.treffen: false`
+  in config.js, oder `assets/js/meet.js` + Abschnitt „Treffen“ in app.css löschen.
+  WhatsApp kann Gruppen nicht automatisch übernehmen; Links funktionieren erst nach
+  Veröffentlichung (`publicUrl`).
 - **Startseite ist immer der Kiosk** (auch für Gäste); beide Startdateien
   („TFB-Kiosk öffnen.html“, „TFB-Website öffnen.html“) öffnen den Kiosk. Menüpunkt heißt wieder **Aktuell**. Bleibt beim Scrollen sichtbar. Partner stehen
   auf jeder Seite **ganz unten**.
@@ -115,9 +125,6 @@ Im Demo-Modus liegen alle Daten nur im Browser des Geräts. Demo-Zugang:
 
 ## Offene Punkte – bewusst auf später verschoben
 
-0. **Vorgemerkt für die nächste Umsetzung:** Menüschrift in der Kopfzeile auf
-   Desktop/iPad quer (ab 1024 px) **20 % größer** (derzeit .8rem → ca. .96rem);
-   Zentrierung zwischen Logo und Profilbild und Grundlinie beibehalten.
 
 1. **Supabase-Projekt** anlegen, sobald ein kostenloser Platz frei ist (Padel
    zieht ca. Ende Oktober 2026 zum Verein um). Bis dahin Demo-Modus.
