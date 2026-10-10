@@ -16,7 +16,7 @@ TFB.config = {
   // Öffentliche Adresse nach der Veröffentlichung – für Einladungslinks in WhatsApp.
   publicUrl: 'https://kiosk.joern-kaemper.de',
 
-  // Zusatzfunktionen, einzeln abschaltbar. treffen = Einladungen mit Zusage + WhatsApp (Vorführung).
+  // Zusatzfunktionen, einzeln abschaltbar. treffen = Menüpunkt „Verabreden“ (Vorführung, assets/js/meet.js).
   features: { treffen: true },
 
   timeZone: 'Europe/Berlin',

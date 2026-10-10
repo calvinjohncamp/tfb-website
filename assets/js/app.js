@@ -250,7 +250,7 @@
       ['aktuell', 'Aktuell', icon.news],
       ['sport', 'Sport', icon.sport],
       ['verein', 'Verein', icon.club],
-      ...(cfg.features && cfg.features.treffen ? [['treffen', 'Treffen', icon.news]] : []),
+      ...(cfg.features && cfg.features.treffen ? [['treffen', 'Verabreden', icon.news]] : []),
       ['padel', 'Padel', icon.padel, cfg.padelUrl],
     ];
     $app.innerHTML = `

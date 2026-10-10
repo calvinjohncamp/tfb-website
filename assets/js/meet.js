@@ -1,4 +1,4 @@
-// TFB – „Treffen“: Verabreden in der App (Vorführung).
+// TFB – „Verabreden“ (intern: treffen): Verabreden in der App (Vorführung).
 //
 // Idee: Alle einer Gruppe haben die App installiert (iPhone: „Zum Home-Bildschirm“).
 // Eine Einladung zeigt eine Tabelle aller Eingeladenen: ✓ dabei · Ersatz · ○ offen · ✗ abgesagt.
@@ -191,7 +191,7 @@
     const { state, icon } = ui();
     if (!state.member) {
       return `
-        ${ui().viewHead('Treffen', 'Verabreden ohne Chat-Chaos.', false)}
+        ${ui().viewHead('Verabreden', 'Ohne Chat-Chaos.', false)}
         <section class="card meet-login"><p>Zum Verabreden bitte einmal anmelden – danach bleibt dein Handy angemeldet.</p>
         <button type="button" class="btn primary" data-action="login">Anmelden</button></section>`;
     }
@@ -206,7 +206,7 @@
     const names = await ui().api.memberNames(allIds);
     const myGroups = data.groups.filter((g) => g.members.includes(me().id));
     return `
-      ${ui().viewHead('Treffen', 'Verabreden ohne Chat-Chaos.', false)}
+      ${ui().viewHead('Verabreden', 'Ohne Chat-Chaos.', false)}
       <section class="meet-new-row">
         ${Object.entries(KINDS).map(([k, v]) => `
           <button type="button" class="meet-kind-tile" data-action="meet-new" data-kind="${k}">
@@ -226,7 +226,7 @@
   function kindIcon(k) {
     const person = (x, r = 3.2) => `<circle cx="${x}" cy="9" r="${r}"/><path d="M${x - r * 1.7} 22c0-4 ${r * .8}-6.5 ${r * 1.7}-6.5s${r * 1.7} 2.5 ${r * 1.7} 6.5"/>`;
     if (k === 'einzel') return `<svg viewBox="0 0 32 24">${person(9)}${person(23)}</svg>`;
-    if (k === 'doppel') return `<svg viewBox="0 0 32 24">${person(4.5, 2.5)}${person(12.2, 2.5)}${person(19.8, 2.5)}${person(27.5, 2.5)}</svg>`;
+    if (k === 'doppel') return `<svg viewBox="0 0 32 24">${person(4.2, 2.5)}${person(11, 2.5)}${person(21, 2.5)}${person(27.8, 2.5)}</svg>`;
     if (k === 'training') return '<svg viewBox="0 0 32 24"><rect x="4" y="4" width="24" height="18" rx="3"/><path d="M4 9.5h24M11 2v4M21 2v4M12 15.5l3 3 5.5-5.5"/></svg>';
     return '<svg viewBox="0 0 32 24"><circle cx="16" cy="12" r="8.5"/><path d="M10.5 5.5c3.2 3 3.2 10 0 13M21.5 5.5c-3.2 3-3.2 10 0 13"/></svg>';
   }
@@ -267,8 +267,9 @@
   // ---------- Einladung mit Tabelle ----------
   async function detail(id) {
     const m = meetById(id);
-    if (!m) return `${ui().viewHead('Treffen', 'Diese Verabredung gibt es nicht mehr.')}`;
+    if (!m) return `${ui().viewHead('Verabreden', 'Diese Verabredung gibt es nicht mehr.')}`;
     const names = await ui().api.memberNames(m.invitees.concat(m.createdBy));
+    const pics = await ui().api.memberAvatars(m.invitees);
     const L = lineup(m);
     const r = m.responses[me().id];
     const isOrg = m.createdBy === me().id;
@@ -307,7 +308,7 @@
           const proxy = isOrg && p !== me().id;
           const open = proxy ? `<button type="button" class="meet-row ${s}" data-action="meet-proxy" data-id="${m.id}" data-member="${p}">` : `<div class="meet-row ${s}">`;
           return `${open}
-            <span class="meet-avatar">${esc(initials(names[p]))}</span>
+            <span class="meet-avatar">${pics[p] ? `<img src="${esc(pics[p])}" alt="">` : esc(initials(names[p]))}</span>
             <span class="meet-who"><b>${esc(names[p] || 'Mitglied')}${p === me().id ? ' <em>du</em>' : ''}</b>${sub ? `<small>${esc(sub)}</small>` : ''}</span>
             <span class="meet-pill ${s}">${pill(s, n)}</span>
           ${proxy ? '</button>' : '</div>'}`;
@@ -418,6 +419,12 @@
           if (add) document.querySelector('[data-meet-form] [name=search]').focus();
         }
       });
+      form.elements.search.addEventListener('keydown', (e) => {
+        if (e.key !== 'Enter') return;
+        e.preventDefault();
+        const first = form.querySelector('[data-suggest] [data-add]');
+        if (first) first.click();
+      });
       form.elements.search.addEventListener('input', async (e) => {
         const hits = await ui().api.searchMembers(e.target.value);
         form.querySelector('[data-suggest]').innerHTML = hits
@@ -499,6 +506,12 @@
           render();
           document.querySelector('[data-group-form] [name=search]').focus();
         }
+      });
+      form.elements.search.addEventListener('keydown', (e) => {
+        if (e.key !== 'Enter') return;
+        e.preventDefault();
+        const first = form.querySelector('[data-suggest] [data-add]');
+        if (first) first.click();
       });
       form.elements.search.addEventListener('input', async (e) => {
         const hits = await ui().api.searchMembers(e.target.value);

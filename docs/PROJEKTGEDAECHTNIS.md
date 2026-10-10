@@ -257,3 +257,8 @@ Monatsabschluss.
 - **10.10.2026** – Treffen 2.0 als Vorführung umgebaut: Gruppen, Training/Einzel/
   Doppel/Anderes, Teilnehmer-Tabelle, Ersatzbank mit automatischem Nachrücken,
   Mitteilungs-Vorschau.
+- **10.10.2026** – Eingefroren (Tag `stand-2026-10-10`). Menüpunkt „Treffen“ heißt jetzt
+  **Verabreden**. Farben: Zusage Signal-Rot, Absage Schwarz, offen Anthrazit-Grau.
+  Profilbilder links in der Teilnehmer-Tabelle, Doppel-Symbol als zwei Paare,
+  Enter übernimmt den ersten Namensvorschlag. Desktop-Menüschrift wieder .74rem
+  (wie im Hochformat), dafür größere Abstände.

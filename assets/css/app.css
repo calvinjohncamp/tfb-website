@@ -961,15 +961,18 @@ button.shop-card { border: 0; text-align: left; font: inherit; }
   .topnav .tab:last-child { margin-right: -.18em; }
 }
 
-/* ---------- Desktop: Menüschrift 20 % größer (vorgemerkt am 10.10.) ---------- */
+/* ---------- Desktop: Menüschrift wie im Hochformat (.74rem), dafür großzügige Abstände ---------- */
 @media (min-width: 1024px) {
-  .topnav .tab, .topnav .tab:first-child, .topnav .tab:last-child { font-size: .96rem; }
+  .topnav { gap: 46px; }
+  .topnav .tab, .topnav .tab:first-child, .topnav .tab:last-child { font-size: .74rem; letter-spacing: .2em; }
+  .topnav .tab:last-child { margin-right: -.2em; }
 }
 
 /* =====================================================================
-   Treffen (Vorführung) – Verabreden in der App: Tabelle, Einzel/Doppel, Mitteilungen
+   Verabreden (Vorführung, intern „Treffen“): Tabelle, Einzel/Doppel, Mitteilungen
    Zum Entfernen diesen Abschnitt löschen (siehe assets/js/meet.js).
    ===================================================================== */
+:root { --meet-no: #111; --meet-open: #8C918E; --meet-yes-soft: color-mix(in srgb, var(--signal) 8%, #fff); --meet-yes-line: color-mix(in srgb, var(--signal) 45%, #fff); }
 .meet-new-row { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
 .meet-kind-tile { border: 0; background: #fff; border-radius: 14px; padding: 12px 4px 10px; box-shadow: 0 0 0 1px #E6E1D6; display: grid; justify-items: center; gap: 2px; color: var(--ink); }
 .meet-kind-tile:hover { box-shadow: 0 0 0 1.5px var(--signal); }
@@ -984,16 +987,16 @@ button.shop-card { border: 0; text-align: left; font: inherit; }
 .meet-card-text strong { font-size: 1rem; }
 .meet-card-text small { color: var(--muted); font-size: .8rem; }
 .meet-card-status { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 4px; font-size: .8rem; }
-.meet-card-status b.ok, .meet-status.is-full strong { color: #1E7A46; }
+.meet-card-status b.ok, .meet-status.is-full strong { color: var(--signal); }
 .meet-mine { flex: none; font-size: .72rem; font-weight: 800; padding: 6px 9px; border-radius: 99px; white-space: nowrap; }
-.meet-mine.yes { background: #E3F2E8; color: #1E7A46; }
-.meet-mine.ersatz { background: #FCEFD9; color: #9A5B00; }
-.meet-mine.no { background: #EFEDE7; color: var(--muted); }
+.meet-mine.yes { background: var(--meet-yes-soft); color: var(--signal); }
+.meet-mine.ersatz { background: transparent; color: var(--signal); box-shadow: inset 0 0 0 1.5px var(--meet-yes-line); }
+.meet-mine.no { background: var(--meet-no); color: #fff; }
 .meet-mine.open { background: var(--signal); color: #fff; }
 .meet-faces { display: inline-flex; }
 .meet-faces i { font-style: normal; width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font-size: .6rem; font-weight: 800; background: #EFEDE7; color: var(--muted); border: 2px solid #fff; margin-left: -6px; }
 .meet-faces i:first-child { margin-left: 0; }
-.meet-faces i.yes { background: #1E7A46; color: #fff; }
+.meet-faces i.yes { background: var(--signal); color: #fff; }
 .meet-faces.slots i { margin-left: 3px; }
 .meet-faces.slots i:first-child { margin-left: 0; }
 .meet-faces i.free { background: transparent; border: 1.5px dashed #C9C3B6; color: #B5AE9F; }
@@ -1010,35 +1013,40 @@ button.shop-card { border: 0; text-align: left; font: inherit; }
 .meet-status { display: flex; align-items: center; justify-content: space-between; gap: 12px; background: #fff; border-radius: 16px; padding: 14px 16px; box-shadow: 0 0 0 1px #E6E1D6; }
 .meet-status strong { display: block; font-size: 1.25rem; }
 .meet-status small { color: var(--muted); font-size: .8rem; }
-.meet-status.is-full { box-shadow: 0 0 0 1.5px #1E7A46; background: #F3FAF5; }
+.meet-status.is-full { box-shadow: 0 0 0 1.5px var(--signal); background: var(--meet-yes-soft); }
 .meet-status .meet-faces i { width: 30px; height: 30px; font-size: .68rem; }
 .meet-rule { margin: 8px 2px 0; line-height: 1.4; }
 .meet-my { padding: 12px; margin-top: 14px; display: grid; gap: 10px; }
 .meet-answer { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .meet-answer button { min-height: 48px; border-radius: 12px; border: 1.5px solid var(--line); background: #fff; font-weight: 700; font-size: .95rem; color: var(--ink); }
-.meet-answer button.on.yes { background: #1E7A46; border-color: #1E7A46; color: #fff; }
-.meet-answer button.on.no { background: var(--ink); border-color: var(--ink); color: #fff; }
+.meet-answer button.on.yes { background: var(--signal); border-color: var(--signal); color: #fff; }
+.meet-answer button.on.no { background: var(--meet-no); border-color: var(--meet-no); color: #fff; }
 .meet-note-form { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
 .meet-note-form input { min-width: 0; min-height: 42px; padding: 0 12px; border: 1.5px solid var(--line); border-radius: 12px; font-size: 16px; background: var(--paper); }
 .meet-note-form .btn { min-height: 42px; padding: 0 16px; }
 .meet-table { padding: 4px 0; margin-top: 14px; overflow: hidden; }
-.meet-row { display: grid; grid-template-columns: 36px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 10px 14px; width: 100%; border: 0; background: none; text-align: left; font: inherit; color: inherit; border-top: 1px solid #EFEBE3; }
+.meet-row { display: grid; grid-template-columns: 38px minmax(0, 1fr) auto; gap: 14px; align-items: center; padding: 10px 14px; width: 100%; border: 0; background: none; text-align: left; font: inherit; color: inherit; border-top: 1px solid #EFEBE3; }
 .meet-row:first-child { border-top: 0; }
+.meet-table { padding: 6px 0; }
+.meet-row { padding: 11px 16px; }
 button.meet-row { cursor: pointer; }
 button.meet-row:hover { background: #FAF8F3; }
-.meet-avatar { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; font-size: .74rem; font-weight: 800; background: #EFEDE7; color: var(--muted); }
-.meet-row.yes .meet-avatar { background: #1E7A46; color: #fff; }
-.meet-row.ersatz .meet-avatar { background: #FCEFD9; color: #9A5B00; }
-.meet-row.no { opacity: .55; }
+.meet-avatar { width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; font-size: .74rem; font-weight: 800; background: #EFEDE7; color: var(--muted); }
+.meet-avatar { box-shadow: 0 0 0 2.5px #fff, 0 0 0 4.5px var(--meet-open); overflow: hidden; }
+.meet-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.meet-row.yes .meet-avatar { box-shadow: 0 0 0 2.5px #fff, 0 0 0 4.5px var(--signal); }
+.meet-row.no .meet-avatar { box-shadow: 0 0 0 2.5px #fff, 0 0 0 4.5px var(--meet-no); }
+.meet-row.ersatz .meet-avatar { box-shadow: 0 0 0 2.5px #fff, 0 0 0 4.5px var(--meet-yes-line); }
+
 .meet-who { display: grid; min-width: 0; }
 .meet-who b { font-size: .95rem; font-weight: 650; }
 .meet-who small { font-size: .76rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .meet-who em { font-style: normal; font-size: .62rem; font-weight: 800; text-transform: uppercase; background: var(--ink); color: #fff; padding: 1px 5px; border-radius: 5px; margin-left: 4px; vertical-align: 2px; }
 .meet-pill { font-size: .74rem; font-weight: 800; padding: 5px 9px; border-radius: 99px; white-space: nowrap; }
-.meet-pill.yes { background: #E3F2E8; color: #1E7A46; }
-.meet-pill.ersatz { background: #FCEFD9; color: #9A5B00; }
-.meet-pill.open { background: #F2F0EA; color: var(--muted); }
-.meet-pill.no { background: transparent; color: var(--muted); }
+.meet-pill.yes { background: var(--signal); color: #fff; }
+.meet-pill.ersatz { background: transparent; color: var(--signal); box-shadow: inset 0 0 0 1.5px var(--meet-yes-line); }
+.meet-pill.open { background: transparent; color: var(--meet-open); box-shadow: inset 0 0 0 1.5px var(--meet-open); }
+.meet-pill.no { background: var(--meet-no); color: #fff; }
 .meet-send { display: grid; gap: 10px; margin-top: 18px; }
 .meet-send .btn { text-decoration: none; }
 .btn.whatsapp-soft { background: transparent; border: 1.5px solid #25D366; color: #128C4A; }
@@ -1083,14 +1091,17 @@ button.meet-row:hover { background: #FAF8F3; }
 }
 /* Sechs Menüpunkte auf schmalen Handys: etwas enger gesperrt */
 @media (max-width: 400px) {
-  .topnav .tab { font-size: .66rem; letter-spacing: .09em; }
-  .topnav .tab:last-child { margin-right: -.09em; }
+  .topnav { gap: 6px; }
+  .topnav .tab { font-size: .64rem; letter-spacing: .07em; }
+  .topnav .tab:last-child { margin-right: -.07em; }
+}
+@media (max-width: 350px) {
+  .topnav .tab { font-size: .58rem; letter-spacing: .05em; }
+  .topnav .tab:last-child { margin-right: -.05em; }
 }
 /* iPad quer (1024–1279 px): sechs Menüpunkte mit größerer Schrift passend setzen */
 @media (min-width: 1024px) and (max-width: 1279px) {
   .topbar { column-gap: 36px; }
-  .topnav { gap: 22px; }
-  .topnav .tab, .topnav .tab:first-child, .topnav .tab:last-child { letter-spacing: .13em; }
-  .topnav .tab:last-child { margin-right: -.13em; }
+  .topnav { gap: 30px; }
 }
 .topnav { overflow: visible; }

@@ -406,7 +406,7 @@
       return publicMember(member);
     },
 
-    // ---------- Mitgliedersuche (für „Treffen“) ----------
+    // ---------- Mitgliedersuche (für „Verabreden“) ----------
     // Sucht in Vor-/Nachname und im Namensteil der E-Mail – gibt aber nur Namen zurück.
     async searchMembers(query) {
       requireMember();
@@ -425,6 +425,11 @@
     async memberNames(ids) {
       requireMember();
       return Object.fromEntries(db.members.filter((m) => ids.includes(m.id)).map((m) => [m.id, `${m.firstName} ${m.lastName}`]));
+    },
+    // Kleine Profilbilder (nur von Mitgliedern, die eins hochgeladen haben).
+    async memberAvatars(ids) {
+      requireMember();
+      return Object.fromEntries(db.accounts.filter((a) => ids.includes(a.memberId) && a.avatar).map((a) => [a.memberId, a.avatar]));
     },
     async allMemberIds() {
       requireMember();
