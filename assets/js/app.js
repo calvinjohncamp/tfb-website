@@ -264,7 +264,7 @@
         </div>
         <nav class="topnav" aria-label="Bereiche">
           ${tabs.map(([id, label, ic, url]) => url
-            ? `<a href="${esc(url)}" class="tab external" target="_blank" rel="noopener" aria-label="${label} – Buchungs-App öffnen (neues Fenster)">${label}<small aria-hidden="true">↗</small></a>`
+            ? `<a href="${esc(url)}" class="tab external" target="_blank" rel="noopener" aria-label="${label} – Buchungs-App öffnen (neues Fenster)">${label}</a>`
             : `<a href="#${id}" class="tab ${id === area ? 'active' : ''}" ${id === area ? 'aria-current="page"' : ''}>${label}</a>`).join('')}
         </nav>
       </header>

@@ -753,3 +753,19 @@ button.shop-card { border: 0; text-align: left; font: inherit; }
 @media (max-width: 400px) {
   .topnav .tab { padding: 10px 4px 12px; font-size: .68rem; letter-spacing: .12em; }
 }
+
+/* ---------- Kopfzeile 3: Logo +25 %, Bild unten bündig, Menü auf Logo- und Bildkante ---------- */
+.header-logo { height: 81px; }                       /* Breite folgt: 81 × 900/402 ≈ 181 px */
+.topbar-row { align-items: flex-end; }               /* Profilbild unten bündig mit „TENNISFREUNDE BIELSTEIN“ */
+.topbar .avatar { width: 58px; height: 58px; }
+.topnav { justify-content: space-between; gap: 8px; margin: 12px 0 0; padding: 0; }
+.topnav .tab { flex: none; padding: 10px 0 12px; letter-spacing: .16em; }
+/* KIOSK beginnt dort, wo der Schriftzug im Logo beginnt (0,9 % der Logobreite ≈ 1,6 px) */
+.topnav .tab:first-child { margin-left: 1.6px; }
+/* PADEL: das „L“ schließt mit der rechten Kante des Profilbilds ab (Sperrung hinter dem letzten Buchstaben ausgleichen) */
+.topnav .tab:last-child { margin-right: -.16em; }
+.editbar { top: 152px; }
+@media (max-width: 400px) {
+  .topnav .tab { padding: 10px 0 12px; font-size: .7rem; letter-spacing: .12em; }
+  .topnav .tab:last-child { margin-right: -.12em; }
+}
