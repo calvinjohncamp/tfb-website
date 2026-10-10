@@ -140,6 +140,7 @@
             <a class="team" href="${esc(t.teamUrl)}" target="_blank" rel="noopener">
               <span class="team-rank ${t.rank === '1' ? 'top' : ''}" title="Tabellenplatz">${esc(t.rank || '–')}</span>
               <span class="team-main"><strong>${esc(t.name)}</strong><small>${esc(t.group)}</small></span>
+              <span class="team-captain"><small>Mannschaftsführer</small>${esc(t.captain)}</span>
               <span class="team-points">${esc(t.points)}<small>Punkte</small></span>
             </a>`).join('')}
         </div>
@@ -154,7 +155,10 @@
     const page = site.pages[key];
     const edit = editing === key && state.member && state.member.isAdmin;
     const admin = state.member && state.member.isAdmin;
-    const blocks = page.blocks.filter((b) => !b._new).map((b, i) => edit ? editWrap(b, i, page.blocks.length, renderBlock(b, key)) : renderBlock(b, key)).join('');
+    const list = page.blocks.filter((b) => !b._new);
+    const blocks = edit
+      ? list.map((b, i) => editWrap(b, i, list.length, renderBlock(b, key))).join('')
+      : layoutBlocks(list, key);
     return `
       <div class="site-page ${edit ? 'editing-page' : ''}" data-page="${key}">
         ${edit ? `
@@ -173,6 +177,43 @@
       </div>`;
   }
   ['aktuell', 'sport', 'verein'].forEach((key) => { TFB.views[key] = () => pageView(key); });
+
+  // Ansicht (nicht Bearbeiten): Bausteine zu Gruppen bündeln, damit sie sich auf
+  // breiten Bildschirmen in Spalten ordnen. Termine (mit ihrer Überschrift davor)
+  // wandern in eine eigene Spalte – auf dem Handy stehen sie oben.
+  function layoutBlocks(list, key) {
+    const eventIdx = list.map((b, i) => (b.type === 'event' ? i : -1)).filter((i) => i >= 0);
+    const asideIdx = new Set(eventIdx);
+    if (eventIdx.length && list[eventIdx[0] - 1] && list[eventIdx[0] - 1].type === 'heading') asideIdx.add(eventIdx[0] - 1);
+    const main = list.filter((_, i) => !asideIdx.has(i));
+    const aside = list.filter((_, i) => asideIdx.has(i));
+
+    // Einheiten: Knopf gehört zum Text davor.
+    const units = [];
+    main.forEach((b) => {
+      const last = units[units.length - 1];
+      if (b.type === 'button' && last && last.kind === 'text') last.html += renderBlock(b, key);
+      else units.push({ kind: b.type === 'text' ? 'text' : b.type, html: renderBlock(b, key) });
+    });
+    // Läufe gleicher Art zusammenfassen (Beiträge, Texte)
+    let html = '';
+    for (let i = 0; i < units.length;) {
+      const kind = units[i].kind;
+      let j = i;
+      while (j < units.length && units[j].kind === kind) j++;
+      const run = units.slice(i, j).map((u) => u.html).filter(Boolean);
+      if (kind === 'post' && run.length) html += `<div class="run run-posts">${run.join('')}</div>`;
+      else if (kind === 'text' && run.length > 1) html += `<div class="run run-texts">${run.map((h) => `<div class="unit">${h}</div>`).join('')}</div>`;
+      else html += run.join('');
+      i = j;
+    }
+    if (!aside.length) return `<div class="page-grid single"><div class="page-main">${html}</div></div>`;
+    return `
+      <div class="page-grid">
+        <div class="page-main">${html}</div>
+        <aside class="page-aside">${aside.map((b) => renderBlock(b, key)).join('')}</aside>
+      </div>`;
+  }
 
   function editWrap(b, i, total, inner) {
     const { icon } = ui();

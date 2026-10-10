@@ -846,3 +846,100 @@ button.shop-card { border: 0; text-align: left; font: inherit; }
 .kiosk-hero { --size: calc((min(100vw, 560px) - 32px) * .615 - 5px); }
 .kiosk-hero .kiosk-links { justify-items: end; gap: 12px; }
 .kiosk-hero .kiosk-link { width: 84px; height: 84px; aspect-ratio: 1; padding: 8px 4px; }
+
+/* =====================================================================
+   RASTER FÜR ALLE GERÄTE
+   Handy (bis 639 px) · iPad hochkant (640–1023 px) · iPad quer / Desktop (ab 1024 px)
+   ===================================================================== */
+
+/* ---------- Gemeinsam: Seitenaufbau aus Gruppen ---------- */
+.page-grid, .page-main, .page-aside { display: grid; gap: 14px; align-content: start; }
+.page-grid > * { min-width: 0; }
+.page-aside { order: -1; }                       /* Handy: Termine oben */
+.run { display: grid; gap: 14px; }
+.run-texts .unit > * + * { margin-top: 10px; }
+.kiosk-layout, .kiosk-main { display: grid; gap: 0; }
+.kiosk-main > section:first-child .section-head { margin-top: 18px; }
+.team-captain { display: none; }
+@media (max-width: 639px) {
+  .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }   /* Deckel-Regel gilt für 2 Spalten */
+}
+
+/* ---------- iPad hochkant und größer ---------- */
+@media (min-width: 640px) {
+  .app { max-width: 880px; }
+  .topbar { padding-left: 24px; padding-right: 24px; }
+  .view { padding-left: 24px; padding-right: 24px; }
+  .tiles { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+  .kiosk-hero { --size: 300px; grid-template-columns: var(--size) auto; justify-content: space-between; }
+  .run-posts { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
+  .run-posts .post { height: 100%; }
+  .people-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .team { grid-template-columns: 34px minmax(0, 1fr) minmax(0, 170px) auto; }
+  .team-captain { display: grid; font-size: .86rem; font-weight: 600; }
+  .team-captain small { font-size: .62rem; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: .06em; }
+  .pbsp-duo { max-width: 640px; margin: 0 auto; }
+  .pbsp-slot .pbsp-kicker { text-align: center; }
+  .pbsp-tile { height: 132px; }
+  .pbsp-tile img { max-height: 76px; }
+  .view[data-view="strichliste"], .view[data-view="abrechnungen"], .view[data-view="verwaltung"] { max-width: 760px; margin: 0 auto; }
+  .gallery-grid { grid-template-columns: repeat(4, 1fr); gap: 8px; }
+
+  /* Bearbeiten: Fenster in der Mitte statt Blatt von unten */
+  .sheet {
+    top: 50%; bottom: auto; max-width: 560px; border-radius: 24px;
+    transform: translate(-50%, -46%) scale(.98); opacity: 0;
+    transition: transform .25s cubic-bezier(.2,.9,.3,1), opacity .2s ease;
+    max-height: 86vh; padding-bottom: 24px;
+  }
+  .sheet::before { content: none; }
+  #sheet-root.open .sheet { transform: translate(-50%, -50%); opacity: 1; }
+}
+
+/* ---------- iPad quer und Desktop ---------- */
+@media (min-width: 1024px) {
+  .app { max-width: 1200px; }
+  .topbar, .view { padding-left: 32px; padding-right: 32px; }
+
+  /* Kopf in einer Zeile: Logo · Menü · Profilbild */
+  .topbar { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: end; column-gap: 56px; padding-bottom: 18px; }
+  .topbar-row { display: contents; }
+  .topbar .brand { grid-column: 1; }
+  .topbar .avatar { grid-column: 3; }
+  .topnav { grid-column: 2; grid-row: 1; justify-content: flex-start; gap: 40px; margin: 0; padding: 0 0 2px; align-self: end; }
+  .topnav .tab, .topnav .tab:first-child, .topnav .tab:last-child { margin: 0; padding: 0; font-size: .8rem; letter-spacing: .18em; }
+  .editbar { top: 124px; }
+
+  /* Kiosk: Deckel links feststehend, Sortiment rechts */
+  .kiosk-layout { grid-template-columns: 300px minmax(0, 1fr); column-gap: 48px; align-items: start; }
+  .kiosk-layout.editing { grid-template-columns: minmax(0, 1fr); }
+  .kiosk-side { position: sticky; top: 132px; }
+  .kiosk-hero { --size: 268px; display: grid; grid-template-columns: 1fr; justify-items: start; gap: 22px; margin-top: 18px; }
+  .kiosk-hero .deckel-wrap { margin: 6px 0 4px 4px; }
+  .kiosk-hero .kiosk-links { grid-auto-flow: column; justify-content: start; gap: 12px; }
+  .kiosk-main .tiles { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); }
+  .kiosk-main > section:first-child .section-head { margin-top: 18px; }
+
+  /* Vereinsseiten: Hauptspalte + Terminspalte rechts */
+  .page-grid { grid-template-columns: minmax(0, 1fr) 340px; column-gap: 48px; align-items: start; }
+  .page-grid.single { grid-template-columns: minmax(0, 1fr); }
+  .page-aside { order: 0; position: sticky; top: 132px; }
+  .page-aside .block-heading { margin-top: 0 !important; }
+  .page-main > .block-heading:first-child, .page-main > section:first-child h2 { margin-top: 0; }
+  .run-texts { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 40px; align-items: start; }
+  .people-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .block-facts { gap: 16px; }
+  .block-facts b { font-size: 2.4rem; }
+  .page-head h1 { font-size: 2.6rem; }
+  .pbsp-duo { max-width: 760px; gap: 18px; }
+  .pbsp-tile { height: 150px; }
+  .pbsp-tile img { max-height: 84px; }
+  .pbsp-slot { margin-top: 48px; }
+}
+@media (min-width: 1280px) {
+  .page-grid.single .run-posts, .page-main .run-posts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (min-width: 1024px) {
+  .page-main > .block-heading:first-child, .page-aside > .block-heading:first-child { margin-top: 0 !important; }
+  .page-main > section:first-child > h2:first-child { margin-top: 0; }
+}

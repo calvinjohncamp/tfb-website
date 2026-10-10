@@ -351,21 +351,29 @@
     const open = await api.myOpenMonth();
     const cat = state.catalog;
     const edit = isEditing();
+    // Zwei Bereiche: Deckel (auf großen Bildschirmen links feststehend) und Sortiment.
     return `
-      ${edit ? `
-        <div class="editbar">
-          <div><strong>Kiosk bearbeiten</strong><span>Artikel antippen zum Ändern · Pfeile zum Sortieren</span></div>
-          <button type="button" class="btn primary" data-action="edit-done">Fertig</button>
-        </div>` : `
-        <div class="kiosk-hero">
-          ${coasterMarkup(open)}
-          <div class="kiosk-links">
-            <a class="kiosk-link" href="#strichliste">${icon.tally}<span>Strichliste</span></a>
-            <a class="kiosk-link" href="#abrechnungen">${icon.receipt}<span>Abrechnungen</span></a>
-          </div>
-        </div>`}
-      ${cat.sections.map((section, index) => sectionMarkup(section, index, cat, edit)).join('')}
-      ${edit ? `<button type="button" class="btn block add-section" data-action="section-new">${icon.plus} Neuer Bereich</button>` : partnerSlot('kiosk', 'Der TFB-Kiosk wird dir präsentiert von')}`;
+      <div class="kiosk-layout ${edit ? 'editing' : ''}">
+        <aside class="kiosk-side">
+          ${edit ? `
+            <div class="editbar">
+              <div><strong>Kiosk bearbeiten</strong><span>Artikel antippen zum Ändern · Pfeile zum Sortieren</span></div>
+              <button type="button" class="btn primary" data-action="edit-done">Fertig</button>
+            </div>` : `
+            <div class="kiosk-hero">
+              ${coasterMarkup(open)}
+              <div class="kiosk-links">
+                <a class="kiosk-link" href="#strichliste">${icon.tally}<span>Strichliste</span></a>
+                <a class="kiosk-link" href="#abrechnungen">${icon.receipt}<span>Abrechnungen</span></a>
+              </div>
+            </div>`}
+        </aside>
+        <div class="kiosk-main">
+          ${cat.sections.map((section, index) => sectionMarkup(section, index, cat, edit)).join('')}
+          ${edit ? `<button type="button" class="btn block add-section" data-action="section-new">${icon.plus} Neuer Bereich</button>` : ''}
+        </div>
+      </div>
+      ${edit ? '' : partnerSlot('kiosk', 'Der TFB-Kiosk wird dir präsentiert von')}`;
   }
 
   function sectionMarkup(section, index, cat, edit) {
