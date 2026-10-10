@@ -115,6 +115,10 @@ Im Demo-Modus liegen alle Daten nur im Browser des Geräts. Demo-Zugang:
 
 ## Offene Punkte – bewusst auf später verschoben
 
+0. **Vorgemerkt für die nächste Umsetzung:** Menüschrift in der Kopfzeile auf
+   Desktop/iPad quer (ab 1024 px) **20 % größer** (derzeit .8rem → ca. .96rem);
+   Zentrierung zwischen Logo und Profilbild und Grundlinie beibehalten.
+
 1. **Supabase-Projekt** anlegen, sobald ein kostenloser Platz frei ist (Padel
    zieht ca. Ende Oktober 2026 zum Verein um). Bis dahin Demo-Modus.
    Nicht die Padel-Datenbank mitbenutzen.
