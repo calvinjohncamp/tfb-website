@@ -18,7 +18,7 @@ Ziel ist eine Vorführung vor dem Vorstand.
 - Per Doppelklick: `9. TFB-Kiosk/TFB-Kiosk öffnen.html` (öffnet `#kiosk`)
 - Vorschau-Server: `.claude/launch.json` → „tfb-kiosk“ (Port 5180)
 - Demo-Zugang: `max@tfb-demo.de` (Admin), Passwort beim ersten Anmelden frei wählen
-- Nach Änderungen an JS/CSS die Cache-Version in `sw.js` hochzählen (aktuell `tfb-kiosk-v40`)
+- Nach Änderungen an JS/CSS die Cache-Version in `sw.js` hochzählen (aktuell `tfb-kiosk-v41`)
 
 ## Feste Regeln (nie brechen)
 
@@ -57,12 +57,14 @@ Ziel ist eine Vorführung vor dem Vorstand.
   Der Nutzer will die Idee trotzdem behalten und weiterdenken als
   **Gruppen-Verabredung in der installierten App** (Tabelle mit allen
   Teilnehmern, Zugesagt / Abgesagt / Offen, Push-Mitteilungen).
-  Konzept siehe Projektgedächtnis, Abschnitt „Treffen 2.0“.
-  **Noch nicht programmiert**, Entscheidung des Nutzers steht aus.
+  **Als Vorführung umgebaut (10.10.):** Gruppen, Training/Einzel/Doppel,
+  Teilnehmer-Tabelle, Ersatzbank mit Nachrücken, Mitteilungs-Vorschau.
+  Details siehe Projektgedächtnis, Abschnitt „Treffen 2.0“. Echte Push-Mitteilungen
+  brauchen Supabase, Veröffentlichung und Web-Push.
 
 ## Nächste Schritte (Vorschlag)
 
-1. Entscheidung „Treffen 2.0“: Vorführung als Gruppen-Tabelle umbauen, ja oder nein.
+1. Feedback des Nutzers zu Treffen 2.0 einarbeiten.
 2. Foto der Papier-Strichliste → echtes Sortiment und Preise.
 3. Ab ca. Ende Oktober 2026: Supabase (eigenes Projekt), Veröffentlichung auf
    `kiosk.joern-kaemper.de`, Mitglieder-Import, Monatsabschluss/SEPA.

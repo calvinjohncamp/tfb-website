@@ -4,7 +4,21 @@ Für den schnellen Einstieg zuerst die kurze **[UEBERGABE.md](UEBERGABE.md)** le
 Diese Datei enthält alle Entscheidungen, Konzepte, offenen Punkte und den Verlauf.
 Neues bitte unten bei „Verlauf“ ergänzen.
 
-## Konzept „Treffen 2.0“: Verabreden in der installierten App (Idee, noch nicht gebaut)
+## Konzept „Treffen 2.0“: Verabreden in der installierten App
+
+**Vorführung gebaut am 10.10.2026** (`assets/js/meet.js`, Speicher `tfb_meet_demo_v2`):
+Arten **Training** (Gruppe, wöchentlich), **Einzel** (2 Plätze), **Doppel** (4 Plätze),
+**Anderes** (Plätze frei wählbar). Einzel/Doppel: beliebig viele fragen, **wer zuerst
+zusagt, spielt**, spätere Zusagen kommen auf die **Ersatzbank** und rücken bei einer
+Absage automatisch nach. Einladung = Tabelle aller Teilnehmer (✓ dabei · Ersatz n ·
+○ offen · ✗ abgesagt), Status oben („Doppel steht“ / „Noch 1 Platz frei“) mit
+Platz-Punkten, eigene Notiz je Zusage, Organisator kann per Tipp auf einen Namen für
+andere eintragen, Erinnerung nur an Offene, Hinweis bei Überschneidung mit einer
+anderen Zusage zur selben Zeit, Gruppen anlegen/bearbeiten (Name, Trainingstag,
+Uhrzeit, Ort, Mitglieder), WhatsApp nur noch als Rückfallweg „Für alle ohne App“.
+Mitteilungen erscheinen als iPhone-artiges Banner oben (Vorschau auf echte Push).
+In der Demo antworten die anderen nach ein paar Sekunden von selbst.
+
 
 Stand 10.10.2026. Der Nutzer hält an der Idee fest. Ehrliche Bewertung:
 Der WhatsApp-Link allein ist eine Krücke, weil Umfrage und Veranstaltung in
@@ -240,3 +254,6 @@ Monatsabschluss.
   Danach ehrlich bewertet: allein eine Krücke. Konzept „Treffen 2.0“ (Gruppen-
   Tabelle in der installierten App mit Push) festgehalten, Entscheidung offen.
   Kurze Übergabedatei `docs/UEBERGABE.md` angelegt.
+- **10.10.2026** – Treffen 2.0 als Vorführung umgebaut: Gruppen, Training/Einzel/
+  Doppel/Anderes, Teilnehmer-Tabelle, Ersatzbank mit automatischem Nachrücken,
+  Mitteilungs-Vorschau.

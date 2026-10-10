@@ -967,63 +967,125 @@ button.shop-card { border: 0; text-align: left; font: inherit; }
 }
 
 /* =====================================================================
-   Treffen (Vorführung) – Einladungen mit Zusage, Versand über WhatsApp
+   Treffen (Vorführung) – Verabreden in der App: Tabelle, Einzel/Doppel, Mitteilungen
    Zum Entfernen diesen Abschnitt löschen (siehe assets/js/meet.js).
    ===================================================================== */
-.meet-start { display: grid; gap: 12px; }
-.meet-start .btn svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; }
-.meet-templates { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
-.meet-template { text-align: left; border: 0; background: #fff; border-radius: 14px; padding: 12px 14px; box-shadow: 0 0 0 1px #E6E1D6; display: grid; gap: 2px; }
-.meet-template strong { font-size: .92rem; }
-.meet-template span { font-size: .78rem; color: var(--muted); }
-.meet-template:hover { box-shadow: 0 0 0 1.5px var(--signal); }
-.meet-list { display: grid; gap: 12px; }
-.meet-card { padding: 14px; display: grid; gap: 12px; }
-.meet-card-main { display: flex; gap: 14px; align-items: center; text-decoration: none; color: inherit; }
-.meet-card-text { display: grid; gap: 2px; }
-.meet-card-text strong { font-size: 1.02rem; }
-.meet-card-text small { color: var(--muted); font-size: .82rem; }
-.meet-counts { font-size: .8rem; color: var(--muted); margin-top: 3px; }
-.meet-counts .yes { color: #1E7A46; }
+.meet-new-row { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.meet-kind-tile { border: 0; background: #fff; border-radius: 14px; padding: 12px 4px 10px; box-shadow: 0 0 0 1px #E6E1D6; display: grid; justify-items: center; gap: 2px; color: var(--ink); }
+.meet-kind-tile:hover { box-shadow: 0 0 0 1.5px var(--signal); }
+.meet-kind-tile:active { transform: scale(.97); }
+.meet-kind-icon svg { width: 34px; height: 26px; fill: none; stroke: var(--signal); stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+.meet-kind-tile strong { font-size: .86rem; }
+.meet-kind-tile small { font-size: .7rem; color: var(--muted); }
+.meet-list { display: grid; gap: 10px; }
+.meet-card { padding: 12px 14px; display: flex; gap: 12px; align-items: center; text-decoration: none; color: inherit; }
+.meet-card:hover { box-shadow: 0 0 0 1.5px var(--signal), 0 1px 2px rgba(0,0,0,.04); }
+.meet-card-text { display: grid; gap: 2px; flex: 1; min-width: 0; }
+.meet-card-text strong { font-size: 1rem; }
+.meet-card-text small { color: var(--muted); font-size: .8rem; }
+.meet-card-status { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 4px; font-size: .8rem; }
+.meet-card-status b.ok, .meet-status.is-full strong { color: #1E7A46; }
+.meet-mine { flex: none; font-size: .72rem; font-weight: 800; padding: 6px 9px; border-radius: 99px; white-space: nowrap; }
+.meet-mine.yes { background: #E3F2E8; color: #1E7A46; }
+.meet-mine.ersatz { background: #FCEFD9; color: #9A5B00; }
+.meet-mine.no { background: #EFEDE7; color: var(--muted); }
+.meet-mine.open { background: var(--signal); color: #fff; }
+.meet-faces { display: inline-flex; }
+.meet-faces i { font-style: normal; width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font-size: .6rem; font-weight: 800; background: #EFEDE7; color: var(--muted); border: 2px solid #fff; margin-left: -6px; }
+.meet-faces i:first-child { margin-left: 0; }
+.meet-faces i.yes { background: #1E7A46; color: #fff; }
+.meet-faces.slots i { margin-left: 3px; }
+.meet-faces.slots i:first-child { margin-left: 0; }
+.meet-faces i.free { background: transparent; border: 1.5px dashed #C9C3B6; color: #B5AE9F; }
+.meet-groups { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+.meet-group { text-align: left; border: 0; background: #fff; border-radius: 14px; padding: 12px 14px; box-shadow: 0 0 0 1px #E6E1D6; display: grid; gap: 2px; color: var(--ink); }
+.meet-group small { font-size: .75rem; color: var(--muted); }
+.meet-group.add { background: transparent; box-shadow: inset 0 0 0 1.5px #D8D2C5; display: flex; align-items: center; gap: 8px; }
+.meet-group.add svg { width: 16px; height: 16px; fill: none; stroke: var(--signal); stroke-width: 2.4; stroke-linecap: round; }
+.meet-group:hover { box-shadow: 0 0 0 1.5px var(--signal); }
+
+/* Einzelansicht */
+.meet-kicker { font-size: .72rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--signal); margin: 0 0 4px; }
+.meet-note { margin: -4px 0 14px; font-size: .95rem; }
+.meet-status { display: flex; align-items: center; justify-content: space-between; gap: 12px; background: #fff; border-radius: 16px; padding: 14px 16px; box-shadow: 0 0 0 1px #E6E1D6; }
+.meet-status strong { display: block; font-size: 1.25rem; }
+.meet-status small { color: var(--muted); font-size: .8rem; }
+.meet-status.is-full { box-shadow: 0 0 0 1.5px #1E7A46; background: #F3FAF5; }
+.meet-status .meet-faces i { width: 30px; height: 30px; font-size: .68rem; }
+.meet-rule { margin: 8px 2px 0; line-height: 1.4; }
+.meet-my { padding: 12px; margin-top: 14px; display: grid; gap: 10px; }
 .meet-answer { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.meet-answer button { min-height: 44px; border-radius: 12px; border: 1.5px solid var(--line); background: #fff; font-weight: 700; }
+.meet-answer button { min-height: 48px; border-radius: 12px; border: 1.5px solid var(--line); background: #fff; font-weight: 700; font-size: .95rem; color: var(--ink); }
 .meet-answer button.on.yes { background: #1E7A46; border-color: #1E7A46; color: #fff; }
 .meet-answer button.on.no { background: var(--ink); border-color: var(--ink); color: #fff; }
-.meet-my { padding: 12px; }
-.meet-tally { display: grid; gap: 10px; }
-.meet-tally .card { padding: 14px 16px; }
-.meet-tally h3 { margin-bottom: 6px; }
-.meet-tally ul { margin: 0; padding-left: 18px; line-height: 1.7; }
-.meet-tally em { font-style: normal; font-size: .66rem; font-weight: 800; text-transform: uppercase; background: var(--ink); color: #fff; padding: 1px 5px; border-radius: 5px; margin-left: 4px; }
-.meet-send { display: grid; gap: 10px; margin-top: 6px; }
-.btn.whatsapp { background: #25D366; border-color: #25D366; color: #fff; text-decoration: none; }
-.btn.whatsapp:hover { background: #1EBE5A; }
-.meet-send .btn, .meet-share .btn { text-decoration: none; }
+.meet-note-form { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
+.meet-note-form input { min-width: 0; min-height: 42px; padding: 0 12px; border: 1.5px solid var(--line); border-radius: 12px; font-size: 16px; background: var(--paper); }
+.meet-note-form .btn { min-height: 42px; padding: 0 16px; }
+.meet-table { padding: 4px 0; margin-top: 14px; overflow: hidden; }
+.meet-row { display: grid; grid-template-columns: 36px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 10px 14px; width: 100%; border: 0; background: none; text-align: left; font: inherit; color: inherit; border-top: 1px solid #EFEBE3; }
+.meet-row:first-child { border-top: 0; }
+button.meet-row { cursor: pointer; }
+button.meet-row:hover { background: #FAF8F3; }
+.meet-avatar { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; font-size: .74rem; font-weight: 800; background: #EFEDE7; color: var(--muted); }
+.meet-row.yes .meet-avatar { background: #1E7A46; color: #fff; }
+.meet-row.ersatz .meet-avatar { background: #FCEFD9; color: #9A5B00; }
+.meet-row.no { opacity: .55; }
+.meet-who { display: grid; min-width: 0; }
+.meet-who b { font-size: .95rem; font-weight: 650; }
+.meet-who small { font-size: .76rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.meet-who em { font-style: normal; font-size: .62rem; font-weight: 800; text-transform: uppercase; background: var(--ink); color: #fff; padding: 1px 5px; border-radius: 5px; margin-left: 4px; vertical-align: 2px; }
+.meet-pill { font-size: .74rem; font-weight: 800; padding: 5px 9px; border-radius: 99px; white-space: nowrap; }
+.meet-pill.yes { background: #E3F2E8; color: #1E7A46; }
+.meet-pill.ersatz { background: #FCEFD9; color: #9A5B00; }
+.meet-pill.open { background: #F2F0EA; color: var(--muted); }
+.meet-pill.no { background: transparent; color: var(--muted); }
+.meet-send { display: grid; gap: 10px; margin-top: 18px; }
+.meet-send .btn { text-decoration: none; }
+.btn.whatsapp-soft { background: transparent; border: 1.5px solid #25D366; color: #128C4A; }
+.btn.whatsapp-soft:hover { background: #F0FBF4; }
 .danger-link { color: var(--clay); }
-.meet-phone { display: grid; gap: 6px; margin-top: 22px; }
-.meet-phone-row { display: flex; gap: 8px; }
-.meet-phone-row input { flex: 1; min-width: 0; min-height: 46px; padding: 0 12px; border: 1.5px solid var(--line); border-radius: 12px; font-size: 16px; background: var(--paper); }
 .meet-login { display: grid; gap: 12px; justify-items: start; }
+
+/* Anlegen */
 .meet-kinds { margin-bottom: 4px; }
-.meet-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.meet-check { display: flex; align-items: center; gap: 10px; margin: 6px 0 10px; font-weight: 600; font-size: .92rem; }
+.meet-check input { width: 20px; height: 20px; accent-color: var(--brand); }
+.meet-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
 .meet-chips .chip { display: inline-flex; align-items: center; gap: 6px; background: #EFEDE7; border-radius: 99px; padding: 5px 6px 5px 12px; font-size: .84rem; font-weight: 600; }
+.meet-chips .chip:not(:has(button)) { padding-right: 12px; }
 .meet-chips .chip button { width: 20px; height: 20px; border-radius: 50%; border: 0; background: rgba(0,0,0,.12); padding: 0; line-height: 1; }
+.meet-quick { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.meet-quick button { display: inline-flex; align-items: center; gap: 4px; border: 1.5px dashed #CFC8BA; background: transparent; border-radius: 99px; padding: 5px 12px 5px 8px; font-size: .8rem; font-weight: 600; color: var(--ink); }
+.meet-quick svg, .meet-suggest svg { width: 15px; height: 15px; fill: none; stroke: var(--signal); stroke-width: 2.4; stroke-linecap: round; }
 .meet-editor [name=search] { width: 100%; min-height: 48px; padding: 0 14px; border: 1.5px solid var(--line); border-radius: 12px; font-size: 16px; background: var(--paper); }
 .meet-suggest { display: grid; gap: 4px; margin-top: 6px; }
 .meet-suggest button { display: flex; align-items: center; gap: 8px; text-align: left; border: 0; background: #fff; border-radius: 10px; padding: 10px 12px; box-shadow: 0 0 0 1px #E6E1D6; font-weight: 600; }
-.meet-suggest svg { width: 16px; height: 16px; fill: none; stroke: var(--signal); stroke-width: 2.4; stroke-linecap: round; }
-.meet-preview { background: #E7F7E7; border-radius: 12px; padding: 12px 14px; font-size: .9rem; line-height: 1.45; margin: 6px 0 12px; }
+.meet-gap { margin-top: 10px; }
+.meet-proxy .meet-answer { margin-top: 14px; }
+
+/* Mitteilungs-Vorschau (wie eine Push-Mitteilung auf dem iPhone) */
+.push-banner { position: fixed; z-index: 200; top: 10px; left: 50%; width: min(400px, calc(100vw - 20px)); transform: translate(-50%, -140%); transition: transform .35s cubic-bezier(.2,.9,.3,1.2);
+  display: grid; grid-template-columns: 38px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 10px 12px; border-radius: 18px;
+  background: rgba(250, 250, 248, .92); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); box-shadow: 0 10px 30px rgba(0,0,0,.18), 0 0 0 .5px rgba(0,0,0,.08); }
+.push-banner.in { transform: translate(-50%, 0); }
+.push-app { width: 38px; height: 38px; border-radius: 9px; background: var(--brand); color: #fff; display: grid; place-items: center; font-size: .72rem; font-weight: 900; letter-spacing: .02em; }
+.push-text { display: grid; min-width: 0; font-size: .84rem; line-height: 1.3; }
+.push-text b { font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.push-banner small { align-self: start; font-size: .7rem; color: var(--muted); }
+@media (prefers-reduced-motion: reduce) { .push-banner { transition: none; } }
+
+@media (min-width: 640px) {
+  .meet-new-row { gap: 12px; }
+  .meet-kind-tile { padding: 16px 8px 14px; }
+}
 @media (min-width: 1024px) {
-  .view[data-view="treffen"] { max-width: 860px; margin: 0 auto; }
-  .meet-tally { grid-template-columns: repeat(3, 1fr); }
+  .view[data-view="treffen"] { max-width: 760px; margin: 0 auto; }
 }
 /* Sechs Menüpunkte auf schmalen Handys: etwas enger gesperrt */
 @media (max-width: 400px) {
   .topnav .tab { font-size: .66rem; letter-spacing: .09em; }
   .topnav .tab:last-child { margin-right: -.09em; }
 }
-.meet-phone-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; }
-.meet-phone-row .btn { padding: 0 16px; }
 /* iPad quer (1024–1279 px): sechs Menüpunkte mit größerer Schrift passend setzen */
 @media (min-width: 1024px) and (max-width: 1279px) {
   .topbar { column-gap: 36px; }
