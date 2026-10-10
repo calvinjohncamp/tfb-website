@@ -842,3 +842,7 @@ button.shop-card { border: 0; text-align: left; font: inherit; }
 .kiosk-hero .coaster-strokes .bundle { height: calc(var(--size) * .12); }
 .kiosk-hero .coaster-strokes em { font-size: calc(var(--size) * .06); }
 .kiosk-hero .coaster-note { font-size: calc(var(--size) * .043); }
+/* ---------- Kiosk-Kopf 3: Deckel ~12 % kleiner, quadratische Knöpfe rechtsbündig ---------- */
+.kiosk-hero { --size: calc((min(100vw, 560px) - 32px) * .615 - 5px); }
+.kiosk-hero .kiosk-links { justify-items: end; gap: 12px; }
+.kiosk-hero .kiosk-link { width: 84px; height: 84px; aspect-ratio: 1; padding: 8px 4px; }
