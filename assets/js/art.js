@@ -39,8 +39,7 @@
     // Gerolsteiner Gourmet-Flasche: klares Glas, türkiser Verschluss, weißes Etikett mit rotem Stern und türkiser Welle
     gerolsteiner: (c) => `
       <path d="M28 9.5h8v8c0 4 6 5.5 6 11.5v26a4 4 0 0 1-4 4H26a4 4 0 0 1-4-4V29c0-6 6-7.5 6-11.5z" fill="${c}" stroke="${line}" stroke-width="3" stroke-linejoin="round"/>
-      <rect x="27" y="3" width="10" height="7" rx="1.8" fill="#4FBFB0" stroke="${line}" stroke-width="2.4"/>
-      <path d="M29.5 5v3M32 5v3M34.5 5v3" stroke="${line}" stroke-width="1.1" opacity=".45"/>
+      <rect x="27" y="7.5" width="10" height="5" rx="1.5" fill="${line}"/>
       <path d="M22 32h20v13.5H22z" fill="#FFFFFF" stroke="${line}" stroke-width="2.2" stroke-linejoin="round"/>
       <path d="M32 34l.9 2 2.2-.5-1.3 1.8 1.3 1.8-2.2-.5-.9 2-.9-2-2.2.5 1.3-1.8-1.3-1.8 2.2.5z" fill="#D2202F"/>
       <path d="M23.1 42.2c3-1.9 6.2 1.4 8.9-.1 2.9-1.6 6-1.4 8.9.2v2.1H23.1z" fill="#4FBFB0"/>
