@@ -1,25 +1,32 @@
 # TFB – Übergabe für die nächste Sitzung
 
 **Zuerst lesen.** Diese Datei ist kurz und wird bei jedem Sitzungsende neu
-geschrieben. Ausführliche Entscheidungen und den Verlauf enthält
+geschrieben. Ausführliche Entscheidungen, Konzepte und den Verlauf enthält
 [`PROJEKTGEDAECHTNIS.md`](PROJEKTGEDAECHTNIS.md).
 
-Stand: **10.10.2026** · Branch `main` · eingefroren: Tag `stand-2026-10-10`
+Stand: **10.10.2026, Sitzungsende** · Branch `main` · eingefroren: Tag `stand-2026-10-10-abend`
+(früher: `stand-2026-10-09`, `stand-2026-10-10`)
 
 ## In einem Satz
 
-Eigenständige Handy-App der **Tennisfreunde Bielstein**: Startseite **Home**
-(drei Themen), Kiosk/Strichliste, Vereinswebsite (Aktuell · Sport mit Team-Seiten · Club)
-und **Verabreden**. Sie läuft im **Demo-Modus**, alle Daten bleiben im Browser.
-Ziel ist eine Vorführung vor dem Vorstand.
+Eigenständige Handy-App und Vereinswebsite der **Tennisfreunde Bielstein (TFB)** –
+Startseite **Home**, **Kiosk** mit digitaler Strichliste, **Aktuell · Sport (mit
+Team-Seiten) · Club**, **Verabreden** und Link zu **Padel**. Läuft im **Demo-Modus**
+(alle Daten im Browser). Ziel: Vorführung vor dem Vorstand. Der Nutzer ist sehr
+zufrieden („richtig schicke Seite“) und will als Nächstes **echte Bilder und Texte** einpflegen.
 
 ## Starten
 
-- Per Doppelklick: `9. TFB-Kiosk/TFB-Website öffnen.html` oder `TFB-Kiosk öffnen.html` – beide öffnen **Home**. Jeder neue Aufruf landet auf Home (außer Neu laden und Links wie `#treffen/<id>`).
-- **Offline getestet** (Chrome, `file://`, ohne Internet): Texte und Fotos bleiben nach Neustart erhalten. Daten liegen im Browser – deshalb **Verwaltung → Sichern & Laden** (eine JSON-Datei mit allem inkl. Fotos).
-- Vorschau-Server: `.claude/launch.json` → „tfb-kiosk“ (Port 5180)
-- Demo-Zugang: `max@tfb-demo.de` (Admin), Passwort beim ersten Anmelden frei wählen
-- Nach Änderungen an JS/CSS die Cache-Version in `sw.js` hochzählen (aktuell `tfb-kiosk-v45`)
+- Per Doppelklick: `9. TFB-Kiosk/TFB-Website öffnen.html` oder `TFB-Kiosk öffnen.html` –
+  beide öffnen **Home**. Jeder neue Aufruf landet auf Home (Ausnahmen: Neu laden, Links wie `#treffen/<id>`).
+- **Offline getestet** (echtes Chrome, `file://`, ohne Internet): Texte und Fotos bleiben
+  nach Neustart erhalten. Daten liegen nur in diesem Browser auf diesem Mac →
+  regelmäßig **Verwaltung → Sichern & Laden** (eine JSON-Datei mit allem inkl. Fotos, in die Dropbox legen).
+  Nach dem Speichern Chrome nicht sofort hart beenden (localStorage schreibt verzögert).
+- Präsentieren: vom Mac offline möglich; auf dem iPad erst nach Veröffentlichung.
+- Vorschau-Server: `.claude/launch.json` → „tfb-kiosk“ (Port 5180) – hat **eigene** Daten, nicht die aus Chrome.
+- Demo-Zugang: `max@tfb-demo.de` (Admin), Passwort beim ersten Anmelden frei wählen.
+- Nach Änderungen an JS/CSS die Cache-Version in `sw.js` hochzählen (aktuell `tfb-kiosk-v45`).
 
 ## Feste Regeln (nie brechen)
 
@@ -31,66 +38,71 @@ Ziel ist eine Vorführung vor dem Vorstand.
 3. Abrechnung **monatlich per SEPA-Lastschrift des Vereins, kein Stripe.**
 4. Muss unter `file://` laufen: kein Build und keine Ressourcen, die CORS brauchen.
 5. Hit Journey Player: nur ansehen, nichts verändern.
-6. Downloads nur nach Zustimmung des Nutzers.
+6. Downloads nur nach Zustimmung des Nutzers; keine Bilder fremder Seiten verwenden.
 
 ## Aufbau in 30 Sekunden
 
 | Datei | Aufgabe |
 |---|---|
 | `assets/js/config.js` | Einstellungen, Schalter `features.treffen` |
-| `assets/js/demo-backend.js` | Datenschicht `TFB.api` (localStorage). Wird später durch Supabase ersetzt |
-| `assets/js/app.js` | Gerüst, Kopf/Menü, Kiosk, Strichliste, Abrechnungen, Verwaltung, `TFB.ui` |
-| `assets/js/site.js` | Website-Seiten aus Bausteinen, Bearbeiten, Foto-Upload, Mannschaften |
-| `assets/js/meet.js` | Treffen (eigenständig und entfernbar), Speicher `tfb_meet_demo_v1` |
+| `assets/js/demo-backend.js` | Datenschicht `TFB.api` (localStorage + IndexedDB für Fotos), Sichern/Laden, Profil. Wird später durch Supabase ersetzt |
+| `assets/js/app.js` | Gerüst, Kopf/Menü, Kiosk, Strichliste, Abrechnungen, Account-Karte, Verwaltung (Schrift, Farbe, Sichern), `TFB.ui` |
+| `assets/js/site.js` | Home (Themen + Unterseiten), Aktuell/Sport/Club aus Bausteinen, Bearbeiten, Foto-Upload, Mannschaften, Team-Seiten |
+| `assets/js/meet.js` | Verabreden (eigenständig, abschaltbar), Speicher `tfb_meet_demo_v2` |
 | `assets/js/art.js` | gezeichnete Produktsymbole |
 | `assets/js/partner-rotation.js` | Partner-Duo je Seite (Logik aus Padel) |
-| `assets/data/*` | Partner, Mannschaften (nuLiga), Startinhalte der Website |
+| `assets/data/*` | Partner, Mannschaften (nuLiga), Startinhalte der Website (`site-seed.js`) |
+| `assets/home/` | Padel-Vorschaubild für den Link |
 | `assets/css/app.css` | gesamte Gestaltung inkl. Raster (640 / 1024 / 1280 px) |
 | `tools/update-teams.py` | Mannschaften aus nuLiga holen |
-| `tools/build-brand.sh` | Logo-Varianten erzeugen |
+| `tools/build-brand.sh` | Logo-Masken erzeugen (u. a. Logo ohne Ball + Ball einzeln) |
 
-## Wo wir gerade stehen
+## Was steht (Überblick)
 
-- Kiosk, Website-Gerüst und Raster für alle Geräte sind fertig und abgenommen.
-- **Treffen**: Die Vorführung steht (Einladung → WhatsApp-Link → Zusage per Tipp).
-  Ehrliche Bewertung vom 10.10.: Als reiner WhatsApp-Link ist das eine Krücke.
-  Für eine einzelne Gruppe ist die WhatsApp-Umfrage besser.
-  Der Nutzer will die Idee trotzdem behalten und weiterdenken als
-  **Gruppen-Verabredung in der installierten App** (Tabelle mit allen
-  Teilnehmern, Zugesagt / Abgesagt / Offen, Push-Mitteilungen).
-  **Als Vorführung umgebaut (10.10.):** Gruppen, Training/Einzel/Doppel,
-  Teilnehmer-Tabelle, Ersatzbank mit Nachrücken, Mitteilungs-Vorschau.
-  Details siehe Projektgedächtnis, Abschnitt „Treffen 2.0“. Echte Push-Mitteilungen
-  brauchen Supabase, Veröffentlichung und Web-Push.
+- **Kopf:** TFB-Logo mit **Ball in Signal-Rot** (führt zu Home), Profilbild rechts. Menü
+  KIOSK (immer rot) · AKTUELL · SPORT · CLUB · VERABREDEN · PADEL; aktiver Bereich mit rotem Strich.
+  Desktop: Menüschrift .74rem wie im Hochformat, großzügige Abstände.
+- **Home:** drei Themen (Padel · Kiosk · 50 Jahre) mit Bild breit/hoch/quadratisch, Kicker mit
+  roter Nummer, Überschrift, rote Unterzeile, kurzer Text, **„Mehr erfahren“** und **dezenter Link**
+  (Pille; wählbar Dezent/Knopf/Vorschau-Karte). Unterseite `#home/<id>` im Magazin-Stil:
+  Titelbild mit Überschrift, rote Initiale, Zitat, **Fotokollage** mit Großansicht.
+  Startmotive gezeichnet, bis echte Fotos da sind. Texte = Beispiele.
+- **Editor (WYSIWYG):** Stift oben rechts (nur Admins), Knöpfe im Text für ↗ Link, Fett, Zwischenüberschrift.
+- **Kiosk:** Bierdeckel „Stapel“, Sortiment mit eigenen Symbolen, Strichliste 7 Tage, Abrechnungen, Storno 30 s.
+- **Sport:** Mannschaften aus nuLiga → eigene **Team-Seite** je Mannschaft (Teamfoto, Platz/Punkte/
+  Mannschaftsführer, nuLiga-Link, bis zu 10 Beiträge; schreiben: Admins, später Mannschaftsführer).
+- **Club** (früher „Verein“), **Aktuell** mit Terminen und Beiträgen.
+- **Verabreden:** Gruppen, Training/Einzel/Doppel/Anderes, Teilnehmer-Tabelle (✓ rot · offen grau ·
+  ✗ schwarz), Ersatzbank mit Nachrücken, Profilbilder, Mitteilungs-Vorschau. Details später.
+- **Account-Karte** nach Vorbild der Padel-App: Mitgliedschaft und Kiosk-Freischaltung mit Häkchen,
+  Heute/Monat/Einzug, Angaben, Benachrichtigungen, Profilbild, Verwaltung (nur Admins), Abmelden,
+  „Als App aufs Handy“ ganz unten.
+- **Verwaltung:** Website bearbeiten, Kiosk bearbeiten, **Schrift (Test)** mit 16 Schriften,
+  Markenfarbe, **Sichern & Laden**.
 
-- **Neu am 10.10. abends:** Home-Seite als Einstieg für alle (Logo führt dorthin),
-  drei Themen mit Bild (breit oben / Hochformat links / Quadrat links), Überschrift,
-  Unterzeile, freiem Text und Link-Knopf mit Vorschau-Karte. „Verein“ heißt **Club**
-  (Adresse `#club`, intern Seite `verein`). Ball im Logo in Signal-Rot, KIOSK im Menü
-  immer rot, aktiver Bereich mit rotem Strich. Schrift-Test in der Verwaltung
-  (Standard „Modern (System)“). Jede Mannschaft hat eine eigene Seite `#team/<name>`
-  mit Teamfoto und bis zu 10 Beiträgen (Admins; Mannschaftsführer erst mit Supabase).
-  Der Nutzer will jetzt echte Bilder und Texte einpflegen.
+## Schriften und Farben (Kurzfassung, Details im Projektgedächtnis)
 
-- **Neu (10.10. spät):** Links dezent als kleine Pille (Darstellung wählbar: Dezent/Knopf/
-  Vorschau-Karte), Links/Fett/Zwischenüberschrift im Fließtext über Knöpfe im Editor
-  (`[Text](url)`, `**fett**`, `## …`). Home-Themen haben eine Unterseite `#home/<id>`
-  („Mehr erfahren“): Titelbild mit Überschrift darauf, rote Initiale, Zitat, Fotokollage
-  mit Großansicht. Account-Karte neu nach Vorbild Padel-App (Mitgliedschaft, Kiosk-Stand,
-  Angaben, Benachrichtigungen, Profilbild; Verwaltung nur für Admins; „Als App aufs Handy“
-  ganz unten). 16 Schriften zum Testen (4 offline + Klassisch, 11 aus Google Fonts).
+- **Grundschrift** fest: Systemschrift (SF Pro / Segoe UI / Roboto) – fast alles.
+- **Auszeichnungsschrift** wählbar (`--serif`): Standard „Modern (System)“ – Überschriften, Zahlen, Beträge, Zitate.
+- **Handschrift** fest: Bradley Hand – Bierdeckel-Datum, Strichlisten-Namen.
+- Farben: **Kreideweiß** `#FBFBF8` (Hintergrund) · **Anthrazit** `#2A2D2E` (Markenfarbe, wählbar) ·
+  **Sandplatz-Rot** `#C4553A` (Signal, fest) · Schrift `#1C2520`/`#6A7069` · Linien `#E5DDCD`.
 
 ## Nächste Schritte (Vorschlag)
 
-1. Feedback zu Home, Schrift, Signal-Rot und Team-Seiten einarbeiten, sobald echte Inhalte drin sind.
-2. Verabreden: Details später. Menüpunkt heißt **Verabreden** (intern `treffen`).
-3. Foto der Papier-Strichliste → echtes Sortiment und Preise.
-4. Ab ca. Ende Oktober 2026: Supabase (eigenes Projekt), Veröffentlichung auf
-   `kiosk.joern-kaemper.de`, Mitglieder-Import, Monatsabschluss/SEPA.
+1. **Nutzer pflegt echte Inhalte ein** (Fotos, Texte, Unterseiten, Teamfotos) – danach Feinschliff.
+2. Schrift entscheiden (1–2 Favoriten); Google-Schrift dann selbst ausliefern (Datenschutz, offline).
+3. CSS aufräumen: Altlasten (`--green`, Karton-Farben) entfernen, Farben auf ~10 feste Werte.
+4. Verabreden: Details nach Rückmeldung.
+5. Foto der Papier-Strichliste → echtes Sortiment und Preise.
+6. Ab ca. Ende Oktober 2026: Supabase (eigenes Projekt), Veröffentlichung auf
+   `kiosk.joern-kaemper.de`, Mitglieder-Import, Monatsabschluss/SEPA, automatische Link-Vorschau,
+   Mannschaftsführer-Rechte, echte Push-Mitteilungen.
 
 ## Arbeitsweise mit dem Nutzer
 
 - Deutsch, klare und ehrliche Einschätzungen statt Schönfärberei.
-- Gestaltung in kleinen Schritten, jede Änderung im Browser prüfen und mit Screenshot belegen.
+- Gestaltung in kleinen Schritten, jede Änderung im Browser prüfen (Handy- und Desktop-Breite) und mit Screenshot belegen.
+- Der Nutzer arbeitet oft mit schmalem Vorschaufenster – für Screenshots Viewport emulieren.
 - Bei Aussagen wie „erst Feedback, nicht programmieren“ wirklich nur beraten.
 - Am Sitzungsende diese Datei und den Verlauf im Projektgedächtnis aktualisieren, dann committen.

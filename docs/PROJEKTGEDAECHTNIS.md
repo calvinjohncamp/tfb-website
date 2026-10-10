@@ -4,6 +4,56 @@ Für den schnellen Einstieg zuerst die kurze **[UEBERGABE.md](UEBERGABE.md)** le
 Diese Datei enthält alle Entscheidungen, Konzepte, offenen Punkte und den Verlauf.
 Neues bitte unten bei „Verlauf“ ergänzen.
 
+## Stand am Ende des 10.10.2026 (gilt vor älteren Abschnitten weiter unten)
+
+Ältere Abschnitte beschreiben Zwischenstände (z. B. „Kiosk ist Startseite“, „Reiter Verein“,
+Garamond-artige Überschriften) – **überholt** durch:
+
+- **Startseite = Home** (`#home`) für alle Besucher; Logo führt dorthin; neue Aufrufe landen
+  immer auf Home (Ausnahme: Neu laden, Deep-Links mit `/`). Manifest `start_url ./#home`.
+- Menü: **KIOSK** (immer Signal-Rot) · AKTUELL · SPORT · **CLUB** (Adresse `#club`, intern
+  Seite `verein`) · **VERABREDEN** (intern `treffen`) · PADEL. Aktiver Bereich: dunkle Schrift + roter Strich.
+- **Logo:** Ball in Signal-Rot (Masken `tfb-logo-noball` + `tfb-logo-ball`, Position in
+  `.tfb-logo-split`: left 84.53 %, top 47.95 %, Breite 15.53 %, Höhe 34.78 %).
+- **Home-Themen** (Baustein `feature`): `layout` wide/portrait/square, `kicker`, `title`,
+  `subtitle`, `text`, `link {url, label, style chip|button|card, title, text, image}`,
+  `more {text, quote, quoteBy, images}` → Unterseite `#home/<id>`.
+- **Fließtext-Auszeichnung** überall in Text-Bausteinen: `[Text](https://… | #seite)`, `**fett**`, `## Zwischenüberschrift`.
+- **Team-Seiten** `#team/<schlüssel>`, Inhalte in `site.teams[schlüssel] = {photo, posts[≤10]}`.
+- **Account-Karte** nach Padel-Vorbild; `api.updateProfile` (Handynummer, Info-Mails, Einladungen).
+- **Sichern & Laden:** `api.exportAll()` / `api.importAll()`; Datei enthält `db`, `images`
+  und `extra` (`tfb_kiosk_look_v3` = Farbe/Schrift, `tfb_meet_demo_v2` = Verabredungen).
+- Offline unter `file://` in Chrome geprüft (Texte + Fotos überstehen Neustart).
+
+## Gestaltungssystem: Schriften und Farben (Stand 10.10.2026)
+
+**Schriften – drei Rollen**
+
+| Rolle | Schrift | Einsatz |
+|---|---|---|
+| Grundschrift `--font` (fest) | Systemschrift: SF Pro (Apple), Segoe UI (Windows), Roboto (Android) | Fließtext, Menü, Knöpfe, Formulare, Kacheln, Versal-Beschriftungen |
+| Auszeichnung `--serif` (in der Verwaltung wählbar, Standard „Modern (System)“) | Test: System, Avenir Next, Futura, DIN, Klassisch (offline) · Inter Tight, Manrope, Outfit, Plus Jakarta Sans, DM Sans, Sora, Space Grotesk, Bricolage Grotesque, Syne, Unbounded, Barlow Condensed (Google Fonts, nur Test) | Seitentitel, Themen-Überschriften, Zwischenüberschriften, Datumszahlen, Bierdeckel-Betrag, Zitate, Initiale, Nummern |
+| Handschrift `--hand` (fest) | Bradley Hand (Windows: Segoe Print) | Bierdeckel-Datum/-Monat, Strichlisten-Namen |
+
+Der Schriftzug „TENNISFREUNDE BIELSTEIN“ ist Teil des Logos (Bild), keine Schrift.
+Entscheidung offen: 1–2 Favoriten wählen, Google-Schrift dann selbst ausliefern (Datenschutz/offline).
+
+**Farben**
+
+| Farbe | Wert | Einsatz |
+|---|---|---|
+| Kreideweiß | `#FBFBF8` | Hintergrund (fest) |
+| Anthrazit (Markenfarbe `--brand`) | `#2A2D2E` | Logo, Bierdeckel, dunkle Knöpfe, Datumsfelder; wählbar (Schwarz, Sandplatz-Rot, 4 freie Felder) |
+| Sandplatz-Rot (Signal `--signal`) | `#C4553A` | Logo-Ball, KIOSK, Aktiv-Strich, Strich unter Zwischenüberschriften, Unterzeilen, „Mehr erfahren“, Initiale, Zitat, Zusagen, Platz 1 (fest) |
+| Weiß | `#FFFFFF` | Karten |
+| Schrift dunkel / grau | `#1C2520` / `#6A7069` | Text / Nebentext |
+| Linien, Flächen | `#E5DDCD`, `#E6E1D6`, `#EFEDE7`, `#F6F3EC` | Rahmen, Platzhalter, gesperrte Felder |
+| Menügrau | `#8A8F8A` | inaktive Menüpunkte |
+| Verabreden | Schwarz `#111111` (Absage), Grau `#8C918E` (offen), Rot hell 8 %/45 % | Status |
+| WhatsApp-Grün | `#25D366` | nur Teilen-Knopf |
+
+Aufräumen geplant: Altlasten `--green*`, `--cardboard*`, `--cream` u. a. entfernen, auf ~10 feste Werte reduzieren.
+
 ## Konzept „Treffen 2.0“: Verabreden in der installierten App
 
 **Vorführung gebaut am 10.10.2026** (`assets/js/meet.js`, Speicher `tfb_meet_demo_v2`):
@@ -171,6 +221,11 @@ Im Demo-Modus liegen alle Daten nur im Browser des Geräts. Demo-Zugang:
 
 ## Offene Punkte – bewusst auf später verschoben
 
+*(Ergänzt 10.10. abends:)* echte Inhalte einpflegen (Nutzer), Schrift entscheiden und
+selbst ausliefern, CSS-Farben aufräumen, Verabreden-Details, automatische Link-Vorschau
+(Serverdienst), Mannschaftsführer-Rechte für Team-Seiten, echte Push-Mitteilungen,
+Präsentation auf dem iPad (braucht Veröffentlichung + Sicherung laden).
+
 
 1. **Supabase-Projekt** anlegen, sobald ein kostenloser Platz frei ist (Padel
    zieht ca. Ende Oktober 2026 zum Verein um). Bis dahin Demo-Modus.
@@ -283,3 +338,6 @@ Monatsabschluss.
   Fließtext-Auszeichnungen, **Unterseiten** der Home-Themen mit Kollage (`more: {text, quote,
   quoteBy, images}`; `ph:`-Bilder = Beispiel-Platzhalter). **Account-Karte** nach Padel-Vorbild
   (`api.updateProfile`: Handynummer, Info-Mails, Einladungen). Mehr Testschriften.
+- **10.10.2026 (Sitzungsende)** – Übersicht Schriften/Farben erstellt (Abschnitt
+  „Gestaltungssystem“). Stand eingefroren als Tag `stand-2026-10-10-abend`. Nutzer:
+  „Mir gefällt das alles sehr, sehr gut“ – nächster Schritt: echte Bilder und Texte einpflegen.
