@@ -8,12 +8,11 @@
   const $sheet = document.getElementById('sheet-root');
   const $toast = document.getElementById('toast-root');
 
-  const VIEWS = ['kiosk', 'strichliste', 'abrechnungen', 'aktuell', 'sport', 'verein', 'treffen', 'verwaltung'];
+  const VIEWS = ['home', 'kiosk', 'strichliste', 'abrechnungen', 'aktuell', 'sport', 'team', 'club', 'treffen', 'verwaltung'];
   const KIOSK_AREA = ['kiosk', 'strichliste', 'abrechnungen'];   // nur mit Anmeldung
   // Reiter unten: Kiosk zuerst, dann die Vereinsseiten, dann der Padel-Link.
-  const areaOf = (view) => (KIOSK_AREA.includes(view) ? 'kiosk' : view);
-  // Wort neben dem Logo: der aktuelle Bereich
-  const AREA_LABEL = { kiosk: 'Kiosk', aktuell: 'Aktuell', sport: 'Sport', verein: 'Verein', verwaltung: 'Verwaltung' };
+  // Team-Seiten gehören zu „Sport“
+  const areaOf = (view) => (KIOSK_AREA.includes(view) ? 'kiosk' : view === 'team' ? 'sport' : view);
   const state = {
     member: null,
     catalog: null,
@@ -61,8 +60,30 @@
   if (!isHex(look.brand)) look.brand = '#2A2D2E';
   look.custom = Array.from({ length: FREE_SLOTS }, (_, i) => (isHex(look.custom[i]) ? look.custom[i] : null));
   function saveLook() { try { localStorage.setItem(LOOK_KEY, JSON.stringify(look)); } catch (_) {} }
+  // Schrift für Überschriften, Zahlen und Beträge (Test-Umschalter in der Verwaltung).
+  // System/Avenir sind auf Apple-Geräten eingebaut; Inter Tight/Manrope kommen aus Google Fonts
+  // (nur zum Testen – im Echtbetrieb würden wir die gewählte Schrift selbst ausliefern).
+  const FONTS = [
+    ['system', 'Modern (System)', '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif'],
+    ['avenir', 'Avenir Next', '"Avenir Next", Avenir, "Segoe UI", sans-serif'],
+    ['inter', 'Inter Tight', '"Inter Tight", -apple-system, "Segoe UI", sans-serif', 'Inter+Tight:wght@500;600;700;800'],
+    ['manrope', 'Manrope', 'Manrope, -apple-system, "Segoe UI", sans-serif', 'Manrope:wght@500;600;700;800'],
+    ['classic', 'Klassisch (Serife)', '"Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif'],
+  ];
+  if (!FONTS.some(([id]) => id === look.font)) look.font = 'system';
   function applyLook() {
-    document.documentElement.style.setProperty('--brand', look.brand);
+    const root = document.documentElement;
+    root.style.setProperty('--brand', look.brand);
+    const [id, , stack, google] = FONTS.find(([f]) => f === look.font);
+    root.style.setProperty('--serif', stack);
+    root.dataset.font = id === 'classic' ? 'serif' : 'sans';
+    if (google && !document.getElementById('font-' + id)) {
+      const link = document.createElement('link');
+      link.id = 'font-' + id;
+      link.rel = 'stylesheet';
+      link.href = `https://fonts.googleapis.com/css2?family=${google}&display=swap`;
+      document.head.appendChild(link);
+    }
   }
   applyLook();
 
@@ -101,14 +122,15 @@
   async function boot() {
     state.catalog = await api.catalog();
     state.member = await api.session();
-    if (!location.hash) history.replaceState(null, '', '#kiosk');   // Kiosk ist immer die Startseite
+    if (!location.hash) history.replaceState(null, '', '#home');   // Startseite für alle Besucher
     render();
   }
 
   function currentView() {
-    const v = location.hash.replace('#', '').split('/')[0];   // z. B. #treffen/<id>
-    if (v === 'verwaltung' && !(state.member && state.member.isAdmin)) return 'aktuell';
-    return VIEWS.includes(v) ? v : 'kiosk';
+    let v = location.hash.replace('#', '').split('/')[0];   // z. B. #treffen/<id>
+    if (v === 'verein') v = 'club';                           // alte Adresse
+    if (v === 'verwaltung' && !(state.member && state.member.isAdmin)) return 'home';
+    return VIEWS.includes(v) ? v : 'home';
   }
 
   async function render() {
@@ -249,15 +271,15 @@
       ['kiosk', 'Kiosk', icon.kiosk],
       ['aktuell', 'Aktuell', icon.news],
       ['sport', 'Sport', icon.sport],
-      ['verein', 'Verein', icon.club],
+      ['club', 'Club', icon.club],
       ...(cfg.features && cfg.features.treffen ? [['treffen', 'Verabreden', icon.news]] : []),
       ['padel', 'Padel', icon.padel, cfg.padelUrl],
     ];
     $app.innerHTML = `
       <header class="topbar">
         <div class="topbar-row">
-          <a class="brand" href="#kiosk" aria-label="${esc(cfg.clubName)} – Startseite">
-            ${logo('logo', 'header-logo')}
+          <a class="brand" href="#home" aria-label="${esc(cfg.clubName)} – Startseite">
+            <span class="tfb-logo-split header-logo" role="img" aria-label="${esc(cfg.clubName)}"><span class="tfb-logo-noball"></span><span class="tfb-logo-ball"></span></span>
           </a>
           ${state.member
             ? `<button class="avatar" type="button" data-action="profile" aria-label="Profil">${avatarFace(state.member)}</button>`
@@ -266,7 +288,7 @@
         <nav class="topnav" aria-label="Bereiche">
           ${tabs.map(([id, label, ic, url]) => url
             ? `<a href="${esc(url)}" class="tab external" target="_blank" rel="noopener" aria-label="${label} – Buchungs-App öffnen (neues Fenster)">${label}</a>`
-            : `<a href="#${id}" class="tab ${id === area ? 'active' : ''}" ${id === area ? 'aria-current="page"' : ''}>${label}</a>`).join('')}
+            : `<a href="#${id}" class="tab tab-${id} ${id === area ? 'active' : ''}" ${id === area ? 'aria-current="page"' : ''}>${label}</a>`).join('')}
         </nav>
       </header>
       <main class="view" id="view" data-view="${view}"><div class="loading"></div></main>`;
@@ -604,13 +626,20 @@
         <h2>Website</h2>
         <p class="muted">Seiten direkt bearbeiten: Bausteine anlegen, Fotos hochladen, Texte und Termine pflegen.</p>
         <div class="admin-links">
-          ${['aktuell', 'sport', 'verein'].map((p) => `<button type="button" class="btn" data-action="site-edit" data-page="${p}">${icon.pencil} ${p[0].toUpperCase() + p.slice(1)}</button>`).join('')}
+          ${[['home', 'Home'], ['aktuell', 'Aktuell'], ['sport', 'Sport'], ['verein', 'Club']].map(([p, l]) => `<button type="button" class="btn" data-action="site-edit" data-page="${p}">${icon.pencil} ${l}</button>`).join('')}
         </div>
       </section>
       <section class="card admin-card">
         <h2>Sortiment</h2>
         <p class="muted">${active} Artikel in ${cat.sections.length} Bereichen. Artikel, Preise, Symbole und Reihenfolge änderst du direkt am Kiosk – so, wie die Mitglieder ihn sehen.</p>
         <button type="button" class="btn primary block" data-action="edit-start">${icon.pencil} Kiosk bearbeiten</button>
+      </section>
+      <section class="card admin-card">
+        <h2>Schrift (Test)</h2>
+        <p class="muted">Für Überschriften, Zahlen und Beträge. Antippen und auf den Seiten ansehen – gilt im Demo-Modus nur auf diesem Gerät.</p>
+        <div class="font-list">${FONTS.map(([id, name, stack]) => `
+          <button type="button" class="font-option ${look.font === id ? 'on' : ''}" data-action="font" data-value="${id}" style="font-family:${esc(stack)}">
+            <b>Aa 12,50 €</b><span>${esc(name)}</span></button>`).join('')}</div>
       </section>
       <section class="card admin-card">
         <h2>Markenfarbe</h2>
@@ -1023,6 +1052,11 @@
       state.authEmail = '';
       render();
       toast('Demo-Daten wurden neu erzeugt.');
+    } else if (action === 'font') {
+      look.font = el.dataset.value;
+      saveLook();
+      applyLook();
+      renderView();
     } else if (action === 'brand') {
       look.brand = el.dataset.value;
       saveLook();
@@ -1087,8 +1121,6 @@
       if (active) t.setAttribute('aria-current', 'page'); else t.removeAttribute('aria-current');
     });
     document.getElementById('view').dataset.view = view;
-    const label = document.querySelector('[data-area-label]');
-    if (label) label.textContent = AREA_LABEL[areaOf(view)] || 'Kiosk';
     if (view !== 'kiosk') state.editMode = false;
     closeSheet();
     window.scrollTo(0, 0);

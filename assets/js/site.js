@@ -1,4 +1,4 @@
-// TFB-Website – Seiten "Aktuell", "Sport", "Verein" aus Bausteinen.
+// TFB-Website – Seiten "Home", "Aktuell", "Sport", "Club" aus Bausteinen, dazu je Mannschaft eine eigene Seite.
 // Darstellung und Bearbeitung direkt auf der Seite (wie "Kiosk bearbeiten").
 // Nutzt die gemeinsamen Helfer aus app.js über TFB.ui (erst beim Rendern verfügbar).
 (function () {
@@ -11,7 +11,13 @@
   let editing = null;       // Seite, die gerade bearbeitet wird
   const ui = () => TFB.ui;
 
+  // Seiten-Schlüssel → Adresse im Menü (die Seite „verein“ heißt seit 10.10. „Club“)
+  const ROUTE = { verein: 'club' };
+  const routeOf = (key) => ROUTE[key] || key;
+  const MAX_TEAM_POSTS = 10;
+
   const BLOCK_TYPES = [
+    ['feature', 'Thema (Home)', 'großes Bild, Überschrift, Text und Link mit Vorschau'],
     ['post', 'Beitrag', 'Foto, Datum, Überschrift und Text'],
     ['event', 'Termin', 'Datum, Uhrzeit, Ort'],
     ['text', 'Text', 'Überschrift und Absätze'],
@@ -59,12 +65,68 @@
         </svg>
       </div>`;
   }
-  const picture = (ref, seed, alt = '') =>
-    ref && images[ref] ? `<img src="${images[ref]}" alt="${esc(alt)}" loading="lazy">` : placeholder(seed);
+  // Gezeichnetes Padel-Motiv (bis ein echtes Foto hochgeladen ist)
+  const padelArt = () => `
+    <div class="ph ph-padel" aria-hidden="true">
+      <svg viewBox="0 0 160 90" preserveAspectRatio="xMidYMid slice">
+        <rect width="160" height="90" fill="#161616"/>
+        <path d="M30 84 L56 30 H104 L130 84 Z" fill="#1E5F74"/>
+        <g fill="none" stroke="#F4EFE6" stroke-width=".9" opacity=".9">
+          <path d="M30 84 L56 30 H104 L130 84 Z"/><path d="M41 61.5 H119M80 30 V84M47.5 47 H112.5"/>
+        </g>
+        <path d="M43 57 H117" stroke="#F4EFE6" stroke-width="2.2" opacity=".85"/>
+        <g fill="none" stroke="#F4EFE6" stroke-width=".7" opacity=".35"><path d="M56 30 V14 H104 V30M30 84 V60M130 84 V60"/></g>
+        <path d="M62 70 l10-9 M76 58 l9-7" stroke="#E8573A" stroke-width="1.6" stroke-linecap="round" stroke-dasharray="3 3"/>
+        <circle cx="96" cy="44" r="6.5" fill="#E8573A"/>
+        <path d="M91.5 40 c3 2 3 6 0 8.5 M100.5 40 c-3 2 -3 6 0 8.5" stroke="#fff" stroke-width=".9" fill="none" opacity=".9"/>
+      </svg>
+    </div>`;
+  function picture(ref, seed, alt = '') {
+    if (ref && images[ref]) return `<img src="${images[ref]}" alt="${esc(alt)}" loading="lazy">`;
+    if (ref && /^assets\//.test(ref)) return `<img src="${esc(ref)}" alt="${esc(alt)}" loading="lazy">`;
+    if (/padel/.test(String(seed))) return padelArt();
+    if (seed === 'h-kiosk') return `<div class="ph ph-kiosk" aria-hidden="true">${['stange:#E9B949', 'cola:#B7282E', 'gerolsteiner:#CFE6E0'].map((x) => TFB.art(...x.split(':'))).join('')}</div>`;
+    if (seed === 'h-50') return '<div class="ph ph-50" aria-hidden="true"><b>50</b><span class="tfb-mark"></span><small>1976 – 2026</small></div>';
+    return placeholder(seed);
+  }
+  const hostOf = (url) => { try { return new URL(url).hostname.replace(/^www\./, ''); } catch (_) { return ''; } };
+
+  // Link als Knopf – bei Websites mit Vorschau-Karte wie in einer Mail oder in WhatsApp.
+  function linkMarkup(link) {
+    if (!link || !link.url) return '';
+    const ext = /^https?:/i.test(link.url);
+    const label = esc(link.label || 'Mehr erfahren');
+    if (!ext) return `<p class="feature-link"><a class="btn signal" href="${esc(link.url)}">${label} <span aria-hidden="true">→</span></a></p>`;
+    return `
+      <a class="link-card" href="${esc(link.url)}" target="_blank" rel="noopener">
+        ${link.image ? `<span class="link-card-img">${picture(link.image, link.url)}</span>` : ''}
+        <span class="link-card-body">
+          <small>${esc(hostOf(link.url))}</small>
+          ${link.title ? `<b>${esc(link.title)}</b>` : ''}
+          ${link.text ? `<span>${esc(link.text)}</span>` : ''}
+          <em>${label} <span aria-hidden="true">↗</span></em>
+        </span>
+      </a>`;
+  }
 
   // ---------- Bausteine darstellen ----------
   function renderBlock(b, page) {
     switch (b.type) {
+      case 'feature': {
+        const list = site.pages[page] ? site.pages[page].blocks.filter((x) => x.type === 'feature' && !x._new) : [];
+        const n = String(Math.max(1, list.findIndex((x) => x.id === b.id) + 1)).padStart(2, '0');
+        return `
+          <article class="feature feature-${esc(b.layout || 'wide')}">
+            <div class="feature-media">${picture(b.image, b.id, b.title)}</div>
+            <div class="feature-body">
+              <p class="feature-kicker"><span>${n}</span>${esc(b.kicker || '')}</p>
+              <h2>${esc(b.title)}</h2>
+              ${b.subtitle ? `<p class="feature-sub">${esc(b.subtitle)}</p>` : ''}
+              <div class="feature-text">${paragraphs(b.text)}</div>
+              ${linkMarkup(b.link)}
+            </div>
+          </article>`;
+      }
       case 'heading':
         return `<h2 class="block-heading">${esc(b.title)}</h2>`;
       case 'text':
@@ -136,15 +198,24 @@
         ${b.title ? `<h2>${esc(b.title)}</h2>` : ''}
         <div class="seg team-seasons">${seasons.map((s) => `<button type="button" class="${s === current ? 'on' : ''}" data-action="team-season" data-season="${esc(s.season)}">${esc(s.season)}</button>`).join('')}</div>
         <div class="card team-list">
-          ${current.teams.map((t) => `
-            <a class="team" href="${esc(t.teamUrl)}" target="_blank" rel="noopener">
+          ${current.teams.map((t) => {
+            const extra = teamContent(teamKey(t.name));
+            const photo = extra.photo && (images[extra.photo] || /^assets\//.test(extra.photo)) ? picture(extra.photo, t.name) : '';
+            const count = extra.posts.length;
+            return `
+            <a class="team" href="#team/${esc(teamKey(t.name))}">
               <span class="team-rank ${t.rank === '1' ? 'top' : ''}" title="Tabellenplatz">${esc(t.rank || '–')}</span>
-              <span class="team-main"><strong>${esc(t.name)}</strong><small>${esc(t.group)}</small></span>
+              <span class="team-main">
+                ${photo ? `<span class="team-thumb">${photo}</span>` : ''}
+                <span class="team-name"><strong>${esc(t.name)}</strong><small>${esc(t.group)}</small>
+                ${count ? `<em class="team-news">${count === 1 ? '1 Beitrag' : `${count} Beiträge`}</em>` : ''}</span>
+              </span>
               <span class="team-captain"><small>Mannschaftsführer</small>${esc(t.captain)}</span>
               <span class="team-points">${esc(t.points)}<small>Punkte</small></span>
-            </a>`).join('')}
+            </a>`;
+          }).join('')}
         </div>
-        <p class="fineprint">Stand ${esc(data.updated)} · Daten aus <a href="${esc(data.source)}" target="_blank" rel="noopener">nuLiga</a> · Antippen öffnet Spielplan und Mannschaft</p>
+        <p class="fineprint">Stand ${esc(data.updated)} · Daten aus <a href="${esc(data.source)}" target="_blank" rel="noopener">nuLiga</a> · Antippen öffnet die Seite der Mannschaft</p>
       </section>`;
   }
 
@@ -166,17 +237,19 @@
             <div><strong>${esc(page.title)} bearbeiten</strong><span>Bausteine antippen zum Ändern · Pfeile zum Sortieren</span></div>
             <button type="button" class="btn primary" data-action="site-done">Fertig</button>
           </div>` : ''}
-        <header class="view-head page-head">
-          <div><h1>${esc(page.title)}</h1><p class="muted">${esc(page.intro)}</p></div>
+        ${key === 'home' && !edit
+          ? (admin ? `<div class="home-tools"><button type="button" class="view-close" data-action="site-edit" data-page="home" aria-label="Startseite bearbeiten">${icon.pencil}</button></div>` : '')
+          : `<header class="view-head page-head">
+          <div><h1>${esc(page.title)}</h1>${page.intro ? `<p class="muted">${esc(page.intro)}</p>` : ''}</div>
           ${admin && !edit ? `<button type="button" class="view-close" data-action="site-edit" data-page="${key}" aria-label="Seite bearbeiten">${icon.pencil}</button>` : ''}
-        </header>
+        </header>`}
         ${blocks}
         ${edit ? `<button type="button" class="btn block add-section" data-action="block-new">${icon.plus} Baustein hinzufügen</button>` : ''}
-        ${key === 'aktuell' && !edit ? '<p class="fineprint">Vorführversion: Termine und Beiträge sind Beispiele.</p>' : ''}
+        ${['aktuell', 'home'].includes(key) && !edit ? `<p class="fineprint">Vorführversion: ${key === 'home' ? 'Texte und Bilder sind Beispiele.' : 'Termine und Beiträge sind Beispiele.'}</p>` : ''}
         ${edit ? '' : partnerSlot(key, page.partnerKicker || 'Präsentiert von')}
       </div>`;
   }
-  ['aktuell', 'sport', 'verein'].forEach((key) => { TFB.views[key] = () => pageView(key); });
+  ['home', 'aktuell', 'sport', 'verein'].forEach((key) => { TFB.views[routeOf(key)] = () => pageView(key); });
 
   // Ansicht (nicht Bearbeiten): Bausteine zu Gruppen bündeln, damit sie sich auf
   // breiten Bildschirmen in Spalten ordnen. Termine (mit ihrer Überschrift davor)
@@ -270,14 +343,14 @@
     if (opts.area) return `<label class="field"><span>${label}</span><textarea name="${name}" rows="${opts.rows || 5}" placeholder="${esc(opts.placeholder || '')}">${v}</textarea></label>`;
     return `<label class="field"><span>${label}</span><input name="${name}" type="${opts.type || 'text'}" value="${v}" placeholder="${esc(opts.placeholder || '')}"></label>`;
   }
-  function imageField(ref, seed) {
+  function imageField(ref, seed, label = 'Foto', target = '') {
     return `
-      <div class="field"><span>Foto</span>
+      <div class="field"><span>${label}</span>
         <div class="image-field">
           <div class="image-preview">${picture(ref, seed)}</div>
           <div class="image-actions">
-            <label class="btn">${ref ? 'Foto ersetzen' : 'Foto wählen'}<input type="file" accept="image/*" data-image-input hidden></label>
-            ${ref ? '<button type="button" class="link" data-image-remove>Foto entfernen</button>' : ''}
+            <label class="btn">${ref ? 'Foto ersetzen' : 'Foto wählen'}<input type="file" accept="image/*" data-image-input data-target="${target}" hidden></label>
+            ${ref ? `<button type="button" class="link" data-image-remove="${target}">Foto entfernen</button>` : ''}
           </div>
         </div>
       </div>`;
@@ -292,6 +365,25 @@
 
     const body = () => {
       switch (draft.type) {
+        case 'feature': {
+          const lk = draft.link || {};
+          const ext = /^https?:/i.test(lk.url || '');
+          return `
+            <div class="field"><span>Bild-Anordnung</span>
+              <div class="seg layout-seg">${[['wide', 'Breit oben'], ['portrait', 'Hochformat links'], ['square', 'Quadrat links']].map(([v, l]) =>
+                `<button type="button" class="${(draft.layout || 'wide') === v ? 'on' : ''}" data-layout="${v}">${l}</button>`).join('')}</div>
+            </div>`
+            + imageField(draft.image, draft.id)
+            + field('Kleine Zeile über der Überschrift', 'kicker', draft.kicker, { placeholder: 'z. B. Neu in Bielstein' })
+            + field('Überschrift', 'title', draft.title) + field('Unterzeile', 'subtitle', draft.subtitle)
+            + field('Text', 'text', draft.text, { area: true, rows: 9, placeholder: 'Beliebig lang. Leerzeile = neuer Absatz' })
+            + `<h3 class="editor-sub">Link</h3>`
+            + field('Ziel (Website oder #kiosk, #aktuell, #sport, #club)', 'linkUrl', lk.url, { placeholder: 'https://… oder #kiosk' })
+            + field('Knopf-Text', 'linkLabel', lk.label, { placeholder: 'z. B. Jetzt Platz buchen' })
+            + (ext ? `<p class="muted small">Vorschau-Karte wie in einer Mail. Im Echtbetrieb holt die App Bild, Titel und Text automatisch von der Website – bis dahin hier eintragen.</p>`
+              + field('Vorschau: Titel', 'linkTitle', lk.title) + field('Vorschau: Text', 'linkText', lk.text, { area: true, rows: 3 })
+              + imageField(lk.image, lk.url, 'Vorschau: Bild', 'link') : '');
+        }
         case 'heading': return field('Überschrift', 'title', draft.title);
         case 'text': return field('Überschrift', 'title', draft.title) + field('Text', 'text', draft.text, { area: true, rows: 8, placeholder: 'Leerzeile = neuer Absatz' });
         case 'event': return `<div class="field-row">${field('Datum', 'date', draft.date, { type: 'date' })}${field('Uhrzeit', 'time', draft.time, { type: 'time' })}</div>`
@@ -309,7 +401,7 @@
         case 'people': return field('Überschrift', 'title', draft.title)
           + field('Personen – je Zeile „Rolle: Name“', 'people', (draft.people || []).map((p) => `${p.role}: ${p.name}`).join('\n'), { area: true, rows: 6 });
         case 'facts': return field('Zahlen – je Zeile „Wert | Beschriftung“', 'facts', (draft.items || []).map((f) => `${f.value} | ${f.label}`).join('\n'), { area: true, rows: 4 });
-        case 'button': return field('Beschriftung', 'label', draft.label) + field('Ziel (Website oder #aktuell, #sport, #verein, #kiosk)', 'url', draft.url);
+        case 'button': return field('Beschriftung', 'label', draft.label) + field('Ziel (Website oder #aktuell, #sport, #club, #kiosk)', 'url', draft.url);
         case 'teams': return field('Überschrift', 'title', draft.title) + '<p class="muted small">Die Liste kommt automatisch aus nuLiga.</p>';
         default: return '';
       }
@@ -334,7 +426,10 @@
           closeSheet();
           commit('Baustein gelöscht');
         }
-        if (e.target.closest('[data-image-remove]')) { collect(form); draft.image = null; render(); }
+        const lay = e.target.closest('[data-layout]');
+        if (lay) { collect(form); draft.layout = lay.dataset.layout; render(); return; }
+        const rmImg = e.target.closest('[data-image-remove]');
+        if (rmImg) { collect(form); if (rmImg.dataset.imageRemove === 'link') draft.link.image = null; else draft.image = null; render(); }
         const rm = e.target.closest('[data-gallery-remove]');
         if (rm) { collect(form); draft.images = draft.images.filter((r) => r !== rm.dataset.galleryRemove); render(); }
       });
@@ -344,7 +439,10 @@
         collect(form);
         try {
           const ids = await uploadFiles([...input.files]);
-          if (input.matches('[data-image-input]')) draft.image = ids[0];
+          if (input.matches('[data-image-input]')) {
+            if (input.dataset.target === 'link') draft.link = { ...(draft.link || {}), image: ids[0] };
+            else draft.image = ids[0];
+          }
           if (input.matches('[data-gallery-input]')) draft.images = [...(draft.images || []), ...ids];
           ui().toast(ids.length > 1 ? `${ids.length} Fotos hinzugefügt` : 'Foto hinzugefügt', true);
           render();
@@ -355,7 +453,11 @@
     // Formularwerte in den Entwurf übernehmen
     const collect = (form) => {
       const f = form.elements;
-      ['title', 'text', 'date', 'time', 'place', 'caption', 'label', 'url'].forEach((k) => { if (f[k]) draft[k] = f[k].value.trim(); });
+      ['title', 'text', 'date', 'time', 'place', 'caption', 'label', 'url', 'kicker', 'subtitle'].forEach((k) => { if (f[k]) draft[k] = f[k].value.trim(); });
+      if (f.linkUrl) {
+        draft.link = { ...(draft.link || {}), url: f.linkUrl.value.trim(), label: f.linkLabel.value.trim() };
+        if (f.linkTitle) Object.assign(draft.link, { title: f.linkTitle.value.trim(), text: f.linkText.value.trim() });
+      }
       if (f.people) draft.people = f.people.value.split('\n').map((l) => l.trim()).filter(Boolean)
         .map((l) => { const [role, ...rest] = l.split(':'); return { role: role.trim(), name: rest.join(':').trim() || '–' }; });
       if (f.facts) draft.items = f.facts.value.split('\n').map((l) => l.trim()).filter(Boolean)
@@ -363,7 +465,7 @@
     };
     const save = (form) => {
       collect(form);
-      if (['event', 'post'].includes(draft.type) && !draft.title) { form.querySelector('.form-error').textContent = 'Bitte einen Titel eingeben.'; return; }
+      if (['event', 'post', 'feature'].includes(draft.type) && !draft.title) { form.querySelector('.form-error').textContent = 'Bitte einen Titel eingeben.'; return; }
       delete draft._new;
       const list = blocksOf();
       list[list.findIndex((b) => b.id === id)] = draft;
@@ -388,6 +490,7 @@
   const newBlock = (type) => {
     const id = 'b-' + Date.now().toString(36);
     const defaults = {
+      feature: { layout: 'wide', image: null, kicker: '', title: '', subtitle: '', text: '', link: { url: '', label: '' } },
       heading: { title: 'Neue Überschrift' }, text: { title: '', text: '' },
       event: { date: today(), time: '', title: '', place: 'Tennisanlage', text: '' },
       post: { date: today(), title: '', text: '', image: null }, image: { image: null, caption: '' },
@@ -397,12 +500,159 @@
     return { id, type, ...defaults[type] };
   };
 
+  // ---------- Mannschaften: eigene Seite mit Teamfoto und bis zu 10 Beiträgen ----------
+  // Schlüssel ohne Zusatz wie „(4er)“, damit Sommer- und Winterteam dieselbe Seite teilen.
+  const teamKey = (name) => String(name || '').replace(/\(.*?\)/g, '').trim().toLowerCase()
+    .replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  function teamContent(key) {
+    if (!site.teams) site.teams = {};
+    return site.teams[key] || { photo: null, posts: [] };
+  }
+  // Neueste Saison zuerst, in der das Team vorkommt
+  function findTeam(key) {
+    for (const season of (TFB.teams && TFB.teams.seasons) || []) {
+      const t = season.teams.find((x) => teamKey(x.name) === key);
+      if (t) return { team: t, season: season.season };
+    }
+    return null;
+  }
+  // Wer darf schreiben? Admins – und später der Mannschaftsführer seines Teams (mit echter Mitgliederliste).
+  const canEditTeam = () => Boolean(ui().state.member && ui().state.member.isAdmin);
+
+  async function teamView() {
+    await ensure();
+    const { icon, partnerSlot } = ui();
+    const key = location.hash.split('/')[1] || '';
+    const found = findTeam(key);
+    if (!found) return `${ui().viewHead('Mannschaft', 'Diese Mannschaft gibt es nicht (mehr).', false)}<p><a class="btn" href="#sport">Zu den Mannschaften</a></p>`;
+    const { team, season } = found;
+    const extra = teamContent(key);
+    const can = canEditTeam();
+    const posts = extra.posts.slice().sort((a, b) => String(b.date).localeCompare(String(a.date)));
+    const hasPhoto = extra.photo && (images[extra.photo] || /^assets\//.test(extra.photo));
+    return `
+      <div class="team-page">
+        <header class="view-head page-head">
+          <div><p class="page-kicker">Mannschaft · ${esc(season)}</p><h1>${esc(team.name.replace(/\s*\(.*?\)/g, ''))}</h1><p class="muted">${esc(team.group)}</p></div>
+          <a class="view-close" href="#sport" aria-label="Zurück zu den Mannschaften">${icon.close}</a>
+        </header>
+        ${hasPhoto || can ? `
+          <figure class="team-photo ${hasPhoto ? '' : 'empty'}">
+            ${hasPhoto ? picture(extra.photo, key, `Teamfoto ${team.name}`) : `<div class="team-photo-empty">${icon.camera}<span>Noch kein Teamfoto</span></div>`}
+            ${can ? `<button type="button" class="btn small team-photo-btn" data-action="team-photo" data-team="${esc(key)}">${icon.camera} ${hasPhoto ? 'Teamfoto ändern' : 'Teamfoto hinzufügen'}</button>` : ''}
+          </figure>` : ''}
+        <section class="team-facts">
+          <div><b class="${team.rank === '1' ? 'top' : ''}">${esc(team.rank || '–')}</b><span>Tabellenplatz</span></div>
+          <div><b>${esc(team.points || '–')}</b><span>Punkte</span></div>
+          <div><b class="team-facts-name">${esc(team.captain || '–')}</b><span>Mannschaftsführer</span></div>
+        </section>
+        <p class="block-button"><a class="btn" href="${esc(team.teamUrl)}" target="_blank" rel="noopener">Spielplan &amp; Tabelle bei nuLiga ↗</a></p>
+
+        <div class="section-head team-news-head">
+          <h2 class="block-heading">Aus dem Team</h2>
+          ${can ? `<button type="button" class="btn primary small" data-action="team-post" data-team="${esc(key)}">${icon.plus} Beitrag</button>` : ''}
+        </div>
+        ${posts.length
+          ? `<div class="run run-posts">${posts.map((b) => `
+              <div class="team-post">${renderBlock({ ...b, type: 'post' }, 'team')}
+                ${can ? `<button type="button" class="view-close team-post-edit" data-action="team-post" data-team="${esc(key)}" data-id="${esc(b.id)}" aria-label="Beitrag bearbeiten">${icon.pencil}</button>` : ''}
+              </div>`).join('')}</div>`
+          : `<p class="muted">${can ? 'Noch keine Beiträge. Spielberichte, Mannschaftstouren, Erfolge – bis zu 10 Beiträge passen hier untereinander.' : 'Hier berichtet die Mannschaft bald über Spiele und Touren.'}</p>`}
+        ${can ? `<p class="fineprint">Schreiben dürfen Admins – im Echtbetrieb auch der Mannschaftsführer. Höchstens ${MAX_TEAM_POSTS} Beiträge; beim elften fällt der älteste weg.</p>` : ''}
+        ${partnerSlot('sport', 'Der Sport wird dir präsentiert von')}
+      </div>`;
+  }
+  TFB.views.team = teamView;
+
+  async function saveTeam(key, content, message) {
+    site.teams = { ...(site.teams || {}), [key]: content };
+    await commit(message);
+  }
+
+  function openTeamPhoto(key) {
+    const { openSheet, closeSheet } = ui();
+    const content = JSON.parse(JSON.stringify(teamContent(key)));
+    const render = () => {
+      openSheet(`
+        <form class="editor" data-editor="team-photo" novalidate>
+          <h2>Teamfoto</h2>
+          ${imageField(content.photo, key, 'Foto (am besten quer)')}
+          <button type="submit" class="btn primary block">Speichern</button>
+        </form>`);
+      const form = document.querySelector('[data-editor=team-photo]');
+      form.addEventListener('click', (e) => { if (e.target.closest('[data-image-remove]')) { content.photo = null; render(); } });
+      form.addEventListener('change', async (e) => {
+        if (!e.target.files || !e.target.files.length) return;
+        const [id] = await uploadFiles([e.target.files[0]]);
+        content.photo = id;
+        render();
+      });
+      form.addEventListener('submit', (e) => { e.preventDefault(); closeSheet(); saveTeam(key, content, 'Teamfoto gespeichert'); });
+    };
+    render();
+  }
+
+  function openTeamPost(key, postId) {
+    const { openSheet, closeSheet } = ui();
+    const content = JSON.parse(JSON.stringify(teamContent(key)));
+    const existing = content.posts.find((p) => p.id === postId);
+    const draft = existing ? { ...existing } : { id: 'tp-' + Date.now().toString(36), date: today(), title: '', text: '', image: null };
+    const full = !existing && content.posts.length >= MAX_TEAM_POSTS;
+    const render = () => {
+      openSheet(`
+        <form class="editor" data-editor="team-post" novalidate>
+          <h2>${existing ? 'Beitrag bearbeiten' : 'Neuer Beitrag'}</h2>
+          ${full ? `<p class="small muted">Es gibt schon ${MAX_TEAM_POSTS} Beiträge – beim Speichern fällt der älteste weg.</p>` : ''}
+          ${imageField(draft.image, draft.id)}
+          ${field('Datum', 'date', draft.date, { type: 'date' })}
+          ${field('Überschrift', 'title', draft.title, { placeholder: 'z. B. Auswärtssieg in Hennef' })}
+          ${field('Text', 'text', draft.text, { area: true, rows: 8, placeholder: 'Leerzeile = neuer Absatz' })}
+          <p class="form-error" role="alert"></p>
+          <button type="submit" class="btn primary block">Speichern</button>
+          ${existing ? '<button type="button" class="btn block danger" data-delete>Beitrag löschen</button>' : ''}
+        </form>`);
+      const form = document.querySelector('[data-editor=team-post]');
+      const collect = () => ['date', 'title', 'text'].forEach((k) => { draft[k] = form.elements[k].value.trim(); });
+      form.addEventListener('click', (e) => {
+        if (e.target.closest('[data-image-remove]')) { collect(); draft.image = null; render(); return; }
+        const del = e.target.closest('[data-delete]');
+        if (del) {
+          if (!del.dataset.armed) { del.dataset.armed = '1'; del.textContent = 'Wirklich löschen? Nochmal tippen'; return; }
+          content.posts = content.posts.filter((p) => p.id !== draft.id);
+          closeSheet();
+          saveTeam(key, content, 'Beitrag gelöscht');
+        }
+      });
+      form.addEventListener('change', async (e) => {
+        if (!e.target.files || !e.target.files.length) return;
+        collect();
+        const [id] = await uploadFiles([e.target.files[0]]);
+        draft.image = id;
+        render();
+      });
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        collect();
+        if (!draft.title) { form.querySelector('.form-error').textContent = 'Bitte eine Überschrift eingeben.'; return; }
+        if (existing) content.posts = content.posts.map((p) => (p.id === draft.id ? draft : p));
+        else {
+          content.posts.push(draft);
+          content.posts.sort((a, b) => String(b.date).localeCompare(String(a.date)));
+          content.posts = content.posts.slice(0, MAX_TEAM_POSTS);
+        }
+        closeSheet();
+        saveTeam(key, content, existing ? 'Gespeichert' : 'Beitrag veröffentlicht');
+      });
+    };
+    render();
+  }
+
   // ---------- Aktionen (aus dem zentralen Klick-Handler in app.js) ----------
   Object.assign(TFB.actions, {
     'site-edit': async (el) => {
       editing = el.dataset.page;
       ui().closeSheet();
-      if (ui().currentView() === editing) ui().renderView(); else location.hash = '#' + editing;
+      if (ui().currentView() === routeOf(editing)) ui().renderView(); else location.hash = '#' + routeOf(editing);
       window.scrollTo(0, 0);
     },
     'site-done': () => { editing = null; ui().renderView(); window.scrollTo(0, 0); },
@@ -426,6 +676,8 @@
       openBlockEditor(block.id, true);
     },
     'team-season': (el) => { teamSeason = el.dataset.season; ui().renderView(); },
+    'team-photo': (el) => openTeamPhoto(el.dataset.team),
+    'team-post': (el) => openTeamPost(el.dataset.team, el.dataset.id),
     'gallery-open': (el) => {
       const block = Object.values(site.pages).flatMap((p) => p.blocks).find((b) => b.id === el.dataset.block);
       const list = (block.images || []).filter((r) => images[r]);
@@ -435,6 +687,6 @@
 
   // Bearbeitungsmodus verlassen, wenn eine andere Seite geöffnet wird.
   window.addEventListener('hashchange', () => {
-    if (editing && location.hash.replace('#', '') !== editing) editing = null;
+    if (editing && location.hash.replace('#', '') !== routeOf(editing)) editing = null;
   });
 })();

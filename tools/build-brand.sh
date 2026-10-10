@@ -13,6 +13,13 @@ GREEN="#1F4D3A"; CREAM="#F5F0E6"
 
 alpha(){ magick "$@" -alpha extract -strip -define png:compression-level=9 PNG8:- ; }
 magick $SRC -trim +repage -resize 900x  PNG32:$B/tfb-logo.png
+# Logo ohne Ball (Ball liegt rechts von x=1616, oberhalb des Schriftzugs) – gleicher Zuschnitt wie das Logo,
+# damit der Ball separat in Signal-Rot darübergelegt werden kann (Position siehe .tfb-logo-split in app.css)
+TRIM=$(magick $SRC -format "%@" info:)
+magick $SRC \( +clone -alpha extract -fill black -draw "rectangle 1616,70 1999,759" \) -alpha off -compose CopyOpacity -composite -crop $TRIM +repage -resize 900x PNG32:$B/tfb-logo-noball.png
+# Nur der Ball, exakt an seiner Stelle im Logo: 280x280+1616+464 im Original
+# → in .tfb-logo-split: left 84.53 %, top 47.95 %, Breite 15.53 %, Höhe 34.78 %
+magick $SRC -crop 280x280+1616+464 +repage PNG32:$B/tfb-logo-ball.png
 magick $SRC -crop 1830x700+80+60 +repage -trim +repage -resize 600x PNG32:$B/tfb-mark.png
 magick $SRC -crop 300x300+1600+450 +repage -trim +repage -resize 160x PNG32:$B/tfb-ball.png
 magick $SRC -crop 1840x130+80+775 +repage -trim +repage -resize 900x PNG32:$B/tfb-tagline.png
@@ -23,7 +30,7 @@ magick $B/tfb-tagline.png -crop 400x200+540+0 +repage -trim +repage PNG32:$B/tfb
 css=assets/css/brand.css
 {
   echo "/* Automatisch erzeugt von tools/build-brand.sh – nicht von Hand bearbeiten. */"
-  for n in logo mark ball tagline tagline1 tagline2; do
+  for n in logo logo-noball logo-ball mark ball tagline tagline1 tagline2; do
     f=$B/tfb-$n.png
     w=$(magick identify -format %w $f); h=$(magick identify -format %h $f)
     # Maske: Graustufen-Alpha als weißes Motiv auf Schwarz (Luminanz-Maske)

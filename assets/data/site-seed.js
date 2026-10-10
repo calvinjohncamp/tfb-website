@@ -1,12 +1,40 @@
 // TFB-Website – Startinhalte für die Vorführversion.
 // Jede Seite besteht aus Bausteinen (blocks). Reihenfolge = Anzeige-Reihenfolge.
-// Bausteine: hero, post, event, text, image, gallery, teams, people, facts, button.
+// Bausteine: feature (Home), post, event, text, image, gallery, teams, people, facts, button.
+// Bilder dürfen auch feste Dateien sein ("assets/..."). teams = eigene Inhalte je Mannschaft.
 // Bilder: null = gezeichneter Platzhalter (Tennisplatz-Linien); hochgeladene Bilder heißen "img:<id>".
 window.TFB = window.TFB || {};
 
 TFB.siteSeed = {
   version: 1,
+  teams: {},
   pages: {
+    // Startseite für alle Besucher: drei große Themen (Beispiele – im Bearbeiten-Modus ersetzen).
+    home: {
+      title: 'Home',
+      intro: '',
+      partnerKicker: 'Die Tennisfreunde werden dir präsentiert von',
+      blocks: [
+        { id: 'h-padel', type: 'feature', layout: 'wide', image: null,
+          kicker: 'Neu in Bielstein', title: 'Padel ist da.',
+          subtitle: 'Zwei Outdoor-Courts in Wiehl-Bielstein – buchbar per App.',
+          text: 'Padel verbindet das Beste aus Tennis und Squash: schnell gelernt, gespielt wird fast immer im Doppel, und nach zehn Minuten macht es allen Spaß – Anfängern wie alten Tennishasen.\n\nPlatz buchen, Jahresabo sichern, Guthaben verwalten und Mitspieler finden: alles in der Padel-Bielstein-App.',
+          link: { url: 'https://padel-bielstein.de', label: 'Jetzt Platz buchen',
+            title: 'Padel spielen in Wiehl-Bielstein | Padel Bielstein',
+            text: 'Zwei Outdoor-Courts in Wiehl-Bielstein: Padel buchen, Jahresabo sichern, Guthaben verwalten und Mitspieler finden.',
+            image: 'assets/home/padel-bielstein-vorschau.jpg' } },
+        { id: 'h-kiosk', type: 'feature', layout: 'portrait', image: null,
+          kicker: 'Clubleben', title: 'Der Kiosk ist jetzt digital.',
+          subtitle: 'Getränk nehmen, antippen, fertig.',
+          text: 'Die Strichliste aus Papier hat ausgedient. Wer etwas aus dem Kühlschrank nimmt, tippt es in der App an – abgerechnet wird wie gewohnt einmal im Monat per Lastschrift.\n\nDein Bierdeckel zeigt dir jederzeit, was heute und im laufenden Monat zusammengekommen ist.',
+          link: { url: '#kiosk', label: 'Zum Kiosk' } },
+        { id: 'h-50', type: 'feature', layout: 'square', image: null,
+          kicker: 'Seit 1976', title: '50 Jahre Tennisfreunde.',
+          subtitle: 'Der Name ist Programm.',
+          text: 'Seit einem halben Jahrhundert wird in Bielstein mit Begeisterung Tennis gespielt. Wir feiern die Menschen, die den Club getragen haben – und alle, die ihn heute lebendig halten.',
+          link: { url: '#club', label: 'Den Club kennenlernen' } },
+      ],
+    },
     aktuell: {
       title: 'Aktuell',
       intro: 'Neuigkeiten, Termine und Geschichten von der Anlage.',
@@ -36,9 +64,9 @@ TFB.siteSeed = {
       ],
     },
     verein: {
-      title: 'Verein',
+      title: 'Club',
       intro: 'Der Name ist Programm: Tennisfreunde.',
-      partnerKicker: 'Der Verein wird dir präsentiert von',
+      partnerKicker: 'Der Club wird dir präsentiert von',
       blocks: [
         { id: 'v-facts', type: 'facts', items: [
           { value: '1976', label: 'gegründet' },

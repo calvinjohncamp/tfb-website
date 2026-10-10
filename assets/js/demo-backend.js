@@ -199,7 +199,7 @@
     db.catalogVersion = CATALOG_VERSION;
     save(db);
   }
-  // Website-Inhalte (Aktuell, Sport, Verein) einmalig aus den Startinhalten anlegen.
+  // Website-Inhalte (Home, Aktuell, Sport, Club) einmalig aus den Startinhalten anlegen.
   if (!db.site && TFB.siteSeed) {
     db.site = clone(TFB.siteSeed);
     save(db);
@@ -209,6 +209,15 @@
     db.site.pages.aktuell.title = 'Aktuell';
     db.site.pages.aktuell.partnerKicker = 'Aktuelles wird dir präsentiert von';
     save(db);
+  }
+  // Neu am 10.10.: Home-Seite ergänzen, „Verein“ heißt jetzt „Club“, Platz für Team-Inhalte.
+  if (db.site && db.site.pages && TFB.siteSeed) {
+    let changed = false;
+    if (!db.site.pages.home) { db.site.pages = { home: clone(TFB.siteSeed.pages.home), ...db.site.pages }; changed = true; }
+    const club = db.site.pages.verein;
+    if (club && club.title === 'Verein') { club.title = 'Club'; club.partnerKicker = TFB.siteSeed.pages.verein.partnerKicker; changed = true; }
+    if (!db.site.teams) { db.site.teams = {}; changed = true; }
+    if (changed) save(db);
   }
   if (!db.catalog || db.catalogVersion !== CATALOG_VERSION) {
     db.catalog = clone(DEFAULT_CATALOG);

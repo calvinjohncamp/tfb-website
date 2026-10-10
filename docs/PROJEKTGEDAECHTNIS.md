@@ -262,3 +262,16 @@ Monatsabschluss.
   Profilbilder links in der Teilnehmer-Tabelle, Doppel-Symbol als zwei Paare,
   Enter übernimmt den ersten Namensvorschlag. Desktop-Menüschrift wieder .74rem
   (wie im Hochformat), dafür größere Abstände.
+- **10.10.2026 (abends)** – **Home-Seite** als Einstieg für alle Besucher (`#home`, Baustein
+  `feature`: Bild breit/hoch/quadratisch, Kicker mit roter Nummer, Überschrift, Unterzeile,
+  Text, Link mit Vorschau-Karte; Vorschau im Demo-Modus von Hand, später automatisch per
+  Serverdienst). Startmotive gezeichnet (Padel-Court, Kiosk-Symbole, „50“); Padel-Vorschaubild
+  aus der Padel-Kopie (`assets/home/padel-bielstein-vorschau.jpg`). **Verein → Club**.
+  **Signal-Rot** stärker: Ball im Logo (eigene Masken `tfb-logo-noball`/`tfb-logo-ball` aus
+  `tools/build-brand.sh`), KIOSK im Menü, Strich unter Zwischenüberschriften, Wochentag im
+  Datumsfeld, Unterzeilen und Link-Knöpfe. **Schrift-Test** in der Verwaltung (System,
+  Avenir Next, Inter Tight, Manrope – Google Fonts nur zum Testen, im Echtbetrieb selbst
+  ausliefern wegen Datenschutz – oder Klassisch); Standard jetzt „Modern (System)“.
+  **Team-Seiten** `#team/<schlüssel>` (Schlüssel ohne „(4er)“, Sommer/Winter teilen sich
+  die Seite): Teamfoto (auch klein in der Mannschaftsliste), Platz/Punkte/Mannschaftsführer,
+  nuLiga-Link, bis zu 10 Beiträge (beim elften fällt der älteste weg). Inhalte in `site.teams`.

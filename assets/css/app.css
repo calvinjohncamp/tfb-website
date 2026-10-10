@@ -1105,3 +1105,135 @@ button.meet-row:hover { background: #FAF8F3; }
   .topnav { gap: 30px; }
 }
 .topnav { overflow: visible; }
+
+/* =====================================================================
+   10.10. abends: Home-Seite, Club, Team-Seiten, Schrift-Test, mehr Signal-Rot
+   ===================================================================== */
+
+/* Logo mit Ball in Signal-Rot (Ball liegt als eigene Maske exakt über der Stelle im Logo) */
+.tfb-logo-split { position: relative; display: block; aspect-ratio: 900 / 402; color: var(--logo); }
+.tfb-logo-split > .tfb-logo-noball { position: absolute; inset: 0; width: 100%; height: 100%; }
+.tfb-logo-split > .tfb-logo-ball { position: absolute; left: 84.53%; top: 47.95%; width: 15.53%; height: 34.78%; color: var(--signal); }
+
+/* Menü: KIOSK immer in Signal-Rot; aktiver Bereich = dunkle Schrift mit kurzem roten Strich */
+.topnav .tab.tab-kiosk { color: var(--signal); font-weight: 800; }
+.topnav .tab.active { color: var(--ink); }
+.topnav .tab.active::after { content: ""; position: absolute; left: 0; right: .16em; bottom: 3px; height: 2px; border-radius: 2px; background: var(--signal); }
+.topnav .tab.tab-kiosk.active { color: var(--signal); }
+@media (min-width: 1024px) {
+  .topnav .tab.active::after { bottom: -9px; right: .2em; }
+}
+
+/* Mehr Signal-Rot: Akzentstrich unter Zwischenüberschriften, Wochentag im Datumsfeld */
+.block-heading::after { content: ""; display: block; width: 28px; height: 3px; border-radius: 2px; background: var(--signal); margin-top: 8px; }
+.date-badge small:first-child { color: color-mix(in srgb, var(--signal) 55%, #fff); opacity: 1; }
+.btn.signal { background: var(--signal); border-color: var(--signal); color: #fff; text-decoration: none; }
+.btn.signal:hover { filter: brightness(1.06); }
+.page-kicker { font-size: .72rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--signal); margin: 0 0 6px; }
+
+/* Moderne Schrift: Überschriften etwas enger und kräftiger */
+:root[data-font="sans"] h1, :root[data-font="sans"] .feature-body h2 { letter-spacing: -.025em; font-weight: 800; }
+:root[data-font="sans"] .block-heading, :root[data-font="sans"] .block-text h2, :root[data-font="sans"] .block-teams h2,
+:root[data-font="sans"] .block-people h2, :root[data-font="sans"] .block-gallery h2 { letter-spacing: -.015em; font-weight: 800; }
+:root[data-font="sans"] .date-badge b, :root[data-font="sans"] .coaster-amount { font-weight: 800; letter-spacing: -.03em; }
+
+/* Home: drei große Themen */
+.home-tools { display: flex; justify-content: flex-end; margin: 0 0 -6px; }
+.view[data-view="home"] .page-grid.single .page-main { display: grid; gap: 56px; }
+.feature { display: grid; gap: 20px; }
+.feature-media { border-radius: 20px; overflow: hidden; background: #EEE; aspect-ratio: 16 / 10; }
+.feature-media > img, .feature-media > .ph { width: 100%; height: 100%; object-fit: cover; display: block; }
+.feature-portrait .feature-media { aspect-ratio: 4 / 5; }
+.feature-square .feature-media { aspect-ratio: 1; }
+.feature-kicker { display: flex; align-items: baseline; gap: 10px; margin: 0 0 8px; font-size: .74rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+.feature-kicker span { color: var(--signal); font-family: var(--serif); font-size: 1rem; letter-spacing: 0; }
+.feature-body h2 { font-family: var(--serif); font-size: 2.1rem; line-height: 1.05; margin: 0; }
+.feature-sub { font-size: 1.12rem; font-weight: 600; color: var(--signal); margin: 10px 0 0; line-height: 1.35; }
+.feature-text { margin-top: 14px; font-size: 1rem; line-height: 1.6; }
+.feature-text p { margin: 0 0 .8em; }
+.feature-link { margin: 18px 0 0; }
+
+/* Link mit Vorschau-Karte (wie in einer Mail oder in WhatsApp) */
+.link-card { display: grid; margin-top: 18px; border-radius: 16px; overflow: hidden; text-decoration: none; color: inherit; background: #fff; box-shadow: 0 0 0 1px #E6E1D6, 0 6px 18px rgba(0,0,0,.05); transition: box-shadow .15s, transform .15s; max-width: 520px; }
+.link-card:hover { box-shadow: 0 0 0 1.5px var(--signal), 0 10px 24px rgba(0,0,0,.08); transform: translateY(-1px); }
+.link-card-img { display: block; aspect-ratio: 1.91 / 1; background: #161616; }
+.link-card-img img, .link-card-img .ph { width: 100%; height: 100%; object-fit: cover; display: block; }
+.link-card-body { display: grid; gap: 3px; padding: 12px 16px 14px; }
+.link-card-body small { font-size: .72rem; color: var(--muted); text-transform: lowercase; }
+.link-card-body b { font-size: .98rem; line-height: 1.3; }
+.link-card-body > span { font-size: .86rem; color: var(--muted); line-height: 1.4; }
+.link-card-body em { font-style: normal; font-weight: 800; color: var(--signal); margin-top: 8px; font-size: .92rem; }
+.editor-sub { margin: 18px 0 4px; font-size: .95rem; }
+.layout-seg button { font-size: .8rem; }
+
+@media (min-width: 640px) {
+  .feature-portrait, .feature-square { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 32px; align-items: center; }
+  .feature-body h2 { font-size: 2.5rem; }
+  .feature-wide .feature-media { aspect-ratio: 2 / 1; }
+  .link-card { grid-template-columns: 200px minmax(0, 1fr); }
+  .link-card-img { aspect-ratio: auto; min-height: 100%; }
+}
+@media (min-width: 1024px) {
+  .view[data-view="home"] .page-grid.single .page-main { gap: 80px; }
+  .feature-wide .feature-media { aspect-ratio: 21 / 9; }
+  .feature-wide .feature-body { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); column-gap: 48px; }
+  .feature-wide .feature-kicker, .feature-wide .feature-body h2, .feature-wide .feature-sub { grid-column: 1; }
+  .feature-wide .feature-text, .feature-wide .link-card, .feature-wide .feature-link { grid-column: 2; }
+  .feature-wide .feature-text { grid-row: 1 / span 3; margin-top: 4px; }
+  .feature-wide .link-card, .feature-wide .feature-link { grid-row: 4; }
+  .feature-body h2 { font-size: 3.1rem; }
+  .feature-portrait, .feature-square { gap: 56px; }
+}
+
+/* Mannschaften: Teamfoto in der Zeile, Beitragszahl */
+.team-main { display: flex; align-items: center; gap: 12px; }
+.team-name { display: grid; gap: 1px; min-width: 0; }
+.team-name strong { font-size: .95rem; }
+.team-name small { font-size: .76rem; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.team-thumb { flex: none; width: 56px; height: 40px; border-radius: 8px; overflow: hidden; }
+.team-thumb img, .team-thumb .ph { width: 100%; height: 100%; object-fit: cover; display: block; }
+.team-news { font-style: normal; font-size: .7rem; font-weight: 800; color: var(--signal); }
+
+/* Team-Seite */
+.team-photo { position: relative; margin: 0 0 18px; border-radius: 20px; overflow: hidden; aspect-ratio: 16 / 9; background: #EFEDE7; }
+.team-photo > img, .team-photo > .ph { width: 100%; height: 100%; object-fit: cover; display: block; }
+.team-photo.empty { aspect-ratio: 16 / 6; border: 2px dashed #D8D2C5; background: transparent; }
+.team-photo-empty { height: 100%; display: grid; place-content: center; justify-items: center; gap: 6px; color: var(--muted); font-size: .86rem; }
+.team-photo-empty svg { width: 28px; height: 28px; fill: none; stroke: currentColor; stroke-width: 1.6; }
+.team-photo-btn { position: absolute; right: 12px; bottom: 12px; background: rgba(255,255,255,.94); }
+.btn.small { min-height: 38px; padding: 0 14px; font-size: .85rem; gap: 6px; }
+.btn.small svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+.team-facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.team-facts div { background: #fff; border-radius: 14px; padding: 12px 14px; box-shadow: 0 0 0 1px #E6E1D6; display: grid; gap: 2px; min-width: 0; }
+.team-facts b { font-family: var(--serif); font-size: 1.6rem; line-height: 1.1; }
+.team-facts b.top { color: var(--signal); }
+.team-facts b.team-facts-name { font-family: var(--font); font-size: .95rem; line-height: 1.25; overflow-wrap: anywhere; }
+.team-facts span { font-size: .66rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+.team-news-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; }
+.team-news-head .btn svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; }
+.team-post { position: relative; }
+.team-post-edit { position: absolute; top: 10px; right: 10px; background: rgba(255,255,255,.94); }
+@media (min-width: 1024px) {
+  .view[data-view="team"] { max-width: 900px; margin: 0 auto; }
+}
+
+/* Verwaltung: Schrift-Auswahl */
+.font-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
+.font-option { border: 0; background: #fff; border-radius: 12px; padding: 12px; box-shadow: 0 0 0 1px #E6E1D6; display: grid; gap: 4px; text-align: left; color: var(--ink); }
+.font-option b { font-size: 1.35rem; font-weight: 800; letter-spacing: -.02em; }
+.font-option span { font-family: var(--font); font-size: .74rem; color: var(--muted); }
+.font-option.on { box-shadow: 0 0 0 2px var(--signal); }
+/* Gezeichnete Startmotive der Home-Seite (bis echte Fotos hochgeladen sind) */
+.ph.ph-kiosk { background: #F1ECE2; display: flex; align-items: flex-end; justify-content: center; gap: 4%; padding: 0 12% 14%; box-sizing: border-box;
+  background-image: linear-gradient(to top, #E4DDCF 0 16%, transparent 16%); }
+.ph-kiosk svg.art { width: 30%; height: auto; transform: scale(1.7); transform-origin: 50% 88%; filter: drop-shadow(0 8px 10px rgba(0,0,0,.12)); }
+.ph.ph-50 { background: var(--brand); color: #fff; display: grid; place-content: center; justify-items: center; gap: 4px; text-align: center; }
+.ph-50 b { font-family: var(--serif); font-size: clamp(6rem, 22vw, 11rem); line-height: .85; color: var(--signal); font-weight: 800; letter-spacing: -.05em; }
+.ph-50 .tfb-mark { width: 38%; color: #fff; margin-top: 10px; }
+.ph-50 small { font-size: .78rem; font-weight: 700; letter-spacing: .2em; opacity: .7; margin-top: 6px; }
+.feature .ph-50 b { font-size: clamp(6rem, 16vw, 12rem); }
+/* Vorschau-Karte: Bild immer oben, wie die große Link-Vorschau in WhatsApp */
+@media (min-width: 640px) {
+  .link-card { grid-template-columns: 1fr; max-width: 440px; }
+  .link-card-img { aspect-ratio: 1.91 / 1; min-height: 0; }
+}

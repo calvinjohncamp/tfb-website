@@ -8,17 +8,17 @@ Stand: **10.10.2026** · Branch `main` · eingefroren: Tag `stand-2026-10-10`
 
 ## In einem Satz
 
-Eigenständige Handy-App der **Tennisfreunde Bielstein** mit Kiosk/Strichliste
-(Startseite), Vereinswebsite (Aktuell · Sport · Verein) und der Vorführung
-**Treffen**. Sie läuft im **Demo-Modus**, alle Daten bleiben im Browser.
+Eigenständige Handy-App der **Tennisfreunde Bielstein**: Startseite **Home**
+(drei Themen), Kiosk/Strichliste, Vereinswebsite (Aktuell · Sport mit Team-Seiten · Club)
+und **Verabreden**. Sie läuft im **Demo-Modus**, alle Daten bleiben im Browser.
 Ziel ist eine Vorführung vor dem Vorstand.
 
 ## Starten
 
-- Per Doppelklick: `9. TFB-Kiosk/TFB-Kiosk öffnen.html` (öffnet `#kiosk`)
+- Per Doppelklick: `9. TFB-Kiosk/TFB-Website öffnen.html` (öffnet die Startseite `#home`) oder `TFB-Kiosk öffnen.html` (direkt `#kiosk`)
 - Vorschau-Server: `.claude/launch.json` → „tfb-kiosk“ (Port 5180)
 - Demo-Zugang: `max@tfb-demo.de` (Admin), Passwort beim ersten Anmelden frei wählen
-- Nach Änderungen an JS/CSS die Cache-Version in `sw.js` hochzählen (aktuell `tfb-kiosk-v42`)
+- Nach Änderungen an JS/CSS die Cache-Version in `sw.js` hochzählen (aktuell `tfb-kiosk-v43`)
 
 ## Feste Regeln (nie brechen)
 
@@ -62,11 +62,21 @@ Ziel ist eine Vorführung vor dem Vorstand.
   Details siehe Projektgedächtnis, Abschnitt „Treffen 2.0“. Echte Push-Mitteilungen
   brauchen Supabase, Veröffentlichung und Web-Push.
 
+- **Neu am 10.10. abends:** Home-Seite als Einstieg für alle (Logo führt dorthin),
+  drei Themen mit Bild (breit oben / Hochformat links / Quadrat links), Überschrift,
+  Unterzeile, freiem Text und Link-Knopf mit Vorschau-Karte. „Verein“ heißt **Club**
+  (Adresse `#club`, intern Seite `verein`). Ball im Logo in Signal-Rot, KIOSK im Menü
+  immer rot, aktiver Bereich mit rotem Strich. Schrift-Test in der Verwaltung
+  (Standard „Modern (System)“). Jede Mannschaft hat eine eigene Seite `#team/<name>`
+  mit Teamfoto und bis zu 10 Beiträgen (Admins; Mannschaftsführer erst mit Supabase).
+  Der Nutzer will jetzt echte Bilder und Texte einpflegen.
+
 ## Nächste Schritte (Vorschlag)
 
-1. Verabreden: Details später (Nutzer: „wäre sehr schick“). Menüpunkt heißt **Verabreden** (intern `treffen`).
-2. Foto der Papier-Strichliste → echtes Sortiment und Preise.
-3. Ab ca. Ende Oktober 2026: Supabase (eigenes Projekt), Veröffentlichung auf
+1. Feedback zu Home, Schrift, Signal-Rot und Team-Seiten einarbeiten, sobald echte Inhalte drin sind.
+2. Verabreden: Details später. Menüpunkt heißt **Verabreden** (intern `treffen`).
+3. Foto der Papier-Strichliste → echtes Sortiment und Preise.
+4. Ab ca. Ende Oktober 2026: Supabase (eigenes Projekt), Veröffentlichung auf
    `kiosk.joern-kaemper.de`, Mitglieder-Import, Monatsabschluss/SEPA.
 
 ## Arbeitsweise mit dem Nutzer
