@@ -1,7 +1,39 @@
 # TFB-Kiosk – Projektgedächtnis und Übergabe
 
-Kurzer Einstieg für jede neue Arbeitssitzung. Oben steht der aktuelle Stand,
-unten die offenen Punkte. Neues bitte oben bei „Verlauf“ ergänzen.
+Für den schnellen Einstieg zuerst die kurze **[UEBERGABE.md](UEBERGABE.md)** lesen.
+Diese Datei enthält alle Entscheidungen, Konzepte, offenen Punkte und den Verlauf.
+Neues bitte unten bei „Verlauf“ ergänzen.
+
+## Konzept „Treffen 2.0“: Verabreden in der installierten App (Idee, noch nicht gebaut)
+
+Stand 10.10.2026. Der Nutzer hält an der Idee fest. Ehrliche Bewertung:
+Der WhatsApp-Link allein ist eine Krücke, weil Umfrage und Veranstaltung in
+WhatsApp für eine einzelne Gruppe besser sind. Sinnvoll wird es erst, wenn
+**alle der Gruppe die App installiert haben**.
+
+- **Installation ohne App Store:** Die App ist eine PWA. Auf dem iPhone
+  „Teilen → Zum Home-Bildschirm“. Seit iOS 16.4 gibt es dort **Push-Mitteilungen**,
+  und genau die sind der Schlüssel. Eine echte App-Store-App (99 $/Jahr,
+  Prüfung durch Apple) ist nicht nötig.
+- **Kern:** Gruppen (z. B. Herren 40) mit festen Mitgliedern. Jedes Treffen
+  zeigt eine **Tabelle aller Teilnehmer** mit ✓ zugesagt / ✗ abgesagt / ○ offen,
+  oben der Status („4 von 4 – Doppel steht“). Antworten mit einem Tipp, auch
+  direkt aus der Mitteilung heraus.
+- **Was es besser macht als WhatsApp:** feste Trainings wiederholen sich
+  automatisch, Erinnerung geht nur an die Offenen, Teilnehmergrenze mit
+  Warteliste und Nachrücker-Mitteilung, kurze Notiz je Zusage („komme 15 min
+  später“), Ersatz aus anderen Gruppen anfragen, später Platzbelegung und
+  Mannschaftsaufstellung (nuLiga), nach dem Training ein Kranz über den Kiosk.
+- **Ehrliche Grenze:** Den WhatsApp-Chat für Quatsch, Fotos und Sprüche
+  ersetzt es nicht. Realistisch ersetzt es die **Organisation** („wer kommt?“).
+  Machen zwei von zehn nicht mit, muss der Organisator doppelt pflegen, und das
+  Ganze stirbt. Gegenmittel: Der Organisator kann für andere eintragen
+  („hat im Chat zugesagt“), und der WhatsApp-Link bleibt als Rückfallweg.
+- **Verbreitung:** Der **Kiosk ist das Zugpferd**. Wer anschreiben will, braucht
+  die App ohnehin, und Treffen gibt es dann gratis dazu.
+- **Voraussetzungen:** Supabase (gemeinsame Daten, Echtzeit), Veröffentlichung
+  unter HTTPS, Web-Push (VAPID-Schlüssel + Edge Function). Im Demo-Modus lässt
+  sich nur die Oberfläche zeigen, kein echter Push.
 
 ## Neu ab 10.10.2026: Vereinswebsite im selben Projekt (Vorführversion für den Vorstand)
 
@@ -204,3 +236,7 @@ Monatsabschluss.
 - **10.10.2026** – Vereinswebsite-Gerüst im Kiosk-Look: Aktuell, Sport, Verein,
   Bausteine mit Bearbeitung und Foto-Upload, Galerie mit Großansicht,
   Mannschaften aus nuLiga, Partner-Duo mit Rotation wie in der Padel-App.
+- **10.10.2026** – Treffen als Vorführung (WhatsApp-Link + Zusage per Tipp).
+  Danach ehrlich bewertet: allein eine Krücke. Konzept „Treffen 2.0“ (Gruppen-
+  Tabelle in der installierten App mit Push) festgehalten, Entscheidung offen.
+  Kurze Übergabedatei `docs/UEBERGABE.md` angelegt.
