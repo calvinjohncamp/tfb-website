@@ -217,6 +217,11 @@
     const club = db.site.pages.verein;
     if (club && club.title === 'Verein') { club.title = 'Club'; club.partnerKicker = TFB.siteSeed.pages.verein.partnerKicker; changed = true; }
     if (!db.site.teams) { db.site.teams = {}; changed = true; }
+    // Home-Themen bekommen ihre Unterseite („Mehr erfahren“), eigene Texte bleiben unangetastet.
+    TFB.siteSeed.pages.home.blocks.forEach((seedBlock) => {
+      const mine = db.site.pages.home.blocks.find((x) => x.id === seedBlock.id);
+      if (mine && !mine.more && seedBlock.more) { mine.more = clone(seedBlock.more); changed = true; }
+    });
     if (changed) save(db);
   }
   if (!db.catalog || db.catalogVersion !== CATALOG_VERSION) {
@@ -336,6 +341,10 @@
       avatar: (account && account.avatar) || null,
       avatarLarge: (account && (account.avatarLarge || account.avatar)) || null,
       hasConsent: Boolean(account && account.consentVersion === cfg.consentVersion),
+      consentedAt: (account && account.consentedAt) || null,
+      phone: (account && account.phone) || '',
+      infoMails: !(account && account.infoMails === false),
+      openInvites: !(account && account.openInvites === false),
     };
   }
 
@@ -386,6 +395,40 @@
     },
 
     async signOut() { setSession(null); },
+
+    // Eigene Angaben im Account (Name und E-Mail kommen aus der Mitgliederliste des Vereins).
+    async updateProfile({ phone, infoMails, openInvites }) {
+      const member = requireMember();
+      const account = accountOf(member.id);
+      const tel = String(phone || '').trim();
+      if (tel && !/^[+\d][\d\s/()-]{5,}$/.test(tel)) throw new Error('Bitte eine gültige Handynummer eingeben.');
+      Object.assign(account, { phone: tel, infoMails: Boolean(infoMails), openInvites: Boolean(openInvites) });
+      if (!save(db)) throw new Error('Speichern nicht möglich.');
+      return publicMember(member);
+    },
+
+    // ---------- Sichern und Laden (alle Demo-Inhalte inkl. Fotos in einer Datei) ----------
+    async exportAll() {
+      const member = requireMember();
+      if (!member.isAdmin) throw new Error('Nur Admins dürfen sichern.');
+      const images = await this.images();
+      return { format: 'tfb-sicherung', version: 1, createdAt: new Date().toISOString(), db: clone(db), images };
+    },
+    async importAll(data) {
+      const member = requireMember();
+      if (!member.isAdmin) throw new Error('Nur Admins dürfen Sicherungen laden.');
+      if (!data || data.format !== 'tfb-sicherung' || !data.db || !data.db.members) throw new Error('Das ist keine TFB-Sicherung.');
+      const before = db;
+      db = clone(data.db);
+      if (!save(db)) { db = before; throw new Error('Laden nicht möglich – der Gerätespeicher ist voll.'); }
+      const store = await imgStore('readwrite');
+      await done(store.clear());
+      const write = await imgStore('readwrite');
+      await Promise.all(Object.entries(data.images || {})
+        .filter(([id, url]) => /^img:/.test(id) && /^data:image\//.test(url))
+        .map(([id, url]) => done(write.put(url, id))));
+      return { photos: Object.keys(data.images || {}).length };
+    },
 
     async acceptConsent() {
       const member = requireMember();

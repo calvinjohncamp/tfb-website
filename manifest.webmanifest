@@ -4,7 +4,7 @@
   "short_name": "TFB-Kiosk",
   "description": "Kiosk und digitale Strichliste der Tennisfreunde Bielstein.",
   "lang": "de-DE",
-  "start_url": "./#kiosk",
+  "start_url": "./#home",
   "scope": "./",
   "display": "standalone",
   "background_color": "#F5F0E6",

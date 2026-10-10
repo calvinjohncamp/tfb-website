@@ -275,3 +275,11 @@ Monatsabschluss.
   **Team-Seiten** `#team/<schlüssel>` (Schlüssel ohne „(4er)“, Sommer/Winter teilen sich
   die Seite): Teamfoto (auch klein in der Mannschaftsliste), Platz/Punkte/Mannschaftsführer,
   nuLiga-Link, bis zu 10 Beiträge (beim elften fällt der älteste weg). Inhalte in `site.teams`.
+- **10.10.2026 (spät)** – Offline-Test unter `file://` in echtem Chrome (eigenes Profil,
+  ohne Netz): Texte und Fotos überstehen Neustart (localStorage wird verzögert geschrieben –
+  nach dem Speichern nicht sofort hart beenden). **Sichern & Laden** in der Verwaltung
+  (`api.exportAll/importAll`, Datei `TFB-Sicherung_<Datum>.json` inkl. Fotos, Farbe, Schrift,
+  Verabredungen). Start immer auf **Home** (auch Startdateien und Manifest). **Dezente Links**,
+  Fließtext-Auszeichnungen, **Unterseiten** der Home-Themen mit Kollage (`more: {text, quote,
+  quoteBy, images}`; `ph:`-Bilder = Beispiel-Platzhalter). **Account-Karte** nach Padel-Vorbild
+  (`api.updateProfile`: Handynummer, Info-Mails, Einladungen). Mehr Testschriften.

@@ -63,27 +63,44 @@
   // Schrift für Überschriften, Zahlen und Beträge (Test-Umschalter in der Verwaltung).
   // System/Avenir sind auf Apple-Geräten eingebaut; Inter Tight/Manrope kommen aus Google Fonts
   // (nur zum Testen – im Echtbetrieb würden wir die gewählte Schrift selbst ausliefern).
+  const SANS = '-apple-system, "Segoe UI", sans-serif';
   const FONTS = [
+    // Auf Mac/iPhone eingebaut – funktionieren auch offline
     ['system', 'Modern (System)', '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif'],
-    ['avenir', 'Avenir Next', '"Avenir Next", Avenir, "Segoe UI", sans-serif'],
-    ['inter', 'Inter Tight', '"Inter Tight", -apple-system, "Segoe UI", sans-serif', 'Inter+Tight:wght@500;600;700;800'],
-    ['manrope', 'Manrope', 'Manrope, -apple-system, "Segoe UI", sans-serif', 'Manrope:wght@500;600;700;800'],
+    ['avenir', 'Avenir Next', `"Avenir Next", Avenir, ${SANS}`],
+    ['futura', 'Futura', `Futura, "Trebuchet MS", ${SANS}`],
+    ['din', 'DIN', `"DIN Alternate", "DIN Condensed", "Bahnschrift", ${SANS}`],
+    // Aus Google Fonts – nur zum Testen (brauchen Internet)
+    ['inter', 'Inter Tight', `"Inter Tight", ${SANS}`, 'Inter+Tight:wght@500;600;700;800'],
+    ['manrope', 'Manrope', `Manrope, ${SANS}`, 'Manrope:wght@500;600;700;800'],
+    ['outfit', 'Outfit', `Outfit, ${SANS}`, 'Outfit:wght@500;600;700;800'],
+    ['jakarta', 'Plus Jakarta Sans', `"Plus Jakarta Sans", ${SANS}`, 'Plus+Jakarta+Sans:wght@500;600;700;800'],
+    ['dmsans', 'DM Sans', `"DM Sans", ${SANS}`, 'DM+Sans:opsz,wght@9..40,500..800'],
+    ['sora', 'Sora', `Sora, ${SANS}`, 'Sora:wght@500;600;700;800'],
+    ['space', 'Space Grotesk', `"Space Grotesk", ${SANS}`, 'Space+Grotesk:wght@500;600;700'],
+    ['bricolage', 'Bricolage Grotesque', `"Bricolage Grotesque", ${SANS}`, 'Bricolage+Grotesque:opsz,wght@12..96,500..800'],
+    ['syne', 'Syne', `Syne, ${SANS}`, 'Syne:wght@600;700;800'],
+    ['unbounded', 'Unbounded', `Unbounded, ${SANS}`, 'Unbounded:wght@500;600;700;800'],
+    ['barlow', 'Barlow Condensed', `"Barlow Condensed", ${SANS}`, 'Barlow+Condensed:wght@500;600;700;800'],
     ['classic', 'Klassisch (Serife)', '"Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif'],
   ];
+  function loadFont(id) {
+    const f = FONTS.find(([x]) => x === id);
+    if (!f || !f[3] || document.getElementById('font-' + id)) return;
+    const link = document.createElement('link');
+    link.id = 'font-' + id;
+    link.rel = 'stylesheet';
+    link.href = `https://fonts.googleapis.com/css2?family=${f[3]}&display=swap`;
+    document.head.appendChild(link);
+  }
   if (!FONTS.some(([id]) => id === look.font)) look.font = 'system';
   function applyLook() {
     const root = document.documentElement;
     root.style.setProperty('--brand', look.brand);
-    const [id, , stack, google] = FONTS.find(([f]) => f === look.font);
+    const [id, , stack] = FONTS.find(([f]) => f === look.font);
     root.style.setProperty('--serif', stack);
     root.dataset.font = id === 'classic' ? 'serif' : 'sans';
-    if (google && !document.getElementById('font-' + id)) {
-      const link = document.createElement('link');
-      link.id = 'font-' + id;
-      link.rel = 'stylesheet';
-      link.href = `https://fonts.googleapis.com/css2?family=${google}&display=swap`;
-      document.head.appendChild(link);
-    }
+    loadFont(id);
   }
   applyLook();
 
@@ -122,7 +139,11 @@
   async function boot() {
     state.catalog = await api.catalog();
     state.member = await api.session();
-    if (!location.hash) history.replaceState(null, '', '#home');   // Startseite für alle Besucher
+    // Wer die App neu öffnet, landet immer auf Home – egal, welche Seite zuletzt offen war.
+    // Ausnahmen: Neu laden (bleibt auf der Seite) und direkte Links wie #treffen/<id>.
+    const nav = (performance.getEntriesByType && performance.getEntriesByType('navigation')[0]) || {};
+    const deepLink = location.hash.includes('/');
+    if (!location.hash || (nav.type !== 'reload' && !deepLink)) history.replaceState(null, '', '#home');
     render();
   }
 
@@ -618,6 +639,7 @@
   }
 
   function adminView() {
+    FONTS.forEach(([id]) => loadFont(id));   // Vorschau der Testschriften
     const cat = state.catalog;
     const active = cat.products.filter((p) => p.active).length;
     return `
@@ -637,9 +659,19 @@
       <section class="card admin-card">
         <h2>Schrift (Test)</h2>
         <p class="muted">Für Überschriften, Zahlen und Beträge. Antippen und auf den Seiten ansehen – gilt im Demo-Modus nur auf diesem Gerät.</p>
-        <div class="font-list">${FONTS.map(([id, name, stack]) => `
-          <button type="button" class="font-option ${look.font === id ? 'on' : ''}" data-action="font" data-value="${id}" style="font-family:${esc(stack)}">
-            <b>Aa 12,50 €</b><span>${esc(name)}</span></button>`).join('')}</div>
+        ${[['Auf dem Gerät – auch offline', (f) => !f[3]], ['Aus dem Internet – nur zum Testen', (f) => f[3]]].map(([title, test]) => `
+          <h3 class="font-group">${title}</h3>
+          <div class="font-list">${FONTS.filter(test).map(([id, name, stack]) => `
+            <button type="button" class="font-option ${look.font === id ? 'on' : ''}" data-action="font" data-value="${id}" style="font-family:${esc(stack)}">
+              <b>Padel ist da. 12,50 €</b><span>${esc(name)}</span></button>`).join('')}</div>`).join('')}
+      </section>
+      <section class="card admin-card">
+        <h2>Sichern &amp; Laden</h2>
+        <p class="muted">Alle Inhalte – Seiten, Fotos, Teams, Sortiment, Striche, Verabredungen, Farbe und Schrift – in einer einzigen Datei. Am besten in die Dropbox legen. So bist du vor Datenverlust geschützt und kannst alles auf einen anderen Rechner oder später in die veröffentlichte App übertragen.</p>
+        <div class="admin-links">
+          <button type="button" class="btn primary" data-action="backup-save">Inhalte sichern</button>
+          <label class="btn">Sicherung laden<input type="file" accept=".json,application/json" data-backup-input hidden></label>
+        </div>
       </section>
       <section class="card admin-card">
         <h2>Markenfarbe</h2>
@@ -841,30 +873,95 @@
   }
 
   // ---------- Profil ----------
-  function openProfile() {
+  // Account-Karte – Aufbau nach dem Vorbild der Padel-App: Profilbild, Name, Mitgliedschaft,
+  // eigene Angaben und Einstellungen; Verwaltung (nur Admins) und „Als App aufs Handy“ ganz unten.
+  async function openProfile() {
     const m = state.member;
+    let open = null;
+    if (m.hasConsent) { try { open = await api.myOpenMonth(); } catch (_) {} }
+    const today = dayKey(new Date().toISOString());
+    const todayCents = open ? open.items.filter((i) => dayKey(i.createdAt) === today).reduce((s, i) => s + i.priceCents, 0) : 0;
+    const consentDate = m.consentedAt ? new Date(m.consentedAt).toLocaleDateString('de-DE', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
+    const row = (on, title, sub) => `
+      <div class="acct-row">
+        <span class="acct-check ${on ? 'on' : ''}" aria-hidden="true">${on ? icon.check : ''}</span>
+        <div><strong>${title}</strong><small>${sub}</small></div>
+      </div>`;
     openSheet(`
-      <div class="profile">
-        <div class="avatar lg">
-          ${m.avatar
-            ? `<button type="button" class="avatar-zoom" data-action="avatar-zoom" aria-label="Profilbild groß ansehen">${avatarFace(m)}</button>`
-            : `<span>${avatarFace(m)}</span>`}
-          <label class="avatar-edit" title="Profilbild ändern" aria-label="Profilbild ändern">
-            ${icon.camera}
-            <input type="file" accept="image/*" data-avatar-input hidden>
-          </label>
-        </div>
-        <h2>${esc(m.firstName)} ${esc(m.lastName)}</h2>
-        <p class="muted">${esc(m.email)}<br>Mitgliedsnummer ${esc(m.memberNo)}</p>
-        ${m.avatar ? '<button type="button" class="link center small" data-action="avatar-remove">Profilbild entfernen</button>' : '<p class="muted small">Tippe auf die Kamera, um ein Profilbild zu wählen.</p>'}
+      <div class="acct">
+        <header class="acct-head">
+          <div class="avatar lg acct-avatar">
+            ${m.avatar
+              ? `<button type="button" class="avatar-zoom" data-action="avatar-zoom" aria-label="Profilbild groß ansehen">${avatarFace(m)}</button>`
+              : `<span>${avatarFace(m)}</span>`}
+            <label class="avatar-edit" title="Profilbild ändern" aria-label="Profilbild ändern">
+              ${icon.camera}<input type="file" accept="image/*" data-avatar-input hidden>
+            </label>
+          </div>
+          <p class="acct-kicker">Dein Account</p>
+          <h2 class="acct-name">${esc(m.firstName)} ${esc(m.lastName)}</h2>
+          <p class="acct-meta">Mitglied Nr. ${esc(m.memberNo)}${m.isAdmin ? '<span class="acct-badge">Admin</span>' : ''}</p>
+        </header>
 
-        <div class="card soft install">
-          <strong>Als App aufs Handy</strong>
-          <p class="small">iPhone: Teilen-Symbol → „Zum Home-Bildschirm“.<br>Android: Menü ⋮ → „App installieren“.</p>
-        </div>
-        ${m.isAdmin ? `<a class="btn primary block" href="#verwaltung" data-action="close-sheet">${icon.admin} Verwaltung</a>` : ''}
-        <button type="button" class="btn block" data-action="logout">Abmelden</button>
-        ${api.mode === 'demo' ? '<button type="button" class="link center" data-action="demo-reset">Demo-Daten zurücksetzen</button>' : ''}
+        <section class="acct-card">
+          ${row(true, `Mitglied der ${esc(cfg.clubName)}`, 'Erkannt über deine E-Mail-Adresse aus der Mitgliederliste – du musst nichts eintragen.')}
+          ${row(m.hasConsent, 'Kiosk &amp; Lastschrift', m.hasConsent
+            ? `Freigeschaltet am ${esc(consentDate)} · Einzug zum ${cfg.debitDayOfMonth}. des Folgemonats`
+            : 'Noch nicht freigeschaltet – beim ersten Besuch im Kiosk einmal zustimmen.')}
+        </section>
+
+        ${open ? `
+        <section class="acct-stats">
+          <a href="#kiosk" data-action="close-sheet"><small>Heute</small><b>${euro(todayCents)}</b></a>
+          <a href="#abrechnungen" data-action="close-sheet"><small>${esc(monthName(open.month, false))}</small><b>${euro(open.totalCents)}</b></a>
+          <a href="#abrechnungen" data-action="close-sheet"><small>Einzug</small><b>${esc(nextMonthDebit(open.month).replace(/(\d+)\. (\w{3})\w*/, '$1. $2'))}</b></a>
+        </section>` : ''}
+
+        <form class="acct-card acct-form" data-account-form novalidate>
+          <h3 class="acct-section">Deine Angaben</h3>
+          <label class="field"><span>Name</span><input value="${esc(m.firstName)} ${esc(m.lastName)}" readonly></label>
+          <label class="field"><span>E-Mail</span><input value="${esc(m.email)}" readonly></label>
+          <p class="acct-hint">Name und E-Mail stammen aus der Mitgliederliste. Änderungen bitte über den Vorstand.</p>
+          <label class="field"><span>Handynummer <em>freiwillig</em></span><input name="phone" type="tel" inputmode="tel" value="${esc(m.phone)}" placeholder="z. B. 0170 1234567"></label>
+
+          <h3 class="acct-section">Benachrichtigungen</h3>
+          <label class="acct-pref"><input type="checkbox" name="infoMails" ${m.infoMails ? 'checked' : ''}>
+            <span><strong>Neuigkeiten vom Club</strong><em>Termine, Turniere, Platzsperrungen. Abrechnungen bekommst du unabhängig davon.</em></span></label>
+          <label class="acct-pref"><input type="checkbox" name="openInvites" ${m.openInvites ? 'checked' : ''}>
+            <span><strong>Einladungen von allen</strong><em>Ausgeschaltet siehst du nur Einladungen deiner Gruppen beim Verabreden.</em></span></label>
+
+          <h3 class="acct-section">Profilbild</h3>
+          <div class="acct-photo">
+            <span class="acct-photo-preview">${avatarFace(m)}</span>
+            <div class="acct-photo-actions">
+              <label class="btn small">Bild auswählen<input type="file" accept="image/*" data-avatar-input hidden></label>
+              ${m.avatar ? '<button type="button" class="btn small ghost-danger" data-action="avatar-remove">Entfernen</button>' : ''}
+            </div>
+            <p class="acct-hint">Wird rund angezeigt und automatisch verkleinert. Antippen zeigt es groß.</p>
+          </div>
+          <button type="submit" class="btn primary block">Speichern</button>
+        </form>
+
+        ${m.isAdmin ? `
+        <a class="acct-admin" href="#verwaltung" data-action="close-sheet">
+          <span class="acct-admin-icon">${icon.admin}</span>
+          <span><strong>Verwaltung</strong><small>Website, Kiosk, Schrift, Farben, Sichern</small></span>
+          <span class="acct-admin-go">${icon.chevron}</span>
+        </a>` : ''}
+
+        <button type="button" class="btn block acct-logout" data-action="logout">Abmelden</button>
+
+        <section class="acct-install">
+          <span class="acct-install-icon" aria-hidden="true">${logo('ball', 'acct-install-ball')}</span>
+          <div>
+            <strong>Als App aufs Handy</strong>
+            <ol>
+              <li><b>iPhone:</b> unten auf <i>Teilen</i> tippen → <i>Zum Home-Bildschirm</i></li>
+              <li><b>Android:</b> Menü <i>⋮</i> → <i>App installieren</i></li>
+            </ol>
+          </div>
+        </section>
+        ${api.mode === 'demo' ? '<button type="button" class="link center small" data-action="demo-reset">Demo-Daten zurücksetzen</button>' : ''}
       </div>`);
   }
 
@@ -935,6 +1032,17 @@
   setInterval(tickStorno, 250);
 
   // ---------- Ereignisse ----------
+  document.addEventListener('submit', async (e) => {
+    const acct = e.target.closest('[data-account-form]');
+    if (acct) {
+      e.preventDefault();
+      try {
+        state.member = await api.updateProfile({ phone: acct.elements.phone.value, infoMails: acct.elements.infoMails.checked, openInvites: acct.elements.openInvites.checked });
+        toast('Angaben gespeichert', true);
+      } catch (err) { toast(err.message); }
+      return;
+    }
+  });
   document.addEventListener('submit', (e) => {
     if (e.target.closest('[data-editor]')) return; // Editoren haben eigene Handler
     const form = e.target.closest('form[data-form]');
@@ -1002,6 +1110,20 @@
       renderView();
       return;
     }
+    if (e.target.matches('[data-backup-input]') && e.target.files[0]) {
+      const file = e.target.files[0];
+      e.target.value = '';
+      try {
+        const data = JSON.parse(await file.text());
+        const when = data.createdAt ? new Date(data.createdAt).toLocaleString('de-DE', { dateStyle: 'medium', timeStyle: 'short' }) : 'unbekannt';
+        if (!confirm(`Sicherung vom ${when} laden?\n\nAlle Inhalte auf diesem Gerät werden durch die Sicherung ersetzt.`)) return;
+        const { photos } = await api.importAll(data);
+        Object.entries(data.extra || {}).forEach(([k, v]) => { try { if (v != null) localStorage.setItem(k, v); } catch (_) {} });
+        toast(`Geladen: ${photos} Fotos – die App startet neu`, true);
+        setTimeout(() => location.reload(), 1200);
+      } catch (err) { toast(err.message || 'Diese Datei lässt sich nicht laden.'); }
+      return;
+    }
     if (e.target.matches('[data-avatar-input]') && e.target.files[0]) {
       try {
         const file = e.target.files[0];
@@ -1052,6 +1174,21 @@
       state.authEmail = '';
       render();
       toast('Demo-Daten wurden neu erzeugt.');
+    } else if (action === 'backup-save') {
+      try {
+        el.disabled = true;
+        const data = await api.exportAll();
+        data.extra = {};
+        ['tfb_kiosk_look_v3', 'tfb_meet_demo_v2'].forEach((k) => { try { data.extra[k] = localStorage.getItem(k); } catch (_) {} });
+        const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+        const stamp = new Date().toLocaleString('sv-SE', { timeZone: cfg.timeZone }).slice(0, 16).replace(' ', '_').replace(':', '-');
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `TFB-Sicherung_${stamp}.json`;
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+        toast(`Gesichert: ${Object.keys(data.images).length} Fotos – Datei liegt in „Downloads“`, true);
+      } catch (err) { toast(err.message); } finally { el.disabled = false; }
     } else if (action === 'font') {
       look.font = el.dataset.value;
       saveLook();

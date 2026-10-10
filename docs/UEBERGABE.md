@@ -15,10 +15,11 @@ Ziel ist eine Vorführung vor dem Vorstand.
 
 ## Starten
 
-- Per Doppelklick: `9. TFB-Kiosk/TFB-Website öffnen.html` (öffnet die Startseite `#home`) oder `TFB-Kiosk öffnen.html` (direkt `#kiosk`)
+- Per Doppelklick: `9. TFB-Kiosk/TFB-Website öffnen.html` oder `TFB-Kiosk öffnen.html` – beide öffnen **Home**. Jeder neue Aufruf landet auf Home (außer Neu laden und Links wie `#treffen/<id>`).
+- **Offline getestet** (Chrome, `file://`, ohne Internet): Texte und Fotos bleiben nach Neustart erhalten. Daten liegen im Browser – deshalb **Verwaltung → Sichern & Laden** (eine JSON-Datei mit allem inkl. Fotos).
 - Vorschau-Server: `.claude/launch.json` → „tfb-kiosk“ (Port 5180)
 - Demo-Zugang: `max@tfb-demo.de` (Admin), Passwort beim ersten Anmelden frei wählen
-- Nach Änderungen an JS/CSS die Cache-Version in `sw.js` hochzählen (aktuell `tfb-kiosk-v43`)
+- Nach Änderungen an JS/CSS die Cache-Version in `sw.js` hochzählen (aktuell `tfb-kiosk-v45`)
 
 ## Feste Regeln (nie brechen)
 
@@ -70,6 +71,14 @@ Ziel ist eine Vorführung vor dem Vorstand.
   (Standard „Modern (System)“). Jede Mannschaft hat eine eigene Seite `#team/<name>`
   mit Teamfoto und bis zu 10 Beiträgen (Admins; Mannschaftsführer erst mit Supabase).
   Der Nutzer will jetzt echte Bilder und Texte einpflegen.
+
+- **Neu (10.10. spät):** Links dezent als kleine Pille (Darstellung wählbar: Dezent/Knopf/
+  Vorschau-Karte), Links/Fett/Zwischenüberschrift im Fließtext über Knöpfe im Editor
+  (`[Text](url)`, `**fett**`, `## …`). Home-Themen haben eine Unterseite `#home/<id>`
+  („Mehr erfahren“): Titelbild mit Überschrift darauf, rote Initiale, Zitat, Fotokollage
+  mit Großansicht. Account-Karte neu nach Vorbild Padel-App (Mitgliedschaft, Kiosk-Stand,
+  Angaben, Benachrichtigungen, Profilbild; Verwaltung nur für Admins; „Als App aufs Handy“
+  ganz unten). 16 Schriften zum Testen (4 offline + Klassisch, 11 aus Google Fonts).
 
 ## Nächste Schritte (Vorschlag)
 

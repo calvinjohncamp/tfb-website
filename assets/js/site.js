@@ -9,6 +9,7 @@
   let images = {};          // hochgeladene Fotos: { "img:<id>": dataUrl }
   let imagesLoaded = false;
   let editing = null;       // Seite, die gerade bearbeitet wird
+  let detailEditing = false; // Thema wird direkt auf seiner Unterseite bearbeitet
   const ui = () => TFB.ui;
 
   // Seiten-Schlüssel → Adresse im Menü (die Seite „verein“ heißt seit 10.10. „Club“)
@@ -37,7 +38,21 @@
 
   // ---------- Formatierung ----------
   const esc = (s) => ui().esc(s);
-  const paragraphs = (text) => String(text || '').split(/\n{2,}/).map((p) => `<p>${esc(p).replace(/\n/g, '<br>')}</p>`).join('');
+  // Fließtext mit kleinen Auszeichnungen (im Editor über die Knöpfe „Link“ und „Fett“):
+  //   [Text](https://… oder #seite)  →  Link     **Text** → fett     ## Text → Zwischenüberschrift
+  function inline(raw) {
+    return esc(raw)
+      .replace(/\[([^\]]+)\]\(((?:https?:\/\/|#)[^\s)]+)\)/g, (_, label, url) => {
+        const ext = /^https?:/.test(url);
+        return `<a class="inline-link" href="${url}"${ext ? ' target="_blank" rel="noopener"' : ''}>${label}${ext ? '<span class="inline-ext" aria-hidden="true">↗</span>' : ''}</a>`;
+      })
+      .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+      .replace(/\n/g, '<br>');
+  }
+  const paragraphs = (text) => String(text || '').split(/\n{2,}/).map((p) => {
+    const h = p.match(/^##\s+(.+)/);
+    return h ? `<h3 class="text-sub">${inline(h[1])}</h3>` : `<p>${inline(p)}</p>`;
+  }).join('');
   const parseDate = (iso) => { const [y, m, d] = String(iso || '').split('-').map(Number); return y ? new Date(Date.UTC(y, m - 1, d)) : null; };
   const fmt = (iso, opts) => { const d = parseDate(iso); return d ? d.toLocaleDateString('de-DE', { timeZone: 'UTC', ...opts }) : ''; };
   const dateBadge = (iso) => `
@@ -85,6 +100,7 @@
     if (ref && images[ref]) return `<img src="${images[ref]}" alt="${esc(alt)}" loading="lazy">`;
     if (ref && /^assets\//.test(ref)) return `<img src="${esc(ref)}" alt="${esc(alt)}" loading="lazy">`;
     if (/padel/.test(String(seed))) return padelArt();
+    if (/^ph:/.test(String(ref))) return /padel/.test(ref) ? padelArt() : placeholder(ref);
     if (seed === 'h-kiosk') return `<div class="ph ph-kiosk" aria-hidden="true">${['stange:#E9B949', 'cola:#B7282E', 'gerolsteiner:#CFE6E0'].map((x) => TFB.art(...x.split(':'))).join('')}</div>`;
     if (seed === 'h-50') return '<div class="ph ph-50" aria-hidden="true"><b>50</b><span class="tfb-mark"></span><small>1976 – 2026</small></div>';
     return placeholder(seed);
@@ -96,7 +112,15 @@
     if (!link || !link.url) return '';
     const ext = /^https?:/i.test(link.url);
     const label = esc(link.label || 'Mehr erfahren');
-    if (!ext) return `<p class="feature-link"><a class="btn signal" href="${esc(link.url)}">${label} <span aria-hidden="true">→</span></a></p>`;
+    const style = link.style || 'chip';
+    const target = ext ? ' target="_blank" rel="noopener"' : '';
+    if (style === 'button' || (!ext && style === 'card')) return `<p class="feature-link"><a class="btn signal" href="${esc(link.url)}"${target}>${label} <span aria-hidden="true">${ext ? '↗' : '→'}</span></a></p>`;
+    if (style === 'chip') return `
+      <p class="feature-link"><a class="link-chip" href="${esc(link.url)}"${target}>
+        ${ext && link.image ? `<span class="link-chip-img">${picture(link.image, link.url)}</span>` : ''}
+        <span class="link-chip-label">${label}</span>
+        ${ext ? `<small>${esc(hostOf(link.url))} ↗</small>` : '<small aria-hidden="true">→</small>'}
+      </a></p>`;
     return `
       <a class="link-card" href="${esc(link.url)}" target="_blank" rel="noopener">
         ${link.image ? `<span class="link-card-img">${picture(link.image, link.url)}</span>` : ''}
@@ -115,15 +139,20 @@
       case 'feature': {
         const list = site.pages[page] ? site.pages[page].blocks.filter((x) => x.type === 'feature' && !x._new) : [];
         const n = String(Math.max(1, list.findIndex((x) => x.id === b.id) + 1)).padStart(2, '0');
+        const more = hasMore(b) && editing !== page ? `#home/${esc(b.id)}` : '';
+        const wrap = (html) => (more ? `<a class="feature-hit" href="${more}">${html}</a>` : html);
         return `
-          <article class="feature feature-${esc(b.layout || 'wide')}">
-            <div class="feature-media">${picture(b.image, b.id, b.title)}</div>
+          <article class="feature feature-${esc(b.layout || 'wide')} ${more ? 'has-more' : ''}">
+            ${wrap(`<div class="feature-media">${picture(b.image, b.id, b.title)}</div>`)}
             <div class="feature-body">
               <p class="feature-kicker"><span>${n}</span>${esc(b.kicker || '')}</p>
-              <h2>${esc(b.title)}</h2>
+              ${wrap(`<h2>${esc(b.title)}</h2>`)}
               ${b.subtitle ? `<p class="feature-sub">${esc(b.subtitle)}</p>` : ''}
               <div class="feature-text">${paragraphs(b.text)}</div>
-              ${linkMarkup(b.link)}
+              <div class="feature-actions">
+                ${more ? `<a class="more-link" href="${more}">Mehr erfahren <span aria-hidden="true">→</span></a>` : ''}
+                ${linkMarkup(b.link)}
+              </div>
             </div>
           </article>`;
       }
@@ -219,9 +248,61 @@
       </section>`;
   }
 
+  // ---------- Unterseite eines Home-Themas („Mehr erfahren“) ----------
+  const hasMore = (b) => Boolean(b.more && ((b.more.text || '').trim() || (b.more.images || []).length || b.more.quote));
+  const shownImage = (ref) => ref && (images[ref] || /^assets\//.test(ref) || /^ph:/.test(ref));
+
+  // Fotokollage: wechselnde Kachelgrößen, damit es nach Magazin aussieht – Antippen zeigt das Foto groß.
+  function collage(list, blockId) {
+    const imgs = list.filter(shownImage);
+    if (!imgs.length) return '';
+    return `
+      <div class="collage collage-${Math.min(imgs.length, 5)}">
+        ${imgs.map((ref, i) => `
+          <button type="button" class="collage-item" data-action="collage-open" data-block="${esc(blockId)}" data-index="${i}" aria-label="Foto ${i + 1} groß ansehen">
+            ${picture(ref, ref, '')}
+          </button>`).join('')}
+      </div>`;
+  }
+
+  async function featureDetail(id) {
+    const { icon, state, partnerSlot } = ui();
+    const b = site.pages.home.blocks.find((x) => x.id === id);
+    if (!b) return `${ui().viewHead('Home', 'Diesen Beitrag gibt es nicht mehr.', false)}<p><a class="btn" href="#home">Zur Startseite</a></p>`;
+    const more = b.more || {};
+    const parts = String(more.text || '').split(/\n{2,}/);
+    const cut = Math.min(2, parts.length);
+    const admin = state.member && state.member.isAdmin;
+    return `
+      <article class="story">
+        <header class="story-hero">
+          <div class="story-hero-img">${picture(b.image, b.id, b.title)}</div>
+          <div class="story-hero-text">
+            <p class="feature-kicker"><span>${esc(String(site.pages.home.blocks.filter((x) => x.type === 'feature').indexOf(b) + 1).padStart(2, '0'))}</span>${esc(b.kicker || '')}</p>
+            <h1>${esc(b.title)}</h1>
+          </div>
+          <a class="view-close story-close" href="#home" aria-label="Zurück zur Startseite">${icon.close}</a>
+          ${admin ? `<button type="button" class="view-close story-edit" data-action="feature-edit" data-id="${esc(b.id)}" aria-label="Bearbeiten">${icon.pencil}</button>` : ''}
+        </header>
+        <div class="story-body">
+          ${b.subtitle ? `<p class="story-lead">${esc(b.subtitle)}</p>` : ''}
+          <div class="story-text dropcap">${paragraphs(parts.slice(0, cut).join('\n\n') || b.text)}</div>
+          ${more.quote ? `<blockquote class="story-quote"><p>${esc(more.quote)}</p>${more.quoteBy ? `<cite>${esc(more.quoteBy)}</cite>` : ''}</blockquote>` : ''}
+          ${parts.length > cut ? `<div class="story-text">${paragraphs(parts.slice(cut).join('\n\n'))}</div>` : ''}
+        </div>
+        ${collage(more.images || [], b.id)}
+        <div class="story-foot">
+          ${linkMarkup(b.link)}
+          <a class="more-link back" href="#home"><span aria-hidden="true">←</span> Zur Startseite</a>
+        </div>
+      </article>
+      ${partnerSlot('home', site.pages.home.partnerKicker || 'Präsentiert von')}`;
+  }
+
   // ---------- Seite ----------
   async function pageView(key) {
     await ensure();
+    if (key === 'home' && location.hash.split('/')[1]) return featureDetail(location.hash.split('/')[1]);
     const { state, icon, partnerSlot } = ui();
     const page = site.pages[key];
     const edit = editing === key && state.member && state.member.isAdmin;
@@ -308,6 +389,7 @@
 
   async function commit(message) {
     dropUnsaved();
+    if (detailEditing) { editing = null; detailEditing = false; }
     try {
       site = await ui().api.saveSite(site);
       if (message) ui().toast(message, true);
@@ -340,7 +422,10 @@
   // ---------- Baustein-Editor ----------
   function field(label, name, value, opts = {}) {
     const v = esc(value == null ? '' : value);
-    if (opts.area) return `<label class="field"><span>${label}</span><textarea name="${name}" rows="${opts.rows || 5}" placeholder="${esc(opts.placeholder || '')}">${v}</textarea></label>`;
+    if (opts.area) return `<div class="field"><span>${label}</span>
+      ${opts.rich ? `<div class="rich-tools" role="toolbar" aria-label="Text gestalten">
+        <button type="button" data-rich="link">↗ Link</button><button type="button" data-rich="bold"><b>F</b> Fett</button><button type="button" data-rich="h">Zwischenüberschrift</button></div>` : ''}
+      <textarea name="${name}" rows="${opts.rows || 5}" placeholder="${esc(opts.placeholder || '')}">${v}</textarea></div>`;
     return `<label class="field"><span>${label}</span><input name="${name}" type="${opts.type || 'text'}" value="${v}" placeholder="${esc(opts.placeholder || '')}"></label>`;
   }
   function imageField(ref, seed, label = 'Foto', target = '') {
@@ -376,13 +461,24 @@
             + imageField(draft.image, draft.id)
             + field('Kleine Zeile über der Überschrift', 'kicker', draft.kicker, { placeholder: 'z. B. Neu in Bielstein' })
             + field('Überschrift', 'title', draft.title) + field('Unterzeile', 'subtitle', draft.subtitle)
-            + field('Text', 'text', draft.text, { area: true, rows: 9, placeholder: 'Beliebig lang. Leerzeile = neuer Absatz' })
+            + field('Kurzer Text auf der Startseite', 'text', draft.text, { area: true, rich: true, rows: 5, placeholder: 'Zwei, drei Sätze. Leerzeile = neuer Absatz' })
             + `<h3 class="editor-sub">Link</h3>`
             + field('Ziel (Website oder #kiosk, #aktuell, #sport, #club)', 'linkUrl', lk.url, { placeholder: 'https://… oder #kiosk' })
-            + field('Knopf-Text', 'linkLabel', lk.label, { placeholder: 'z. B. Jetzt Platz buchen' })
-            + (ext ? `<p class="muted small">Vorschau-Karte wie in einer Mail. Im Echtbetrieb holt die App Bild, Titel und Text automatisch von der Website – bis dahin hier eintragen.</p>`
+            + field('Link-Text', 'linkLabel', lk.label, { placeholder: 'z. B. Jetzt Platz buchen' })
+            + `<div class="field"><span>Darstellung</span><div class="seg link-style-seg">${[['chip', 'Dezent'], ['button', 'Knopf'], ['card', 'Vorschau-Karte']].map(([v, l]) =>
+                `<button type="button" class="${(lk.style || 'chip') === v ? 'on' : ''}" data-linkstyle="${v}">${l}</button>`).join('')}</div></div>`
+            + (ext ? `<p class="muted small">Für die Vorschau (kleines Bild beim dezenten Link, große Karte): im Echtbetrieb holt die App Bild, Titel und Text automatisch von der Website – bis dahin hier eintragen.</p>`
               + field('Vorschau: Titel', 'linkTitle', lk.title) + field('Vorschau: Text', 'linkText', lk.text, { area: true, rows: 3 })
-              + imageField(lk.image, lk.url, 'Vorschau: Bild', 'link') : '');
+              + imageField(lk.image, lk.url, 'Vorschau: Bild', 'link') : '')
+            + `<h3 class="editor-sub">Unterseite „Mehr erfahren“</h3><p class="muted small">Erscheint, sobald hier etwas steht. Großes Titelbild oben, der Text wie ein Magazinartikel, dazu ein Zitat und eine Fotokollage.</p>`
+            + field('Ausführlicher Text', 'moreText', (draft.more || {}).text, { area: true, rich: true, rows: 10, placeholder: 'Beliebig lang. Leerzeile = neuer Absatz, ## am Zeilenanfang = Zwischenüberschrift' })
+            + field('Zitat (freiwillig)', 'moreQuote', (draft.more || {}).quote, { placeholder: 'z. B. „Nach zehn Minuten hatte jeder ein Grinsen im Gesicht.“' })
+            + field('Zitat von', 'moreQuoteBy', (draft.more || {}).quoteBy, { placeholder: 'z. B. Jan, Herren 40' })
+            + `<div class="field"><span>Fotokollage</span>
+                <div class="gallery-edit">
+                  ${((draft.more || {}).images || []).filter(shownImage).map((ref) => `<div class="gallery-thumb">${picture(ref, ref)}<button type="button" data-more-remove="${esc(ref)}" aria-label="Foto entfernen">×</button></div>`).join('')}
+                  <label class="gallery-add">${ui().icon.plus}<span>Fotos</span><input type="file" accept="image/*" multiple data-more-input hidden></label>
+                </div></div>`;
         }
         case 'heading': return field('Überschrift', 'title', draft.title);
         case 'text': return field('Überschrift', 'title', draft.title) + field('Text', 'text', draft.text, { area: true, rows: 8, placeholder: 'Leerzeile = neuer Absatz' });
@@ -428,6 +524,10 @@
         }
         const lay = e.target.closest('[data-layout]');
         if (lay) { collect(form); draft.layout = lay.dataset.layout; render(); return; }
+        const ls = e.target.closest('[data-linkstyle]');
+        if (ls) { collect(form); draft.link = { ...(draft.link || {}), style: ls.dataset.linkstyle }; render(); return; }
+        const mr = e.target.closest('[data-more-remove]');
+        if (mr) { collect(form); draft.more.images = draft.more.images.filter((r) => r !== mr.dataset.moreRemove); render(); return; }
         const rmImg = e.target.closest('[data-image-remove]');
         if (rmImg) { collect(form); if (rmImg.dataset.imageRemove === 'link') draft.link.image = null; else draft.image = null; render(); }
         const rm = e.target.closest('[data-gallery-remove]');
@@ -444,6 +544,7 @@
             else draft.image = ids[0];
           }
           if (input.matches('[data-gallery-input]')) draft.images = [...(draft.images || []), ...ids];
+          if (input.matches('[data-more-input]')) draft.more = { ...(draft.more || {}), images: [...((draft.more || {}).images || []).filter((r) => !/^ph:/.test(r)), ...ids] };
           ui().toast(ids.length > 1 ? `${ids.length} Fotos hinzugefügt` : 'Foto hinzugefügt', true);
           render();
         } catch (err) { ui().toast(err.message); }
@@ -454,6 +555,7 @@
     const collect = (form) => {
       const f = form.elements;
       ['title', 'text', 'date', 'time', 'place', 'caption', 'label', 'url', 'kicker', 'subtitle'].forEach((k) => { if (f[k]) draft[k] = f[k].value.trim(); });
+      if (f.moreText) draft.more = { ...(draft.more || {}), text: f.moreText.value.trim(), quote: f.moreQuote.value.trim(), quoteBy: f.moreQuoteBy.value.trim() };
       if (f.linkUrl) {
         draft.link = { ...(draft.link || {}), url: f.linkUrl.value.trim(), label: f.linkLabel.value.trim() };
         if (f.linkTitle) Object.assign(draft.link, { title: f.linkTitle.value.trim(), text: f.linkText.value.trim() });
@@ -677,6 +779,14 @@
     },
     'team-season': (el) => { teamSeason = el.dataset.season; ui().renderView(); },
     'team-photo': (el) => openTeamPhoto(el.dataset.team),
+    'feature-edit': (el) => { editing = 'home'; detailEditing = true; openBlockEditor(el.dataset.id); },
+    'collage-open': (el) => {
+      const b = site.pages.home.blocks.find((x) => x.id === el.dataset.block);
+      const list = ((b.more || {}).images || []).filter(shownImage);
+      const ref = list[Number(el.dataset.index)];
+      const src = images[ref] || (/^assets\//.test(ref) ? ref : null);
+      if (src) ui().openLightbox(src, b.title); else ui().toast('Beispielbild – eigene Fotos über den Stift hochladen');
+    },
     'team-post': (el) => openTeamPost(el.dataset.team, el.dataset.id),
     'gallery-open': (el) => {
       const block = Object.values(site.pages).flatMap((p) => p.blocks).find((b) => b.id === el.dataset.block);
@@ -687,6 +797,26 @@
 
   // Bearbeitungsmodus verlassen, wenn eine andere Seite geöffnet wird.
   window.addEventListener('hashchange', () => {
-    if (editing && location.hash.replace('#', '') !== routeOf(editing)) editing = null;
+    if (detailEditing || (editing && location.hash.replace('#', '') !== routeOf(editing))) { editing = null; detailEditing = false; }
+  });
+
+  // Werkzeugleiste über Textfeldern: Link, Fett, Zwischenüberschrift an der Cursor-Stelle einfügen
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-rich]');
+    if (!btn) return;
+    const area = btn.closest('.field').querySelector('textarea');
+    const { selectionStart: a, selectionEnd: z, value } = area;
+    const sel = value.slice(a, z);
+    let insert = '';
+    if (btn.dataset.rich === 'link') {
+      const url = prompt('Wohin soll der Link führen?\n(Website mit https://… oder eine Seite wie #kiosk, #sport, #club)', 'https://');
+      if (!url || url === 'https://') return;
+      const label = sel || prompt('Welcher Text soll im Fließtext stehen?', '') || url.replace(/^https?:\/\/(www\.)?/, '');
+      insert = `[${label}](${url.trim()})`;
+    } else if (btn.dataset.rich === 'bold') insert = `**${sel || 'fetter Text'}**`;
+    else insert = `${a > 0 && value[a - 1] !== '\n' ? '\n\n' : ''}## ${sel || 'Zwischenüberschrift'}\n\n`;
+    area.value = value.slice(0, a) + insert + value.slice(z);
+    area.focus();
+    area.selectionStart = area.selectionEnd = a + insert.length;
   });
 })();
