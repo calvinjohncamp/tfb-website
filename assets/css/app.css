@@ -1525,3 +1525,6 @@ button.meet-row:hover { background: #FAF8F3; }
   #sheet-root.side-mode.peek .sheet { cursor: pointer; }
   #sheet-root.side-mode.peek .editor > h2::after { content: "  ·  antippen zum Weiterbearbeiten"; font-size: .78rem; font-weight: 600; color: var(--signal); }
 }
+/* Unterseite: 4 Quadrate – Desktop in einer Reihe, Handy als 2 × 2 */
+.story-squares.n4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+@media (max-width: 639px) { .story-squares.n4 { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; } }

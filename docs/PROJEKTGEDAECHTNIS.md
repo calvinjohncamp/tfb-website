@@ -383,3 +383,5 @@ Monatsabschluss.
   **Titelbild der Unterseite:** `more.heroSource` (`same` | `own`), `more.heroImages` (1–3),
   `more.heroMode` (`wide` | `original` | `squares`). Ist das Startseitenbild hoch-/quadratisch
   und „Breit“ gewählt, steht es links über der Überschrift statt quer zugeschnitten.
+- **11.10.2026** – Titelbild der Unterseite: bis zu **4 eigene Fotos**, „2–4 Quadrate nebeneinander“
+  (4 Quadrate: Desktop in einer Reihe, Handy 2 × 2).

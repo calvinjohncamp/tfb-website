@@ -403,7 +403,7 @@
     const admin = state.member && state.member.isAdmin;
     const n = String(homeBlocks().filter((x) => x.type === 'feature').indexOf(b) + 1).padStart(2, '0');
     const size = b.textSize === 'gross' ? 'text-l' : '';
-    // Titelbild: wie Startseite oder eigene Fotos; breit, im Originalformat oder 2–3 Quadrate nebeneinander
+    // Titelbild: wie Startseite oder eigene Fotos; breit, im Originalformat oder 2–4 Quadrate nebeneinander
     const own = more.heroSource === 'own' ? (more.heroImages || []).filter(shownImage) : [];
     const mode = more.heroMode || 'wide';
     const heroRefs = own.length ? own : [b.image];
@@ -677,12 +677,12 @@
             <p class="ed-hint">Die <b>Unterseite</b> öffnet sich über „Mehr erfahren“, sobald hier ein Text, ein Zitat oder Fotos stehen. Kleine Zeile, Überschrift, Unterzeile und Link kommen vom Reiter „Startseite“.</p>
             <h3 class="editor-sub">Titelbild oben</h3>
             <div class="field"><span>Quelle</span>${seg('herosrc', heroSrc, [['same', 'Wie auf der Startseite'], ['own', 'Eigene Fotos']])}</div>
-            ${heroSrc === 'own' ? `<div class="field"><span>Fotos (1 bis 3)</span>
+            ${heroSrc === 'own' ? `<div class="field"><span>Fotos (1 bis 4)</span>
               <div class="gallery-edit">
                 ${heroImgs.map((ref) => `<div class="gallery-thumb">${picture(ref, ref)}<button type="button" data-hero-remove="${esc(ref)}" aria-label="Foto entfernen">×</button></div>`).join('')}
-                ${heroImgs.length < 3 ? `<label class="gallery-add">${ui().icon.plus}<span>Foto</span><input type="file" accept="image/*" multiple data-hero-input hidden></label>` : ''}
+                ${heroImgs.length < 4 ? `<label class="gallery-add">${ui().icon.plus}<span>Foto</span><input type="file" accept="image/*" multiple data-hero-input hidden></label>` : ''}
               </div></div>` : ''}
-            <div class="field"><span>Darstellung</span>${seg('heromode', heroMode, [['wide', 'Breit'], ['original', 'Originalformat'], ['squares', '2–3 Quadrate nebeneinander', heroSrc !== 'own' || heroImgs.length < 2]])}</div>
+            <div class="field"><span>Darstellung</span>${seg('heromode', heroMode, [['wide', 'Breit'], ['original', 'Originalformat'], ['squares', '2–4 Quadrate nebeneinander', heroSrc !== 'own' || heroImgs.length < 2]])}</div>
             <h3 class="editor-sub">Texte</h3>`
             + field('Ausführlicher Text', 'moreText', more.text, { area: true, rich: true, rows: 10, placeholder: 'Beliebig lang – Wörter markieren und oben gestalten' })
             + field('Zitat (freiwillig)', 'moreQuote', more.quote, { placeholder: 'z. B. „Nach zehn Minuten hatte jeder ein Grinsen im Gesicht.“' })
@@ -804,7 +804,7 @@
           }
           if (input.matches('[data-gallery-input]')) draft.images = [...(draft.images || []), ...ids];
           if (input.matches('[data-hero-input]')) {
-            const list = [...((draft.more || {}).heroImages || []), ...ids].slice(0, 3);
+            const list = [...((draft.more || {}).heroImages || []), ...ids].slice(0, 4);
             draft.more = { ...(draft.more || {}), heroImages: list, heroMode: list.length >= 2 ? 'squares' : ((draft.more || {}).heroMode || 'wide') };
           }
           if (input.matches('[data-more-input]')) draft.more = { ...(draft.more || {}), images: [...((draft.more || {}).images || []).filter((r) => !/^ph:/.test(r)), ...ids] };
