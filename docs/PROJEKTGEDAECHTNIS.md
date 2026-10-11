@@ -392,3 +392,6 @@ Monatsabschluss.
   Titelbild der Unterseite (`more.heroAlign`), Fotokollage (`more.collageAlign`; Fotos max. 80 %
   Bildschirmhöhe) und Foto-Baustein (neu `original` + `align`). Auswahl erscheint im Editor nur,
   wenn „Originalformat“ aktiv ist – bei zugeschnittenen Fotos füllt das Bild ohnehin die Breite.
+- **11.10.2026** – **Großer Textanfang** auf Unterseiten einstellbar: Aus / 1 / 2 / 3 Zeichen
+  (`more.dropcap`, Standard 1). Umgesetzt als `<span class="lead-letters">` statt `::first-letter`,
+  damit z. B. „50“ komplett groß steht; Leerzeichen am Ende werden nicht mitgenommen.

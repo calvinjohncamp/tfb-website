@@ -396,6 +396,23 @@
       </div>`;
   }
 
+  // Großer Textanfang (Initiale): die ersten n Zeichen des ersten Absatzes groß und rot (0 = aus).
+  // Gezählt werden nur sichtbare Zeichen; an einer Formatierung endet der große Anfang.
+  function leadLetters(html, n) {
+    if (!n) return html;
+    const start = html.indexOf('<p>');
+    if (start !== 0) return html;
+    let i = 3; let count = 0;
+    while (i < html.length && count < n) {
+      if (html[i] === '<') break;
+      if (html[i] === '&') { const end = html.indexOf(';', i); i = end > i ? end + 1 : i + 1; } else i++;
+      count++;
+    }
+    while (i > 3 && /\s/.test(html[i - 1])) i--;   // kein Leerzeichen am Ende des großen Anfangs
+    if (i <= 3) return html;
+    return `<p><span class="lead-letters">${html.slice(3, i)}</span>${html.slice(i)}`;
+  }
+
   async function featureDetail(id) {
     const { icon, state, partnerSlot } = ui();
     const b = homeBlocks().find((x) => x.id === id);
@@ -436,7 +453,7 @@
             ${b.link && b.link.url ? `<div class="story-link">${linkMarkup(b.link)}</div>` : ''}
           </header>
           <div class="story-body">
-            <div class="story-text dropcap ${size}">${paragraphs(parts.slice(0, cut).join('\n\n') || b.text)}</div>
+            <div class="story-text ${size}">${leadLetters(paragraphs(parts.slice(0, cut).join('\n\n') || b.text), more.dropcap == null ? 1 : Number(more.dropcap))}</div>
             ${more.quote ? `<blockquote class="story-quote"><p>${esc(more.quote)}</p>${more.quoteBy ? `<cite>${esc(more.quoteBy)}</cite>` : ''}</blockquote>` : ''}
             ${parts.length > cut ? `<div class="story-text ${size}">${paragraphs(parts.slice(cut).join('\n\n'))}</div>` : ''}
           </div>
@@ -702,6 +719,7 @@
                 `<button type="button" class="${(more.heroAlign || 'center') === v ? 'on' : ''}" data-align="hero:${v}">${l}</button>`).join('')}</div></div>` : ''}
             <h3 class="editor-sub">Texte</h3>`
             + field('Ausführlicher Text', 'moreText', more.text, { area: true, rich: true, rows: 10, placeholder: 'Beliebig lang – Wörter markieren und oben gestalten' })
+            + `<div class="field"><span>Großer Textanfang (rot)</span>${seg('dropcap', String(more.dropcap == null ? 1 : more.dropcap), [['0', 'Aus'], ['1', '1 Zeichen'], ['2', '2 Zeichen'], ['3', '3 Zeichen']])}</div>`
             + field('Zitat (freiwillig)', 'moreQuote', more.quote, { placeholder: 'z. B. „Nach zehn Minuten hatte jeder ein Grinsen im Gesicht.“' })
             + field('Zitat von', 'moreQuoteBy', more.quoteBy, { placeholder: 'z. B. Jan, Herren 40' })
             + `<h3 class="editor-sub">Fotokollage unten</h3>
@@ -806,6 +824,8 @@
           closeSheet();
           commit('Baustein gelöscht');
         }
+        const dc = e.target.closest('[data-dropcap]');
+        if (dc) { collect(form); draft.more = { ...(draft.more || {}), dropcap: Number(dc.dataset.dropcap) }; render(); return; }
         const al = e.target.closest('[data-align]');
         if (al) {
           collect(form);
