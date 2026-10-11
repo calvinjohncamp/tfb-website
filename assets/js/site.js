@@ -215,7 +215,7 @@
         const parts = String(b.text || '').split(/\n{2,}/).filter((x) => x.trim());
         const textHtml = parts.map((p, i) => slot(`right-${i}`) + paragraphs(p)).join('');
         return `
-          <article class="feature feature-${esc(b.layout || 'wide')} ${more ? 'has-more' : ''}" data-feature="${esc(b.id)}">
+          <article class="feature feature-${esc(String(b.layout || 'wide').replace('-right', ''))} ${/-right$/.test(b.layout || '') ? 'img-right' : ''} ${more ? 'has-more' : ''}" data-feature="${esc(b.id)}">
             ${wrap(`<div class="feature-media">${picture(b.image, b.id, b.title)}</div>`)}
             <div class="feature-body">
               <div class="feature-left">
@@ -239,12 +239,11 @@
       case 'event':
         return `
           <article class="event card">
-            ${dateBadge(b.date)}
+            <div class="event-side">${dateBadge(b.date)}${attachmentThumb(b)}</div>
             <div class="event-body">
               <h3>${esc(b.title)}</h3>
               <p class="muted small">${[b.time && `${esc(b.time)} Uhr`, esc(b.place)].filter(Boolean).join(' · ')}</p>
-              ${b.text ? `<p class="small">${esc(b.text)}</p>` : ''}
-              ${attachmentThumb(b)}
+              ${b.text ? `<p class="event-text">${esc(b.text)}</p>` : ''}
             </div>
           </article>`;
       case 'post':
@@ -312,11 +311,9 @@
             const count = teamCounts[teamKey(t.name)] || 0;
             return `
             <a class="team team-row" href="#team/${esc(teamKey(t.name))}">
+              <span class="team-thumb ${photo ? '' : 'empty'}">${photo || ui().icon.camera}${count ? `<span class="team-dot">${count}</span>` : ''}</span>
               <span class="team-name"><strong>${esc(t.name.replace(/\s*\(.*?\)/g, ''))}${/\((.*?)\)/.test(t.name) ? ` <i>${esc(t.name.match(/\((.*?)\)/)[1])}</i>` : ''}</strong><small>${esc(t.group)}</small></span>
-              <span class="team-mid">
-                <span class="team-thumb ${photo ? '' : 'empty'}">${photo || ui().icon.camera}</span>
-                <span class="team-news ${count ? 'has' : ''}" data-count="${count}">${count ? `${count} Insider News` : 'Insider News'}<b aria-hidden="true">→</b></span>
-              </span>
+              <span class="team-news-btn ${count ? 'has' : ''}">Insider News${count ? `<b>${count}</b>` : ''}<span aria-hidden="true">→</span></span>
               <span class="team-stand"><b class="${t.rank === '1' ? 'top' : ''}">${esc(t.rank || '–')}.</b><small>Platz · ${esc(t.points)}</small></span>
             </a>`;
           }).join('')}
@@ -429,7 +426,7 @@
     const mode = more.heroMode || 'wide';
     const heroRefs = own.length ? own : [b.image];
     const seed = own.length ? own[0] : b.id;
-    const sideImage = !own.length && mode === 'wide' && (b.layout === 'portrait' || b.layout === 'square');
+    const sideImage = !own.length && mode === 'wide' && /^(portrait|square)/.test(b.layout || '');
     let heroHtml = '';
     if (mode === 'squares' && heroRefs.length >= 2) {
       heroHtml = `<div class="story-squares n${heroRefs.length}">${heroRefs.map((r, i) => `<button type="button" class="story-square" data-action="hero-open" data-block="${esc(b.id)}" data-index="${i}" aria-label="Foto groß ansehen">${picture(r, r)}</button>`).join('')}</div>`;
@@ -447,7 +444,7 @@
         ${heroHtml}
         <div class="story-grid ${sideImage ? 'with-side' : ''}">
           <header class="story-head">
-            ${sideImage ? `<div class="story-side-img ${esc(b.layout)}">${picture(b.image, b.id, b.title)}</div>` : ''}
+            ${sideImage ? `<div class="story-side-img ${esc(String(b.layout).replace('-right', ''))}">${picture(b.image, b.id, b.title)}</div>` : ''}
             <p class="feature-kicker"><span>${n}</span>${esc(b.kicker || '')}</p>
             <h1>${esc(b.title)}</h1>
             ${b.subtitle ? `<p class="feature-sub">${esc(b.subtitle)}</p>` : ''}
@@ -651,18 +648,108 @@
     if (!state.member) action = `<button type="button" class="btn small" data-action="login">Zum Mitschreiben anmelden</button>`;
     else if (may.ok || may.reason === 'rules' || may.reason === 'parents') action = `<button type="button" class="btn signal small" data-action="post-new" data-scope="${esc(scope)}">${icon.plus} Schreib was</button>`;
     else if (may.reason === 'team') action = '<small class="muted">Schreiben dürfen die Spieler dieser Mannschaft.</small>';
+    const overviewLink = `<a class="feed-overview" href="#gefluester${isTeam ? '/' + esc(scope.slice(5)) : ''}" title="Übersicht aller Beiträge mit Suche und Filtern" aria-label="Übersicht aller Beiträge">${icon.chevron}</a>`;
     return `
       <section class="feed" data-scope="${esc(scope)}">
         <header class="feed-head">
           <div><h2 class="block-heading">${isTeam ? 'Insider News' : 'Clubgeflüster'}</h2>
             <p class="muted small">${isTeam ? `Hier schreiben die Spieler${opts.teamName ? ` von ${esc(opts.teamName)}` : ''} – Spielberichte, Touren, Training.` : 'Hier schreiben unsere Mitglieder.'}</p></div>
-          ${action}
+          <div class="feed-actions">${action}${overviewLink}</div>
         </header>
         ${shown.length ? `<div class="feed-list">${shown.map((p) => postHtml(p, Boolean(state.member))).join('')}</div>`
           : `<p class="feed-empty muted">${isTeam ? 'Noch keine Insider News – schreibt den ersten Bericht!' : 'Noch ist es still hier. Schreib den ersten Beitrag!'}</p>`}
         ${list.length > shown.length ? `<button type="button" class="link center" data-action="feed-more" data-scope="${esc(scope)}">Ältere anzeigen (${list.length - shown.length})</button>` : ''}
         ${isTeam && state.member ? `<details class="feed-roster"><summary>Wer darf hier schreiben?</summary><p class="small muted">Die gemeldeten Spieler der Mannschaft – im Echtbetrieb automatisch aus der nuLiga-Spielermeldung – und die Admins${roster.length ? `: ${esc(roster.join(', '))}` : '.'}</p></details>` : ''}
       </section>`;
+  }
+
+  // Übersicht aller Beiträge (Clubgeflüster + Insider News) – kompakt, mit Suche und Filtern
+  async function overviewView() {
+    await ensure();
+    const { api, icon, state } = ui();
+    const preset = location.hash.split('/')[1] || '';
+    const list = await api.posts('club', { withTeams: true });
+    list.forEach((p) => { postCache[p.id] = p; });
+    const teamsIn = [...new Set(list.map((p) => [p.team, ...(p.alsoTeams || [])]).flat().filter(Boolean))]
+      .map((k) => [k, teamLabel(k)]).sort((a, b) => a[1].localeCompare(b[1], 'de'));
+    const authors = [...new Set(list.map((p) => p.author))].sort((a, b) => a.localeCompare(b, 'de'));
+    const card = (p) => {
+      const imgs = (p.images || []).filter(shownImage);
+      const teams = [p.team, ...(p.alsoTeams || [])].filter(Boolean);
+      return `
+        <button type="button" class="mini ${p.hidden ? 'is-hidden' : ''}" data-action="post-open" data-id="${esc(p.id)}"
+          data-author="${esc(p.author.toLowerCase())}" data-text="${esc(String(p.text || '').toLowerCase())}"
+          data-teams="${esc(teams.join(' '))}" data-where="${p.team ? 'team' : 'club'}" data-photos="${imgs.length}" data-at="${esc(p.createdAt)}">
+          ${imgs.length ? `<span class="mini-img">${picture(imgs[0], imgs[0], '')}${imgs.length > 1 ? `<i>+${imgs.length - 1}</i>` : ''}</span>` : ''}
+          <span class="mini-head"><span class="fpost-avatar">${p.avatar ? `<img src="${esc(p.avatar)}" alt="">` : esc(initialsOf(p.author))}</span>
+            <span><b>${esc(p.author)}</b><small>${esc(agoText(p.createdAt))}</small></span></span>
+          <span class="mini-where">${p.team ? `Insider News · ${esc(teamLabel(p.team))}` : 'Clubgeflüster'}</span>
+          ${p.text ? `<span class="mini-text">${esc(p.text)}</span>` : ''}
+        </button>`;
+    };
+    return `
+      <div class="overview">
+        <header class="view-head page-head">
+          <div><p class="page-kicker">Clubgeflüster &amp; Insider News</p><h1>Alle Beiträge</h1><p class="muted">Schnell finden, wer was geschrieben hat.</p></div>
+          <a class="view-close" href="${preset ? '#team/' + esc(preset) : '#aktuell'}" aria-label="Zurück">${icon.close}</a>
+        </header>
+        <div class="ov-filters">
+          <label class="ov-search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg><input type="search" data-ov="q" placeholder="Name oder Stichwort, z. B. Hennef" list="ov-authors" autocomplete="off"></label>
+          <datalist id="ov-authors">${authors.map((a) => `<option value="${esc(a)}">`).join('')}</datalist>
+          <select data-ov="where">
+            <option value="">Alle Bereiche</option>
+            <option value="club">Nur Clubgeflüster</option>
+            <option value="team">Nur Insider News (alle Mannschaften)</option>
+            ${teamsIn.map(([k, n]) => `<option value="t:${esc(k)}" ${preset === k ? 'selected' : ''}>Insider News · ${esc(n)}</option>`).join('')}
+          </select>
+          <div class="seg ov-period">${[['', 'Alle'], ['7', '7 Tage'], ['30', '30 Tage']].map(([v, l]) => `<button type="button" class="${v ? '' : 'on'}" data-ovperiod="${v}">${l}</button>`).join('')}</div>
+          <label class="meet-check ov-photos"><input type="checkbox" data-ov="photos"><span>Nur mit Fotos</span></label>
+        </div>
+        <p class="ov-count muted small" data-ovcount></p>
+        <div class="mini-grid">${list.map(card).join('')}</div>
+        <p class="ov-empty muted" hidden>Nichts gefunden – Filter lockern?</p>
+        ${state.member ? '' : '<p class="fineprint">Zum Mitschreiben bitte anmelden.</p>'}
+      </div>`;
+  }
+  TFB.views.gefluester = overviewView;
+  let ovPeriod = '';
+  function applyOverviewFilters() {
+    const root = document.querySelector('.overview');
+    if (!root) return;
+    const q = (root.querySelector('[data-ov=q]').value || '').trim().toLowerCase();
+    const where = root.querySelector('[data-ov=where]').value;
+    const photos = root.querySelector('[data-ov=photos]').checked;
+    const since = ovPeriod ? Date.now() - Number(ovPeriod) * 864e5 : 0;
+    let n = 0;
+    root.querySelectorAll('.mini').forEach((c) => {
+      const ok = (!q || c.dataset.author.includes(q) || c.dataset.text.includes(q))
+        && (!where || (where === 'club' && c.dataset.where === 'club') || (where === 'team' && c.dataset.where === 'team')
+          || (where.startsWith('t:') && c.dataset.teams.split(' ').includes(where.slice(2))))
+        && (!photos || Number(c.dataset.photos) > 0)
+        && (!since || new Date(c.dataset.at).getTime() >= since);
+      c.hidden = !ok;
+      if (ok) n++;
+    });
+    root.querySelector('[data-ovcount]').textContent = `${n} ${n === 1 ? 'Beitrag' : 'Beiträge'}`;
+    root.querySelector('.ov-empty').hidden = n > 0;
+  }
+  document.addEventListener('input', (e) => { if (e.target.closest && e.target.closest('.ov-filters')) applyOverviewFilters(); });
+  document.addEventListener('change', (e) => { if (e.target.closest && e.target.closest('.ov-filters')) applyOverviewFilters(); });
+  document.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-ovperiod]');
+    if (!b) return;
+    ovPeriod = b.dataset.ovperiod;
+    document.querySelectorAll('[data-ovperiod]').forEach((x) => x.classList.toggle('on', x === b));
+    applyOverviewFilters();
+  });
+  // Nach dem Aufbau einmal filtern (z. B. voreingestellte Mannschaft)
+  new MutationObserver(() => { const r = document.querySelector('.overview:not([data-ready])'); if (r) { r.dataset.ready = '1'; ovPeriod = ''; applyOverviewFilters(); } })
+    .observe(document.body, { childList: true, subtree: true });
+  // Einzelnen Beitrag aus der Übersicht groß öffnen
+  function openPost(id) {
+    const p = postCache[id];
+    if (!p) return;
+    ui().openSheet(`<div class="editor post-sheet">${postHtml(p, Boolean(ui().state.member))}</div>`);
   }
 
   // Schreiben: Hinweise (einmalig) → bei Jugendlichen Einverständnis der Eltern → Beitrag mit bis zu 4 Fotos
@@ -676,6 +763,8 @@
     const existing = editId ? postCache[editId] : null;
     const draft = { text: existing ? existing.text : '', images: existing ? (existing.images || []).filter((r) => images[r]) : [], alsoTeams: existing ? (existing.alsoTeams || []) : [] };
     const myTeams = scope === 'club' ? (state.member.teams || []) : [];
+    const allTeams = () => [...new Map(((TFB.teams && TFB.teams.seasons) || []).flatMap((x) => x.teams)
+      .map((t) => [teamKey(t.name), t.name.replace(/\s*\(.*?\)/g, '')])).entries()].sort((a, b) => a[1].localeCompare(b[1], 'de'));
     const isTeam = scope.startsWith('team:');
     const render = () => {
       openSheet(`
@@ -689,7 +778,11 @@
           </div>
           <p class="small muted">Bis zu 4 Fotos – das erste erscheint im Beitrag, alle zusammen per Klick.</p>
           ${draft.images.length ? '<label class="meet-check"><input type="checkbox" name="photoOk" required><span>Die abgebildeten Personen sind mit der Veröffentlichung einverstanden.</span></label>' : ''}
-          ${myTeams.length ? `<div class="compose-teams">${myTeams.map((k) => `<label class="meet-check"><input type="checkbox" name="alsoTeam" value="${esc(k)}" ${draft.alsoTeams.includes(k) ? 'checked' : ''}><span>Auch in den <b>Insider News · ${esc(teamLabel(k))}</b> zeigen</span></label>`).join('')}</div>` : ''}
+          ${scope === 'club' && (myTeams.length || state.member.isAdmin) ? `<div class="compose-teams">
+            ${[...new Set([...myTeams, ...draft.alsoTeams])].map((k) => `<label class="meet-check"><input type="checkbox" name="alsoTeam" value="${esc(k)}" ${draft.alsoTeams.includes(k) ? 'checked' : ''}><span>Auch in den <b>Insider News · ${esc(teamLabel(k))}</b> zeigen</span></label>`).join('')}
+            ${state.member.isAdmin ? `<label class="field compose-team-add"><span>Auch in einer anderen Mannschaft zeigen (Admin)</span>
+              <select data-addteam><option value="">Mannschaft wählen …</option>${allTeams().filter(([k]) => !myTeams.includes(k) && !draft.alsoTeams.includes(k)).map(([k, n]) => `<option value="${esc(k)}">${esc(n)}</option>`).join('')}</select></label>` : ''}
+          </div>` : ''}
           <p class="form-error" role="alert"></p>
           <button type="submit" class="btn signal block big">${existing ? 'Speichern' : 'Veröffentlichen'}</button>
           <p class="fineprint">Öffentlich sichtbar mit deinem Namen${state.member.isMinor ? ' (Vorname und Anfangsbuchstabe)' : ''}.</p>
@@ -706,6 +799,7 @@
         if (mv) { keep(); const a = Number(mv.dataset.cmove); const b = a + Number(mv.dataset.dir); [draft.images[a], draft.images[b]] = [draft.images[b], draft.images[a]]; render(); }
       });
       form.addEventListener('change', async (e) => {
+        if (e.target.matches('[data-addteam]') && e.target.value) { keep(); draft.alsoTeams.push(e.target.value); render(); return; }
         if (!e.target.matches('[data-cphoto]') || !e.target.files.length) return;
         keep();
         const files = [...e.target.files].slice(0, 4 - draft.images.length);
@@ -1019,7 +1113,7 @@
           const homePanel = `
             <p class="ed-hint">So erscheint das Thema auf der <b>Startseite</b>. Links siehst du die Vorschau.</p>
             <h3 class="editor-sub">Bild</h3>
-            <div class="field"><span>Anordnung</span>${seg('layout', draft.layout || 'wide', [['wide', 'Breit oben'], ['portrait', 'Hochformat links'], ['square', 'Quadrat links']])}</div>`
+            <div class="field"><span>Anordnung</span>${seg('layout', draft.layout || 'wide', [['wide', 'Breit oben'], ['portrait', 'Hochformat links'], ['square', 'Quadrat links'], ['portrait-right', 'Hochformat rechts'], ['square-right', 'Quadrat rechts']])}</div>`
             + imageField(draft.image, draft.id)
             + `<h3 class="editor-sub">Texte</h3>`
             + field('Kleine Zeile über der Überschrift', 'kicker', draft.kicker, { placeholder: 'z. B. Neu in Bielstein' })
@@ -1521,6 +1615,7 @@
       if (grid) grid.className = `page-grid three show-${aktuellTab}`;
     },
     'post-new': (el) => openCompose(el.dataset.scope),
+    'post-open': (el) => openPost(el.dataset.id),
     'post-edit': (el) => { const p = postCache[el.dataset.id]; if (p) openCompose(p.scope, p.id); },
     'post-delete': async (el) => {
       if (!el.dataset.armed) { el.dataset.armed = '1'; el.textContent = 'Wirklich löschen?'; return; }

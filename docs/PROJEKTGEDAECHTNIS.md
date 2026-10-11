@@ -433,3 +433,17 @@ Monatsabschluss.
   - **Clubgeflüster:** Spieler sehen beim Schreiben „Auch in den Insider News · <Team> zeigen“
     (`post.alsoTeams`); dort mit Hinweis „auch im Clubgeflüster“.
   - **Termine:** Anhang als 76-px-Quadrat unter dem Text (überlagert keine Überschrift mehr).
+- **11.10.2026** – Feinschliff 2:
+  - Home-Themen: Bild auch **rechts** (`layout: portrait-right | square-right`).
+  - Lange Überschriften werden automatisch getrennt (`hyphens: auto`, `lang="de"`).
+  - **Save the Date:** Anhang als Quadrat in Größe des Datumsfelds direkt darunter (`.event-side`),
+    Text mit voller Breite und gleicher Größe wie News/Clubgeflüster; Aktuell-Spalten gleich breit.
+  - **Mannschaftsliste:** Teamfoto links, Name, Knopf „Insider News (n) →“, Platz rechts
+    (Handy: Zähler am Foto).
+  - **Admins** können beim Schreiben im Clubgeflüster jede Mannschaft für die Insider News
+    wählen (Spieler weiterhin nur ihre eigenen). Ursache des Nutzer-Problems: Demo-Max ist nur
+    Herren 40 1 zugeordnet, gemeint war Herren 55.
+  - **Übersicht aller Beiträge** `#gefluester` (bzw. `#gefluester/<team>`): kleiner Pfeil-Knopf
+    neben „Schreib was“; kompakte Karten (Desktop 4 Spalten, Handy 2), Suche nach Name/Stichwort,
+    Bereich (Clubgeflüster / Insider News / einzelne Mannschaft), Zeitraum (7/30 Tage), nur mit Fotos;
+    Karte antippen öffnet den Beitrag.

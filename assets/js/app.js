@@ -8,11 +8,11 @@
   const $sheet = document.getElementById('sheet-root');
   const $toast = document.getElementById('toast-root');
 
-  const VIEWS = ['home', 'kiosk', 'strichliste', 'abrechnungen', 'aktuell', 'sport', 'team', 'club', 'treffen', 'verwaltung'];
+  const VIEWS = ['home', 'kiosk', 'strichliste', 'abrechnungen', 'aktuell', 'gefluester', 'sport', 'team', 'club', 'treffen', 'verwaltung'];
   const KIOSK_AREA = ['kiosk', 'strichliste', 'abrechnungen'];   // nur mit Anmeldung
   // Reiter unten: Kiosk zuerst, dann die Vereinsseiten, dann der Padel-Link.
   // Team-Seiten gehören zu „Sport“
-  const areaOf = (view) => (KIOSK_AREA.includes(view) ? 'kiosk' : view === 'team' ? 'sport' : view);
+  const areaOf = (view) => (KIOSK_AREA.includes(view) ? 'kiosk' : view === 'team' ? 'sport' : view === 'gefluester' ? 'aktuell' : view);
   const state = {
     member: null,
     catalog: null,
