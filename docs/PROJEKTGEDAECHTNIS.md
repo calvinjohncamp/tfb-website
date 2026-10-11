@@ -357,3 +357,14 @@ Monatsabschluss.
   (vor Absatz n) und `right` (unter dem Text) – immer linksbündig. Beim Ziehen erscheinen nur die
   Ablagelinien des eigenen Themas; „Link hierher“-Knöpfe links und rechts für Touch; im Editor
   Auswahlliste „Platz“. Linke Spalte mit mehr Abstand zwischen Kicker, Überschrift, Unterzeile.
+- **11.10.2026** – **WYSIWYG-Texteditor** (contenteditable) für Home-Themen, Unterseiten, Texte und
+  Beiträge: Fett, Kursiv, Unterstrichen, Rot, Grau, Textmarker, Größer (A+), Sehr groß (A++), Link,
+  Zwischenüberschrift, Format entfernen. Gespeichert wird als Text mit Zeichen (`**`, `*`, `__`,
+  `{rot}…{/rot}`, `{grau}`, `{marker}`, `{gross}`, `{sehrgross}`, `[Text](url)`, `## `) –
+  Umwandlung über `toMarkup()`/`inline()` in site.js; Einfügen nur als reiner Text.
+  Textgröße je Thema (`textSize: normal|gross`). Abstand Text → Link = Absatzabstand.
+  Unterseite: Häkchen **„Fotos im Originalformat“** (`more.original`, Kollage ohne Zuschnitt).
+  Interne Links (z. B. Zum Kiosk) als Pille mit **rundem Symbol** der Zielseite (oder eigenem Bild).
+  Einmal-Update: hochgeladenes Titelfoto des Kiosk-Themas auf die Unterseite verschoben
+  (Original-Format an), Startseite zeigt wieder das gezeichnete Motiv.
+  Gelernt: `.field span { display:block }` störte execCommand im Editor → für `.rich-area` zurückgesetzt.

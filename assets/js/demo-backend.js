@@ -229,6 +229,12 @@
       const page = db.site.pages[u.page];
       const block = page && page.blocks.find((x) => x.id === u.block);
       if (block) {
+        // Hochgeladenes Titelfoto auf die Unterseite verschieben (Kollage, vorne) – Startseite zeigt wieder das Motiv
+        if (u.moveImageToMore && /^img:/.test(block.image || '')) {
+          const imgs = ((block.more && block.more.images) || []).filter((r) => !/^ph:/.test(r));
+          block.more = { ...(block.more || {}), images: [block.image, ...imgs] };
+          block.image = null;
+        }
         Object.assign(block, clone(u.set || {}));
         if (u.more) block.more = { ...(block.more || {}), ...clone(u.more) };
       }

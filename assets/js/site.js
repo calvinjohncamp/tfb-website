@@ -38,16 +38,62 @@
 
   // ---------- Formatierung ----------
   const esc = (s) => ui().esc(s);
-  // Fließtext mit kleinen Auszeichnungen (im Editor über die Knöpfe „Link“ und „Fett“):
-  //   [Text](https://… oder #seite)  →  Link     **Text** → fett     ## Text → Zwischenüberschrift
+  // Fließtext mit Auszeichnungen. Im Editor gestaltet man direkt (WYSIWYG); gespeichert wird als
+  // schlichter Text mit Zeichen – so bleibt alles klein, sicher und übertragbar:
+  //   [Text](https://… | #seite)  Link       **Text** fett     *Text* kursiv    __Text__ unterstrichen
+  //   {rot}…{/rot} {grau}…{/grau} {marker}…{/marker} Farbe   {gross}…{/gross} {sehrgross}…{/sehrgross} Größe
+  //   ## Text (Zeilenanfang) Zwischenüberschrift
+  const SPANS = { rot: 'tx-red', grau: 'tx-gray', marker: 'tx-mark', gross: 'tx-l', sehrgross: 'tx-xl' };
   function inline(raw) {
-    return esc(raw)
-      .replace(/\[([^\]]+)\]\(((?:https?:\/\/|#)[^\s)]+)\)/g, (_, label, url) => {
-        const ext = /^https?:/.test(url);
-        return `<a class="inline-link" href="${url}"${ext ? ' target="_blank" rel="noopener"' : ''}>${label}${ext ? '<span class="inline-ext" aria-hidden="true">↗</span>' : ''}</a>`;
-      })
-      .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
-      .replace(/\n/g, '<br>');
+    const links = [];
+    let h = esc(raw).replace(/\[([^\]]+)\]\(((?:https?:\/\/|#)[^\s)]+)\)/g, (_, label, url) => {
+      links.push([label, url]);
+      return `\u0000${links.length - 1}\u0000`;
+    });
+    h = h.replace(/\*\*([\s\S]+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/__([\s\S]+?)__/g, '<u>$1</u>')
+      .replace(/(^|[^*])\*([^*\s][\s\S]*?)\*(?!\*)/g, '$1<em>$2</em>');
+    for (let i = 0; i < 3; i++) {   // verschachtelte Farben/Größen
+      h = h.replace(/\{(rot|grau|marker|gross|sehrgross)\}([\s\S]*?)\{\/\1\}/g, (_, k, t) => `<span class="${SPANS[k]}">${t}</span>`);
+    }
+    h = h.replace(/\u0000(\d+)\u0000/g, (_, i) => {
+      const [label, url] = links[Number(i)];
+      const ext = /^https?:/.test(url);
+      return `<a class="inline-link" href="${url}"${ext ? ' target="_blank" rel="noopener"' : ''}>${label}${ext ? '<span class="inline-ext" aria-hidden="true">↗</span>' : ''}</a>`;
+    });
+    return h.replace(/\n/g, '<br>');
+  }
+  // Rückweg: gestaltetes HTML aus dem Editor → gespeicherter Text mit Zeichen
+  function toMarkup(root) {
+    const kids = (node) => [...node.childNodes].map(walk).join('');
+    function walk(n) {
+      if (n.nodeType === 3) return n.nodeValue.replace(/ /g, ' ');
+      if (n.nodeType !== 1) return '';
+      const tag = n.tagName;
+      if (tag === 'BR') return '\n';
+      if (tag === 'B' || tag === 'STRONG') return wrapIf(kids(n), '**', '**');
+      if (tag === 'I' || tag === 'EM') return wrapIf(kids(n), '*', '*');
+      if (tag === 'U') return wrapIf(kids(n), '__', '__');
+      if (tag === 'A') {
+        const href = n.getAttribute('href') || '';
+        const t = n.textContent.replace(/↗/g, '').trim();
+        return /^(https?:\/\/|#)/.test(href) && t ? `[${t}](${href})` : t;
+      }
+      if (tag === 'SPAN') {
+        const key = Object.keys(SPANS).find((k) => n.classList.contains(SPANS[k]));
+        if (n.classList.contains('inline-ext')) return '';
+        return key ? wrapIf(kids(n), `{${key}}`, `{/${key}}`) : kids(n);
+      }
+      return kids(n);
+    }
+    const wrapIf = (t, a, b) => (t.trim() ? a + t + b : t);
+    const blocks = [];
+    [...root.childNodes].forEach((n) => {
+      if (n.nodeType === 1 && /^H[1-6]$/.test(n.tagName)) blocks.push('## ' + kids(n).replace(/\n/g, ' ').trim());
+      else if (n.nodeType === 1 && (n.tagName === 'P' || n.tagName === 'DIV')) blocks.push(kids(n).replace(/\n+$/, ''));
+      else { const t = walk(n); if (t.trim()) blocks.push(t); }
+    });
+    return blocks.map((x) => x.trim()).filter(Boolean).join('\n\n');
   }
   const paragraphs = (text) => String(text || '').split(/\n{2,}/).map((p) => {
     const h = p.match(/^##\s+(.+)/);
@@ -105,6 +151,13 @@
     if (seed === 'h-50') return '<div class="ph ph-50" aria-hidden="true"><b>50</b><span class="tfb-mark"></span><small>1976 – 2026</small></div>';
     return placeholder(seed);
   }
+  // Symbol für Links innerhalb der App (rundes Zeichen wie beim Padel-Link)
+  function pageIcon(url) {
+    const { icon } = ui();
+    const key = String(url || '').replace('#', '').split('/')[0];
+    const map = { kiosk: icon.kiosk, strichliste: icon.tally, abrechnungen: icon.receipt, aktuell: icon.news, sport: icon.sport, club: icon.club, verein: icon.club, treffen: icon.news, team: icon.sport };
+    return map[key] || icon.chevron;
+  }
   const hostOf = (url) => { try { return new URL(url).hostname.replace(/^www\./, ''); } catch (_) { return ''; } };
 
   // Link als Knopf – bei Websites mit Vorschau-Karte wie in einer Mail oder in WhatsApp.
@@ -117,7 +170,8 @@
     if (style === 'button' || (!ext && style === 'card')) return `<p class="feature-link"><a class="btn signal" href="${esc(link.url)}"${target}>${label} <span aria-hidden="true">${ext ? '↗' : '→'}</span></a></p>`;
     if (style === 'chip') return `
       <p class="feature-link"><a class="link-chip" href="${esc(link.url)}"${target}>
-        ${ext && link.image ? `<span class="link-chip-img">${picture(link.image, link.url)}</span>` : ''}
+        ${link.image ? `<span class="link-chip-img">${picture(link.image, link.url)}</span>`
+          : !ext ? `<span class="link-chip-img icon">${pageIcon(link.url)}</span>` : ''}
         <span class="link-chip-label">${ext ? esc(hostOf(link.url)) : label}</span>
         <small aria-hidden="true">${ext ? '↗' : '→'}</small>
       </a></p>`;
@@ -168,7 +222,7 @@
                 ${slot('left', 'Link hierher')}
               </div>
               <div class="feature-right">
-                <div class="feature-text">${textHtml}</div>
+                <div class="feature-text ${b.textSize === 'gross' ? 'text-l' : ''}">${textHtml}</div>
                 ${slot('right', 'Link hierher')}
                 ${more ? `<p class="feature-more"><a class="more-link" href="${more}">Mehr erfahren <span aria-hidden="true">→</span></a></p>` : ''}
               </div>
@@ -272,11 +326,11 @@
   const shownImage = (ref) => ref && (images[ref] || /^assets\//.test(ref) || /^ph:/.test(ref));
 
   // Fotokollage: wechselnde Kachelgrößen, damit es nach Magazin aussieht – Antippen zeigt das Foto groß.
-  function collage(list, blockId) {
+  function collage(list, blockId, original = false) {
     const imgs = list.filter(shownImage);
     if (!imgs.length) return '';
     return `
-      <div class="collage collage-${Math.min(imgs.length, 5)}">
+      <div class="collage ${original ? 'natural' : ''} collage-${Math.min(imgs.length, 5)}">
         ${imgs.map((ref, i) => `
           <button type="button" class="collage-item" data-action="collage-open" data-block="${esc(blockId)}" data-index="${i}" aria-label="Foto ${i + 1} groß ansehen">
             ${picture(ref, ref, '')}
@@ -305,11 +359,11 @@
         </header>
         <div class="story-body">
           ${b.subtitle ? `<p class="story-lead">${esc(b.subtitle)}</p>` : ''}
-          <div class="story-text dropcap">${paragraphs(parts.slice(0, cut).join('\n\n') || b.text)}</div>
+          <div class="story-text dropcap ${b.textSize === 'gross' ? 'text-l' : ''}">${paragraphs(parts.slice(0, cut).join('\n\n') || b.text)}</div>
           ${more.quote ? `<blockquote class="story-quote"><p>${esc(more.quote)}</p>${more.quoteBy ? `<cite>${esc(more.quoteBy)}</cite>` : ''}</blockquote>` : ''}
           ${parts.length > cut ? `<div class="story-text">${paragraphs(parts.slice(cut).join('\n\n'))}</div>` : ''}
         </div>
-        ${collage(more.images || [], b.id)}
+        ${collage(more.images || [], b.id, Boolean(more.original))}
         <div class="story-foot">
           ${linkMarkup(b.link)}
           <a class="more-link back" href="#home"><span aria-hidden="true">←</span> Zur Startseite</a>
@@ -441,10 +495,26 @@
   // ---------- Baustein-Editor ----------
   function field(label, name, value, opts = {}) {
     const v = esc(value == null ? '' : value);
-    if (opts.area) return `<div class="field"><span>${label}</span>
-      ${opts.rich ? `<div class="rich-tools" role="toolbar" aria-label="Text gestalten">
-        <button type="button" data-rich="link">↗ Link</button><button type="button" data-rich="bold"><b>F</b> Fett</button><button type="button" data-rich="h">Zwischenüberschrift</button></div>` : ''}
-      <textarea name="${name}" rows="${opts.rows || 5}" placeholder="${esc(opts.placeholder || '')}">${v}</textarea></div>`;
+    if (opts.area && opts.rich) return `<div class="field rich-field"><span>${label}</span>
+      <div class="rich-tools" role="toolbar" aria-label="Text gestalten">
+        <button type="button" data-rich="bold" title="Fett"><b>F</b></button>
+        <button type="button" data-rich="italic" title="Kursiv"><i>K</i></button>
+        <button type="button" data-rich="underline" title="Unterstrichen"><u>U</u></button>
+        <span class="rich-sep"></span>
+        <button type="button" data-rich="rot" title="Rot"><span class="tx-red">A</span></button>
+        <button type="button" data-rich="grau" title="Grau"><span class="tx-gray">A</span></button>
+        <button type="button" data-rich="marker" title="Textmarker"><span class="tx-mark">A</span></button>
+        <span class="rich-sep"></span>
+        <button type="button" data-rich="gross" title="Größer">A+</button>
+        <button type="button" data-rich="sehrgross" title="Sehr groß">A++</button>
+        <span class="rich-sep"></span>
+        <button type="button" data-rich="link" title="Link">↗ Link</button>
+        <button type="button" data-rich="h" title="Zwischenüberschrift">Überschrift</button>
+        <button type="button" data-rich="clear" title="Gestaltung entfernen">⌫ Format</button>
+      </div>
+      <div class="rich-area" contenteditable="true" data-rich-for="${name}" data-placeholder="${esc(opts.placeholder || '')}">${paragraphs(value || '')}</div>
+      <textarea name="${name}" hidden>${v}</textarea></div>`;
+    if (opts.area) return `<label class="field"><span>${label}</span><textarea name="${name}" rows="${opts.rows || 5}" placeholder="${esc(opts.placeholder || '')}">${v}</textarea></label>`;
     return `<label class="field"><span>${label}</span><input name="${name}" type="${opts.type || 'text'}" value="${v}" placeholder="${esc(opts.placeholder || '')}"></label>`;
   }
   function imageField(ref, seed, label = 'Foto', target = '') {
@@ -480,7 +550,9 @@
             + imageField(draft.image, draft.id)
             + field('Kleine Zeile über der Überschrift', 'kicker', draft.kicker, { placeholder: 'z. B. Neu in Bielstein' })
             + field('Überschrift', 'title', draft.title) + field('Unterzeile', 'subtitle', draft.subtitle)
-            + field('Kurzer Text auf der Startseite', 'text', draft.text, { area: true, rich: true, rows: 5, placeholder: 'Zwei, drei Sätze. Leerzeile = neuer Absatz' })
+            + field('Kurzer Text auf der Startseite', 'text', draft.text, { area: true, rich: true, rows: 5, placeholder: 'Zwei, drei Sätze – Wörter markieren und oben gestalten' })
+            + `<div class="field"><span>Textgröße (ganzer Text, Startseite und Unterseite)</span><div class="seg size-seg">${[['normal', 'Normal'], ['gross', 'Groß']].map(([v, l]) =>
+                `<button type="button" class="${(draft.textSize || 'normal') === v ? 'on' : ''}" data-textsize="${v}">${l}</button>`).join('')}</div></div>`
             + `<h3 class="editor-sub">Link</h3>`
             + field('Ziel (Website oder #kiosk, #aktuell, #sport, #club)', 'linkUrl', lk.url, { placeholder: 'https://… oder #kiosk' })
             + field('Link-Text (für Knopf und Vorschau-Karte – der dezente Link zeigt die Adresse)', 'linkLabel', lk.label, { placeholder: 'z. B. Jetzt Platz buchen' })
@@ -494,11 +566,13 @@
                 `<button type="button" class="${(lk.style || 'chip') === v ? 'on' : ''}" data-linkstyle="${v}">${l}</button>`).join('')}</div></div>`
             + (ext ? `<p class="muted small">Für die Vorschau (kleines Bild beim dezenten Link, große Karte): im Echtbetrieb holt die App Bild, Titel und Text automatisch von der Website – bis dahin hier eintragen.</p>`
               + field('Vorschau: Titel', 'linkTitle', lk.title) + field('Vorschau: Text', 'linkText', lk.text, { area: true, rows: 3 })
-              + imageField(lk.image, lk.url, 'Vorschau: Bild', 'link') : '')
+              + imageField(lk.image, lk.url, 'Vorschau: Bild', 'link')
+              : imageField(lk.image, lk.url || 'intern', 'Rundes Bild im Link (leer = Symbol der Seite)', 'link'))
             + `<h3 class="editor-sub">Unterseite „Mehr erfahren“</h3><p class="muted small">Erscheint, sobald hier etwas steht. Großes Titelbild oben, der Text wie ein Magazinartikel, dazu ein Zitat und eine Fotokollage.</p>`
             + field('Ausführlicher Text', 'moreText', (draft.more || {}).text, { area: true, rich: true, rows: 10, placeholder: 'Beliebig lang. Leerzeile = neuer Absatz, ## am Zeilenanfang = Zwischenüberschrift' })
             + field('Zitat (freiwillig)', 'moreQuote', (draft.more || {}).quote, { placeholder: 'z. B. „Nach zehn Minuten hatte jeder ein Grinsen im Gesicht.“' })
             + field('Zitat von', 'moreQuoteBy', (draft.more || {}).quoteBy, { placeholder: 'z. B. Jan, Herren 40' })
+            + `<label class="meet-check"><input type="checkbox" name="moreOriginal" ${(draft.more || {}).original ? 'checked' : ''}><span>Fotos im Originalformat zeigen (nicht zuschneiden – 4:3, 1:1, 16:9 …)</span></label>`
             + `<div class="field"><span>Fotokollage</span>
                 <div class="gallery-edit">
                   ${((draft.more || {}).images || []).filter(shownImage).map((ref) => `<div class="gallery-thumb">${picture(ref, ref)}<button type="button" data-more-remove="${esc(ref)}" aria-label="Foto entfernen">×</button></div>`).join('')}
@@ -506,11 +580,11 @@
                 </div></div>`;
         }
         case 'heading': return field('Überschrift', 'title', draft.title);
-        case 'text': return field('Überschrift', 'title', draft.title) + field('Text', 'text', draft.text, { area: true, rows: 8, placeholder: 'Leerzeile = neuer Absatz' });
+        case 'text': return field('Überschrift', 'title', draft.title) + field('Text', 'text', draft.text, { area: true, rich: true, rows: 8, placeholder: 'Text schreiben – Wörter markieren und oben gestalten' });
         case 'event': return `<div class="field-row">${field('Datum', 'date', draft.date, { type: 'date' })}${field('Uhrzeit', 'time', draft.time, { type: 'time' })}</div>`
           + field('Titel', 'title', draft.title) + field('Ort', 'place', draft.place) + field('Kurzinfo', 'text', draft.text, { area: true, rows: 3 });
         case 'post': return imageField(draft.image, draft.id) + field('Datum', 'date', draft.date, { type: 'date' })
-          + field('Überschrift', 'title', draft.title) + field('Text', 'text', draft.text, { area: true, rows: 7, placeholder: 'Leerzeile = neuer Absatz' });
+          + field('Überschrift', 'title', draft.title) + field('Text', 'text', draft.text, { area: true, rich: true, rows: 7, placeholder: 'Text schreiben – Wörter markieren und oben gestalten' });
         case 'image': return imageField(draft.image, draft.id) + field('Bildunterschrift', 'caption', draft.caption);
         case 'gallery': return field('Überschrift', 'title', draft.title) + `
           <div class="field"><span>Fotos</span>
@@ -547,6 +621,8 @@
           closeSheet();
           commit('Baustein gelöscht');
         }
+        const ts = e.target.closest('[data-textsize]');
+        if (ts) { collect(form); draft.textSize = ts.dataset.textsize; render(); return; }
         const lay = e.target.closest('[data-layout]');
         if (lay) { collect(form); draft.layout = lay.dataset.layout; render(); return; }
         const ls = e.target.closest('[data-linkstyle]');
@@ -580,7 +656,7 @@
     const collect = (form) => {
       const f = form.elements;
       ['title', 'text', 'date', 'time', 'place', 'caption', 'label', 'url', 'kicker', 'subtitle'].forEach((k) => { if (f[k]) draft[k] = f[k].value.trim(); });
-      if (f.moreText) draft.more = { ...(draft.more || {}), text: f.moreText.value.trim(), quote: f.moreQuote.value.trim(), quoteBy: f.moreQuoteBy.value.trim() };
+      if (f.moreText) draft.more = { ...(draft.more || {}), text: f.moreText.value.trim(), quote: f.moreQuote.value.trim(), quoteBy: f.moreQuoteBy.value.trim(), original: Boolean(f.moreOriginal && f.moreOriginal.checked) };
       if (f.linkUrl) {
         draft.link = { ...(draft.link || {}), url: f.linkUrl.value.trim(), label: f.linkLabel.value.trim(), ...(f.linkPos ? { position: f.linkPos.value } : {}) };
         if (f.linkTitle) Object.assign(draft.link, { title: f.linkTitle.value.trim(), text: f.linkText.value.trim() });
@@ -871,23 +947,79 @@
     if (e.target.closest('.editing-page .link-drag a, .editing-page .feature-link a')) e.preventDefault();
   }, true);
 
-  // Werkzeugleiste über Textfeldern: Link, Fett, Zwischenüberschrift an der Cursor-Stelle einfügen
+  // WYSIWYG-Textfelder: Auswahl gestalten, Ergebnis laufend als Text mit Zeichen speichern
+  const syncRich = (area) => {
+    const ta = area.parentElement.querySelector(`textarea[name="${area.dataset.richFor}"]`);
+    if (ta) ta.value = toMarkup(area);
+  };
+  document.addEventListener('input', (e) => { if (e.target.matches && e.target.matches('.rich-area')) syncRich(e.target); });
+  document.addEventListener('focusin', (e) => {
+    if (e.target.matches && e.target.matches('.rich-area')) { try { document.execCommand('defaultParagraphSeparator', false, 'p'); } catch (_) {} }
+  });
+  // Eingefügter Text kommt ohne fremde Formatierung an
+  document.addEventListener('paste', (e) => {
+    const area = e.target.closest && e.target.closest('.rich-area');
+    if (!area) return;
+    e.preventDefault();
+    const text = (e.clipboardData || window.clipboardData).getData('text/plain');
+    document.execCommand('insertText', false, text);
+  });
+  // Toolbar-Knöpfe dürfen die Auswahl im Textfeld nicht aufheben
+  document.addEventListener('mousedown', (e) => { if (e.target.closest('.rich-tools button')) e.preventDefault(); });
+
+  function wrapSelection(area, className) {
+    const sel = window.getSelection();
+    if (!sel.rangeCount || sel.isCollapsed || !area.contains(sel.anchorNode)) { ui().toast('Bitte zuerst Wörter im Text markieren'); return; }
+    const range = sel.getRangeAt(0);
+    // Gleiche Gestaltung nochmal = wieder entfernen
+    const inside = sel.anchorNode.parentElement && sel.anchorNode.parentElement.closest(`span.${className}`);
+    if (inside && area.contains(inside)) { inside.replaceWith(...inside.childNodes); return; }
+    const span = document.createElement('span');
+    span.className = className;
+    span.appendChild(range.extractContents());
+    range.insertNode(span);
+    sel.removeAllRanges();
+    const r = document.createRange(); r.selectNodeContents(span); sel.addRange(r);
+  }
+
   document.addEventListener('click', (e) => {
     const btn = e.target.closest('[data-rich]');
     if (!btn) return;
-    const area = btn.closest('.field').querySelector('textarea');
-    const { selectionStart: a, selectionEnd: z, value } = area;
-    const sel = value.slice(a, z);
-    let insert = '';
-    if (btn.dataset.rich === 'link') {
+    const area = btn.closest('.field').querySelector('.rich-area');
+    if (!area) return;
+    if (document.activeElement !== area) {
+      // Fokus zurückholen, ohne die Markierung zu verlieren
+      const sel = window.getSelection();
+      const keep = sel.rangeCount && area.contains(sel.anchorNode) ? sel.getRangeAt(0).cloneRange() : null;
+      area.focus();
+      if (keep) { sel.removeAllRanges(); sel.addRange(keep); }
+    }
+    const cmd = btn.dataset.rich;
+    if (['bold', 'italic', 'underline'].includes(cmd)) document.execCommand(cmd);
+    else if (SPANS[cmd]) wrapSelection(area, SPANS[cmd]);
+    else if (cmd === 'h') {
+      const block = window.getSelection().anchorNode && window.getSelection().anchorNode.parentElement.closest('h3, p, div');
+      document.execCommand('formatBlock', false, block && block.tagName === 'H3' ? 'p' : 'h3');
+    } else if (cmd === 'clear') {
+      const sel = window.getSelection();
+      if (!sel.rangeCount || sel.isCollapsed) { ui().toast('Bitte zuerst den Text markieren, der wieder schlicht werden soll'); return; }
+      const range = sel.getRangeAt(0);
+      const text = range.toString();
+      range.deleteContents();
+      range.insertNode(document.createTextNode(text));
+    } else if (cmd === 'link') {
+      const sel = window.getSelection();
+      const chosen = sel.rangeCount ? sel.toString() : '';
+      const range = sel.rangeCount ? sel.getRangeAt(0).cloneRange() : null;
       const url = prompt('Wohin soll der Link führen?\n(Website mit https://… oder eine Seite wie #kiosk, #sport, #club)', 'https://');
-      if (!url || url === 'https://') return;
-      const label = sel || prompt('Welcher Text soll im Fließtext stehen?', '') || url.replace(/^https?:\/\/(www\.)?/, '');
-      insert = `[${label}](${url.trim()})`;
-    } else if (btn.dataset.rich === 'bold') insert = `**${sel || 'fetter Text'}**`;
-    else insert = `${a > 0 && value[a - 1] !== '\n' ? '\n\n' : ''}## ${sel || 'Zwischenüberschrift'}\n\n`;
-    area.value = value.slice(0, a) + insert + value.slice(z);
-    area.focus();
-    area.selectionStart = area.selectionEnd = a + insert.length;
+      if (!url || url === 'https://' || !/^(https?:\/\/|#)/.test(url.trim())) return;
+      const label = chosen || prompt('Welcher Text soll im Fließtext stehen?', '') || url.replace(/^https?:\/\/(www\.)?/, '');
+      const a = document.createElement('a');
+      a.className = 'inline-link';
+      a.href = url.trim();
+      a.textContent = label;
+      if (range && area.contains(range.commonAncestorContainer)) { range.deleteContents(); range.insertNode(a); } else area.appendChild(a);
+    }
+    syncRich(area);
   });
 })();

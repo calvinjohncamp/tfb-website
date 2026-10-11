@@ -1410,3 +1410,46 @@ button.meet-row:hover { background: #FAF8F3; }
 .dragging-link .editing-page .feature.drag-src .link-slot.empty:not(.with-button) { display: block; margin: 4px 0 12px; }
 .link-drop { display: block; border: 2px dashed color-mix(in srgb, var(--signal) 45%, transparent); border-radius: 10px; padding: 6px 12px; font-size: .74rem; font-weight: 700; color: var(--signal); text-transform: uppercase; letter-spacing: .1em; }
 .link-slot.over .link-drop { background: color-mix(in srgb, var(--signal) 10%, #fff); border-color: var(--signal); }
+
+/* 11.10.: Abstand Text → Link wie zwischen zwei Absätzen (Absatz .8em + Zeilenzwischenraum .6em) */
+.feature-right > .link-place, .feature-right > .link-slot.filled, .feature-right > .link-slot.with-button { margin-top: .6em; }
+.feature-text > .link-place, .feature-text > .link-slot.filled { margin: .6em 0 1.4em; }
+.feature-more { margin-top: 1.4em; }
+
+/* Textgestaltung (Fließtext) */
+.tx-red { color: var(--signal); }
+.tx-gray { color: var(--muted); }
+.tx-mark { background: linear-gradient(transparent 55%, color-mix(in srgb, var(--signal) 28%, transparent) 55%); padding: 0 .1em; }
+.tx-l { font-size: 1.25em; line-height: 1.35; }
+.tx-xl { font-family: var(--serif); font-size: 1.65em; line-height: 1.2; font-weight: 800; letter-spacing: -.015em; }
+.text-l { font-size: 1.18rem; line-height: 1.6; }
+.story-text.text-l { font-size: 1.22rem; }
+
+/* WYSIWYG-Editor */
+.rich-field > span { display: block; }
+.rich-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; margin: 0 0 6px; padding: 5px; background: #F6F3EC; border-radius: 10px; }
+.rich-tools button { min-width: 32px; height: 30px; padding: 0 8px; border: 1px solid transparent; background: #fff; border-radius: 7px; font-size: .82rem; font-weight: 700; color: var(--ink); }
+.rich-tools button:hover { border-color: var(--signal); }
+.rich-sep { width: 1px; height: 20px; background: #DDD6C8; margin: 0 3px; }
+.rich-area { min-height: 140px; padding: 12px 14px; border: 1.5px solid var(--line); border-radius: 12px; background: var(--paper); font-size: 16px; line-height: 1.55; outline: none; }
+.rich-area:focus { border-color: var(--brand); }
+.rich-area p { margin: 0 0 .7em; }
+.rich-area:empty::before { content: attr(data-placeholder); color: #A9A398; }
+.rich-area h3 { font-family: var(--serif); font-size: 1.2rem; margin: .8em 0 .3em; }
+.rich-area .inline-ext { display: none; }
+
+/* Kollage im Originalformat: nichts wird zugeschnitten */
+.collage.natural { display: block; column-count: 1; column-gap: 12px; }
+.collage.natural .collage-item { display: block; width: 100%; margin: 0 0 12px; break-inside: avoid; }
+.collage.natural .collage-item > img { height: auto; }
+.collage.natural .collage-item > .ph { aspect-ratio: 4 / 3; height: auto; }
+@media (min-width: 640px) { .collage.natural.collage-2, .collage.natural.collage-3, .collage.natural.collage-4, .collage.natural.collage-5 { column-count: 2; } }
+.collage.natural.collage-1 .collage-item { max-width: 900px; margin: 0 auto; }
+
+/* Rundes Symbol bei Links innerhalb der App */
+.link-chip-img.icon { background: var(--signal); display: grid; place-items: center; }
+.link-chip-img.icon svg { width: 17px; height: 17px; fill: none; stroke: #fff; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+/* Beschriftungsregel „.field span“ nicht auf Text im Editor und in der Werkzeugleiste anwenden */
+.field .rich-area span, .field .rich-tools span:not(.rich-sep) { display: inline; margin: 0; font-size: inherit; font-weight: inherit; }
+.field .rich-area .tx-l { font-size: 1.25em; }
+.field .rich-area .tx-xl { font-size: 1.65em; font-weight: 800; }
