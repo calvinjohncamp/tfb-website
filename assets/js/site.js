@@ -359,7 +359,7 @@
       case 'post':
         return `
           <article class="post card">
-            ${(b.images || []).filter(shownImage).length ? newsCollage(b) : `<div class="post-media">${picture(b.image, b.id, b.title)}${dateBadge(b.date)}</div>`}
+            ${postPhotos(b)}
             <div class="post-body">
               <p class="post-date">${esc(fmt(b.date, { day: 'numeric', month: 'long', year: 'numeric' }))}</p>
               <h3>${esc(b.title)}</h3>
@@ -521,6 +521,23 @@
       </div>`;
   }
 
+  // Beitrag (Aktuell): 1 Foto breit, 2–4 als gleich große Quadrate nebeneinander; jedes Foto einpassbar
+  function postPhotos(b) {
+    const list = (b.images || []).filter(shownImage);
+    const refs = list.length ? list : [b.image];
+    if (refs.length <= 1) {
+      const pic = picture(refs[0], list.length ? refs[0] : b.id, b.title);
+      return `<div class="post-media">${list.length ? `<button type="button" class="post-open" data-action="news-gallery" data-block="${esc(b.id)}" aria-label="Foto groß ansehen">${pic}</button>` : pic}${dateBadge(b.date)}</div>`;
+    }
+    const shown = refs.slice(0, 4);
+    return `<div class="post-photos n${shown.length}">${shown.map((r, i) => `<button type="button" class="post-square" data-action="news-gallery" data-block="${esc(b.id)}" aria-label="Fotos groß ansehen">${picture(r, r, '')}${i === shown.length - 1 && refs.length > 4 ? `<span class="photo-count">+${refs.length - 4}</span>` : ''}</button>`).join('')}${dateBadge(b.date)}</div>`;
+  }
+  function postPhotosField(draft) {
+    const refs = (draft.images || []).filter(shownImage);
+    const format = refs.length >= 2 ? 'square' : 'news';
+    return `<div class="field"><span>Fotos (1 bis 4) – 1 Foto breit, 2–4 als Quadrate nebeneinander</span><div class="gallery-edit">${refs.map((ref, i) => thumbEdit(ref, 'news', i, refs.length, 'data-news-remove', format)).join('')}${refs.length < 4 ? `<label class="gallery-add">${ui().icon.plus}<span>Foto</span><input type="file" accept="image/*" multiple data-news-input data-max="4" hidden></label>` : ''}</div>
+      ${refs.length > 4 ? '<p class="muted small">Gezeigt werden die ersten 4 Fotos – bitte überzählige entfernen.</p>' : '<p class="muted small">Kamera-Symbol am Foto: Ausschnitt genau wie auf der Seite einpassen.</p>'}</div>`;
+  }
   function newsCollage(b) {
     const refs = (b.images || []).filter(shownImage).slice(0, 100);
     const preview = refs.slice(0, 5);
@@ -1355,6 +1372,7 @@
     if (!original) return;
     const draft = JSON.parse(JSON.stringify(original));
     if (draft.type === 'feature') { draft.more = { ...(draft.more || {}) }; initSections(draft.more); }
+    if (draft.type === 'post' && !(draft.images || []).length && draft.image) { draft.images = [draft.image]; draft.image = null; }
     let edTab = startTab;
     const edMore = {};   // „Mehr Gestaltung“ je Reiter auf/zu (bleibt beim Neuzeichnen)
     // Themen-Leiste: zwischen den Themen der Startseite wechseln (speichert das aktuelle), + legt ein neues an
@@ -1474,7 +1492,7 @@
                     <button type="button" class="link" data-att-remove>Entfernen</button></div></div></div>`
                 : `<label class="btn">Bild oder PDF wählen<input type="file" accept="image/*,application/pdf" data-att-input hidden></label>`}
             </div>`;
-        case 'post': return ((draft.images || []).length ? '' : imageField(draft.image, draft.id)) + newsPhotoField(draft) + field('Datum', 'date', draft.date, { type: 'date' })
+        case 'post': return postPhotosField(draft) + field('Datum', 'date', draft.date, { type: 'date' })
           + field('Überschrift', 'title', draft.title) + field('Text', 'text', draft.text, { area: true, rich: true, rows: 7, placeholder: 'Text schreiben – Wörter markieren und oben gestalten' });
         case 'image': return imageField(draft.image, draft.id) + field('Bildunterschrift', 'caption', draft.caption)
           + `<label class="meet-check"><input type="checkbox" name="imgOriginal" data-rerender ${draft.original ? 'checked' : ''}><span>Originalformat (nicht zuschneiden)</span></label>`
@@ -1683,6 +1701,10 @@
         collect(form);
         try {
           const files = [...input.files];
+          if (input.dataset.max && files.length + (draft.images || []).length + (draft.image ? 1 : 0) > Number(input.dataset.max)) {
+            ui().toast(`Höchstens ${input.dataset.max} Fotos pro Beitrag – bitte weniger auswählen.`);
+            input.value = ''; return;
+          }
           if (input.matches('[data-news-input]') && files.length + (draft.images || []).length + (draft.image ? 1 : 0) > 100) {
             ui().toast('Eine Fotokollage kann höchstens 100 Bilder enthalten. Bitte weniger Fotos auswählen.');
             input.value = ''; return;

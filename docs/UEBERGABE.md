@@ -3,7 +3,7 @@
 **Zuerst lesen.** Ausführlicher Verlauf: [PROJEKTGEDAECHTNIS.md](PROJEKTGEDAECHTNIS.md).
 Diese Zusammenfassung hat Vorrang vor älteren Zwischenständen.
 
-Stand: **11.10.2026 abends, Titelfotos im Seitenformat einpassen**. Cache **tfb-kiosk-v112**.
+Stand: **11.10.2026 abends, Aktuell-Beiträge mit 1–4 Fotos**. Cache **tfb-kiosk-v113**.
 Alles committet (Sicherungspunkt v99 `f8e6c90`, danach Stufe 1). Nicht veröffentlicht.
 
 ## Neu: Ordner heißt jetzt „9. TFB-Website“
@@ -39,6 +39,15 @@ Alles committet (Sicherungspunkt v99 `f8e6c90`, danach Stufe 1). Nicht veröffen
   sich an (Desktop: „Links siehst du jede Änderung sofort“).
 - Beim Wegschieben bleibt die Kopfzeile sichtbar („antippen zum Weiterbearbeiten“),
   Rückkehr an dieselbe Stelle – gilt auch für den Home-Themen-Editor (`togglePeek`).
+
+## Neu in v113: Aktuell-Beiträge mit 1–4 Fotos
+
+- Beiträge (`post`) zeigen 1 Foto breit (16:9) oder 2–4 als gleich große Quadrate
+  nebeneinander (`postPhotos`), Datum-Plakette unten links; mehr als 4 alte Fotos →
+  „+N“ auf dem vierten, Klick öffnet alle. Unregelmäßige Kollage bei Beiträgen entfällt.
+- Editor: Feld „Fotos (1 bis 4)“ (`postPhotosField`, Upload max. 4); Kamera-Symbol
+  passt im Seitenformat ein (`news` 16:9 bzw. `square`). Einzelfoto (`image`) wird beim
+  Öffnen in die Fotoliste übernommen.
 
 ## Neu in v112: Titelfotos im Seitenformat einpassen
 

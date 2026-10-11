@@ -1,6 +1,6 @@
 // Non-destructive photo framing; no canvas export or file:// image access required.
 (function () {
-  const ratios = { portrait: 3 / 4, landscape: 3 / 2, square: 1, wide: 21 / 9 };   // wide = Titelfoto der Unterseiten
+  const ratios = { portrait: 3 / 4, landscape: 3 / 2, square: 1, wide: 21 / 9, news: 16 / 9 };   // wide = Titelfoto der Unterseiten
   const clamp = (n, min, max, fallback) => Number.isFinite(Number(n)) ? Math.max(min, Math.min(max, Number(n))) : fallback;
   const normalize = (value) => value && Object.hasOwn(ratios, value.format) ? {
     format: value.format, zoom: clamp(value.zoom, 1, 4, 1),
@@ -23,11 +23,11 @@
     let loaded = false, drag = null, busy = false;
     const root = document.createElement('div');
     root.className = 'photo-frame-overlay';
-    root.innerHTML = `<section class="photo-frame-dialog ${lock === 'wide' ? 'wide' : ''}" role="dialog" aria-modal="true" aria-labelledby="photo-frame-title">
+    root.innerHTML = `<section class="photo-frame-dialog ${lock === 'wide' || lock === 'news' ? 'wide' : ''}" role="dialog" aria-modal="true" aria-labelledby="photo-frame-title">
       <header><h2 id="photo-frame-title">Foto einpassen</h2><button type="button" data-frame-close aria-label="Schließen">${ui.icon.close}</button></header>
-      ${lock ? `<p class="frame-lock">Ausschnitt genau wie auf der Seite (${lock === 'wide' ? 'breites Titelfoto' : lock === 'square' ? 'quadratisch' : lock === 'portrait' ? 'Hochformat' : 'Querformat'}). Foto ziehen und zoomen.</p>`
+      ${lock ? `<p class="frame-lock">Ausschnitt genau wie auf der Seite (${lock === 'wide' ? 'breites Titelfoto' : lock === 'news' ? 'Beitragsfoto' : lock === 'square' ? 'quadratisch' : lock === 'portrait' ? 'Hochformat' : 'Querformat'}). Foto ziehen und zoomen.</p>`
         : `<div class="seg frame-formats" aria-label="Rahmenformat">${[['portrait','Hochformat'],['landscape','Querformat'],['square','Quadratisch']].map(([v,l]) => `<button type="button" data-frame-format="${v}" aria-pressed="${v === frame.format}">${l}</button>`).join('')}</div>`}
-      <div class="frame-stage ${lock === 'wide' ? 'wide' : ''}"><div class="photo-frame active" data-frame-stage><img src="${ui.esc(src)}" alt="Bildausschnitt" draggable="false"></div></div>
+      <div class="frame-stage ${lock === 'wide' || lock === 'news' ? 'wide' : ''}"><div class="photo-frame active" data-frame-stage><img src="${ui.esc(src)}" alt="Bildausschnitt" draggable="false"></div></div>
       <label class="field"><span>Zoom</span><input type="range" min="1" max="4" step=".01" value="${frame.zoom}" data-frame-zoom></label>
       <div class="field-row"><label class="field"><span>Horizontal</span><input type="range" min="0" max="1" step=".001" value="${frame.x}" data-frame-x></label><label class="field"><span>Vertikal</span><input type="range" min="0" max="1" step=".001" value="${frame.y}" data-frame-y></label></div>
       <p class="form-error" role="alert"></p>
