@@ -409,6 +409,7 @@
   function featureLinks(b) {
     const list = [];
     if (safeLink(b.link?.url)) list.push({ key: 'main', link: b.link });
+    if (safeLink(b.link2?.url)) list.push({ key: 'second', link: { style: b.link?.style || 'chip', ...b.link2, position: b.link2.position || b.link?.position || 'right', order: b.link2.order ?? ((b.link?.order || 0) + 0.5) } });
     if (b.album?.enabled) list.push({ key: 'album', link: { ...b.album, label: b.album.label || 'Fotos der Veranstaltung', url: `#home/${b.id}/fotos`, style: 'chip', icon: b.album.icon || 'camera' } });
     return list.sort((a, z) => (a.link.order || 0) - (z.link.order || 0));
   }
@@ -1185,19 +1186,19 @@
     (site.pages.home.blocks || []).filter(x => x.album?.enabled).forEach(x => list.push([`#home/${x.id}/fotos`, `Fotos · ${x.title}`]));
     return list;
   }
-  function linkTargetField(url) {
+  function linkTargetField(url, prefix = 'link', label = 'Ziel') {
     const isApp = /^#/.test(url || '');
     const targets = appTargets();
     return `
-      <div class="field link-target"><span>Ziel</span>
+      <div class="field link-target"><span>${label}</span>
         <div class="seg link-kind-seg">
-          <button type="button" class="${isApp ? '' : 'on'}" data-linkkind="web">Website</button>
-          <button type="button" class="${isApp ? 'on' : ''}" data-linkkind="app">Seite der App</button>
+          <button type="button" class="${isApp ? '' : 'on'}" data-linkkind="web" data-linkfor="${prefix}">Website</button>
+          <button type="button" class="${isApp ? 'on' : ''}" data-linkkind="app" data-linkfor="${prefix}">Seite der App</button>
         </div>
         ${isApp
-          ? `<select name="linkApp">${targets.map(([v, l]) => `<option value="${esc(v)}" ${v === url ? 'selected' : ''}>${esc(l)}</option>`).join('')}</select>
-             <input type="hidden" name="linkUrl" value="${esc(url)}">`
-          : `<input name="linkUrl" type="url" inputmode="url" value="${esc(url || '')}" placeholder="https://www.beispiel.de">`}
+          ? `<select name="${prefix}App">${targets.map(([v, l]) => `<option value="${esc(v)}" ${v === url ? 'selected' : ''}>${esc(l)}</option>`).join('')}</select>
+             <input type="hidden" name="${prefix}Url" value="${esc(url)}">`
+          : `<input name="${prefix}Url" type="url" inputmode="url" value="${esc(url || '')}" placeholder="https://www.beispiel.de">`}
       </div>`;
   }
   // Foto in einer Fotoliste des Editors: × entfernen, ‹ › verschieben, mit der Maus ziehen
@@ -1243,6 +1244,14 @@
     const draft = JSON.parse(JSON.stringify(original));
     let edTab = startTab;
     const edMore = {};   // „Mehr Gestaltung“ je Reiter auf/zu (bleibt beim Neuzeichnen)
+    // Themen-Leiste: zwischen den Themen der Startseite wechseln (speichert das aktuelle), + legt ein neues an
+    const themeNav = () => {
+      const all = site.pages.home.blocks.filter((b) => b.type === 'feature' && (!b._new || b.id === id));
+      return `<nav class="ed-themes" aria-label="Themen der Startseite"><span>Thema</span>
+        ${all.map((b, i) => `<button type="button" class="${b.id === id ? 'on' : ''}" data-edtheme="${esc(b.id)}" title="${esc(b.title || 'Neues Thema')}" ${b.id === id ? 'aria-current="true"' : ''}>${String(i + 1).padStart(2, '0')}</button>`).join('')}
+        ${all.filter((b) => !b._new).length < MAX_HOME_FEATURES && !draft._new ? '<button type="button" class="ed-theme-add" data-edtheme="+" title="Neues Thema anlegen">+</button>' : ''}
+      </nav>`;
+    };
     const moreBox = (k, inner) => `<details class="ed-more" data-edmore="${k}" ${edMore[k] ? 'open' : ''}><summary>Mehr Gestaltung <small>freiwillig – ohne Änderung sieht alles gut aus</small></summary>${inner}</details>`;
     const live = draft.type === 'feature';   // Themen: Seitenleiste mit Live-Vorschau
     const label = (BLOCK_TYPES.find(([t]) => t === draft.type) || [0, 'Baustein'])[1];
@@ -1266,17 +1275,21 @@
             <p class="ed-hint">So erscheint das Thema auf der <b>Startseite</b>. ${wideScreen() ? 'Links siehst du jede Änderung sofort.' : 'Mit „Vorschau ansehen“ siehst du die Seite.'}</p>
             <h3 class="editor-sub">1 · Foto</h3>`
             + ((draft.images || []).length ? newsPhotoField(draft) : imageField(draft.image, draft.id, ''))
-            + `<h3 class="editor-sub">2 · Überschrift</h3>` + field('', 'title', draft.title)
+            + `<h3 class="editor-sub">2 · Überschrift</h3>`
+            + field('Kleine Zeile darüber', 'kicker', draft.kicker, { placeholder: 'z. B. Ab Mai 2027 im Freibad Bielstein' })
+            + field('Überschrift', 'title', draft.title)
+            + field('Unterzeile darunter', 'subtitle', draft.subtitle, { placeholder: 'z. B. Zwei Outdoor-Courts, 365 Tage geöffnet' })
             + `<h3 class="editor-sub">3 · Kurzer Text</h3>`
             + field('', 'text', draft.text, { area: true, rich: true, rows: 5, placeholder: 'Zwei, drei Sätze – Wörter markieren und oben gestalten' })
-            + `<h3 class="editor-sub">4 · Link (freiwillig)</h3>`
-            + linkTargetField(lk.url)
+            + `<h3 class="editor-sub">4 · Links (freiwillig)</h3>
+               <p class="muted small ed-note">„Mehr erfahren“ zur Unterseite erscheint von selbst, sobald die Unterseite Inhalt hat.</p>`
+            + linkTargetField(lk.url, 'link', 'Link 1')
             + field('Link-Text', 'linkLabel', lk.label, { placeholder: 'z. B. Jetzt Platz buchen' })
+            + linkTargetField((draft.link2 || {}).url, 'link2', 'Link 2 – z. B. zu einer Unterseite der App')
+            + field('Link-Text', 'link2Label', (draft.link2 || {}).label, { placeholder: 'z. B. Zum Kiosk' })
             + moreBox('home', `
               <div class="field"><span>Anordnung des Fotos</span>${seg('layout', draft.layout || 'wide', [['wide', 'Breit oben'], ['portrait', 'Hochformat links'], ['square', 'Quadrat links'], ['portrait-right', 'Hochformat rechts'], ['square-right', 'Quadrat rechts']])}</div>`
               + ((draft.images || []).length ? '' : newsPhotoField(draft))
-              + field('Kleine Zeile über der Überschrift', 'kicker', draft.kicker, { placeholder: 'z. B. Neu in Bielstein' })
-              + field('Unterzeile', 'subtitle', draft.subtitle)
               + `<div class="field"><span>Textgröße (gilt auch auf der Unterseite)</span>${seg('textsize', draft.textSize || 'normal', [['normal', 'Normal'], ['gross', 'Groß']])}</div>`
               + `<label class="field"><span>Klick auf Bild und Überschrift öffnet</span><select name="navigation" data-rerender>${[['detail','Eigene Detailseite'],['link','Verknüpften Link'],['none','Nichts']].map(([v,l]) => `<option value="${v}" ${v === (draft.navigation || (hasMore(draft) ? 'detail' : 'link')) ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
               <label class="meet-check"><input type="checkbox" name="showMore" ${draft.showMore !== false ? 'checked' : ''}><span>„Mehr erfahren“ bei eigener Detailseite anzeigen</span></label>`
@@ -1284,7 +1297,7 @@
                 const n = String(draft.text || '').split(/\n{2,}/).filter((x) => x.trim()).length;
                 const cur = lk.position || 'right';
                 const opts = [['left', 'Links unter der Unterzeile'], ...Array.from({ length: n }, (_, i) => [`right-${i}`, i === 0 ? 'Rechts vor dem Text' : `Rechts nach Absatz ${i}`]), ['right', 'Rechts unter dem Text']];
-                return `<label class="field"><span>Platz des Links (oder auf der Seite mit der Maus ziehen)</span><select name="linkPos">${opts.map(([v, l]) => `<option value="${v}" ${v === cur ? 'selected' : ''}>${l}</option>`).join('')}</select></label>`;
+                return `<label class="field"><span>Platz der Links (oder auf der Seite mit der Maus ziehen)</span><select name="linkPos">${opts.map(([v, l]) => `<option value="${v}" ${v === cur ? 'selected' : ''}>${l}</option>`).join('')}</select></label>`;
               })()
               + `<div class="field"><span>Link-Darstellung</span>${seg('linkstyle', lk.style || 'chip', [['chip', 'Dezent'], ['button', 'Knopf'], ['card', 'Vorschau-Karte']])}</div>`
               + iconField('linkIcon', lk.icon)
@@ -1386,6 +1399,7 @@
       openSheet(`
         <form class="editor ${live ? 'editor-live' : ''}" data-editor="block" novalidate>
           <h2>${isNew ? (live ? 'Neues Thema' : `Neuer Baustein: ${esc(label)}`) : live ? 'Thema bearbeiten' : `${esc(label)} bearbeiten`}</h2>
+          ${live ? themeNav() : ''}
           ${body()}
           <p class="form-error" role="alert"></p>
           <div class="ed-actions">
@@ -1435,6 +1449,28 @@
       form.addEventListener('toggle', (e) => { if (e.target.dataset && e.target.dataset.edmore) edMore[e.target.dataset.edmore] = e.target.open; }, true);
       form.addEventListener('submit', (e) => { e.preventDefault(); save(form); });
       form.addEventListener('click', async (e) => {
+        const th = e.target.closest('[data-edtheme]');
+        if (th) {
+          if (th.dataset.edtheme === id) return;
+          collect(form);
+          if (draft._new && !draft.title && th.dataset.edtheme !== '+') { dropUnsaved(); endLive(); openBlockEditor(th.dataset.edtheme, false, edTab); return; }
+          if (!draft.title) { form.querySelector('.form-error').textContent = 'Bitte zuerst eine Überschrift eingeben – dann wird gespeichert und gewechselt.'; form.querySelector('[name=title]')?.focus(); return; }
+          delete draft._new;
+          const list = blocksOf();
+          list[list.findIndex((b) => b.id === id)] = draft;
+          dropUnsaved();
+          try { site = await ui().api.saveSite(site); } catch (err) { ui().toast(err.message); return; }
+          endLive();
+          ui().toast('Gespeichert', true);
+          if (th.dataset.edtheme === '+') {
+            const block = { ...newBlock('feature'), _new: true };
+            const blocks = blocksOf();
+            const lastFeature = blocks.map((b) => b.type).lastIndexOf('feature');
+            blocks.splice(lastFeature + 1, 0, block);
+            openBlockEditor(block.id, true, 'home');
+          } else openBlockEditor(th.dataset.edtheme, false, edTab);
+          return;
+        }
         const factMove = e.target.closest('[data-fact-move]');
         if (factMove) {
           collect(form);
@@ -1488,9 +1524,15 @@
         const lk2 = e.target.closest('[data-linkkind]');
         if (lk2) {
           collect(form);
-          const cur = (draft.link || {}).url || '';
+          const which = lk2.dataset.linkfor === 'link2' ? 'link2' : 'link';
+          const l = draft[which] || {};
+          const cur = l.url || '';
           const toApp = lk2.dataset.linkkind === 'app';
-          if (toApp !== /^#/.test(cur)) draft.link = { ...(draft.link || {}), url: toApp ? '#kiosk' : '', image: toApp ? null : (draft.link || {}).image };
+          if (toApp !== /^#/.test(cur)) {
+            // bisherigen Link merken – beim Zurückschalten ist er wieder da
+            const memo = { ...(l.memo || {}), [/^#/.test(cur) ? 'app' : 'web']: cur };
+            draft[which] = { ...l, memo, url: toApp ? (memo.app || '#kiosk') : (memo.web || ''), image: toApp ? null : l.image };
+          }
           render();
           return;
         }
@@ -1579,6 +1621,10 @@
       if (f.navigation) { draft.navigation = f.navigation.value; draft.showMore = f.showMore.checked; }
       if (f.albumEnabled) draft.album = { ...(draft.album || {}), enabled: f.albumEnabled.checked, title: f.albumTitle.value.trim(), label: f.albumLabel.value.trim() || 'Fotos der Veranstaltung', position: f.albumPos.value, icon: f.albumIcon.value, original: f.albumOriginal.checked };
       if (f.moreText) draft.more = { ...(draft.more || {}), text: f.moreText.value.trim(), quote: f.moreQuote.value.trim(), quoteBy: f.moreQuoteBy.value.trim(), original: Boolean(f.moreOriginal && f.moreOriginal.checked) };
+      if (f.link2Url) {
+        const url2 = f.link2App ? f.link2App.value : f.link2Url.value.trim();
+        draft.link2 = { ...(draft.link2 || {}), url: url2 && !/^(https?:\/\/|#)/i.test(url2) ? 'https://' + url2 : url2, label: f.link2Label.value.trim() };
+      }
       if (f.linkUrl) {
         const url = f.linkApp ? f.linkApp.value : f.linkUrl.value.trim();
         draft.link = { ...(draft.link || {}), url: url && !/^(https?:\/\/|#)/i.test(url) ? 'https://' + url : url, label: f.linkLabel.value.trim(), ...(f.linkPos ? { position: f.linkPos.value } : {}), ...(f.linkIcon ? { icon: f.linkIcon.value } : {}) };
@@ -2166,7 +2212,7 @@
   // Link eines Home-Themas an den anderen Platz setzen
   function moveLink(blockId, slotName, key = 'main', beforeKey = null) {
     const b = site.pages.home.blocks.find((x) => x.id === blockId);
-    const link = key === 'album' ? b?.album : b?.link;
+    const link = key === 'album' ? b?.album : key === 'second' ? b?.link2 : b?.link;
     if (!link) return;
     link.position = /^(left|right|right-\d+)$/.test(slotName) ? slotName : 'right';
     if (beforeKey && beforeKey !== key && b.link && b.album) {

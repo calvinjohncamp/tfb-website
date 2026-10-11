@@ -32,6 +32,9 @@ Neues bitte unten bei „Verlauf“ ergänzen.
 - v106: Unterseiten-Look (4 Quadrate oben, Text, Zitat, Kollage) gilt für alle
   Unterseiten (Nutzer: „nicht zu kompliziert“). Editor folgt der Seitenreihenfolge;
   Textgrößen inkl. Verkleinern, Farben, WYSIWYG-Überschriften.
+- v107: Home-Editor: Themen-Leiste für bis zu 10 Themen, Kleine Zeile/Unterzeile
+  sichtbar, zweiter Link, Link bleibt beim Umschalten erhalten. Lehre: beim Vereinfachen
+  nichts verstecken, was auf der Seite sichtbar ist.
 
 ## Verbindlicher Stand 11.10.2026 – Projekt-Update
 

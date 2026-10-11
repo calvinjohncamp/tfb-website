@@ -3,7 +3,7 @@
 **Zuerst lesen.** Ausführlicher Verlauf: [PROJEKTGEDAECHTNIS.md](PROJEKTGEDAECHTNIS.md).
 Diese Zusammenfassung hat Vorrang vor älteren Zwischenständen.
 
-Stand: **11.10.2026 abends, Unterseiten-Editor rund gemacht**. Cache **tfb-kiosk-v106**.
+Stand: **11.10.2026 abends, Home-Editor rund gemacht**. Cache **tfb-kiosk-v107**.
 Alles committet (Sicherungspunkt v99 `f8e6c90`, danach Stufe 1). Nicht veröffentlicht.
 
 ## Neu: Ordner heißt jetzt „9. TFB-Website“
@@ -39,6 +39,20 @@ Alles committet (Sicherungspunkt v99 `f8e6c90`, danach Stufe 1). Nicht veröffen
   sich an (Desktop: „Links siehst du jede Änderung sofort“).
 - Beim Wegschieben bleibt die Kopfzeile sichtbar („antippen zum Weiterbearbeiten“),
   Rückkehr an dieselbe Stelle – gilt auch für den Home-Themen-Editor (`togglePeek`).
+
+## Neu in v107: Home-Editor – Themen-Leiste, Überschriften, zwei Links
+
+- Themen-Leiste oben im Editor „Thema 01 02 03 … +“: Wechsel speichert das aktuelle
+  Thema und öffnet das gewählte (Reiter bleibt); „+“ legt ein neues an (max. 10).
+  Leeres neues Thema wird beim Wegwechseln verworfen.
+- Reiter „Startseite“: 1 Foto · 2 Überschrift (Kleine Zeile darüber, Überschrift,
+  Unterzeile darunter – wieder sichtbar, lagen seit v102 unter „Mehr“) · 3 Kurzer
+  Text · 4 Links: Link 1 und **Link 2** (`block.link2`, z. B. Seite der App/Unterseite).
+  „Mehr erfahren“ erscheint automatisch bei Unterseiten-Inhalt.
+- Umschalten Website ↔ Seite der App löscht den Link nicht mehr; der vorige Wert wird
+  gemerkt (`link.memo`) und beim Zurückschalten wiederhergestellt.
+- Link 2 übernimmt Darstellung/Platz von Link 1, ist per Ziehen verschiebbar (Schlüssel
+  `second` in `featureLinks`/`moveLink`).
 
 ## Neu in v106: Unterseite im Editor wie auf der Seite
 

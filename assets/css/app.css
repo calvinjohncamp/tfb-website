@@ -2234,3 +2234,11 @@ h1, h2, h3, .event h3, .feature-body h2, .story-head h1, .post-body h3 { -webkit
 .rich-area h3, .rich-area h3.text-sub { font-family: var(--serif); text-transform: none; letter-spacing: -.015em; color: var(--ink); font-size: 1.4rem; font-weight: 800; line-height: 1.2; margin: 1.1em 0 .35em; }
 .rich-area > :first-child { margin-top: 0; }
 .ed-note { margin: -2px 0 10px; }
+
+/* Home-Editor: Themen-Leiste (01 02 03 … +) – zwischen Themen wechseln */
+.ed-themes { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; margin: 2px 0 12px; }
+.ed-themes > span { font-size: .68rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin-right: 6px; }
+.ed-themes button { min-width: 34px; height: 30px; padding: 0 8px; border-radius: 99px; border: 1.5px solid var(--line); background: #fff; color: var(--ink); font-weight: 800; font-size: .78rem; font-family: var(--serif); cursor: pointer; }
+.ed-themes button:hover { border-color: var(--signal); color: var(--signal); }
+.ed-themes button.on { background: var(--signal); border-color: var(--signal); color: #fff; }
+.ed-themes .ed-theme-add { font-family: var(--font); font-size: 1rem; color: var(--signal); border-style: dashed; }
