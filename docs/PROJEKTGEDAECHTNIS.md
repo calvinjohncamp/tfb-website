@@ -4,6 +4,22 @@ Für den schnellen Einstieg zuerst die kurze **[UEBERGABE.md](UEBERGABE.md)** le
 Diese Datei enthält alle Entscheidungen, Konzepte, offenen Punkte und den Verlauf.
 Neues bitte unten bei „Verlauf“ ergänzen.
 
+## Nachtrag 11.10.2026 abends – Review mit echten Daten, Aufräumen Stufe 1 (v100)
+
+- Claude hat ChatGPTs Stand v99 mit der echten Sicherung des Nutzers geprüft.
+  Bewertung: Chat/Clubgeflüster, Mannschaftsseiten mit Insider News, Club mit fünf
+  Kennzahlen und Vorstand wirken wie ein echtes Clubmagazin. Schwachstelle:
+  Editoren (Porträt 10 Felder + Optionen, Home 33 Felder) zu komplex für Laien.
+- **Leitidee des Nutzers:** „Lass die Mitglieder für Inhalte sorgen“ – Beitragen
+  muss so einfach wie möglich sein.
+- Nutzer-Entscheidungen: linksbündig ist gewollt; Button „Mannschaftsporträt + News“
+  bleibt wie er ist; fünf Kennzahlen statt vier Knöpfe; Vorstand nicht umsortieren
+  (Reihenfolge wie heutige Vereinswebsite); Vorstandsdaten dürfen ins Repository.
+- Umgesetzt (Stufe 1): siehe UEBERGABE.md „Neu in v100“. Commits `f8e6c90`
+  (Sicherungspunkt v99), `1d0b829`, `02f8fb3`.
+- Ordner umbenannt in `9. TFB-Website`, `TFB-Kiosk öffnen.html` gelöscht.
+- Offen: Stufe 2 (Porträt-Editor einfach/mehr), Stufe 3 (Home-Editor, Knöpfe).
+
 ## Verbindlicher Stand 11.10.2026 – Projekt-Update
 
 Diese Zusammenfassung und die aktualisierte `UEBERGABE.md` haben Vorrang vor
@@ -239,11 +255,11 @@ Präsentation vor dem Vorstand; bei Zustimmung wird daraus der Echtbetrieb.
 
 | Was | Wo |
 |---|---|
-| App (dieser Ordner) | `9. TFB-Kiosk/tfb-kiosk/` |
+| App (dieser Ordner) | `9. TFB-Website/tfb-kiosk/` (Ordner bis 11.10.2026: `9. TFB-Kiosk`) |
 | Repository | https://github.com/calvinjohncamp/tfb-kiosk (privat) |
-| Starten per Doppelklick | `9. TFB-Kiosk/TFB-Kiosk öffnen.html` |
+| Starten per Doppelklick | `9. TFB-Website/TFB-Website öffnen.html` |
 | Logo-Original | `assets/brand/tfb-logo-original.png` → neu erzeugen mit `zsh tools/build-brand.sh` |
-| Padel-Kopie (nur Nachschlagen) | `9. TFB-Kiosk/01 Software/` u. a. – Push dorthin ist gesperrt |
+| Padel-Kopie (nur Nachschlagen) | `9. TFB-Website/01 Software/` u. a. – Push dorthin ist gesperrt |
 
 ## Festgelegte Gestaltung (Stand 09.10.2026)
 

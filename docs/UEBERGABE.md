@@ -3,8 +3,41 @@
 **Zuerst lesen.** Ausführlicher Verlauf: [PROJEKTGEDAECHTNIS.md](PROJEKTGEDAECHTNIS.md).
 Diese Zusammenfassung hat Vorrang vor älteren Zwischenständen.
 
-Stand: **11.10.2026, konsolidiertes Projekt-Update nach Foto-Vollbildansicht**. Cache **tfb-kiosk-v99**.
-Änderungen liegen lokal vor. Kein neuer Commit, Tag oder Release bei diesem Update.
+Stand: **11.10.2026 abends, Aufräumen Stufe 1**. Cache **tfb-kiosk-v100**.
+Alles committet (Sicherungspunkt v99 `f8e6c90`, danach Stufe 1). Nicht veröffentlicht.
+
+## Neu: Ordner heißt jetzt „9. TFB-Website“
+
+- Projektordner umbenannt: `Dropbox/9. TFB-Kiosk` → **`Dropbox/9. TFB-Website`**.
+  Der App-Unterordner heißt weiterhin `tfb-kiosk/` (Repository-Name).
+- Start nur noch per Doppelklick auf **`TFB-Website öffnen.html`**;
+  `TFB-Kiosk öffnen.html` wurde auf Wunsch gelöscht.
+- Inhalte liegen im Browser (Chrome, Ursprung `file://`), nicht im Ordner. Falls nach
+  der Umbenennung etwas fehlt: Verwaltung → Inhalte laden mit der letzten Sicherung.
+
+## Neu in v100 (Aufräumen Stufe 1)
+
+- Alte „vier Info-Knöpfe“ (Club) samt Editor und CSS entfernt – waren ein
+  Missverständnis; gewünscht waren fünf Kennzahlen (vorhanden).
+- Aktuell: Hinweis „Vorführversion: Termine und Beiträge sind Beispiele.“ entfernt.
+- Chat: nur noch ein Titel; „Clubgeflüster“ (editierbar) steht als rote Zeile über
+  „Chat“. Partnerzeile heißt „Der Chat wird dir präsentiert von“.
+- Handy-Menü: sieben Punkte passen bis 320 px in eine Zeile (Schrift wächst mit Breite).
+- **Vorstand wird NICHT automatisch sortiert** – Reihenfolge wie auf der heutigen
+  TFB-Website, pflegt der Nutzer selbst im Admin.
+- Vorstandsfotos und -kontakte sind bewusst im Repository (wie auf der heutigen
+  Vereinswebsite veröffentlicht; Entscheidung des Nutzers).
+- Tippfehler „TFB GOES DIGTAL“ ist Nutzerinhalt → im Home-Editor selbst korrigieren.
+
+## Nächste Stufen (vereinbart, noch offen)
+
+- **Stufe 2:** Porträt-Editor für Mannschaften zweistufig: „Einfach“ (Fotos,
+  Überschrift, Text) + „Mehr Gestaltung“; auf dem Handy Umschalter Bearbeiten/Vorschau
+  statt „links siehst du die Vorschau“. Ziel: Mitglieder liefern Inhalte, so einfach
+  wie möglich.
+- **Stufe 3:** Home-Editor (3 Reiter, 33 Felder) nach gleichem Prinzip vereinfachen;
+  Knöpfe seitenübergreifend vereinheitlichen (Segment vs. Pillen, rot mit schwarzer
+  Schrift). Untertitel „Ohne Chat-Chaos“ bei Verabreden überdenken.
 
 ## Neu in v99
 
@@ -49,8 +82,7 @@ keine gemeinsame produktive Vereinsdatenbank.
 
 ## Öffnen und Sichern
 
-- Doppelklick auf `TFB-Website öffnen.html` oder `TFB-Kiosk öffnen.html` im
-  Projekt-Elternordner; Startseite Home. Nach Änderungen Chrome neu laden.
+- Doppelklick auf `TFB-Website öffnen.html` im Ordner `9. TFB-Website`; Startseite Home. Nach Änderungen Chrome neu laden.
 - Daten gehören zum jeweiligen Browser/Ursprung. Direkter HTML-Start und lokale
   Vorschau-Server haben getrennte Datenbestände; Testdaten sind nicht Nutzerinhalte.
 - Regelmäßig **Verwaltung → Sichern & Laden**: JSON mit Daten und Fotos sichern.
