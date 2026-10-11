@@ -4,3 +4,6 @@ node_modules/
 *.xls
 *.csv
 .env*
+
+# Spielermeldungen aus nuLiga (enthalten Namen) – nur lokal
+assets/data/rosters.js

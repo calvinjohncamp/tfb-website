@@ -290,13 +290,46 @@
     db.demoTallyMix = true;
     save(db);
   }
+  // Wer gehört zu welcher Mannschaft? nuLiga-Spielermeldung (assets/data/rosters.js, lokal) abgeglichen
+  // mit der Mitgliederliste über „Nachname, Vorname“ – plus die Beispiel-Zuordnung der Demo.
+  const nameKey = (s) => String(s || '').toLowerCase().replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss').replace(/[^a-z]/g, '');
+  const nuligaRosters = () => (TFB.rosters && TFB.rosters.teams) || {};
+  function rosterOf(team) {
+    const ids = new Set(db.community.rosters[team] || []);
+    const names = new Set((nuligaRosters()[team] || []).map(nameKey));
+    if (names.size) db.members.forEach((m) => { if (m.active && names.has(nameKey(`${m.lastName}, ${m.firstName}`))) ids.add(m.id); });
+    return [...ids];
+  }
+  const allTeamKeys = () => [...new Set([...Object.keys(db.community.rosters || {}), ...Object.keys(nuligaRosters())])];
+  const teamsOfMember = (id) => allTeamKeys().filter((k) => rosterOf(k).includes(id));
+  const inTeam = (member, team) => rosterOf(team).includes(member.id);
+
+  // Korrektur 11.10.: Die Demo hatte das Admin-Konto fälschlich Herren 40 1 zugeordnet. Sobald die
+  // nuLiga-Meldungen vorliegen, gilt nur noch der echte Abgleich – und Beiträge wandern mit.
+  if (Object.keys(nuligaRosters()).length && !db.community.fixedRosters20261011) {
+    Object.keys(db.community.rosters).forEach((k) => { db.community.rosters[k] = db.community.rosters[k].filter((id) => id !== 'm-demo'); });
+    db.community.posts.forEach((p) => {
+      if (!p.alsoTeams || !p.alsoTeams.length) return;
+      const author = db.members.find((m) => m.id === p.authorId);
+      if (!author) return;
+      const valid = p.alsoTeams.filter((k) => rosterOf(k).includes(author.id));
+      if (valid.length === p.alsoTeams.length) return;
+      // „Ü55“ im Text → Herren 55; sonst die Mannschaften, in denen der Verfasser gemeldet ist
+      const mine = teamsOfMember(author.id);
+      const guess = /ü\s?55|u55|herren\s?55/i.test(p.text || '') ? mine.filter((k) => k === 'herren-55-1') : [];
+      p.alsoTeams = [...new Set([...valid, ...guess])];
+    });
+    db.community.fixedRosters20261011 = true;
+    save(db);
+  }
+
   const isMinor = (m) => Boolean(m && m.birthYear && new Date().getFullYear() - m.birthYear < 18);
   const displayName = (m) => (m ? (isMinor(m) ? `${m.firstName} ${m.lastName[0]}.` : `${m.firstName} ${m.lastName}`) : 'Mitglied');
   const teamOf = (scope) => (String(scope).startsWith('team:') ? scope.slice(5) : null);
   function mayWrite(member, scope) {
     if (!member) return { ok: false, reason: 'login' };
     const team = teamOf(scope);
-    if (team && !member.isAdmin && !((db.community.rosters[team] || []).includes(member.id))) return { ok: false, reason: 'team' };
+    if (team && !member.isAdmin && !inTeam(member, team)) return { ok: false, reason: 'team' };
     const acc = accountOf(member.id) || {};
     if (isMinor(member) && !acc.parentConsent) return { ok: false, reason: 'parents' };
     if (!acc.feedRules) return { ok: false, reason: 'rules' };
@@ -435,7 +468,7 @@
       isMinor: isMinor(member),
       parentConsent: (account && account.parentConsent) || null,
       feedRules: Boolean(account && account.feedRules),
-      teams: Object.entries((db.community && db.community.rosters) || {}).filter(([, ids]) => ids.includes(member.id)).map(([k]) => k),
+      teams: db.community ? teamsOfMember(member.id) : [],
     };
   }
 
@@ -542,7 +575,7 @@
     // Teamfoto: Admins und die Spieler der Mannschaft
     async setTeamPhoto(team, ref) {
       const member = requireMember();
-      if (!member.isAdmin && !((db.community.rosters[team] || []).includes(member.id))) throw new Error('Das Teamfoto ändern die Spieler dieser Mannschaft.');
+      if (!member.isAdmin && !inTeam(member, team)) throw new Error('Das Teamfoto ändern die Spieler dieser Mannschaft.');
       db.site = db.site || clone(TFB.siteSeed);
       db.site.teams = db.site.teams || {};
       db.site.teams[team] = { posts: [], ...(db.site.teams[team] || {}), photo: ref || null };
@@ -552,7 +585,7 @@
     // Mannschaftsporträt (Magazin-Seite): Admins und die Spieler der Mannschaft
     async setTeamPortrait(team, portrait) {
       const member = requireMember();
-      if (!member.isAdmin && !((db.community.rosters[team] || []).includes(member.id))) throw new Error('Das Porträt pflegen die Spieler dieser Mannschaft.');
+      if (!member.isAdmin && !inTeam(member, team)) throw new Error('Das Porträt pflegen die Spieler dieser Mannschaft.');
       db.site = db.site || clone(TFB.siteSeed);
       db.site.teams = db.site.teams || {};
       db.site.teams[team] = { posts: [], ...(db.site.teams[team] || {}), portrait: clone(portrait || {}) };
@@ -560,7 +593,7 @@
       return clone(db.site);
     },
     async teamRoster(team) {
-      return (db.community.rosters[team] || []).map((id) => displayName(db.members.find((m) => m.id === id))).filter(Boolean);
+      return rosterOf(team).map((id) => displayName(db.members.find((m) => m.id === id))).filter(Boolean);
     },
     async canWrite(scope) {
       const member = db.members.find((m) => m.id === sessionMemberId() && m.active);
@@ -594,7 +627,7 @@
       if (!allowed.ok) throw new Error(allowed.reason === 'team' ? 'Insider News schreiben die Spieler dieser Mannschaft.' : 'Bitte zuerst die Hinweise bestätigen.');
       const t = String(text || '').trim();
       if (!t && !images.length) throw new Error('Bitte einen Text schreiben oder ein Foto wählen.');
-      const mine = alsoTeams.filter((k) => member.isAdmin || (db.community.rosters[k] || []).includes(member.id));
+      const mine = alsoTeams.filter((k) => member.isAdmin || inTeam(member, k));
       const post = { id: 'p-' + uid(), scope, authorId: member.id, createdAt: new Date().toISOString(), text: t.slice(0, 2000), images: images.slice(0, 4), ...(scope === 'club' && mine.length ? { alsoTeams: mine } : {}) };
       db.community.posts.push(post);
       if (!save(db)) throw new Error('Speichern nicht möglich.');
@@ -605,7 +638,7 @@
       const p = db.community.posts.find((x) => x.id === id);
       if (!p || (p.authorId !== member.id && !member.isAdmin)) throw new Error('Diesen Beitrag kannst du nicht ändern.');
       Object.assign(p, { text: String(text || '').trim().slice(0, 2000), images: (images || []).slice(0, 4), editedAt: new Date().toISOString() });
-      if (alsoTeams && p.scope === 'club') p.alsoTeams = alsoTeams.filter((k) => member.isAdmin || (db.community.rosters[k] || []).includes(member.id));
+      if (alsoTeams && p.scope === 'club') p.alsoTeams = alsoTeams.filter((k) => member.isAdmin || inTeam(member, k));
       save(db);
       return publicPost(p);
     },

@@ -473,3 +473,12 @@ Monatsabschluss.
 - **11.10.2026** – Strichliste optimiert: Getränke-Spalte breiter, Platz für **15 Striche**
   (drei Bündel), danach „+n“ in derselben Zeile; andere Spalten bis 10 Striche. Linker Rand
   des Notizzettels schmaler (Handy 34 px, Desktop 42 px) – Zettel-Look bleibt.
+- **11.10.2026** – **Echter Mannschaftsabgleich aus nuLiga.** `python3 tools/update-rosters.py` liest
+  die Spielermeldungen aller Mannschaften (Spielerliste der nuLiga-Mannschaftsseite, Namen im Link
+  `rel="ibox…"`) und schreibt `assets/data/rosters.js` – **nur lokal, in .gitignore** (Namen =
+  personenbezogene Daten). Die App gleicht „Nachname, Vorname“ (Umlaute normalisiert) mit der
+  Mitgliederliste ab (`rosterOf()` in demo-backend.js; Demo-Zuordnung kommt dazu). Ergebnis
+  für den Nutzer: Jörn Kämper → Herren 55 1 und Herren 50 1 (Achtung: es gibt auch Jens Kämper –
+  immer Vor- UND Nachname abgleichen). Einmal-Korrektur: Admin-Konto aus der Demo-Zuordnung
+  Herren 40 1 entfernt, Beiträge mit falscher Mannschaft umgehängt („Ü55“ → Herren 55 1).
+  Fehlt rosters.js (z. B. frischer Checkout), läuft die App mit der Demo-Zuordnung.

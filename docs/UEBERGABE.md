@@ -55,6 +55,7 @@ zufrieden („richtig schicke Seite“) und will als Nächstes **echte Bilder un
 | `assets/home/` | Padel-Vorschaubild für den Link |
 | `assets/css/app.css` | gesamte Gestaltung inkl. Raster (640 / 1024 / 1280 px) |
 | `tools/update-teams.py` | Mannschaften aus nuLiga holen |
+| `tools/update-rosters.py` | Spielermeldungen aus nuLiga → `assets/data/rosters.js` (nur lokal, nicht im Repo) für den Abgleich Spieler ↔ Mitglieder |
 | `tools/build-brand.sh` | Logo-Masken erzeugen (u. a. Logo ohne Ball + Ball einzeln) |
 
 ## Was steht (Überblick)
