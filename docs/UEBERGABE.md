@@ -3,7 +3,7 @@
 **Zuerst lesen.** Ausführlicher Verlauf: [PROJEKTGEDAECHTNIS.md](PROJEKTGEDAECHTNIS.md).
 Diese Zusammenfassung hat Vorrang vor älteren Zwischenständen.
 
-Stand: **11.10.2026 abends, Abschnitte einfügen**. Cache **tfb-kiosk-v110**.
+Stand: **11.10.2026 abends, Chat-Überschriften, Porträt = Unterseite**. Cache **tfb-kiosk-v111**.
 Alles committet (Sicherungspunkt v99 `f8e6c90`, danach Stufe 1). Nicht veröffentlicht.
 
 ## Neu: Ordner heißt jetzt „9. TFB-Website“
@@ -39,6 +39,19 @@ Alles committet (Sicherungspunkt v99 `f8e6c90`, danach Stufe 1). Nicht veröffen
   sich an (Desktop: „Links siehst du jede Änderung sofort“).
 - Beim Wegschieben bleibt die Kopfzeile sichtbar („antippen zum Weiterbearbeiten“),
   Rückkehr an dieselbe Stelle – gilt auch für den Home-Themen-Editor (`togglePeek`).
+
+## Neu in v111: Chat-Überschriften, Porträt-Editor = Unterseiten-Editor
+
+- Chat: Seite heißt groß „Clubgeflüster“ (`chatText.feedTitle`), kleine rote Zeile
+  darüber entfällt; Feld „Seitentitel“ im Chat-Texteditor bearbeitet jetzt feedTitle.
+- Beiträge haben eine freiwillige **Überschrift** (`post.title`, max. 90 Zeichen) im
+  Schreibfenster über dem Text; erscheint rot über dem Text im Feed und ersetzt in
+  „Alle Beiträge“ das rote „Clubgeflüster“ (ohne Überschrift bleibt der Bereich).
+  Suche findet auch Überschriften.
+- Mannschaftsporträt-Editor exakt wie Unterseite: 1 Fotos oben (1 breit, 2–4
+  automatisch Quadrate), 2 Überschrift (Kleine Zeile darüber / Überschrift /
+  Unterzeile darunter sichtbar), 3 Inhalt (Abschnitte), 4 Fotos unten. Darstellung:
+  2–4 eigene Titelfotos immer als Quadrate (auch in der Anzeige).
 
 ## Neu in v109: Unterseite und Mannschaftsporträt aus Abschnitten
 

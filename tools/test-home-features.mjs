@@ -224,7 +224,7 @@ test('Aktuell separates news and dates, Chat preserves latest-first feed and sea
   assert.match(news, /Save the Date/);
   context.location.hash = '#chat';
   const chat = await context.TFB.views.chat();
-  assert.match(chat, /<h1>Chat<\/h1>/);
+  assert.match(chat, /<h1>Clubgeflüster<\/h1>/);
   assert.match(chat, /href="#chat\/alle"/);
   assert.match(chat, /data-action="post-new"/);
   const first = chat.match(/data-post="([^"]+)"/)[1];
@@ -273,11 +273,10 @@ test('chat text editor persists all page labels, escapes text and keeps communit
   await context.TFB.actions['chat-text-edit']();
   assert.match(opened[0], /Filter und Beschriftungen/);
   await submit({preventDefault(){}});
-  assert.equal((await api.site()).chatText.title, 'Unser Austausch');
+  assert.equal((await api.site()).chatText.feedTitle, 'Clubgespräche');
   await context.TFB.refreshSite();
   const chat = await context.TFB.views.chat();
-  assert.match(chat, /Unser Austausch/);
-  assert.match(chat, /Clubgespräche/);
+  assert.match(chat, /<h1>Clubgespräche<\/h1>/);
   assert.match(chat, /&lt;script>/);
   assert.doesNotMatch(chat, /<script>/);
   context.location.hash = '#chat/alle';

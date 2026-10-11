@@ -39,6 +39,8 @@ Neues bitte unten bei „Verlauf“ ergänzen.
   sichtbar. Nutzer: „nicht mehr so weit weg von einer guten Seite eins“.
 - v109: Idee des Nutzers umgesetzt – Unterseiten aus Abschnitten (Text · Überschrift ·
   Zitat) mit Pfeilen und Plus, feste Gestaltung, nur zwei Schriftgrößen (Text/Überschrift).
+- v111: Nutzer zufrieden mit Unterseiten-Editor („genau so lassen“); gleiche Bedienung im
+  Mannschaftsporträt. Chat-Beiträge mit freiwilliger Überschrift; Chat-Seite heißt „Clubgeflüster“.
 
 ## Verbindlicher Stand 11.10.2026 – Projekt-Update
 

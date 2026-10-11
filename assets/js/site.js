@@ -552,7 +552,8 @@
     const more = b.more || {};
     // Titelbild: wie Startseite (bzw. Teamfoto) oder eigene Fotos; breit, im Originalformat oder 2–4 Quadrate
     const own = more.heroSource === 'own' ? (more.heroImages || []).filter(shownImage) : [];
-    const mode = more.heroMode || 'wide';
+    // 2–4 eigene Fotos immer als Quadrate, ein Foto breit oder im Originalformat
+    const mode = own.length >= 2 ? 'squares' : (more.heroMode === 'original' ? 'original' : 'wide');
     const heroRefs = own.length ? own : [b.image];
     const seed = own.length ? own[0] : b.id;
     const sideImage = !own.length && mode === 'wide' && /^(portrait|square)/.test(b.layout || '');
@@ -826,6 +827,7 @@
           <span class="fpost-who"><b>${esc(p.author)}</b>
             <small>${esc(whenText(p.createdAt))}${p.editedAt ? ' · bearbeitet' : ''}${p.fromClub ? ' · auch im Clubgeflüster' : ''}${p.teaser ? ` · <a href="#team/${esc(p.team)}">Insider News · ${esc(teamLabel(p.team))}</a>` : ''}${p.hidden ? ' · <em>ausgeblendet</em>' : ''}</small></span>
         </header>
+        ${p.title ? `<h3 class="fpost-title">${esc(p.title)}</h3>` : ''}
         ${p.text ? `<div class="fpost-text">${postText(p.text)}</div>` : ''}
         ${imgs.length ? `<div class="message-collage n${imgs.length}">${imgs.map((ref, index) => `<button type="button" class="message-photo" data-action="post-gallery" data-id="${esc(p.id)}" data-index="${index}" aria-label="Foto ${index + 1} von ${imgs.length} ansehen">${picture(ref, ref, '')}</button>`).join('')}</div>` : ''}
         ${loggedIn ? `<footer class="fpost-tools">
@@ -882,12 +884,12 @@
       const teams = [p.team, ...(p.alsoTeams || [])].filter(Boolean);
       return `
         <button type="button" class="mini ${p.hidden ? 'is-hidden' : ''}" data-action="post-open" data-id="${esc(p.id)}"
-          data-author="${esc(p.author.toLowerCase())}" data-text="${esc(String(p.text || '').toLowerCase())}"
+          data-author="${esc(p.author.toLowerCase())}" data-text="${esc(`${p.title || ''} ${p.text || ''}`.toLowerCase())}"
           data-teams="${esc(teams.join(' '))}" data-where="${p.team ? 'team' : 'club'}" data-photos="${imgs.length}" data-at="${esc(p.createdAt)}">
           ${imgs.length ? `<span class="message-collage n${imgs.length}">${imgs.map(ref => `<span class="message-photo">${picture(ref, ref, '')}</span>`).join('')}</span>` : ''}
           <span class="mini-head"><span class="fpost-avatar">${p.avatar ? `<img src="${esc(p.avatar)}" alt="">` : esc(initialsOf(p.author))}</span>
             <span><b>${esc(p.author)}</b><small>${esc(whenText(p.createdAt))}</small></span></span>
-          <span class="mini-where">${p.team ? `${esc(copy.teamLabel)} · ${esc(teamLabel(p.team))}` : esc(copy.feedTitle)}</span>
+          <span class="mini-where">${p.title ? esc(p.title) : p.team ? `${esc(copy.teamLabel)} · ${esc(teamLabel(p.team))}` : esc(copy.feedTitle)}</span>
           ${p.text ? `<span class="mini-text">${esc(p.text)}</span>` : ''}
         </button>`;
     };
@@ -919,7 +921,7 @@
   TFB.views.chat = async () => {
     if (location.hash.split('/')[1] === 'alle') return overviewView();
     await ensure();
-    return `<div class="chat-page"><header class="view-head page-head"><div><p class="page-kicker">${esc(chatText().feedTitle)}</p><h1>${esc(chatText().title)}</h1></div>${chatEditButton()}</header>
+    return `<div class="chat-page"><header class="view-head page-head"><div><h1>${esc(chatText().feedTitle)}</h1></div>${chatEditButton()}</header>
       <div class="chat-stream">${await feedSection('club', { withTeams: true, chat: true })}</div>
       ${ui().partnerSlot('aktuell', 'Der Chat wird dir präsentiert von')}</div>`;
   };
@@ -972,7 +974,7 @@
     if (!editId && may.reason === 'parents') return openParentConsent(scope);
     if (!editId && may.reason === 'rules') return openRules(scope);
     const existing = editId ? postCache[editId] : null;
-    const draft = { text: existing ? existing.text : '', images: existing ? (existing.images || []).filter(shownImage) : [], alsoTeams: existing ? (existing.alsoTeams || []) : [] };
+    const draft = { title: existing ? (existing.title || '') : '', text: existing ? existing.text : '', images: existing ? (existing.images || []).filter(shownImage) : [], alsoTeams: existing ? (existing.alsoTeams || []) : [] };
     const myTeams = scope === 'club' ? (state.member.teams || []) : [];
     const allTeams = () => [...new Map(((TFB.teams && TFB.teams.seasons) || []).flatMap((x) => x.teams)
       .map((t) => [teamKey(t.name), t.name.replace(/\s*\(.*?\)/g, '')])).entries()].sort((a, b) => a[1].localeCompare(b[1], 'de'));
@@ -981,6 +983,7 @@
       openSheet(`
         <form class="editor compose" data-compose novalidate>
           <h2>${existing ? 'Beitrag bearbeiten' : isTeam ? `${esc(chatText().teamLabel)} · ${esc(teamLabel(scope.slice(5)))}` : esc(chatText().feedTitle)}</h2>
+          <input class="compose-title" name="title" maxlength="90" value="${esc(draft.title)}" placeholder="Überschrift (freiwillig), z. B. ${isTeam ? 'Auswärtssieg in Hennef' : 'Grillabend am Mittwoch'}">
           <textarea name="text" rows="5" maxlength="2000" placeholder="${isTeam ? 'Wie lief das Spiel? Was war los bei der Tour?' : 'Was gibt’s Neues im Club?'}">${esc(draft.text)}</textarea>
           <div class="compose-photos">
             ${draft.images.map((ref, i) => `<div class="gallery-thumb">${picture(ref, ref)}${frameButton(ref, true)}<button type="button" data-cremove="${i}" aria-label="Foto entfernen">×</button>
@@ -1000,6 +1003,7 @@
         </form>`);
       const form = document.querySelector('[data-compose]');
       const keep = () => {
+        draft.title = form.elements.title.value.trim();
         draft.text = form.elements.text.value;
         if (myTeams.length) draft.alsoTeams = [...form.querySelectorAll('[name=alsoTeam]:checked')].map((x) => x.value);
       };
@@ -1881,14 +1885,17 @@
       openSheet(`
         <form class="editor editor-live" data-editor="portrait" novalidate>
           <h2>Mannschaftsporträt</h2>
-          <p class="ed-hint">${esc(found ? teamName(found.team) : key)} – so sieht es jeder Besucher. ${wideScreen() ? 'Links siehst du jede Änderung sofort.' : 'Mit „Vorschau ansehen“ siehst du die Seite.'} Ohne eigene Fotos erscheint oben das Teamfoto.</p>
+          <p class="ed-hint">${esc(found ? teamName(found.team) : key)} – so sieht es jeder Besucher. ${wideScreen() ? 'Links siehst du jede Änderung sofort.' : 'Mit „Vorschau ansehen“ siehst du die Seite.'}</p>
           <h3 class="editor-sub">1 · Fotos oben (bis zu 4)</h3>
           <div class="field"><div class="gallery-edit">
             ${heroImgs.map((ref, i) => thumbEdit(ref, 'hero', i, heroImgs.length, 'data-premove')).join('')}
             ${heroImgs.length < 4 ? `<label class="gallery-add">${icon.plus}<span>Foto</span><input type="file" accept="image/*" multiple data-pphoto="hero" hidden></label>` : ''}
           </div></div>
+          <p class="muted small ed-note">${!heroImgs.length ? 'Ohne eigene Fotos erscheint oben das Teamfoto.' : heroImgs.length === 1 ? (mode === 'original' ? 'Ein Foto im Originalformat.' : 'Ein Foto, breit über der Seite.') : `${heroImgs.length} Fotos als Quadrate nebeneinander.`}</p>
           <h3 class="editor-sub">2 · Überschrift</h3>
-          ${field('', 'title', draft.title, { placeholder: found ? teamName(found.team) : '' })}
+          ${field('Kleine Zeile darüber', 'kicker', draft.kicker, { placeholder: 'z. B. Mannschaftsporträt · Saison 2026' })}
+          ${field('Überschrift', 'title', draft.title, { placeholder: found ? teamName(found.team) : '' })}
+          ${field('Unterzeile darunter', 'subtitle', draft.subtitle, { placeholder: 'z. B. Aufsteiger, Freunde, Kölschliebhaber' })}
           <h3 class="editor-sub">3 · Inhalt</h3>
           <p class="muted small ed-note">Abschnitte: <b>Text</b>, <b>Überschrift</b> (rot) und <b>Zitat</b> – immer in derselben Gestaltung. Mit den Pfeilen verschieben, unten ergänzen.</p>
           ${sectionsEditor(draft.sections)}
@@ -1899,10 +1906,8 @@
           </div></div>
           <details class="ed-more" data-pmore ${moreOpen ? 'open' : ''}>
             <summary>Mehr Gestaltung <small>freiwillig – ohne Änderung sieht alles gut aus</small></summary>
-            <div class="field"><span>Fotos oben: Darstellung</span>${seg('pmode', mode, [['wide', 'Breit'], ['original', 'Originalformat'], ['squares', '2–4 Quadrate nebeneinander', heroImgs.length < 2]])}</div>
-            ${mode === 'original' ? align('hero', draft.heroAlign) : ''}
-            ${field('Kleine Zeile über der Überschrift', 'kicker', draft.kicker, { placeholder: 'z. B. Mannschaftsporträt · Saison 2026' })}
-            ${field('Unterzeile', 'subtitle', draft.subtitle, { placeholder: 'z. B. Aufsteiger, Freunde, Kölschliebhaber' })}
+            ${heroImgs.length === 1 ? `<div class="field"><span>Ein Foto oben: Darstellung</span>${seg('pmode', mode === 'original' ? 'original' : 'wide', [['wide', 'Breit'], ['original', 'Originalformat']])}</div>` : ''}
+            ${heroImgs.length === 1 && mode === 'original' ? align('hero', draft.heroAlign) : ''}
             <div class="field"><span>Großer Textanfang (rot)</span>${seg('pdrop', String(draft.dropcap == null ? 1 : draft.dropcap), [['0', 'Aus'], ['1', '1 Zeichen'], ['2', '2 Zeichen'], ['3', '3 Zeichen']])}</div>
             <label class="meet-check"><input type="checkbox" name="original" ${draft.original ? 'checked' : ''}><span>Kollage: Fotos im Originalformat zeigen (nicht zuschneiden)</span></label>
             ${draft.original ? align('collage', draft.collageAlign) : ''}
@@ -1939,7 +1944,8 @@
           const box = t.closest('[data-list]');
           const l = list(box.dataset.list);
           draft[l] = (draft[l] || []).filter((r) => r !== t.dataset.premove);
-          if ((draft.heroImages || []).length < 2 && draft.heroMode === 'squares') draft.heroMode = 'wide';
+          const nHero = (draft.heroImages || []).filter(shownImage).length;
+          draft.heroMode = nHero >= 2 ? 'squares' : (draft.heroMode === 'original' ? 'original' : 'wide');
         }
         if (t.dataset.moveList) {
           const l = list(t.dataset.moveList);
@@ -1964,7 +1970,7 @@
             const l = list(which);
             draft[l] = [...(draft[l] || []), ref];
           }
-          if (which === 'hero' && draft.heroImages.length >= 2 && !draft.heroMode) draft.heroMode = 'squares';
+          if (which === 'hero') draft.heroMode = draft.heroImages.length >= 2 ? 'squares' : (draft.heroMode === 'original' ? 'original' : 'wide');
           render(); refresh();
         } catch (err) { toast(err.message); }
       });
@@ -2146,7 +2152,7 @@
     if (!ui().state.member?.isAdmin) return;
     await ensure();
     const groups = [
-      ['Chat und Clubgeflüster', [['title','Seitentitel'],['feedTitle','Überschrift der Beiträge'],['feedIntro','Beschreibung'],['writeLabel','Button zum Schreiben'],['allLabel','Button zur Übersicht'],['olderLabel','Ältere Beiträge'],['feedEmpty','Hinweis ohne Beiträge'],['loginLabel','Anmeldebutton']]],
+      ['Chat und Clubgeflüster', [['feedTitle','Seitentitel (groß, z. B. Clubgeflüster)'],['feedIntro','Beschreibung'],['writeLabel','Button zum Schreiben'],['allLabel','Button zur Übersicht'],['olderLabel','Ältere Beiträge'],['feedEmpty','Hinweis ohne Beiträge'],['loginLabel','Anmeldebutton']]],
       ['Übersicht aller Beiträge', [['overviewKicker','Zeile über der Überschrift'],['overviewTitle','Überschrift'],['overviewIntro','Beschreibung'],['searchPlaceholder','Suchfeld'],['overviewEmpty','Hinweis ohne Suchergebnisse'],['guestNote','Hinweis für Gäste']]],
       ['Filter und Beschriftungen', [['allAreas','Alle Bereiche'],['clubFilter','Club-Filter'],['teamFilter','Mannschafts-Filter'],['teamLabel','Mannschaftsbeiträge'],['periodAll','Gesamter Zeitraum'],['periodWeek','Sieben Tage'],['periodMonth','Dreißig Tage'],['photosOnly','Fotofilter'],['countOne','Ein einzelner Beitrag'],['countMany','Mehrere Beiträge']]],
     ];

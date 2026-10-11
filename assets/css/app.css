@@ -2292,3 +2292,10 @@ h1, h2, h3, .event h3, .feature-body h2, .story-head h1, .post-body h3 { -webkit
 .sec-add button:hover { background: var(--signal); color: #fff; }
 .sec-add > small { font-size: .74rem; color: var(--muted); }
 .sec-add > span { text-transform: none; letter-spacing: 0; font-size: inherit; font-weight: inherit; color: inherit; margin: 0; }
+
+/* Chat: freiwillige Überschrift eines Beitrags (rot, wie in „Alle Beiträge“) */
+.fpost-title { margin: 0 0 6px; font-family: var(--serif); font-size: 1.15rem; font-weight: 800; line-height: 1.25; letter-spacing: -.01em; color: var(--signal); text-transform: none; }
+.chat-stream .fpost-title { font-size: 1.3rem; }
+.compose-title { width: 100%; margin: 0 0 8px; padding: 10px 12px; border: 1.5px solid var(--line); border-radius: 12px; background: #fff; font-family: var(--serif); font-size: 1.1rem; font-weight: 800; color: var(--signal); }
+.compose-title::placeholder { font-family: var(--font); font-weight: 500; font-size: .95rem; color: #A9A398; }
+[data-editor=portrait] .editor-sub { font-size: .72rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--signal); margin: 20px 0 2px; }
