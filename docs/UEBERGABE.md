@@ -3,7 +3,7 @@
 **Zuerst lesen.** Ausführlicher Verlauf: [PROJEKTGEDAECHTNIS.md](PROJEKTGEDAECHTNIS.md).
 Diese Zusammenfassung hat Vorrang vor älteren Zwischenständen.
 
-Stand: **11.10.2026 abends, Aktuell kurz und knackig**. Cache **tfb-kiosk-v115**.
+Stand: **11.10.2026 abends, Menü oben im Admin pflegbar**. Cache **tfb-kiosk-v116**.
 Alles committet (Sicherungspunkt v99 `f8e6c90`, danach Stufe 1). Nicht veröffentlicht.
 
 ## Neu: Ordner heißt jetzt „9. TFB-Website“
@@ -39,6 +39,20 @@ Alles committet (Sicherungspunkt v99 `f8e6c90`, danach Stufe 1). Nicht veröffen
   sich an (Desktop: „Links siehst du jede Änderung sofort“).
 - Beim Wegschieben bleibt die Kopfzeile sichtbar („antippen zum Weiterbearbeiten“),
   Rückkehr an dieselbe Stelle – gilt auch für den Home-Themen-Editor (`togglePeek`).
+
+## Neu in v116: Menü oben im Admin pflegbar
+
+- Ziel des Nutzers: Seite so vorbereiten, dass Mitglieder/Jugendliche ohne EDV-Erfahrung
+  sie selbst pflegen können.
+- Home → Stift → Karte „Menü oben“ → „Menü bearbeiten“: je Punkt Name, Ziel (Seite der
+  App aus Liste oder Website in neuem Fenster), Pfeile zum Sortieren, „zeigen“;
+  „+ Menüpunkt“, eigene Punkte löschbar, „Auf Standard zurücksetzen“. Höchstens
+  8 sichtbare Punkte. Umschalten App ↔ Website merkt sich das vorige Ziel.
+- Ablage `site.nav` = [{id, label, target, hidden?, custom?}]; ohne Eintrag Standard
+  (`TFB.defaultNav` in app.js: Kiosk, Chat, Aktuell, Sport, Club, Verabreden, Padel →
+  padel-bielstein.de). Menü wird in app.js aus `TFB.navItems()` gebaut,
+  `TFB.refreshNav()` nach Laden/Speichern. Aktiv-Markierung nach Zielseite.
+- Seitenliste (`appTargets`) ergänzt um Sport · Training, Impressum, Satzung.
 
 ## Neu in v115: Aktuell bleibt ohne Unterseiten
 

@@ -43,6 +43,8 @@ Neues bitte unten bei „Verlauf“ ergänzen.
   Mannschaftsporträt. Chat-Beiträge mit freiwilliger Überschrift; Chat-Seite heißt „Clubgeflüster“.
 - v112–v115: Titelfotos im Seitenformat einpassen; Aktuell-Beiträge 1–4 Fotos (breit/Quadrate);
   Aktuell ohne Unterseiten (Nutzer: „kurz und knackig“), Texteditor überall gleich schlank.
+- v116: Leitziel bestätigt – Laien (Mitglieder, Jugendliche) sollen alles selbst pflegen.
+  Menü oben (Namen, Ziele intern/extern, Reihenfolge, sichtbar) im Admin bearbeitbar.
 
 ## Verbindlicher Stand 11.10.2026 – Projekt-Update
 

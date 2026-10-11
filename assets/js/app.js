@@ -288,15 +288,7 @@
   function renderShell() {
     const view = currentView();
     const area = areaOf(view);
-    const tabs = [
-      ['kiosk', 'Kiosk', icon.kiosk],
-      ['chat', 'Chat', icon.news],
-      ['aktuell', 'Aktuell', icon.news],
-      ['sport', 'Sport', icon.sport],
-      ['club', 'Club', icon.club],
-      ...(cfg.features && cfg.features.treffen ? [['treffen', 'Verabreden', icon.news]] : []),
-      ['padel', 'Padel', icon.padel, cfg.padelUrl],
-    ];
+    navArea = area;
     $app.innerHTML = `
       <header class="topbar">
         <div class="topbar-row">
@@ -307,11 +299,7 @@
             ? `<button class="avatar" type="button" data-action="profile" aria-label="Profil">${avatarFace(state.member)}</button>`
             : `<button class="avatar guest" type="button" data-action="login" aria-label="Anmelden">${icon.user}</button>`}
         </div>
-        <nav class="topnav" aria-label="Bereiche">
-          ${tabs.map(([id, label, ic, url]) => url
-            ? `<a href="${esc(url)}" class="tab external" target="_blank" rel="noopener" aria-label="${label} – Buchungs-App öffnen (neues Fenster)">${label}</a>`
-            : `<a href="#${id}" class="tab tab-${id} ${id === area ? 'active' : ''}" ${id === area ? 'aria-current="page"' : ''}>${label}</a>`).join('')}
-        </nav>
+        <nav class="topnav" aria-label="Bereiche">${navLinks(area)}</nav>
       </header>
       <main class="view" id="view" data-view="${view}"><div class="loading"></div></main>
       <footer class="site-footer">
@@ -320,6 +308,28 @@
       </footer>`;
     return renderView(view);
   }
+
+  // Menü oben: Standard oder – sobald geladen – die im Admin gepflegten Punkte (Name + Ziel: Seite der App oder Website)
+  let navArea = '';
+  const defaultNav = () => [
+    { id: 'kiosk', label: 'Kiosk', target: '#kiosk' }, { id: 'chat', label: 'Chat', target: '#chat' },
+    { id: 'aktuell', label: 'Aktuell', target: '#aktuell' }, { id: 'sport', label: 'Sport', target: '#sport' },
+    { id: 'club', label: 'Club', target: '#club' },
+    ...(cfg.features && cfg.features.treffen ? [{ id: 'treffen', label: 'Verabreden', target: '#treffen' }] : []),
+    { id: 'padel', label: 'Padel', target: cfg.padelUrl },
+  ];
+  function navLinks(area) {
+    const items = (TFB.navItems && TFB.navItems()) || defaultNav();
+    return items.map((it) => {
+      const t = String(it.target || '');
+      if (/^https?:\/\//i.test(t)) return `<a href="${esc(t)}" class="tab external" target="_blank" rel="noopener" aria-label="${esc(it.label)} (öffnet in neuem Fenster)">${esc(it.label)}</a>`;
+      const page = t.replace(/^#/, '').split('/')[0] || 'home';
+      const on = page === area;
+      return `<a href="${esc(t || '#home')}" class="tab tab-${esc(page)} ${on ? 'active' : ''}" ${on ? 'aria-current="page"' : ''}>${esc(it.label)}</a>`;
+    }).join('');
+  }
+  TFB.defaultNav = defaultNav;
+  TFB.refreshNav = () => { const n = document.querySelector('.topnav'); if (n) n.innerHTML = navLinks(navArea); };
 
   // Kopf der Unterseiten mit Schließen-Kreuz oben rechts (zurück zum Kiosk).
   const viewHead = (title, sub, close = true) => `

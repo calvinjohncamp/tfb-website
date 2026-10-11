@@ -2328,3 +2328,19 @@ h1, h2, h3, .event h3, .feature-body h2, .story-head h1, .post-body h3 { -webkit
 .post-square > .photo-frame.active { width: 100%; height: 100%; aspect-ratio: auto; }
 .post-square .photo-count { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(0,0,0,.45); color: #fff; font-weight: 800; font-size: 1.3rem; }
 .post-photos > .date-badge { position: absolute; left: 22px; bottom: -18px; z-index: 1; box-shadow: 0 6px 16px rgba(0, 0, 0, .18); }
+
+/* Admin: Menü oben bearbeiten */
+.nav-card { margin-top: -12px; }
+.nav-preview { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 12px; }
+.nav-preview span { font-size: .72rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; padding: 5px 10px; border-radius: 99px; background: #F2EEE6; }
+.nav-rows { display: grid; gap: 10px; margin: 6px 0 14px; }
+.nav-row { border: 1.5px solid var(--line); border-radius: 14px; background: #fff; padding: 10px; display: grid; gap: 8px; }
+.nav-row.is-hidden { opacity: .55; }
+.nav-row-top { display: flex; align-items: center; gap: 6px; }
+.nav-row-top input[name^="label_"] { flex: 1; min-width: 0; border: 1.5px solid var(--line); border-radius: 10px; padding: 8px 10px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; font-size: .82rem; }
+.nav-row-top > button { width: 30px; height: 30px; border-radius: 8px; border: 0; background: #F2EEE6; display: grid; place-items: center; cursor: pointer; color: var(--ink); }
+.nav-row-top > button svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.nav-row-top > button:disabled { opacity: .35; }
+.nav-show { display: inline-flex; align-items: center; gap: 4px; font-size: .78rem; color: var(--muted); white-space: nowrap; }
+.nav-row-target { display: grid; gap: 6px; }
+.nav-row-target select, .nav-row-target input { width: 100%; border: 1.5px solid var(--line); border-radius: 10px; padding: 8px 10px; background: var(--paper); font-size: .9rem; }

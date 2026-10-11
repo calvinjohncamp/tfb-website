@@ -37,7 +37,7 @@
   let teamCounts = {};
   let boardPeople = [];
   async function ensure() {
-    if (!site) site = await ui().api.site();
+    if (!site) { site = await ui().api.site(); TFB.refreshNav && TFB.refreshNav(); }
     if (!imagesLoaded) { images = await ui().api.images(); imagesLoaded = true; }
     try { teamCounts = await ui().api.teamPostCounts(); } catch (_) { teamCounts = {}; }
     boardPeople = await ui().api.boardPeople();
@@ -682,7 +682,7 @@
           <a class="${training ? 'on' : ''}" href="#sport/training" ${training ? 'aria-current="page"' : ''}>Training</a>
         </nav>` : ''}
         ${key === 'home' ? `<div class="home-masthead"><span>Neu im Club</span><span>${esc(new Date().toLocaleDateString('de-DE', { month: 'long', year: 'numeric' }))}</span></div>` : ''}
-        ${key === 'home' && edit ? lookPicker() : ''}
+        ${key === 'home' && edit ? lookPicker() + navCard() : ''}
         ${blocks}
         ${edit && key === 'home' ? homeAddButton(list) : ''}
         ${edit && key !== 'home' && (key !== 'sport' || training) ? `<button type="button" class="btn block add-section" data-action="block-new">${icon.plus} Baustein hinzufügen</button>` : ''}
@@ -693,6 +693,93 @@
   const HOME_LOOKS = [['6', 'Wechselspiel', 'Foto und Text je zur Hälfte, Seiten wechseln, große Ziffer – ruhig und gut lesbar'],
     ['1', 'Klassisch', 'Breite, Hoch- und Quadratfotos wie im Editor gewählt'],
     ['3', 'Magazin', 'Zentrierte Serifen-Überschriften, gerahmte Fotos, rote Trenner']];
+  // ---------- Menü oben: Namen, Reihenfolge, Ziel (Seite der App oder Website), sichtbar ----------
+  const MAX_NAV = 8;
+  const navAll = () => (Array.isArray(site?.nav) && site.nav.length ? site.nav : TFB.defaultNav());
+  TFB.navItems = () => (site ? navAll().filter((x) => !x.hidden) : null);
+  function navCard() {
+    const shown = navAll().filter((x) => !x.hidden);
+    return `<section class="look-picker nav-card" aria-label="Menü oben">
+      <h2>Menü oben</h2>
+      <p class="nav-preview">${shown.map((x) => `<span>${esc(x.label)}${/^https?:/i.test(x.target || '') ? ' ↗' : ''}</span>`).join('')}</p>
+      <button type="button" class="btn small" data-action="nav-edit">${ui().icon.pencil} Menü bearbeiten</button>
+    </section>`;
+  }
+  function openNavEditor() {
+    const { openSheet, closeSheet, api, toast, icon } = ui();
+    const draft = JSON.parse(JSON.stringify(navAll()));
+    const targets = appTargets();
+    const render = () => {
+      const visible = draft.filter((x) => !x.hidden).length;
+      openSheet(`
+        <form class="editor" data-editor="nav" novalidate>
+          <h2>Menü oben bearbeiten</h2>
+          <p class="ed-hint">Name ändern, mit den Pfeilen sortieren und das Ziel wählen: eine <b>Seite der App</b> oder eine <b>Website</b> (öffnet in neuem Fenster). Höchstens ${MAX_NAV} sichtbare Punkte – dann passt das Menü auch aufs Handy.</p>
+          <div class="nav-rows">${draft.map((x, i) => {
+            const web = /^https?:/i.test(x.target || '');
+            return `<div class="nav-row ${x.hidden ? 'is-hidden' : ''}">
+              <div class="nav-row-top">
+                <input name="label_${i}" value="${esc(x.label)}" maxlength="20" aria-label="Name im Menü">
+                <button type="button" data-navmove="-1" data-i="${i}" ${i === 0 ? 'disabled' : ''} aria-label="Nach vorne">${icon.up}</button>
+                <button type="button" data-navmove="1" data-i="${i}" ${i === draft.length - 1 ? 'disabled' : ''} aria-label="Nach hinten">${icon.down}</button>
+                <label class="nav-show"><input type="checkbox" name="show_${i}" ${x.hidden ? '' : 'checked'}><span>zeigen</span></label>
+                ${x.custom ? `<button type="button" data-navdel="${i}" aria-label="Menüpunkt löschen">×</button>` : ''}
+              </div>
+              <div class="nav-row-target">
+                <div class="seg"><button type="button" class="${web ? '' : 'on'}" data-navkind="app" data-i="${i}">Seite der App</button><button type="button" class="${web ? 'on' : ''}" data-navkind="web" data-i="${i}">Website</button></div>
+                ${web ? `<input name="target_${i}" type="url" value="${esc(x.target)}" placeholder="https://www.beispiel.de">`
+                  : `<select name="target_${i}">${targets.map(([v, l]) => `<option value="${esc(v)}" ${v === x.target ? 'selected' : ''}>${esc(l)}</option>`).join('')}${targets.some(([v]) => v === x.target) ? '' : `<option value="${esc(x.target)}" selected>${esc(x.target)}</option>`}</select>`}
+              </div>
+            </div>`;
+          }).join('')}</div>
+          ${draft.length < 12 ? '<button type="button" class="btn block" data-navadd>+ Menüpunkt hinzufügen</button>' : ''}
+          <p class="form-error" role="alert"></p>
+          <div class="ed-actions"><button type="submit" class="btn primary block">Speichern</button></div>
+          <button type="button" class="link center" data-navreset>Auf Standard zurücksetzen</button>
+        </form>`);
+      const form = document.querySelector('[data-editor=nav]');
+      const collect = () => draft.forEach((x, i) => {
+        x.label = form.elements[`label_${i}`].value.trim();
+        x.hidden = !form.elements[`show_${i}`].checked;
+        const t = form.elements[`target_${i}`].value.trim();
+        x.target = t && !/^(https?:\/\/|#)/i.test(t) ? 'https://' + t : t;
+      });
+      form.addEventListener('click', (e) => {
+        const mv = e.target.closest('[data-navmove]');
+        if (mv) { collect(); const a = Number(mv.dataset.i); const b = a + Number(mv.dataset.navmove); [draft[a], draft[b]] = [draft[b], draft[a]]; render(); return; }
+        const kind = e.target.closest('[data-navkind]');
+        if (kind) {
+          collect(); const x = draft[Number(kind.dataset.i)];
+          const web = kind.dataset.navkind === 'web';
+          if (web !== /^https?:/i.test(x.target || '')) { x.memo = { ...(x.memo || {}), [web ? 'app' : 'web']: x.target }; x.target = web ? (x.memo.web || '') : (x.memo.app || '#home'); }
+          render(); return;
+        }
+        const del = e.target.closest('[data-navdel]');
+        if (del) { collect(); draft.splice(Number(del.dataset.navdel), 1); render(); return; }
+        if (e.target.closest('[data-navadd]')) { collect(); draft.push({ id: 'n-' + Date.now().toString(36), label: 'Neu', target: '#home', custom: true }); render(); return; }
+        if (e.target.closest('[data-navreset]')) { if (confirm('Menü auf den Standard zurücksetzen?')) { draft.splice(0, draft.length, ...TFB.defaultNav()); render(); } }
+      });
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        collect();
+        const err = form.querySelector('.form-error');
+        const shown = draft.filter((x) => !x.hidden);
+        if (!shown.length) { err.textContent = 'Mindestens ein Menüpunkt muss sichtbar sein.'; return; }
+        if (shown.length > MAX_NAV) { err.textContent = `Höchstens ${MAX_NAV} sichtbare Menüpunkte – bitte einen ausblenden.`; return; }
+        const bad = draft.find((x) => !x.label || !/^(#|https?:\/\/\S+\.\S+)/i.test(x.target || ''));
+        if (bad) { err.textContent = bad.label ? `Bitte für „${bad.label}“ ein gültiges Ziel angeben.` : 'Bitte jedem Menüpunkt einen Namen geben.'; return; }
+        try {
+          site = await api.saveSite({ ...JSON.parse(JSON.stringify(site)), nav: draft.map(({ memo, ...x }) => x) });
+          closeSheet();
+          TFB.refreshNav();
+          toast('Menü gespeichert', true);
+          ui().renderView();
+        } catch (ex) { err.textContent = ex.message; }
+      });
+    };
+    render();
+  }
+
   const MAX_HOME_FEATURES = 10;
   function homeAddButton(list) {
     const n = list.filter((b) => b.type === 'feature').length;
@@ -1308,7 +1395,7 @@
   // Link-Ziel: entweder eine Website oder eine Seite der App (Menüpunkte und Home-Unterseiten)
   function appTargets() {
     const list = [['#home', 'Home'], ['#kiosk', 'Kiosk'], ['#strichliste', 'Kiosk · Strichliste'], ['#abrechnungen', 'Kiosk · Abrechnungen'],
-      ['#chat', 'Chat'], ['#chat/alle', 'Chat · Alle Beiträge'], ['#aktuell', 'Aktuell'], ['#sport', 'Sport'], ['#club', 'Club']];
+      ['#chat', 'Chat'], ['#chat/alle', 'Chat · Alle Beiträge'], ['#aktuell', 'Aktuell'], ['#sport', 'Sport'], ['#sport/training', 'Sport · Training'], ['#club', 'Club'], ['#impressum', 'Impressum'], ['#satzung', 'Satzung']];
     if (TFB.config.features && TFB.config.features.treffen) list.push(['#treffen', 'Verabreden']);
     (site.pages.home.blocks || []).filter((x) => x.type === 'feature' && hasMore(x) && (!x.navigation || x.navigation === 'detail'))
       .forEach((x) => list.push([`#home/${x.id}`, `Home · ${x.title}`]));
@@ -2261,6 +2348,7 @@
       if (ui().currentView() === routeOf(editing)) ui().renderView(); else location.hash = '#' + routeOf(editing);
       window.scrollTo(0, 0);
     },
+    'nav-edit': () => openNavEditor(),
     'home-look': async (el) => {
       try {
         site = await ui().api.saveSite({ ...JSON.parse(JSON.stringify(site)), homeLook: el.dataset.look });
