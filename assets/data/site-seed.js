@@ -38,6 +38,7 @@ TFB.siteSeed = {
   // Einmalige Text-Updates für Geräte, auf denen schon gepflegt wurde: ersetzen nur die
   // genannten Felder (Fotos und Link bleiben). Jedes Update läuft genau einmal.
   updates: [
+    { id: 'club-history-2026-10-11', page: 'verein', insertAfter: 'v-koop', insertBlock: { id: 'v-history', type: 'text', title: 'History', text: 'Fünf Jahrzehnte Tennisfreunde Bielstein – Fotos und Geschichten aus unserer Clubgeschichte.' } },
     { id: 'club-padel-rabatt-2026-10-11', page: 'verein', block: 'v-mitglied-btn', set: { note: 'TFB-Mitglieder erhalten 10 Prozent Rabatt auf alle Padel-Buchungen.' } },
     { id: 'home-kiosk-direkt-2026-10-11', page: 'home', block: 'h-kiosk', set: { navigation: 'link', showMore: false } },
     { id: 'home-jubilaeum-album-2026-10-11', page: 'home', block: 'h-50', set: { album: { enabled: true, label: 'Fotos der Veranstaltung', images: [], position: 'right', order: 1, icon: 'camera' } } },
@@ -158,6 +159,7 @@ TFB.siteSeed = {
         { id: 'v-anfahrt', type: 'text', title: 'Anfahrt', text: 'Tennisfreunde Bielstein e.V.\nJahnstraße, 51674 Wiehl-Bielstein' },
         { id: 'v-anfahrt-btn', type: 'button', label: 'Route planen', url: 'https://maps.google.com/?q=Jahnstra%C3%9Fe+51674+Wiehl+Tennis' },
         { id: 'v-koop', type: 'text', title: 'Kooperationen', text: 'Mit dem Sportpark am See bieten wir unseren Mitgliedern ein vergünstigtes Kraft- und Ausdauertraining als ideale Ergänzung zum Tennis.' },
+        { id: 'v-history', type: 'text', title: 'History', text: 'Fünf Jahrzehnte Tennisfreunde Bielstein – Fotos und Geschichten aus unserer Clubgeschichte.' },
       ],
     },
   },

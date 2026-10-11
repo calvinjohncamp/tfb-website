@@ -345,6 +345,8 @@
           <div class="training-contact">${b.phone ? `<a href="tel:${esc(b.phone.replace(/[^+0-9]/g, ''))}">${esc(b.phone)}</a>` : ''}
           ${b.email ? `<a href="mailto:${esc(b.email)}">${esc(b.email)}</a>` : ''}</div></div>
           ${b.image ? `<figure class="training-coach-photo">${picture(b.image, b.id, b.title)}</figure>` : ''}</section>`;
+        if (b.id === 'v-history') return `<section class="block-text story-teaser">${b.title ? `<h2><a class="post-title-link" href="#club/history">${esc(b.title)}</a></h2>` : ''}${paragraphs(b.text)}
+          <p class="feature-more"><a class="more-link" href="#club/history">${esc(b.linkLabel || 'Mehr erfahren')} <span aria-hidden="true">→</span></a></p></section>`;
         return `<section class="block-text">${b.title ? `<h2>${esc(b.title)}</h2>` : ''}${paragraphs(b.text)}</section>`;
       case 'event':
         return `
@@ -653,6 +655,7 @@
     if (key === 'home' && preview && preview.tab === 'sub') return featureDetail(preview.id);
     if (key === 'home' && !preview && location.hash.split('/')[2] === 'fotos') return albumDetail(location.hash.split('/')[1]);
     if (key === 'home' && !preview && location.hash.split('/')[1]) return featureDetail(location.hash.split('/')[1]);
+    if (key === 'verein' && location.hash.split('/')[1] === 'history') return storyPageView('history');
     const { state, icon, partnerSlot } = ui();
     const page = site.pages[key];
     const edit = editing === key && state.member && state.member.isAdmin && !preview;
@@ -1396,7 +1399,7 @@
   // Link-Ziel: entweder eine Website oder eine Seite der App (Menüpunkte und Home-Unterseiten)
   function appTargets() {
     const list = [['#home', 'Home'], ['#kiosk', 'Kiosk'], ['#strichliste', 'Kiosk · Strichliste'], ['#abrechnungen', 'Kiosk · Abrechnungen'],
-      ['#chat', 'Chat'], ['#chat/alle', 'Chat · Alle Beiträge'], ['#aktuell', 'Aktuell'], ['#sport', 'Sport'], ['#sport/training', 'Sport · Training'], ['#club', 'Club'], ['#impressum', 'Impressum'], ['#satzung', 'Satzung']];
+      ['#chat', 'Chat'], ['#chat/alle', 'Chat · Alle Beiträge'], ['#aktuell', 'Aktuell'], ['#sport', 'Sport'], ['#sport/training', 'Sport · Training'], ['#club', 'Club'], ['#club/history', 'Club · History'], ['#impressum', 'Impressum'], ['#satzung', 'Satzung']];
     if (TFB.config.features && TFB.config.features.treffen) list.push(['#treffen', 'Verabreden']);
     (site.pages.home.blocks || []).filter((x) => x.type === 'feature' && hasMore(x) && (!x.navigation || x.navigation === 'detail'))
       .forEach((x) => list.push([`#home/${x.id}`, `Home · ${x.title}`]));
@@ -1922,7 +1925,7 @@
 
   // ---------- Mannschaftsporträt: Magazin-Seite wie die Unterseiten der Startseite ----------
   let portraitDraft = null;   // Live-Vorschau beim Bearbeiten: { key, data }
-  const portraitOf = (key) => (portraitDraft && portraitDraft.key === key ? portraitDraft.data : (teamContent(key).portrait || {}));
+  const portraitOf = (key) => (portraitDraft && portraitDraft.key === key ? portraitDraft.data : STORY_PAGES[key] ? STORY_PAGES[key].load() : (teamContent(key).portrait || {}));
   const portraitFilled = (p) => Boolean(p && ((p.text || '').trim() || (p.heroImages || []).length || (p.images || []).length || p.quote || p.title));
   const teamName = (team) => team.name.replace(/\s*\(.*?\)/g, '');
   function portraitCard(key, team, canEdit, photo) {
@@ -1943,6 +1946,28 @@
           <span>Wer seid ihr? Teamfotos, Geschichte, Ziele, Mannschaftstour – wie eine Magazinseite.</span></span>
       </button>`;
   }
+  function storyPageView(key) {
+    const sp = STORY_PAGES[key];
+    const { icon, state, partnerSlot } = ui();
+    const p = portraitOf(key);
+    const admin = Boolean(state.member && state.member.isAdmin);
+    if (!portraitFilled(p) && !portraitDraft) {
+      return `${ui().viewHead(esc(sp.label), 'Noch gibt es hier keine Inhalte.', false)}
+        ${admin ? `<p><button type="button" class="btn signal" data-action="portrait-edit" data-team="${esc(key)}">+ ${esc(sp.label)} anlegen</button></p>` : ''}
+        <p><a class="more-link back" href="${sp.back}"><span aria-hidden="true">←</span> ${esc(sp.backLabel)}</a></p>`;
+    }
+    const b = {
+      id: 'sp-' + key, layout: 'wide', image: null, noPlaceholder: true,
+      kicker: p.kicker || sp.kicker, title: p.title || sp.label, subtitle: p.subtitle || '',
+      more: { ...p, heroSource: (p.heroImages || []).filter(shownImage).length ? 'own' : 'same' },
+    };
+    return storyHtml(b, {
+      editHtml: admin ? `<button type="button" class="view-close" data-action="portrait-edit" data-team="${esc(key)}" aria-label="${esc(sp.label)} bearbeiten">${icon.pencil}</button>` : '',
+      closeHref: sp.back, backLabel: sp.backLabel,
+      partner: partnerSlot(sp.partner, site.pages[sp.partner]?.partnerKicker || 'Präsentiert von'),
+    });
+  }
+
   async function teamPortraitView(key) {
     await ensure();
     const found = findTeam(key);
@@ -1971,16 +1996,24 @@
     });
   }
 
+  // Eigene Magazin-Seiten außerhalb der Mannschaften (gleicher Editor wie das Mannschaftsporträt)
+  const STORY_PAGES = {
+    history: { route: '#club/history', label: 'History', kicker: 'Clubgeschichte', back: '#club', backLabel: 'Zurück zum Club', partner: 'verein',
+      load: () => (site.stories && site.stories.history) || {},
+      save: (d) => ui().api.saveSite({ ...JSON.parse(JSON.stringify(site)), stories: { ...(site.stories || {}), history: d } }) },
+  };
   function openPortraitEditor(key) {
-    const route = `#team/${key}/portraet`;
+    const sp = STORY_PAGES[key];
+    const route = sp ? sp.route : `#team/${key}/portraet`;
     if (location.hash !== route) {
       window.addEventListener('hashchange', () => setTimeout(() => openPortraitEditor(key), 120), { once: true });
       location.hash = route;
       return;
     }
     const { openSheet, closeSheet, api, toast, icon } = ui();
-    const found = findTeam(key);
-    const draft = JSON.parse(JSON.stringify(teamContent(key).portrait || {}));
+    const found = sp ? null : findTeam(key);
+    const pageName = sp ? sp.label : found ? teamName(found.team) : key;
+    const draft = JSON.parse(JSON.stringify(sp ? sp.load() : (teamContent(key).portrait || {})));
     initSections(draft);
     portraitDraft = { key, data: draft };
     let timer = null;
@@ -1995,8 +2028,8 @@
       const keep = document.querySelector('#sheet-root .sheet') ? document.querySelector('#sheet-root .sheet').scrollTop : 0;
       openSheet(`
         <form class="editor editor-live" data-editor="portrait" novalidate>
-          <h2>Mannschaftsporträt</h2>
-          <p class="ed-hint">${esc(found ? teamName(found.team) : key)} – so sieht es jeder Besucher. ${wideScreen() ? 'Links siehst du jede Änderung sofort.' : 'Mit „Vorschau ansehen“ siehst du die Seite.'}</p>
+          <h2>${sp ? `${esc(sp.label)} bearbeiten` : 'Mannschaftsporträt'}</h2>
+          <p class="ed-hint">${esc(pageName)} – so sieht es jeder Besucher. ${wideScreen() ? 'Links siehst du jede Änderung sofort.' : 'Mit „Vorschau ansehen“ siehst du die Seite.'}</p>
           <h3 class="editor-sub">1 · Fotos oben (bis zu 4)</h3>
           <div class="field"><div class="gallery-edit">
             ${heroImgs.map((ref, i) => thumbEdit(ref, 'hero', i, heroImgs.length, 'data-premove', heroImgs.length >= 2 ? 'square' : mode === 'original' ? '' : 'wide')).join('')}
@@ -2005,8 +2038,8 @@
           ${!heroImgs.length && teamContent(key).photo && shownImage(teamContent(key).photo) ? `<div class="hero-fallback">${picture(teamContent(key).photo, key)}<div><b>Oben erscheint das Teamfoto.</b>${frameButton(teamContent(key).photo, false, 'wide')}</div></div>` : ''}
           <p class="muted small ed-note">${!heroImgs.length ? 'Ohne eigene Fotos erscheint oben das Teamfoto.' : heroImgs.length === 1 ? (mode === 'original' ? 'Ein Foto im Originalformat.' : 'Ein Foto, breit über der Seite.') : `${heroImgs.length} Fotos als Quadrate nebeneinander.`}</p>
           <h3 class="editor-sub">2 · Überschrift</h3>
-          ${field('Kleine Zeile darüber', 'kicker', draft.kicker, { placeholder: 'z. B. Mannschaftsporträt · Saison 2026' })}
-          ${field('Überschrift', 'title', draft.title, { placeholder: found ? teamName(found.team) : '' })}
+          ${field('Kleine Zeile darüber', 'kicker', draft.kicker, { placeholder: sp ? `z. B. ${sp.kicker}` : 'z. B. Mannschaftsporträt · Saison 2026' })}
+          ${field('Überschrift', 'title', draft.title, { placeholder: pageName })}
           ${field('Unterzeile darunter', 'subtitle', draft.subtitle, { placeholder: 'z. B. Aufsteiger, Freunde, Kölschliebhaber' })}
           <h3 class="editor-sub">3 · Inhalt</h3>
           <p class="muted small ed-note">Abschnitte: <b>Text</b>, <b>Überschrift</b> (rot) und <b>Zitat</b> – immer in derselben Gestaltung. Mit den Pfeilen verschieben, unten ergänzen.</p>
@@ -2090,7 +2123,7 @@
         e.preventDefault();
         collect();
         try {
-          site = await api.setTeamPortrait(key, draft);
+          site = sp ? await sp.save(draft) : await api.setTeamPortrait(key, draft);
           portraitDraft = null;
           endPortraitLive();
           closeSheet();

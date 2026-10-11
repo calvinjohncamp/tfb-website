@@ -231,7 +231,11 @@
       if (db.site.applied.includes(u.id)) return;
       const page = db.site.pages[u.page];
       // Neuer Baustein oben auf einer Seite (z. B. vier Info-Knöpfe im Club), falls noch nicht vorhanden
-      if (u.insertBlock && page && !page.blocks.some((x) => x.id === u.insertBlock.id)) page.blocks.unshift(clone(u.insertBlock));
+      if (u.insertBlock && page && !page.blocks.some((x) => x.id === u.insertBlock.id)) {
+        const at = u.insertAfter ? page.blocks.findIndex((x) => x.id === u.insertAfter) : -1;
+        if (at >= 0) page.blocks.splice(at + 1, 0, clone(u.insertBlock)); else if (u.insertAfter) page.blocks.push(clone(u.insertBlock)); else page.blocks.unshift(clone(u.insertBlock));
+        changed = true;
+      }
       if (u.removeBlock && page) {
         const before = page.blocks.length;
         page.blocks = page.blocks.filter((x) => x.id !== u.removeBlock);

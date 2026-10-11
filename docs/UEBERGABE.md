@@ -4,7 +4,7 @@
 Diese Zusammenfassung hat Vorrang vor älteren Zwischenständen.
 
 Stand: **11.10.2026 abends – EINGEFROREN** als Git-Tag **`stand-2026-10-11-abend`**.
-Cache **tfb-kiosk-v117** (Nachtrag v117 siehe unten). Alles committet, 32 Tests grün. Nicht veröffentlicht.
+Cache **tfb-kiosk-v118** (Nachträge v117/v118 siehe unten). Alles committet, 32 Tests grün. Nicht veröffentlicht.
 
 ## Eingefrorener Stand (vom Nutzer abgenommen: „das gefällt mir sehr gut alles jetzt“)
 
@@ -26,6 +26,15 @@ Cache **tfb-kiosk-v117** (Nachtrag v117 siehe unten). Alles committet, 32 Tests 
   öffnen beim Antippen die blätterbare Galerie direkt beim angeklickten Foto: weiter per
   Klick aufs Foto, Pfeilknöpfe, Pfeiltasten, Wischen; „Alle Fotos“ zur Übersicht.
   Bis zu 100 Fotos (`openGallery(..., start)`; vorher nur Einzelbild).
+
+- v118: **Club → History**: neuer Abschnitt neben Kooperationen/unter Anfahrt
+  (Block `v-history`, per Seed-Update `club-history-2026-10-11` mit `insertAfter: 'v-koop'`
+  in bestehende Daten eingefügt). Überschrift (rot beim Überfahren) und „Mehr erfahren“
+  führen zu `#club/history` – Magazin-Seite mit demselben Editor wie das
+  Mannschaftsporträt (Fotos oben, 3 Überschriftszeilen, Abschnitte, Galerie bis 100 Fotos,
+  blätterbar). Ablage `site.stories.history`; Konfiguration `STORY_PAGES` in site.js –
+  weitere solche Seiten lassen sich dort ergänzen. Kurztext im Club-Admin, Unterseite über
+  „+ History anlegen“ bzw. Stift (nur Admins).
 
 ## Nächster großer Job: Verabreden
 
