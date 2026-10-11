@@ -2244,3 +2244,32 @@ h1, h2, h3, .event h3, .feature-body h2, .story-head h1, .post-body h3 { -webkit
 .ed-themes .ed-theme-add { font-family: var(--font); font-size: 1rem; color: var(--signal); border-style: dashed; }
 /* Werkzeugleiste: aktiver Zustand (markierter Text ist schon fett/kursiv/rot …) */
 .rich-tools .rich-group button.on { background: #fff; box-shadow: 0 0 0 1.5px var(--signal); color: var(--signal); }
+
+/* =====================================================================
+   Unterseite aus Abschnitten: Text · Überschrift (rot) · Zitat – feste Gestaltung
+   ===================================================================== */
+.story-h { font-family: var(--serif); font-size: 1.4rem; font-weight: 800; line-height: 1.2; letter-spacing: -.015em; color: var(--signal); margin: 1.5em 0 .4em; text-transform: none; }
+.story-body > .story-h:first-child { margin-top: 0; }
+.story-body > .story-text + .story-text { margin-top: 0; }
+
+/* Editor: Abschnitte als Karten mit Pfeilen */
+.secs { display: grid; gap: 10px; margin: 6px 0 10px; }
+.sec { border: 1.5px solid var(--line); border-radius: 14px; background: #fff; padding: 8px 10px 10px; }
+.sec-bar { display: flex; align-items: center; gap: 4px; margin: 0 0 6px; }
+.sec-bar span { flex: 1; font-size: .68rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.sec-bar button { width: 28px; height: 28px; border-radius: 8px; border: 0; background: #F2EEE6; display: grid; place-items: center; color: var(--ink); font-size: 1rem; cursor: pointer; }
+.sec-bar button svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.sec-bar button:disabled { opacity: .35; cursor: default; }
+.sec-bar button:hover:not(:disabled) { background: var(--signal); color: #fff; }
+.sec .field { margin: 0; }
+.sec-h-input { width: 100%; border: 0; border-bottom: 1.5px dashed var(--line); background: transparent; padding: 6px 2px; font-family: var(--serif); font-size: 1.4rem; font-weight: 800; letter-spacing: -.015em; color: var(--signal); outline: none; }
+.sec-h-input::placeholder { color: color-mix(in srgb, var(--signal) 40%, #fff); }
+.sec-q-input { width: 100%; border: 0; border-left: 4px solid var(--signal); background: transparent; padding: 4px 0 4px 14px; font-family: var(--serif); font-size: 1.45rem; font-weight: 800; line-height: 1.2; letter-spacing: -.02em; color: var(--ink); resize: vertical; outline: none; }
+.sec-q-by { width: 100%; margin-top: 6px; border: 1.5px solid var(--line); border-radius: 10px; padding: 7px 10px; font-size: .85rem; background: var(--paper); }
+.sec-text { border-color: transparent; background: transparent; padding: 0; }
+.sec-text .sec-bar { padding: 0 2px; }
+.sec-add { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 4px 0 16px; padding: 10px; border: 1.5px dashed var(--line); border-radius: 14px; }
+.sec-add span { font-size: .68rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin-right: 4px; }
+.sec-add button { border: 1.5px solid var(--line); background: #fff; border-radius: 99px; padding: 6px 12px; font-weight: 750; font-size: .82rem; color: var(--ink); cursor: pointer; }
+.sec-add button:hover { border-color: var(--signal); color: var(--signal); }
+.sec-h-input, .sec-q-input { field-sizing: content; min-height: 1.4em; resize: none; display: block; }

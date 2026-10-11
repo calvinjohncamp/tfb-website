@@ -108,6 +108,81 @@
     const h = p.match(/^##\s+(.+)/);
     return h ? `<h3 class="text-sub">${inline(h[1])}</h3>` : `<p>${inline(p)}</p>`;
   }).join('');
+  // ---------- Unterseite aus Abschnitten: Text · Überschrift · Zitat (feste Gestaltung) ----------
+  const plainText = (t) => String(t || '').replace(/\{\/?[a-z]+\}/g, '').replace(/\*\*|__|\*/g, '').trim();
+  // Alter Stand (ein Text mit „## Überschriften“ + ein Zitat nach dem 2. Absatz) → Abschnitte
+  function legacySections(more = {}) {
+    const parts = String(more.text || '').split(/\n{2,}/).filter((x) => x.trim());
+    const cut = Math.min(2, parts.length);
+    const out = []; let buf = []; let quoted = !more.quote;
+    const flush = () => { if (buf.length) { out.push({ type: 'text', text: buf.join('\n\n') }); buf = []; } };
+    const quote = () => { flush(); out.push({ type: 'quote', text: more.quote, by: more.quoteBy || '' }); quoted = true; };
+    parts.forEach((part, i) => {
+      if (i === cut && !quoted) quote();
+      const h = part.match(/^##\s+(.+)/);
+      if (h) { flush(); out.push({ type: 'h', text: plainText(h[1]) }); } else buf.push(part);
+    });
+    flush();
+    if (!quoted) quote();
+    return out;
+  }
+  const storySections = (more = {}) => (Array.isArray(more.sections) ? more.sections : legacySections(more));
+  // Für Kompatibilität (Erkennung „hat Unterseite“, Suche): Abschnitte als schlichter Text + erstes Zitat
+  function sectionsDerived(list) {
+    const q = list.find((x) => x.type === 'quote' && (x.text || '').trim()) || {};
+    return {
+      text: list.filter((x) => x.type !== 'quote' && (x.text || '').trim()).map((x) => (x.type === 'h' ? '## ' + x.text : x.text)).join('\n\n'),
+      quote: q.text || '', quoteBy: q.by || '',
+    };
+  }
+  const SECTION_LABELS = { text: 'Text', h: 'Überschrift', quote: 'Zitat' };
+  function sectionsEditor(list) {
+    const { icon } = ui();
+    return `<div class="secs">${list.map((x, i) => `
+      <div class="sec sec-${x.type}" data-sec="${x.type}">
+        <div class="sec-bar"><span>${SECTION_LABELS[x.type]}</span>
+          <button type="button" data-secmove="-1" data-sec-i="${i}" ${i === 0 ? 'disabled' : ''} aria-label="Nach oben">${icon.up}</button>
+          <button type="button" data-secmove="1" data-sec-i="${i}" ${i === list.length - 1 ? 'disabled' : ''} aria-label="Nach unten">${icon.down}</button>
+          <button type="button" data-secdel="${i}" aria-label="Abschnitt löschen" title="Abschnitt löschen">×</button>
+        </div>
+        ${x.type === 'text' ? field('', `sec_${i}`, x.text, { area: true, rich: true, simple: true, rows: 6, placeholder: 'Text schreiben – Wort markieren, dann Fett, Kursiv oder Rot' })
+          : x.type === 'h' ? `<textarea class="sec-h-input" name="sec_${i}" rows="1" placeholder="z. B. 365 Tage geöffnet">${esc(x.text || '')}</textarea>`
+          : `<textarea class="sec-q-input" name="sec_${i}" rows="2" placeholder="z. B. Eat. Sleep. Padel. Repeat.">${esc(x.text || '')}</textarea>
+             <input class="sec-q-by" name="sec_${i}_by" value="${esc(x.by || '')}" placeholder="Zitat von (freiwillig)">`}
+      </div>`).join('')}</div>
+      <div class="sec-add"><span>Hinzufügen</span>
+        <button type="button" data-secadd="text">+ Text</button>
+        <button type="button" data-secadd="h">+ Überschrift</button>
+        <button type="button" data-secadd="quote">+ Zitat</button>
+      </div>`;
+  }
+  function readSections(form, list) {
+    return list.map((x, i) => {
+      const el = form.elements[`sec_${i}`];
+      const text = el ? (x.type === 'h' ? el.value.replace(/\s*\n\s*/g, ' ') : el.value).trim() : (x.text || '');
+      return x.type === 'quote' ? { type: 'quote', text, by: (form.elements[`sec_${i}_by`]?.value || '').trim() } : { type: x.type, text };
+    });
+  }
+  // Pfeile, Löschen, Hinzufügen – liefert true, wenn die Liste geändert wurde
+  function sectionsClick(e, list) {
+    const mv = e.target.closest('[data-secmove]');
+    if (mv) { const i = Number(mv.dataset.secI); const j = i + Number(mv.dataset.secmove); if (j >= 0 && j < list.length) [list[i], list[j]] = [list[j], list[i]]; return true; }
+    const del = e.target.closest('[data-secdel]');
+    if (del) {
+      const i = Number(del.dataset.secdel);
+      if ((list[i].text || '').trim() && !confirm(`Diesen Abschnitt (${SECTION_LABELS[list[i].type]}) löschen?`)) return false;
+      list.splice(i, 1); return true;
+    }
+    const add = e.target.closest('[data-secadd]');
+    if (add) { list.push(add.dataset.secadd === 'quote' ? { type: 'quote', text: '', by: '' } : { type: add.dataset.secadd, text: '' }); return true; }
+    return false;
+  }
+  const isSectionsClick = (e) => Boolean(e.target.closest('[data-secmove],[data-secdel],[data-secadd]'));
+  const initSections = (holder) => {
+    if (!Array.isArray(holder.sections)) holder.sections = legacySections(holder);
+    if (!holder.sections.length) holder.sections = [{ type: 'text', text: '' }];
+  };
+
   const parseDate = (iso) => { const [y, m, d] = String(iso || '').split('-').map(Number); return y ? new Date(Date.UTC(y, m - 1, d)) : null; };
   const fmt = (iso, opts) => { const d = parseDate(iso); return d ? d.toLocaleDateString('de-DE', { timeZone: 'UTC', ...opts }) : ''; };
   const dateBadge = (iso) => `
@@ -458,9 +533,6 @@
     const { icon } = ui();
     storyIndex[b.id] = b;
     const more = b.more || {};
-    const parts = String(more.text || '').split(/\n{2,}/);
-    const cut = Math.min(2, parts.length);
-    const size = b.textSize === 'gross' ? 'text-l' : '';
     // Titelbild: wie Startseite (bzw. Teamfoto) oder eigene Fotos; breit, im Originalformat oder 2–4 Quadrate
     const own = more.heroSource === 'own' ? (more.heroImages || []).filter(shownImage) : [];
     const mode = more.heroMode || 'wide';
@@ -494,9 +566,19 @@
             ${b.link && b.link.url ? `<div class="story-link">${linkMarkup(b.link)}</div>` : ''}
           </header>
           <div class="story-body">
-            <div class="story-text ${size}">${leadLetters(paragraphs(parts.slice(0, cut).join('\n\n') || b.text || ''), more.dropcap == null ? 1 : Number(more.dropcap))}</div>
-            ${more.quote ? `<blockquote class="story-quote"><p>${esc(more.quote)}</p>${more.quoteBy ? `<cite>${esc(more.quoteBy)}</cite>` : ''}</blockquote>` : ''}
-            ${parts.length > cut ? `<div class="story-text ${size}">${paragraphs(parts.slice(cut).join('\n\n'))}</div>` : ''}
+            ${(() => {
+              const drop = more.dropcap == null ? 1 : Number(more.dropcap);
+              const secs = storySections(more).filter((x) => (x.text || '').trim());
+              if (!secs.some((x) => x.type === 'text') && b.text) secs.unshift({ type: 'text', text: b.text });
+              let first = true;
+              return secs.map((x) => {
+                if (x.type === 'h') return `<h2 class="story-h">${esc(x.text)}</h2>`;
+                if (x.type === 'quote') return `<blockquote class="story-quote"><p>${esc(x.text)}</p>${x.by ? `<cite>${esc(x.by)}</cite>` : ''}</blockquote>`;
+                const html = first ? leadLetters(paragraphs(x.text), drop) : paragraphs(x.text);
+                first = false;
+                return `<div class="story-text">${html}</div>`;
+              }).join('');
+            })()}
           </div>
         </div>
         ${collage(more.images || [], b.id, Boolean(more.original), more.collageAlign)}
@@ -1251,6 +1333,7 @@
     const original = findBlock(id);
     if (!original) return;
     const draft = JSON.parse(JSON.stringify(original));
+    if (draft.type === 'feature') { draft.more = { ...(draft.more || {}) }; initSections(draft.more); }
     let edTab = startTab;
     const edMore = {};   // „Mehr Gestaltung“ je Reiter auf/zu (bleibt beim Neuzeichnen)
     // Themen-Leiste: zwischen den Themen der Startseite wechseln (speichert das aktuelle), + legt ein neues an
@@ -1315,20 +1398,17 @@
                 : imageField(lk.image, lk.url || 'intern', 'Rundes Bild im Link (leer = Symbol der Seite)', 'link')));
           const ownHero = heroSrc === 'own' ? heroImgs : [];
           const subPanel = `
-            <p class="ed-hint">Die <b>Unterseite</b> öffnet sich über „Mehr erfahren“. Hier bearbeitest du sie von oben nach unten – so wie sie links erscheint. Überschrift, Unterzeile und Link kommen vom Reiter „Startseite“.</p>
+            <p class="ed-hint">Die <b>Unterseite</b> öffnet sich über „Mehr erfahren“. Hier bearbeitest du sie von oben nach unten – so wie sie erscheint. Überschrift, Unterzeile und Link kommen vom Reiter „Startseite“.</p>
             <h3 class="editor-sub">1 · Fotos oben (1 bis 4)</h3>
             <div class="field"><div class="gallery-edit">
               ${ownHero.map((ref, i) => thumbEdit(ref, 'hero', i, ownHero.length, 'data-hero-remove')).join('')}
               ${ownHero.length < 4 ? `<label class="gallery-add">${ui().icon.plus}<span>Foto</span><input type="file" accept="image/*" multiple data-hero-input hidden></label>` : ''}
             </div></div>
             <p class="muted small ed-note">${!ownHero.length ? 'Ohne eigene Fotos erscheint oben das Foto der Startseite.' : ownHero.length === 1 ? (heroMode === 'original' ? 'Ein Foto im Originalformat.' : 'Ein Foto, breit über der Seite.') : `${ownHero.length} Fotos als Quadrate nebeneinander.`}</p>
-            <h3 class="editor-sub">2 · Text</h3>`
-            + field('', 'moreText', more.text, { area: true, rich: true, rows: 12, placeholder: 'Beliebig lang – Wörter markieren und oben gestalten' })
-            + `<h3 class="editor-sub">3 · Zitat (freiwillig)</h3>
-               <p class="muted small ed-note">Erscheint groß mit rotem Strich nach den ersten beiden Absätzen.</p>`
-            + field('', 'moreQuote', more.quote, { placeholder: 'z. B. Eat. Sleep. Padel. Repeat.' })
-            + field('Zitat von (freiwillig)', 'moreQuoteBy', more.quoteBy, { placeholder: 'z. B. Jan, Herren 40' })
-            + `<h3 class="editor-sub">4 · Fotos unten (Kollage, freiwillig)</h3>
+            <h3 class="editor-sub">2 · Inhalt</h3>
+            <p class="muted small ed-note">Die Seite besteht aus Abschnitten: <b>Text</b>, <b>Überschrift</b> (rot) und <b>Zitat</b> – immer in derselben Gestaltung. Mit den Pfeilen verschieben, unten ergänzen.</p>`
+            + sectionsEditor(draft.more.sections)
+            + `<h3 class="editor-sub">3 · Fotos unten (Kollage, freiwillig)</h3>
                <div class="field"><div class="gallery-edit">
                   ${(() => { const l = (more.images || []).filter(shownImage); return l.map((ref, i) => thumbEdit(ref, 'more', i, l.length, 'data-more-remove')).join(''); })()}
                   <label class="gallery-add">${ui().icon.plus}<span>Fotos</span><input type="file" accept="image/*" multiple data-more-input hidden></label>
@@ -1338,7 +1418,6 @@
               ${ownHero.length === 1 && heroMode === 'original' ? `<div class="field"><span>Ausrichtung</span><div class="seg align-seg">${[['left', 'Links'], ['center', 'Mitte'], ['right', 'Rechts']].map(([v, l]) =>
                   `<button type="button" class="${(more.heroAlign || 'center') === v ? 'on' : ''}" data-align="hero:${v}">${l}</button>`).join('')}</div></div>` : ''}`
               + `<div class="field"><span>Großer Textanfang (rot)</span>${seg('dropcap', String(more.dropcap == null ? 1 : more.dropcap), [['0', 'Aus'], ['1', '1 Zeichen'], ['2', '2 Zeichen'], ['3', '3 Zeichen']])}</div>`
-              + `<div class="field"><span>Grundschrift des Textes</span>${seg('textsize', draft.textSize || 'normal', [['normal', 'Normal'], ['gross', 'Groß']])}</div>`
               + `<label class="meet-check"><input type="checkbox" name="moreOriginal" data-rerender ${more.original ? 'checked' : ''}><span>Kollage: Fotos im Originalformat zeigen (nicht zuschneiden)</span></label>
                  ${more.original ? `<div class="field"><span>Ausrichtung der Kollage</span><div class="seg align-seg">${[['left', 'Links'], ['center', 'Mitte'], ['right', 'Rechts']].map(([v, l]) =>
                   `<button type="button" class="${(more.collageAlign || 'center') === v ? 'on' : ''}" data-align="collage:${v}">${l}</button>`).join('')}</div></div>` : ''}`);
@@ -1457,6 +1536,11 @@
       form.addEventListener('toggle', (e) => { if (e.target.dataset && e.target.dataset.edmore) edMore[e.target.dataset.edmore] = e.target.open; }, true);
       form.addEventListener('submit', (e) => { e.preventDefault(); save(form); });
       form.addEventListener('click', async (e) => {
+        if (isSectionsClick(e) && draft.more) {
+          collect(form);
+          if (sectionsClick(e, draft.more.sections)) { Object.assign(draft.more, sectionsDerived(draft.more.sections)); render(); if (live) schedulePreview(); }
+          return;
+        }
         const th = e.target.closest('[data-edtheme]');
         if (th) {
           if (th.dataset.edtheme === id) return;
@@ -1628,7 +1712,10 @@
       if (f.imgOriginal) draft.original = f.imgOriginal.checked;
       if (f.navigation) { draft.navigation = f.navigation.value; draft.showMore = f.showMore.checked; }
       if (f.albumEnabled) draft.album = { ...(draft.album || {}), enabled: f.albumEnabled.checked, title: f.albumTitle.value.trim(), label: f.albumLabel.value.trim() || 'Fotos der Veranstaltung', position: f.albumPos.value, icon: f.albumIcon.value, original: f.albumOriginal.checked };
-      if (f.moreText) draft.more = { ...(draft.more || {}), text: f.moreText.value.trim(), quote: f.moreQuote.value.trim(), quoteBy: f.moreQuoteBy.value.trim(), original: Boolean(f.moreOriginal && f.moreOriginal.checked) };
+      if (form.querySelector('[data-panel=sub]') && draft.more) {
+        const secs = readSections(form, draft.more.sections || []);
+        draft.more = { ...draft.more, sections: secs, ...sectionsDerived(secs), original: Boolean(f.moreOriginal && f.moreOriginal.checked) };
+      }
       if (f.link2Url) {
         const url2 = f.link2App ? f.link2App.value : f.link2Url.value.trim();
         draft.link2 = { ...(draft.link2 || {}), url: url2 && !/^(https?:\/\/|#)/i.test(url2) ? 'https://' + url2 : url2, label: f.link2Label.value.trim() };
@@ -1762,6 +1849,7 @@
     const { openSheet, closeSheet, api, toast, icon } = ui();
     const found = findTeam(key);
     const draft = JSON.parse(JSON.stringify(teamContent(key).portrait || {}));
+    initSections(draft);
     portraitDraft = { key, data: draft };
     let timer = null;
     let moreOpen = false;   // „Mehr Gestaltung“ bleibt beim Neuzeichnen auf/zu
@@ -1784,13 +1872,10 @@
           </div></div>
           <h3 class="editor-sub">2 · Überschrift</h3>
           ${field('', 'title', draft.title, { placeholder: found ? teamName(found.team) : '' })}
-          <h3 class="editor-sub">3 · Text über die Mannschaft</h3>
-          ${field('', 'text', draft.text, { area: true, rich: true, rows: 10, placeholder: 'Wer seid ihr, was macht euch aus, was habt ihr vor?' })}
-          <h3 class="editor-sub">4 · Zitat (freiwillig)</h3>
-          <p class="muted small ed-note">Erscheint groß mit rotem Strich nach den ersten beiden Absätzen.</p>
-          ${field('', 'quote', draft.quote, { placeholder: 'z. B. Wir spielen, um danach zusammenzusitzen.' })}
-          ${field('Zitat von (freiwillig)', 'quoteBy', draft.quoteBy)}
-          <h3 class="editor-sub">5 · Fotos unten (Kollage, freiwillig)</h3>
+          <h3 class="editor-sub">3 · Inhalt</h3>
+          <p class="muted small ed-note">Abschnitte: <b>Text</b>, <b>Überschrift</b> (rot) und <b>Zitat</b> – immer in derselben Gestaltung. Mit den Pfeilen verschieben, unten ergänzen.</p>
+          ${sectionsEditor(draft.sections)}
+          <h3 class="editor-sub">4 · Fotos unten (Kollage, freiwillig)</h3>
           <div class="field"><div class="gallery-edit">
             ${coll.map((ref, i) => thumbEdit(ref, 'more', i, coll.length, 'data-premove')).join('')}
             <label class="gallery-add">${icon.plus}<span>Fotos</span><input type="file" accept="image/*" multiple data-pphoto="more" hidden></label>
@@ -1802,7 +1887,6 @@
             ${field('Kleine Zeile über der Überschrift', 'kicker', draft.kicker, { placeholder: 'z. B. Mannschaftsporträt · Saison 2026' })}
             ${field('Unterzeile', 'subtitle', draft.subtitle, { placeholder: 'z. B. Aufsteiger, Freunde, Kölschliebhaber' })}
             <div class="field"><span>Großer Textanfang (rot)</span>${seg('pdrop', String(draft.dropcap == null ? 1 : draft.dropcap), [['0', 'Aus'], ['1', '1 Zeichen'], ['2', '2 Zeichen'], ['3', '3 Zeichen']])}</div>
-            <div class="field"><span>Textgröße</span>${seg('psize', draft.textSize || 'normal', [['normal', 'Normal'], ['gross', 'Groß']])}</div>
             <label class="meet-check"><input type="checkbox" name="original" ${draft.original ? 'checked' : ''}><span>Kollage: Fotos im Originalformat zeigen (nicht zuschneiden)</span></label>
             ${draft.original ? align('collage', draft.collageAlign) : ''}
           </details>
@@ -1815,13 +1899,16 @@
       document.querySelector('#sheet-root .sheet').scrollTop = keep;
       const form = document.querySelector('[data-editor=portrait]');
       const collect = () => {
-        ['kicker', 'title', 'subtitle', 'text', 'quote', 'quoteBy'].forEach((k) => { draft[k] = form.elements[k].value.trim(); });
+        ['kicker', 'title', 'subtitle'].forEach((k) => { draft[k] = form.elements[k].value.trim(); });
+        draft.sections = readSections(form, draft.sections || []);
+        Object.assign(draft, sectionsDerived(draft.sections));
         draft.original = form.elements.original.checked;
       };
       const list = (name) => (name === 'hero' ? 'heroImages' : 'images');
       form.addEventListener('input', () => { setTimeout(() => { collect(); refresh(); }, 0); });
       form.querySelector('[data-pmore]').addEventListener('toggle', (e) => { moreOpen = e.target.open; });
       form.addEventListener('click', (e) => {
+        if (isSectionsClick(e)) { collect(); if (sectionsClick(e, draft.sections)) { Object.assign(draft, sectionsDerived(draft.sections)); render(); refresh(); } return; }
         const pk = e.target.closest('[data-ed-peek]');
         if (pk) { togglePeek(pk); return; }
         const t = e.target.closest('[data-pmode],[data-pdrop],[data-psize],[data-palign],[data-premove],[data-move-list]');

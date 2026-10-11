@@ -37,6 +37,8 @@ Neues bitte unten bei „Verlauf“ ergänzen.
   nichts verstecken, was auf der Seite sichtbar ist.
 - v108: Home-Typografie fest (keine Größen), Fließtext nur Fett/Kursiv/Rot; Link-Text
   sichtbar. Nutzer: „nicht mehr so weit weg von einer guten Seite eins“.
+- v109: Idee des Nutzers umgesetzt – Unterseiten aus Abschnitten (Text · Überschrift ·
+  Zitat) mit Pfeilen und Plus, feste Gestaltung, nur zwei Schriftgrößen (Text/Überschrift).
 
 ## Verbindlicher Stand 11.10.2026 – Projekt-Update
 

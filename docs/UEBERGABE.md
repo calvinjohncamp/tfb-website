@@ -3,7 +3,7 @@
 **Zuerst lesen.** Ausführlicher Verlauf: [PROJEKTGEDAECHTNIS.md](PROJEKTGEDAECHTNIS.md).
 Diese Zusammenfassung hat Vorrang vor älteren Zwischenständen.
 
-Stand: **11.10.2026 abends, Home-Editor vereinfacht**. Cache **tfb-kiosk-v108**.
+Stand: **11.10.2026 abends, Unterseite aus Abschnitten**. Cache **tfb-kiosk-v109**.
 Alles committet (Sicherungspunkt v99 `f8e6c90`, danach Stufe 1). Nicht veröffentlicht.
 
 ## Neu: Ordner heißt jetzt „9. TFB-Website“
@@ -39,6 +39,21 @@ Alles committet (Sicherungspunkt v99 `f8e6c90`, danach Stufe 1). Nicht veröffen
   sich an (Desktop: „Links siehst du jede Änderung sofort“).
 - Beim Wegschieben bleibt die Kopfzeile sichtbar („antippen zum Weiterbearbeiten“),
   Rückkehr an dieselbe Stelle – gilt auch für den Home-Themen-Editor (`togglePeek`).
+
+## Neu in v109: Unterseite und Mannschaftsporträt aus Abschnitten
+
+- Inhalt = Liste `sections` aus **Text** (Fließtext, nur Fett/Kursiv/Rot/Link),
+  **Überschrift** (immer rot, groß – `.story-h`) und **Zitat** (immer roter Strich,
+  große Schrift, optional „von“). Pfeile verschieben, × löscht (mit Rückfrage bei
+  Inhalt), unten „+ Text / + Überschrift / + Zitat“. Keine Schriftgrößen mehr
+  (Textgröße aus Unterseite und Porträt entfernt; `textSize` wird ignoriert).
+- Ablage: Home-Thema `more.sections`, Porträt `portrait.sections`. Alter Stand
+  (`text` mit `## …` + `quote` nach dem 2. Absatz) wird beim Öffnen automatisch
+  umgewandelt (`legacySections`); zusätzlich werden `text`/`quote` abgeleitet
+  gespeichert (`sectionsDerived`) für „hat Unterseite“-Erkennung.
+- Editor-Felder sehen aus wie die Seite: Überschrift rot/fett, Zitat mit rotem Strich.
+- Getestet mit Padel-Unterseite: Umwandlung 1:1, Verschieben/Hinzufügen live,
+  Speichern + Neuladen.
 
 ## Neu in v108: Home-Editor so einfach wie möglich
 
