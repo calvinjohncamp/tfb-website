@@ -341,3 +341,8 @@ Monatsabschluss.
 - **10.10.2026 (Sitzungsende)** – Übersicht Schriften/Farben erstellt (Abschnitt
   „Gestaltungssystem“). Stand eingefroren als Tag `stand-2026-10-10-abend`. Nutzer:
   „Mir gefällt das alles sehr, sehr gut“ – nächster Schritt: echte Bilder und Texte einpflegen.
+- **11.10.2026** – Padel-Text überarbeitet („Padel kommt nach Bielstein.“, ab Mai 2027 im
+  Freibad, 365 Tage, Buchungsticket = Freibad-Eintritt, Slogan „Hit. Run. Padel-Fun.“ als Zitat).
+  Neu: **einmalige Text-Updates** (`TFB.siteSeed.updates`, erledigte IDs in `site.applied`) –
+  damit lassen sich Texte auf bereits gepflegten Geräten ersetzen, ohne Fotos/Links anzufassen.
+  Breite Home-Ansicht: Kicker/Überschrift/Unterzeile links dicht gestapelt, Text + Links rechts.

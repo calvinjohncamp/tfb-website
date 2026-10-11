@@ -222,6 +222,19 @@
       const mine = db.site.pages.home.blocks.find((x) => x.id === seedBlock.id);
       if (mine && !mine.more && seedBlock.more) { mine.more = clone(seedBlock.more); changed = true; }
     });
+    // Einmalige Text-Updates aus site-seed.js (z. B. neuer Padel-Text) – Fotos und Links bleiben.
+    db.site.applied = db.site.applied || [];
+    (TFB.siteSeed.updates || []).forEach((u) => {
+      if (db.site.applied.includes(u.id)) return;
+      const page = db.site.pages[u.page];
+      const block = page && page.blocks.find((x) => x.id === u.block);
+      if (block) {
+        Object.assign(block, clone(u.set || {}));
+        if (u.more) block.more = { ...(block.more || {}), ...clone(u.more) };
+      }
+      db.site.applied.push(u.id);
+      changed = true;
+    });
     if (changed) save(db);
   }
   if (!db.catalog || db.catalogVersion !== CATALOG_VERSION) {

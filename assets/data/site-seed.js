@@ -8,6 +8,15 @@ window.TFB = window.TFB || {};
 TFB.siteSeed = {
   version: 1,
   teams: {},
+  // Einmalige Text-Updates für Geräte, auf denen schon gepflegt wurde: ersetzen nur die
+  // genannten Felder (Fotos und Link bleiben). Jedes Update läuft genau einmal.
+  updates: [
+    { id: 'padel-text-2026-10-11', page: 'home', block: 'h-padel',
+      set: { kicker: 'Ab Mai 2027 im Freibad Bielstein', title: 'Padel kommt nach Bielstein.',
+        subtitle: 'Zwei Outdoor-Courts, 365 Tage im Jahr geöffnet – für alle Tennis- und Padelfreunde.',
+        text: 'Padel ist die am schnellsten wachsende Sportart in Deutschland: schnell gelernt, rasant gespielt und fast immer im Doppel. Anfang 2027 bauen die Tennisfreunde Bielstein die ersten beiden Courts, ab Mai wird gespielt.\n\nDas Beste daran: In der Freibad-Saison ist dein Buchungsticket gleichzeitig deine Eintrittskarte ins Freibad.' },
+      more: { text: 'Padel boomt, und zwar zu Recht. Gespielt wird auf einem kleinen Feld mit Glaswänden, der Ball darf von der Wand zurückgespielt werden. Das sorgt für lange Ballwechsel, viel Bewegung und noch mehr Spaß. Die Regeln sind in fünf Minuten erklärt. Wer Tennis spielt, fühlt sich sofort zu Hause, und wer noch nie einen Schläger in der Hand hatte, hat nach einer Stunde trotzdem Spaß.\n\n## Zwei Courts im Freibad Bielstein\n\nAnfang 2027 bauen die Tennisfreunde Bielstein die ersten beiden Outdoor-Courts und erweitern damit ihr sportliches Angebot. Ab Mai 2027 geht es los, für Mitglieder und für alle, die Lust auf Padel haben.\n\n## 365 Tage geöffnet\n\nPadel Bielstein ist das ganze Jahr über geöffnet. Während der Freibad-Saison gilt dein Buchungsticket gleichzeitig als Eintrittskarte ins Freibad. Erst ein Match, dann ab ins Becken.\n\n**Hit. Run. Padel-Fun.** Wir freuen uns auf dich!', quote: 'Hit. Run. Padel-Fun.', quoteBy: '' } },
+  ],
   pages: {
     // Startseite für alle Besucher: drei große Themen (Beispiele – im Bearbeiten-Modus ersetzen).
     home: {
@@ -16,17 +25,17 @@ TFB.siteSeed = {
       partnerKicker: 'Die Tennisfreunde werden dir präsentiert von',
       blocks: [
         { id: 'h-padel', type: 'feature', layout: 'wide', image: null,
-          kicker: 'Neu in Bielstein', title: 'Padel ist da.',
-          subtitle: 'Zwei Outdoor-Courts in Wiehl-Bielstein – buchbar per App.',
-          text: 'Padel verbindet das Beste aus Tennis und Squash: schnell gelernt, gespielt wird fast immer im Doppel, und nach zehn Minuten macht es allen Spaß – Anfängern wie alten Tennishasen.\n\nPlatz buchen, Jahresabo sichern, Guthaben verwalten und Mitspieler finden: alles in der Padel-Bielstein-App.',
-          link: { url: 'https://padel-bielstein.de', label: 'Jetzt Platz buchen',
+          kicker: 'Ab Mai 2027 im Freibad Bielstein', title: 'Padel kommt nach Bielstein.',
+          subtitle: 'Zwei Outdoor-Courts, 365 Tage im Jahr geöffnet – für alle Tennis- und Padelfreunde.',
+          text: 'Padel ist die am schnellsten wachsende Sportart in Deutschland: schnell gelernt, rasant gespielt und fast immer im Doppel. Anfang 2027 bauen die Tennisfreunde Bielstein die ersten beiden Courts, ab Mai wird gespielt.\n\nDas Beste daran: In der Freibad-Saison ist dein Buchungsticket gleichzeitig deine Eintrittskarte ins Freibad.',
+          link: { url: 'https://padel-bielstein.de', label: 'Mehr zu Padel Bielstein',
             title: 'Padel spielen in Wiehl-Bielstein | Padel Bielstein',
             text: 'Zwei Outdoor-Courts in Wiehl-Bielstein: Padel buchen, Jahresabo sichern, Guthaben verwalten und Mitspieler finden.',
             image: 'assets/home/padel-bielstein-vorschau.jpg' },
           more: {
-            text: 'Padel ist der am schnellsten wachsende Racketsport Europas – und jetzt auch bei uns in Bielstein zu Hause. Gespielt wird auf einem kleineren Feld mit Glaswänden, die Bälle dürfen von der Wand zurückgespielt werden. Das macht die Ballwechsel lang und das Spiel gesellig.\n\nDie Regeln sind schnell erklärt, die Technik kommt beim Spielen. Wer Tennis spielt, ist sofort zu Hause – und wer noch nie einen Schläger in der Hand hatte, hat nach einer Stunde trotzdem Spaß.\n\n## So kommst du auf den Platz\n\nGebucht wird über die [Padel-Bielstein-App](https://padel-bielstein.de): Termin wählen, bezahlen, spielen. Schläger und Bälle gibt es vor Ort. Mitglieder der Tennisfreunde bekommen **10 % Rabatt** – automatisch erkannt über die E-Mail-Adresse.\n\n## Mitspieler gesucht?\n\nIn der App findest du offene Spiele und kannst dich mit anderen verabreden. Oder du nimmst einfach jemanden aus dem Club mit.',
-            quote: 'Nach zehn Minuten hatte jeder ein Grinsen im Gesicht.',
-            quoteBy: 'Beispielzitat – hier steht später ein echtes',
+            text: 'Padel boomt, und zwar zu Recht. Gespielt wird auf einem kleinen Feld mit Glaswänden, der Ball darf von der Wand zurückgespielt werden. Das sorgt für lange Ballwechsel, viel Bewegung und noch mehr Spaß. Die Regeln sind in fünf Minuten erklärt. Wer Tennis spielt, fühlt sich sofort zu Hause, und wer noch nie einen Schläger in der Hand hatte, hat nach einer Stunde trotzdem Spaß.\n\n## Zwei Courts im Freibad Bielstein\n\nAnfang 2027 bauen die Tennisfreunde Bielstein die ersten beiden Outdoor-Courts und erweitern damit ihr sportliches Angebot. Ab Mai 2027 geht es los, für Mitglieder und für alle, die Lust auf Padel haben.\n\n## 365 Tage geöffnet\n\nPadel Bielstein ist das ganze Jahr über geöffnet. Während der Freibad-Saison gilt dein Buchungsticket gleichzeitig als Eintrittskarte ins Freibad. Erst ein Match, dann ab ins Becken.\n\n**Hit. Run. Padel-Fun.** Wir freuen uns auf dich!',
+            quote: 'Hit. Run. Padel-Fun.',
+            quoteBy: '',
             images: ['ph:padel-court', 'ph:t2', 'ph:t3', 'ph:t5', 'ph:t1'],
           } },
         { id: 'h-kiosk', type: 'feature', layout: 'portrait', image: null,
