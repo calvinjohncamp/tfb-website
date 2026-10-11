@@ -551,7 +551,8 @@
           const detail = Object.entries(r.counts).sort((a, b) => b[1] - a[1]).map(([name, n]) => `${n} × ${esc(name)}`).join(' · ');
           const cell = (cat) => {
             const n = r.cats[cat] || 0;
-            return `<span class="tally-cell ${cat}" aria-label="${TALLY_CATS.find(([c]) => c === cat)[1]}: ${strokesWord(n)}">${n ? TFB.strokes(Math.min(n, 10), key + cat) + (n > 10 ? `<em>+${n - 10}</em>` : '') : ''}</span>`;
+            const max = cat === 'drinks' ? 15 : 10;   // Getränke: Platz für drei Bündel (15 Striche)
+            return `<span class="tally-cell ${cat}" aria-label="${TALLY_CATS.find(([c]) => c === cat)[1]}: ${strokesWord(n)}">${n ? TFB.strokes(Math.min(n, max), key + cat) + (n > max ? `<em>+${n - max}</em>` : '') : ''}</span>`;
           };
           return `
             <button type="button" class="paper-row tally-row ${r.isMe ? 'me' : ''} ${open ? 'open' : ''}" data-action="tally-row" data-key="${esc(key)}" aria-expanded="${open}">

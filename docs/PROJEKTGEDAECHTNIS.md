@@ -470,3 +470,6 @@ Monatsabschluss.
   Teamfoto), Kicker/Überschrift/Unterzeile, Text mit großem Anfang, Zitat, Kollage (Original +
   Ausrichtung). Editor als Seitenleiste mit Live-Vorschau; Fotos per ‹ › sortierbar.
   Daten: `site.teams[key].portrait`, `api.setTeamPortrait` (Admins + Spieler der Mannschaft).
+- **11.10.2026** – Strichliste optimiert: Getränke-Spalte breiter, Platz für **15 Striche**
+  (drei Bündel), danach „+n“ in derselben Zeile; andere Spalten bis 10 Striche. Linker Rand
+  des Notizzettels schmaler (Handy 34 px, Desktop 42 px) – Zettel-Look bleibt.
