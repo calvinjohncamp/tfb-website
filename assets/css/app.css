@@ -2155,7 +2155,7 @@ h1, h2, h3, .event h3, .feature-body h2, .story-head h1, .post-body h3 { -webkit
 .home-look-3 .home-masthead span + span::before { content: "·"; margin-right: 18px; color: var(--muted); }
 .home-look-3 .page-main { gap: 0 !important; }
 .home-look-3 .feature { display: block; padding: 48px 0; }
-.home-look-3 .feature + .feature::before { content: ""; display: block; width: 64px; height: 3px; border-radius: 3px; background: var(--signal); margin: 0 auto 48px; }
+.home-look-3 .feature:not(.feature-first)::before { content: ""; display: block; width: 64px; height: 3px; border-radius: 3px; background: var(--signal); margin: 0 auto 48px; }
 .home-look-3 .feature-media { --look-ratio: 3 / 2; max-width: 920px; margin: 0 auto; border-radius: 6px; }
 .home-look-3 .feature-portrait .feature-media { --look-ratio: 4 / 5; max-width: 480px; }
 .home-look-3 .feature-square .feature-media { --look-ratio: 1; max-width: 560px; }
@@ -2180,7 +2180,7 @@ h1, h2, h3, .event h3, .feature-body h2, .story-head h1, .post-body h3 { -webkit
   .home-look-6 .feature { grid-template-columns: repeat(2, minmax(0, 1fr)); min-height: 540px; }
   .home-look-6 .feature > :first-child { height: 100%; }
   .home-look-6 .feature-media { --look-ratio: auto; height: 100%; }
-  .home-look-6 .feature:nth-child(even) > :first-child { order: 2; }
+  .home-look-6 .feature.feature-even > :first-child { order: 2; }
   .home-look-6 .feature-body { align-self: center; padding: 52px 54px; }
   .home-look-6 .feature-kicker span { font-size: 6rem; }
   .home-look-6 .feature-body h2 { font-size: 2.8rem; }
@@ -2197,3 +2197,9 @@ h1, h2, h3, .event h3, .feature-body h2, .story-head h1, .post-body h3 { -webkit
 .look-options button.on { border-color: var(--signal); box-shadow: 0 0 0 1px var(--signal); background: #fff; }
 .look-picker > p { margin: 10px 0 0; }
 @media (min-width: 760px) { .look-options { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+
+/* Home bearbeiten: Plus-Knopf für ein neues Thema (höchstens 10) */
+.add-feature small { font-weight: 600; opacity: .6; margin-left: 6px; }
+.add-limit { text-align: center; margin: 18px 0; }
+/* Im Bearbeiten-Modus gleiche Abstände wie in der Ansicht (WYSIWYG) */
+.editing-page.home-look-6 .block-edit + .block-edit, .editing-page.home-look-3 .block-edit + .block-edit { margin-top: 26px; }

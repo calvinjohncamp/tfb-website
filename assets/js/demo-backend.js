@@ -923,6 +923,7 @@
             && (!Array.isArray(block.images) || block.images.length > 100)) throw new Error('Eine Fotokollage kann höchstens 100 Bilder enthalten.');
         }
       }
+      if ((site.pages.home?.blocks || []).filter((b) => b.type === 'feature').length > 10) throw new Error('Die Startseite zeigt höchstens 10 Themen.');
       for (const block of site.pages.home?.blocks || []) {
         if (block.album && (!Array.isArray(block.album.images || []) || (block.album.images || []).length > 100)) throw new Error('Eine Fotokollage kann höchstens 100 Bilder enthalten.');
       }

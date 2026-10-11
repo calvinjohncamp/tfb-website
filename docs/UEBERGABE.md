@@ -3,7 +3,7 @@
 **Zuerst lesen.** Ausführlicher Verlauf: [PROJEKTGEDAECHTNIS.md](PROJEKTGEDAECHTNIS.md).
 Diese Zusammenfassung hat Vorrang vor älteren Zwischenständen.
 
-Stand: **11.10.2026 abends, Home-Look Wechselspiel als Standard**. Cache **tfb-kiosk-v104**.
+Stand: **11.10.2026 abends, Home WYSIWYG im gewählten Look, bis 10 Themen**. Cache **tfb-kiosk-v105**.
 Alles committet (Sicherungspunkt v99 `f8e6c90`, danach Stufe 1). Nicht veröffentlicht.
 
 ## Neu: Ordner heißt jetzt „9. TFB-Website“
@@ -39,6 +39,18 @@ Alles committet (Sicherungspunkt v99 `f8e6c90`, danach Stufe 1). Nicht veröffen
   sich an (Desktop: „Links siehst du jede Änderung sofort“).
 - Beim Wegschieben bleibt die Kopfzeile sichtbar („antippen zum Weiterbearbeiten“),
   Rückkehr an dieselbe Stelle – gilt auch für den Home-Themen-Editor (`togglePeek`).
+
+## Neu in v105: Home bearbeiten im gewählten Look, bis zu 10 Themen
+
+- WYSIWYG: Der Bearbeiten-Modus von Home zeigt den gewählten Look (Wechselspiel,
+  Klassisch oder Magazin). Look oben umschalten → Seite darunter wechselt sofort.
+  Dafür tragen Themen die Klassen `feature-first`/`feature-even` (statt
+  `:nth-child`, das durch die Bearbeiten-Rahmen nicht mehr stimmte).
+- Unten im Bearbeiten-Modus: **„+ Neues Thema (n von 10)“** legt direkt ein Thema an
+  (kein Bausteinkatalog). Ab 10 Themen Hinweis statt Knopf; `saveSite` lehnt mehr
+  als 10 ab. Abbrechen verwirft das leere Thema.
+- Prüfhinweis: Bei Tests im Browser JS-Dateien ohne Zwischenspeicher laden
+  (`fetch(..., {cache:'reload'})`), sonst läuft alter Code.
 
 ## Neu in v104: Home-Look festgelegt
 

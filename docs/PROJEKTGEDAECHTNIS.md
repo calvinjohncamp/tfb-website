@@ -27,6 +27,8 @@ Neues bitte unten bei „Verlauf“ ergänzen.
   flexiblen Hoch-/Querformat-Fotos (Wunsch des Nutzers, noch offen).
 - v104: Entscheidung – Look 6 „Wechselspiel“ ist Standard; Klassisch und Magazin im
   Admin umschaltbar (`site.homeLook`). Zeitung/Bühne/Kacheln verworfen.
+- v105: Nutzer will im Admin WYSIWYG im jeweils gewählten Look bearbeiten → umgesetzt;
+  Home bis 10 Themen über Plus-Knopf „Neues Thema“.
 
 ## Verbindlicher Stand 11.10.2026 – Projekt-Update
 

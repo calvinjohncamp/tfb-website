@@ -225,7 +225,7 @@
         const parts = String(b.text || '').split(/\n{2,}/).filter((x) => x.trim());
         const textHtml = parts.map((p, i) => slot(`right-${i}`) + paragraphs(p)).join('');
         return `
-          <article class="feature feature-${esc(String(b.layout || 'wide').replace('-right', ''))} ${/-right$/.test(b.layout || '') ? 'img-right' : ''} ${more ? 'has-more' : ''}" data-feature="${esc(b.id)}">
+          <article class="feature feature-${esc(String(b.layout || 'wide').replace('-right', ''))} ${/-right$/.test(b.layout || '') ? 'img-right' : ''} ${more ? 'has-more' : ''} ${n === '01' ? 'feature-first' : ''} ${Number(n) % 2 === 0 ? 'feature-even' : ''}" data-feature="${esc(b.id)}">
             ${(b.images || []).filter(shownImage).length ? newsCollage(b) : wrap(`<div class="feature-media">${picture(b.image, b.id, b.title)}</div>`)}
             <div class="feature-body">
               <div class="feature-left">
@@ -545,7 +545,7 @@
       ? list.map((b, i) => editWrap(b, i, list.length, renderBlock(b, key))).join('')
       : legal ? `<div class="legal-document">${list.map(b => renderBlock(b, key)).join('')}</div>` : layoutBlocks(list, key);
     return `
-      <div class="site-page ${edit ? 'editing-page' : ''} ${key === 'home' && !edit ? `home-look-${homeLook()}` : ''}" data-page="${key}">
+      <div class="site-page ${edit ? 'editing-page' : ''} ${key === 'home' ? `home-look-${homeLook()}` : ''}" data-page="${key}">
         ${edit ? `
           <div class="editbar">
             <div><strong>${esc(page.title)} bearbeiten</strong><span>Bausteine antippen zum Ändern · Pfeile zum Sortieren</span></div>
@@ -561,10 +561,11 @@
           <a class="${training ? '' : 'on'}" href="#sport" ${training ? '' : 'aria-current="page"'}>Mannschaften</a>
           <a class="${training ? 'on' : ''}" href="#sport/training" ${training ? 'aria-current="page"' : ''}>Training</a>
         </nav>` : ''}
-        ${key === 'home' && !edit ? `<div class="home-masthead"><span>Neu im Club</span><span>${esc(new Date().toLocaleDateString('de-DE', { month: 'long', year: 'numeric' }))}</span></div>` : ''}
+        ${key === 'home' ? `<div class="home-masthead"><span>Neu im Club</span><span>${esc(new Date().toLocaleDateString('de-DE', { month: 'long', year: 'numeric' }))}</span></div>` : ''}
         ${key === 'home' && edit ? lookPicker() : ''}
         ${blocks}
-        ${edit && (key !== 'sport' || training) ? `<button type="button" class="btn block add-section" data-action="block-new">${icon.plus} Baustein hinzufügen</button>` : ''}
+        ${edit && key === 'home' ? homeAddButton(list) : ''}
+        ${edit && key !== 'home' && (key !== 'sport' || training) ? `<button type="button" class="btn block add-section" data-action="block-new">${icon.plus} Baustein hinzufügen</button>` : ''}
         ${edit || legal ? '' : partnerSlot(key, page.partnerKicker || 'Präsentiert von')}
       </div>`;
   }
@@ -572,6 +573,13 @@
   const HOME_LOOKS = [['6', 'Wechselspiel', 'Foto und Text je zur Hälfte, Seiten wechseln, große Ziffer – ruhig und gut lesbar'],
     ['1', 'Klassisch', 'Breite, Hoch- und Quadratfotos wie im Editor gewählt'],
     ['3', 'Magazin', 'Zentrierte Serifen-Überschriften, gerahmte Fotos, rote Trenner']];
+  const MAX_HOME_FEATURES = 10;
+  function homeAddButton(list) {
+    const n = list.filter((b) => b.type === 'feature').length;
+    return n >= MAX_HOME_FEATURES
+      ? `<p class="muted small add-limit">Die Startseite zeigt höchstens ${MAX_HOME_FEATURES} Themen. Für ein neues Thema bitte zuerst eines löschen.</p>`
+      : `<button type="button" class="btn block add-section add-feature" data-action="block-add" data-type="feature">${ui().icon.plus} Neues Thema <small>${n} von ${MAX_HOME_FEATURES}</small></button>`;
+  }
   const homeLook = () => (HOME_LOOKS.some(([k]) => k === site?.homeLook) ? site.homeLook : '6');
   function lookPicker() {
     const cur = homeLook();
@@ -579,7 +587,7 @@
       <h2>Look der Startseite</h2>
       <div class="look-options">${HOME_LOOKS.map(([k, l, d]) => `<button type="button" class="${k === cur ? 'on' : ''}" data-action="home-look" data-look="${k}" aria-pressed="${k === cur}">
         <b>${esc(l)}${k === '6' ? ' <small>Standard</small>' : ''}</b><span>${esc(d)}</span></button>`).join('')}</div>
-      <p class="muted small">Gilt für alle Besucher. Sichtbar, sobald du oben auf „Fertig“ tippst.</p>
+      <p class="muted small">Gilt für alle Besucher. Die Seite darunter zeigt sofort den gewählten Look – so bearbeitest du genau, was die Besucher sehen.</p>
     </section>`;
   }
   ['home', 'aktuell', 'sport', 'verein', 'impressum', 'satzung'].forEach((key) => { TFB.views[routeOf(key)] = () => pageView(key); });
@@ -1362,7 +1370,7 @@
       const keepScroll = document.querySelector('#sheet-root .sheet') ? document.querySelector('#sheet-root .sheet').scrollTop : 0;
       openSheet(`
         <form class="editor ${live ? 'editor-live' : ''}" data-editor="block" novalidate>
-          <h2>${isNew ? `Neuer Baustein: ${esc(label)}` : live ? 'Thema bearbeiten' : `${esc(label)} bearbeiten`}</h2>
+          <h2>${isNew ? (live ? 'Neues Thema' : `Neuer Baustein: ${esc(label)}`) : live ? 'Thema bearbeiten' : `${esc(label)} bearbeiten`}</h2>
           ${body()}
           <p class="form-error" role="alert"></p>
           <div class="ed-actions">
@@ -2066,6 +2074,7 @@
     'block-edit': (el) => openBlockEditor(el.dataset.id),
     'block-new': () => openBlockPicker(),
     'block-add': (el) => {
+      if (editing === 'home' && el.dataset.type === 'feature' && blocksOf().filter((b) => b.type === 'feature' && !b._new).length >= MAX_HOME_FEATURES) { ui().toast(`Höchstens ${MAX_HOME_FEATURES} Themen auf der Startseite.`); return; }
       dropUnsaved();
       const block = { ...newBlock(el.dataset.type), _new: true };
       // Neue Beiträge/Termine direkt hinter den letzten gleicher Art, sonst ans Ende.
