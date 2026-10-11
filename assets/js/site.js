@@ -379,14 +379,21 @@
     root.classList.remove('side-mode', 'peek');
     document.body.classList.remove('side-editing');
   }
+  // Handy: Editor-Blatt nach unten wegschieben (Vorschau) – oben bleibt die Kopfzeile sichtbar
+  function togglePeek(btn) {
+    const root = document.getElementById('sheet-root');
+    const sheet = root.querySelector('.sheet');
+    const on = root.classList.toggle('peek');
+    if (on) { sheet.dataset.keep = sheet.scrollTop; sheet.scrollTop = 0; } else sheet.scrollTop = Number(sheet.dataset.keep || 0);
+    btn.textContent = on ? 'Weiter bearbeiten' : 'Vorschau ansehen';
+  }
   // Handy: weggeschobenes Editor-Blatt per Tipp auf die sichtbare Kopfzeile zurückholen
   document.addEventListener('click', (e) => {
     const root = document.getElementById('sheet-root');
     if (!root || !root.classList.contains('peek') || e.target.closest('.sheet-close, [data-ed-peek]') || !e.target.closest('.sheet')) return;
     e.preventDefault();
-    root.classList.remove('peek');
     const b = root.querySelector('[data-ed-peek]');
-    if (b) b.textContent = 'Vorschau ansehen';
+    if (b) togglePeek(b); else root.classList.remove('peek');
   }, true);
   // Wird das Fenster geschlossen (Kreuz, Abbrechen), endet die Vorschau und der gespeicherte Stand erscheint wieder.
   new MutationObserver(() => {
@@ -1424,7 +1431,7 @@
           refreshPreview(true);
           return;
         }
-        if (e.target.closest('[data-ed-peek]')) { document.getElementById('sheet-root').classList.toggle('peek'); e.target.closest('[data-ed-peek]').textContent = document.getElementById('sheet-root').classList.contains('peek') ? 'Weiter bearbeiten' : 'Vorschau ansehen'; return; }
+        if (e.target.closest('[data-ed-peek]')) { togglePeek(e.target.closest('[data-ed-peek]')); return; }
         const hs = e.target.closest('[data-herosrc]');
         if (hs) { collect(form); draft.more = { ...(draft.more || {}), heroSource: hs.dataset.herosrc }; if (hs.dataset.herosrc !== 'own' && draft.more.heroMode === 'squares') draft.more.heroMode = 'wide'; render(); return; }
         const hm = e.target.closest('[data-heromode]');
@@ -1655,6 +1662,8 @@
     const draft = JSON.parse(JSON.stringify(teamContent(key).portrait || {}));
     portraitDraft = { key, data: draft };
     let timer = null;
+    let moreOpen = false;   // „Mehr Gestaltung“ bleibt beim Neuzeichnen auf/zu
+    const wide = () => window.matchMedia('(min-width: 1100px)').matches;
     const refresh = () => { clearTimeout(timer); timer = setTimeout(async () => { const y = window.scrollY; await ui().renderView(); window.scrollTo(0, y); }, 220); };
     const seg = (attr, cur, opts) => `<div class="seg">${opts.map(([v, l, off]) => `<button type="button" class="${cur === v ? 'on' : ''}" data-${attr}="${v}" ${off ? 'disabled' : ''}>${l}</button>`).join('')}</div>`;
     const align = (key2, cur) => `<div class="field"><span>Ausrichtung</span>${seg('palign', `${key2}:${cur || 'center'}`, [['left', 'Links'], ['center', 'Mitte'], ['right', 'Rechts']].map(([v, l]) => [`${key2}:${v}`, l]))}</div>`;
@@ -1666,32 +1675,36 @@
       openSheet(`
         <form class="editor editor-live" data-editor="portrait" novalidate>
           <h2>Mannschaftsporträt</h2>
-          <p class="ed-hint">${esc(found ? teamName(found.team) : key)} – so sieht es jeder Besucher. Links siehst du die Vorschau. Ohne eigene Fotos erscheint oben das Teamfoto.</p>
-          <h3 class="editor-sub">Titelfotos oben (1 bis 4)</h3>
+          <p class="ed-hint">${esc(found ? teamName(found.team) : key)} – so sieht es jeder Besucher. ${wide() ? 'Links siehst du jede Änderung sofort.' : 'Mit „Vorschau ansehen“ siehst du die Seite.'} Ohne eigene Fotos erscheint oben das Teamfoto.</p>
+          <h3 class="editor-sub">1 · Fotos oben (bis zu 4)</h3>
           <div class="field"><div class="gallery-edit">
             ${heroImgs.map((ref, i) => thumbEdit(ref, 'hero', i, heroImgs.length, 'data-premove')).join('')}
             ${heroImgs.length < 4 ? `<label class="gallery-add">${icon.plus}<span>Foto</span><input type="file" accept="image/*" multiple data-pphoto="hero" hidden></label>` : ''}
           </div></div>
-          <div class="field"><span>Darstellung</span>${seg('pmode', mode, [['wide', 'Breit'], ['original', 'Originalformat'], ['squares', '2–4 Quadrate nebeneinander', heroImgs.length < 2]])}</div>
-          ${mode === 'original' ? align('hero', draft.heroAlign) : ''}
-          <h3 class="editor-sub">Texte</h3>
-          ${field('Kleine Zeile', 'kicker', draft.kicker, { placeholder: 'z. B. Mannschaftsporträt · Saison 2026' })}
-          ${field('Überschrift', 'title', draft.title, { placeholder: found ? teamName(found.team) : '' })}
-          ${field('Unterzeile', 'subtitle', draft.subtitle, { placeholder: 'z. B. Aufsteiger, Freunde, Kölschliebhaber' })}
-          ${field('Text über die Mannschaft', 'text', draft.text, { area: true, rich: true, rows: 10, placeholder: 'Wer seid ihr, was macht euch aus, was habt ihr vor?' })}
-          <div class="field"><span>Großer Textanfang (rot)</span>${seg('pdrop', String(draft.dropcap == null ? 1 : draft.dropcap), [['0', 'Aus'], ['1', '1 Zeichen'], ['2', '2 Zeichen'], ['3', '3 Zeichen']])}</div>
-          <div class="field"><span>Textgröße</span>${seg('psize', draft.textSize || 'normal', [['normal', 'Normal'], ['gross', 'Groß']])}</div>
-          ${field('Zitat (freiwillig)', 'quote', draft.quote, { placeholder: 'z. B. „Wir spielen, um danach zusammenzusitzen.“' })}
-          ${field('Zitat von', 'quoteBy', draft.quoteBy)}
-          <h3 class="editor-sub">Fotokollage unten</h3>
-          <label class="meet-check"><input type="checkbox" name="original" ${draft.original ? 'checked' : ''}><span>Fotos im Originalformat zeigen (nicht zuschneiden)</span></label>
-          ${draft.original ? align('collage', draft.collageAlign) : ''}
+          <h3 class="editor-sub">2 · Überschrift</h3>
+          ${field('', 'title', draft.title, { placeholder: found ? teamName(found.team) : '' })}
+          <h3 class="editor-sub">3 · Text über die Mannschaft</h3>
+          ${field('', 'text', draft.text, { area: true, rich: true, rows: 10, placeholder: 'Wer seid ihr, was macht euch aus, was habt ihr vor?' })}
+          <h3 class="editor-sub">4 · Weitere Fotos (unten als Kollage, freiwillig)</h3>
           <div class="field"><div class="gallery-edit">
             ${coll.map((ref, i) => thumbEdit(ref, 'more', i, coll.length, 'data-premove')).join('')}
             <label class="gallery-add">${icon.plus}<span>Fotos</span><input type="file" accept="image/*" multiple data-pphoto="more" hidden></label>
           </div></div>
+          <details class="ed-more" data-pmore ${moreOpen ? 'open' : ''}>
+            <summary>Mehr Gestaltung <small>freiwillig – ohne Änderung sieht alles gut aus</small></summary>
+            <div class="field"><span>Fotos oben: Darstellung</span>${seg('pmode', mode, [['wide', 'Breit'], ['original', 'Originalformat'], ['squares', '2–4 Quadrate nebeneinander', heroImgs.length < 2]])}</div>
+            ${mode === 'original' ? align('hero', draft.heroAlign) : ''}
+            ${field('Kleine Zeile über der Überschrift', 'kicker', draft.kicker, { placeholder: 'z. B. Mannschaftsporträt · Saison 2026' })}
+            ${field('Unterzeile', 'subtitle', draft.subtitle, { placeholder: 'z. B. Aufsteiger, Freunde, Kölschliebhaber' })}
+            <div class="field"><span>Großer Textanfang (rot)</span>${seg('pdrop', String(draft.dropcap == null ? 1 : draft.dropcap), [['0', 'Aus'], ['1', '1 Zeichen'], ['2', '2 Zeichen'], ['3', '3 Zeichen']])}</div>
+            <div class="field"><span>Textgröße</span>${seg('psize', draft.textSize || 'normal', [['normal', 'Normal'], ['gross', 'Groß']])}</div>
+            ${field('Zitat', 'quote', draft.quote, { placeholder: 'z. B. „Wir spielen, um danach zusammenzusitzen.“' })}
+            ${field('Zitat von', 'quoteBy', draft.quoteBy)}
+            <label class="meet-check"><input type="checkbox" name="original" ${draft.original ? 'checked' : ''}><span>Kollage: Fotos im Originalformat zeigen (nicht zuschneiden)</span></label>
+            ${draft.original ? align('collage', draft.collageAlign) : ''}
+          </details>
           <p class="form-error" role="alert"></p>
-          <div class="ed-actions"><button type="submit" class="btn primary block">Speichern</button></div>
+          <div class="ed-actions"><button type="submit" class="btn primary block">Speichern</button><button type="button" class="btn block ed-peek" data-ed-peek>Vorschau ansehen</button></div>
         </form>`);
       document.getElementById('sheet-root').classList.add('side-mode');
       document.body.classList.add('side-editing');
@@ -1704,7 +1717,10 @@
       };
       const list = (name) => (name === 'hero' ? 'heroImages' : 'images');
       form.addEventListener('input', () => { setTimeout(() => { collect(); refresh(); }, 0); });
+      form.querySelector('[data-pmore]').addEventListener('toggle', (e) => { moreOpen = e.target.open; });
       form.addEventListener('click', (e) => {
+        const pk = e.target.closest('[data-ed-peek]');
+        if (pk) { togglePeek(pk); return; }
         const t = e.target.closest('[data-pmode],[data-pdrop],[data-psize],[data-palign],[data-premove],[data-move-list]');
         if (!t) return;
         collect();

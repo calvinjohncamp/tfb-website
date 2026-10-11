@@ -2120,3 +2120,13 @@ h1, h2, h3, .event h3, .feature-body h2, .story-head h1, .post-body h3 { -webkit
 }
 
 @media (min-width: 640px) { .team-row .team-news-btn { width: min(270px, 100%); justify-content: center; white-space: normal; text-align: center; } }
+
+/* Porträt-Editor: einfache Schritte 1–4, alles Weitere unter „Mehr Gestaltung“ */
+.editor .field > span:empty { display: none; }
+.ed-more { margin: 22px 0 8px; border: 1px solid #E6E0D4; border-radius: 14px; padding: 0 14px; background: #fff; }
+.ed-more > summary { cursor: pointer; list-style: none; padding: 14px 0; font-weight: 700; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; }
+.ed-more > summary::-webkit-details-marker { display: none; }
+.ed-more > summary::before { content: "+"; color: var(--signal); font-weight: 800; width: 14px; }
+.ed-more[open] > summary::before { content: "–"; }
+.ed-more > summary small { font-weight: 500; color: var(--muted); font-size: .78rem; }
+.ed-more[open] { padding-bottom: 14px; }

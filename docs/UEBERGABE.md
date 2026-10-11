@@ -3,7 +3,7 @@
 **Zuerst lesen.** Ausführlicher Verlauf: [PROJEKTGEDAECHTNIS.md](PROJEKTGEDAECHTNIS.md).
 Diese Zusammenfassung hat Vorrang vor älteren Zwischenständen.
 
-Stand: **11.10.2026 abends, Aufräumen Stufe 1**. Cache **tfb-kiosk-v100**.
+Stand: **11.10.2026 abends, Aufräumen Stufe 2**. Cache **tfb-kiosk-v101**.
 Alles committet (Sicherungspunkt v99 `f8e6c90`, danach Stufe 1). Nicht veröffentlicht.
 
 ## Neu: Ordner heißt jetzt „9. TFB-Website“
@@ -29,12 +29,19 @@ Alles committet (Sicherungspunkt v99 `f8e6c90`, danach Stufe 1). Nicht veröffen
   Vereinswebsite veröffentlicht; Entscheidung des Nutzers).
 - Tippfehler „TFB GOES DIGTAL“ ist Nutzerinhalt → im Home-Editor selbst korrigieren.
 
+## Neu in v101 (Aufräumen Stufe 2)
+
+- Mannschaftsporträt-Editor in nummerierten Schritten: 1 Fotos oben, 2 Überschrift,
+  3 Text, 4 weitere Fotos (Kollage). Alles andere (Darstellung, kleine Zeile,
+  Unterzeile, Großer Textanfang, Textgröße, Zitat, Kollage im Originalformat) liegt
+  eingeklappt unter **„Mehr Gestaltung“**; bleibt beim Bearbeiten offen/zu.
+- Handy/iPad: Knopf „Vorschau ansehen“ / „Weiter bearbeiten“; Hinweistext passt
+  sich an (Desktop: „Links siehst du jede Änderung sofort“).
+- Beim Wegschieben bleibt die Kopfzeile sichtbar („antippen zum Weiterbearbeiten“),
+  Rückkehr an dieselbe Stelle – gilt auch für den Home-Themen-Editor (`togglePeek`).
+
 ## Nächste Stufen (vereinbart, noch offen)
 
-- **Stufe 2:** Porträt-Editor für Mannschaften zweistufig: „Einfach“ (Fotos,
-  Überschrift, Text) + „Mehr Gestaltung“; auf dem Handy Umschalter Bearbeiten/Vorschau
-  statt „links siehst du die Vorschau“. Ziel: Mitglieder liefern Inhalte, so einfach
-  wie möglich.
 - **Stufe 3:** Home-Editor (3 Reiter, 33 Felder) nach gleichem Prinzip vereinfachen;
   Knöpfe seitenübergreifend vereinheitlichen (Segment vs. Pillen, rot mit schwarzer
   Schrift). Untertitel „Ohne Chat-Chaos“ bei Verabreden überdenken.

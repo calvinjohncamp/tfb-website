@@ -18,7 +18,8 @@ Neues bitte unten bei „Verlauf“ ergänzen.
 - Umgesetzt (Stufe 1): siehe UEBERGABE.md „Neu in v100“. Commits `f8e6c90`
   (Sicherungspunkt v99), `1d0b829`, `02f8fb3`.
 - Ordner umbenannt in `9. TFB-Website`, `TFB-Kiosk öffnen.html` gelöscht.
-- Offen: Stufe 2 (Porträt-Editor einfach/mehr), Stufe 3 (Home-Editor, Knöpfe).
+- Stufe 2 erledigt (v101): Porträt-Editor in Schritten 1–4 + „Mehr Gestaltung“,
+  Handy-Vorschau-Knopf. Offen: Stufe 3 (Home-Editor nach gleichem Muster, Knöpfe).
 
 ## Verbindlicher Stand 11.10.2026 – Projekt-Update
 
