@@ -180,12 +180,12 @@
     const label = esc(link.label || 'Mehr erfahren');
     const style = link.style || 'chip';
     const target = ext ? ' target="_blank" rel="noopener"' : '';
-    if (style === 'button' || (!ext && style === 'card')) return `<p class="feature-link"><a class="btn signal" href="${esc(link.url)}"${target}>${label} <span aria-hidden="true">${ext ? '↗' : '→'}</span></a></p>`;
+    if (style === 'button' || (!ext && style === 'card')) return `<p class="feature-link"><a class="btn signal" href="${esc(link.url)}"${target} title="${esc(ext ? hostOf(link.url) : label)}">${label} <span aria-hidden="true">${ext ? '↗' : '→'}</span></a></p>`;
     if (style === 'chip') return `
-      <p class="feature-link"><a class="link-chip" href="${esc(link.url)}"${target}>
+      <p class="feature-link"><a class="link-chip" href="${esc(link.url)}"${target} title="${esc(ext ? hostOf(link.url) : label)}">
         ${link.image ? `<span class="link-chip-img">${picture(link.image, link.url)}</span>`
           : link.icon && ui().icon[link.icon] ? `<span class="link-chip-img icon">${ui().icon[link.icon]}</span>` : !ext ? `<span class="link-chip-img icon">${pageIcon(link.url)}</span>` : ''}
-        <span class="link-chip-label">${ext ? esc(hostOf(link.url)) : label}</span>
+        <span class="link-chip-label">${ext && !link.label ? esc(hostOf(link.url)) : label}</span>
         <small aria-hidden="true">${ext ? '↗' : '→'}</small>
       </a></p>`;
     return `
@@ -237,7 +237,7 @@
                 ${slot('left', 'Link hierher')}
               </div>
               <div class="feature-right">
-                <div class="feature-text ${b.textSize === 'gross' ? 'text-l' : ''}">${textHtml}</div>
+                <div class="feature-text">${textHtml}</div>
                 ${slot('right', 'Link hierher')}
                 ${more && b.showMore !== false ? `<p class="feature-more"><a class="more-link" href="${esc(more)}">Mehr erfahren <span aria-hidden="true">→</span></a></p>` : ''}
               </div>
@@ -1146,7 +1146,16 @@
   function field(label, name, value, opts = {}) {
     const v = esc(value == null ? '' : value);
     if (opts.area && opts.rich) return `<div class="field rich-field"><span>${label}</span>
-      <div class="rich-tools" role="toolbar" aria-label="Text gestalten">
+      <div class="rich-tools" role="toolbar" aria-label="Text gestalten">${opts.simple ? `
+        <span class="rich-group" role="group" aria-label="Schrift">
+          <button type="button" data-rich="bold" title="Fett"><b>F</b></button>
+          <button type="button" data-rich="italic" title="Kursiv"><i>K</i></button>
+          <button type="button" data-rich="rot" title="Rot"><span class="sw sw-red"></span></button>
+        </span>
+        <span class="rich-group" role="group" aria-label="Weiteres">
+          <button type="button" data-rich="link" title="Link">↗ Link</button>
+          <button type="button" data-rich="clear" title="Markierten Text wieder ganz schlicht machen">⌫ Schlicht</button>
+        </span>` : `
         <span class="rich-group" role="group" aria-label="Schrift">
           <button type="button" data-rich="bold" title="Fett"><b>F</b></button>
           <button type="button" data-rich="italic" title="Kursiv"><i>K</i></button>
@@ -1169,7 +1178,7 @@
           <button type="button" data-rich="h" title="Markierten Absatz zur Zwischenüberschrift machen (nochmal = zurück)">Überschrift</button>
           <button type="button" data-rich="link" title="Link">↗ Link</button>
           <button type="button" data-rich="clear" title="Markierten Text wieder ganz schlicht machen">⌫ Schlicht</button>
-        </span>
+        </span>`}
       </div>
       <div class="rich-area" contenteditable="true" data-rich-for="${name}" data-placeholder="${esc(opts.placeholder || '')}">${paragraphs(value || '')}</div>
       <textarea name="${name}" hidden>${v}</textarea></div>`;
@@ -1280,17 +1289,16 @@
             + field('Überschrift', 'title', draft.title)
             + field('Unterzeile darunter', 'subtitle', draft.subtitle, { placeholder: 'z. B. Zwei Outdoor-Courts, 365 Tage geöffnet' })
             + `<h3 class="editor-sub">3 · Kurzer Text</h3>`
-            + field('', 'text', draft.text, { area: true, rich: true, rows: 5, placeholder: 'Zwei, drei Sätze – Wörter markieren und oben gestalten' })
+            + field('', 'text', draft.text, { area: true, rich: true, simple: true, rows: 5, placeholder: 'Zwei, drei Sätze – Wort markieren, dann Fett, Kursiv oder Rot' })
             + `<h3 class="editor-sub">4 · Links (freiwillig)</h3>
                <p class="muted small ed-note">„Mehr erfahren“ zur Unterseite erscheint von selbst, sobald die Unterseite Inhalt hat.</p>`
             + linkTargetField(lk.url, 'link', 'Link 1')
-            + field('Link-Text', 'linkLabel', lk.label, { placeholder: 'z. B. Jetzt Platz buchen' })
+            + field('Link-Text (steht auf dem Link – leer = Adresse)', 'linkLabel', lk.label, { placeholder: 'z. B. Jetzt Platz buchen' })
             + linkTargetField((draft.link2 || {}).url, 'link2', 'Link 2 – z. B. zu einer Unterseite der App')
-            + field('Link-Text', 'link2Label', (draft.link2 || {}).label, { placeholder: 'z. B. Zum Kiosk' })
+            + field('Link-Text (steht auf dem Link)', 'link2Label', (draft.link2 || {}).label, { placeholder: 'z. B. Zum Kiosk' })
             + moreBox('home', `
-              <div class="field"><span>Anordnung des Fotos</span>${seg('layout', draft.layout || 'wide', [['wide', 'Breit oben'], ['portrait', 'Hochformat links'], ['square', 'Quadrat links'], ['portrait-right', 'Hochformat rechts'], ['square-right', 'Quadrat rechts']])}</div>`
+              <div class="field"><span>Anordnung des Fotos (nur im Look „Klassisch“)</span>${seg('layout', draft.layout || 'wide', [['wide', 'Breit oben'], ['portrait', 'Hochformat links'], ['square', 'Quadrat links'], ['portrait-right', 'Hochformat rechts'], ['square-right', 'Quadrat rechts']])}</div>`
               + ((draft.images || []).length ? '' : newsPhotoField(draft))
-              + `<div class="field"><span>Textgröße (gilt auch auf der Unterseite)</span>${seg('textsize', draft.textSize || 'normal', [['normal', 'Normal'], ['gross', 'Groß']])}</div>`
               + `<label class="field"><span>Klick auf Bild und Überschrift öffnet</span><select name="navigation" data-rerender>${[['detail','Eigene Detailseite'],['link','Verknüpften Link'],['none','Nichts']].map(([v,l]) => `<option value="${v}" ${v === (draft.navigation || (hasMore(draft) ? 'detail' : 'link')) ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
               <label class="meet-check"><input type="checkbox" name="showMore" ${draft.showMore !== false ? 'checked' : ''}><span>„Mehr erfahren“ bei eigener Detailseite anzeigen</span></label>`
               + (() => {
@@ -1531,7 +1539,7 @@
           if (toApp !== /^#/.test(cur)) {
             // bisherigen Link merken – beim Zurückschalten ist er wieder da
             const memo = { ...(l.memo || {}), [/^#/.test(cur) ? 'app' : 'web']: cur };
-            draft[which] = { ...l, memo, url: toApp ? (memo.app || '#kiosk') : (memo.web || ''), image: toApp ? null : l.image };
+            draft[which] = { ...l, memo, url: toApp ? (memo.app || '#kiosk') : (memo.web || '') };
           }
           render();
           return;
@@ -2308,6 +2316,23 @@
     const r = document.createRange(); r.selectNodeContents(span); sel.addRange(r);
   }
 
+  // Knöpfe zeigen, wie der markierte Text gestaltet ist (Fett/Kursiv/Unterstrichen/Farbe/Größe leuchten auf)
+  document.addEventListener('selectionchange', () => {
+    const sel = window.getSelection();
+    const node = sel.anchorNode && (sel.anchorNode.nodeType === 1 ? sel.anchorNode : sel.anchorNode.parentElement);
+    const area = node && node.closest && node.closest('.rich-area');
+    if (!area) return;
+    const tools = area.parentElement.querySelector('.rich-tools');
+    if (!tools) return;
+    const state = (c) => { try { return document.queryCommandState(c); } catch { return false; } };
+    const inSpan = (cls) => Boolean(node.closest(`span.${cls}`) && area.contains(node.closest(`span.${cls}`)));
+    tools.querySelectorAll('[data-rich]').forEach((b) => {
+      const c = b.dataset.rich;
+      const on = ['bold', 'italic', 'underline'].includes(c) ? state(c) : SPANS[c] ? inSpan(SPANS[c]) : false;
+      b.classList.toggle('on', on);
+    });
+  });
+
   // Farbe bzw. Größe im markierten Bereich entfernen (auch wenn die Markierung mitten in der Gestaltung liegt)
   function unwrapGroup(area, classes) {
     const sel = window.getSelection();
@@ -2330,7 +2355,11 @@
       if (keep) { sel.removeAllRanges(); sel.addRange(keep); }
     }
     const cmd = btn.dataset.rich;
-    if (['bold', 'italic', 'underline'].includes(cmd)) document.execCommand(cmd);
+    if (['bold', 'italic', 'underline'].includes(cmd)) {
+      const sel = window.getSelection();
+      if (!sel.rangeCount || sel.isCollapsed) { ui().toast('Bitte zuerst Wörter im Text markieren'); return; }
+      document.execCommand(cmd);
+    }
     else if (SPANS[cmd]) wrapSelection(area, SPANS[cmd]);
     else if (cmd === 'nocolor') unwrapGroup(area, [...SPAN_GROUPS.color, 'tx-mark']);
     else if (cmd === 'nosize') unwrapGroup(area, SPAN_GROUPS.size);

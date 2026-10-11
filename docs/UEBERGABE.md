@@ -3,7 +3,7 @@
 **Zuerst lesen.** Ausführlicher Verlauf: [PROJEKTGEDAECHTNIS.md](PROJEKTGEDAECHTNIS.md).
 Diese Zusammenfassung hat Vorrang vor älteren Zwischenständen.
 
-Stand: **11.10.2026 abends, Home-Editor rund gemacht**. Cache **tfb-kiosk-v107**.
+Stand: **11.10.2026 abends, Home-Editor vereinfacht**. Cache **tfb-kiosk-v108**.
 Alles committet (Sicherungspunkt v99 `f8e6c90`, danach Stufe 1). Nicht veröffentlicht.
 
 ## Neu: Ordner heißt jetzt „9. TFB-Website“
@@ -39,6 +39,21 @@ Alles committet (Sicherungspunkt v99 `f8e6c90`, danach Stufe 1). Nicht veröffen
   sich an (Desktop: „Links siehst du jede Änderung sofort“).
 - Beim Wegschieben bleibt die Kopfzeile sichtbar („antippen zum Weiterbearbeiten“),
   Rückkehr an dieselbe Stelle – gilt auch für den Home-Themen-Editor (`togglePeek`).
+
+## Neu in v108: Home-Editor so einfach wie möglich
+
+- Festlegung des Nutzers: Auf Home sehen Kleine Zeile, Überschrift, Unterzeile (rot)
+  und Fließtext immer gleich aus – keine Größenwahl. „Textgröße“ aus Home entfernt,
+  Home-Fließtext ignoriert `textSize` (Unterseite nutzt es weiter).
+- Kurzer Text auf Home mit schlanker Werkzeugleiste (`field(..., { simple: true })`):
+  Fett · Kursiv · Rot · Link · Schlicht. Unterseite behält die volle Leiste.
+- Werkzeugknöpfe leuchten auf, wenn der markierte Text schon fett/kursiv/rot … ist
+  (`selectionchange`). Fett/Kursiv/Unterstrichen ohne Markierung → Hinweis statt
+  stillem Nichts (vermutete Ursache für „Fett geht nicht“; mit echter Markierung
+  funktionierte Fett in allen Tests).
+- Link-Text erscheint jetzt auch beim dezenten Link (vorher immer die Adresse, z. B.
+  „Hier buchen“ war gespeichert, aber unsichtbar); ohne Text die Adresse. Tooltip
+  zeigt die Adresse. Umschalten Website ↔ App behält das runde Linkbild.
 
 ## Neu in v107: Home-Editor – Themen-Leiste, Überschriften, zwei Links
 

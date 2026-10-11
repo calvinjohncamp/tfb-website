@@ -35,6 +35,8 @@ Neues bitte unten bei „Verlauf“ ergänzen.
 - v107: Home-Editor: Themen-Leiste für bis zu 10 Themen, Kleine Zeile/Unterzeile
   sichtbar, zweiter Link, Link bleibt beim Umschalten erhalten. Lehre: beim Vereinfachen
   nichts verstecken, was auf der Seite sichtbar ist.
+- v108: Home-Typografie fest (keine Größen), Fließtext nur Fett/Kursiv/Rot; Link-Text
+  sichtbar. Nutzer: „nicht mehr so weit weg von einer guten Seite eins“.
 
 ## Verbindlicher Stand 11.10.2026 – Projekt-Update
 

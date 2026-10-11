@@ -2242,3 +2242,5 @@ h1, h2, h3, .event h3, .feature-body h2, .story-head h1, .post-body h3 { -webkit
 .ed-themes button:hover { border-color: var(--signal); color: var(--signal); }
 .ed-themes button.on { background: var(--signal); border-color: var(--signal); color: #fff; }
 .ed-themes .ed-theme-add { font-family: var(--font); font-size: 1rem; color: var(--signal); border-style: dashed; }
+/* Werkzeugleiste: aktiver Zustand (markierter Text ist schon fett/kursiv/rot …) */
+.rich-tools .rich-group button.on { background: #fff; box-shadow: 0 0 0 1.5px var(--signal); color: var(--signal); }
