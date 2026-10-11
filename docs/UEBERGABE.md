@@ -4,7 +4,7 @@
 Diese Zusammenfassung hat Vorrang vor älteren Zwischenständen.
 
 Stand: **11.10.2026 abends – EINGEFROREN** als Git-Tag **`stand-2026-10-11-abend`**.
-Cache **tfb-kiosk-v116**. Alles committet, 32 Tests grün. Nicht veröffentlicht.
+Cache **tfb-kiosk-v117** (Nachtrag v117 siehe unten). Alles committet, 32 Tests grün. Nicht veröffentlicht.
 
 ## Eingefrorener Stand (vom Nutzer abgenommen: „das gefällt mir sehr gut alles jetzt“)
 
@@ -19,6 +19,13 @@ Cache **tfb-kiosk-v116**. Alles committet, 32 Tests grün. Nicht veröffentlicht
 - **Menü oben** im Admin pflegbar (Namen, Ziel App-Seite/Website, Reihenfolge, sichtbar).
 - **Leitziel:** Mitglieder und Jugendliche ohne EDV-Erfahrung pflegen alles selbst –
   einfach, WYSIWYG, nichts verstecken, was auf der Seite sichtbar ist.
+
+## Nachtrag nach dem Einfrieren (v117)
+
+- Kollagen unten (Unterseiten, Mannschaftsporträts, Fotoseiten) und Titelfotos oben
+  öffnen beim Antippen die blätterbare Galerie direkt beim angeklickten Foto: weiter per
+  Klick aufs Foto, Pfeilknöpfe, Pfeiltasten, Wischen; „Alle Fotos“ zur Übersicht.
+  Bis zu 100 Fotos (`openGallery(..., start)`; vorher nur Einzelbild).
 
 ## Nächster großer Job: Verabreden
 

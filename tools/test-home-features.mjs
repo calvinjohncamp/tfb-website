@@ -336,8 +336,17 @@ test('gallery accepts 100 photos, rejects 101 and opens each original', async ()
   const html = await context.TFB.views.home();
   assert.equal((html.match(/class="collage-item"/g) || []).length, 100);
   assert.doesNotMatch(html, /feature-text|Den Club kennenlernen/);
+  // Kollage öffnet die blätterbare Galerie direkt beim angeklickten Foto
+  const box = {innerHTML:'', classList:{add(){},remove(){}}, addEventListener(){}, remove(){}};
+  context.document.createElement = () => box;
+  context.document.body = {appendChild(){}, classList:{add(){},remove(){}}};
+  context.document.addEventListener = () => {};
+  context.document.removeEventListener = () => {};
+  context.requestAnimationFrame = fn => fn();
   context.TFB.actions['collage-open']({ dataset: { block: 'album-h-50', index: '99' } });
-  assert.equal(opened[0][0], 'assets/images/board/thomas-heine.jpg');
+  assert.match(box.innerHTML, /100 \/ 100/);
+  assert.match(box.innerHTML, /data-gstep/);
+  assert.match(box.innerHTML, /thomas-heine\.jpg/);
 });
 
 test('chat gallery opens the whole collage, then supports clicks, arrows and swipes without double advancing', async () => {

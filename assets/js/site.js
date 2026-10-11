@@ -1203,10 +1203,11 @@
   }
 
   // Galerie eines Beitrags: erst alle Fotos als Kollage, dann einzeln blättern (Pfeile, Wischen, Tasten)
-  function openGallery(refs, title, magazine = false) {
+  // start: Index des angeklickten Fotos → Galerie öffnet direkt dort (weiter per Klick aufs Foto, Pfeile, Wischen)
+  function openGallery(refs, title, magazine = false, start = null) {
     const list = refs.filter(shownImage);
     if (!list.length) return;
-    let index = list.length > 1 ? -1 : 0;
+    let index = start != null && start >= 0 && start < list.length ? start : list.length > 1 ? -1 : 0;
     const box = document.createElement('div');
     box.className = 'viewer gallery';
     const draw = () => {
@@ -2415,16 +2416,13 @@
     'att-open': (el) => openViewer(el.dataset.ref, el.dataset.kind, el.dataset.title),
     'hero-open': (el) => {
       const b = storyIndex[el.dataset.block] || homeBlocks().find((x) => x.id === el.dataset.block);
-      const ref = ((b.more || {}).heroImages || []).filter(shownImage)[Number(el.dataset.index)];
-      const src = images[ref] || (/^assets\//.test(ref) ? ref : null);
-      if (src) ui().openLightbox(src, b.title);
+      openGallery(((b.more || {}).heroImages || []), b.title, true, Number(el.dataset.index) || 0);
     },
     'collage-open': (el) => {
       const b = storyIndex[el.dataset.block] || site.pages.home.blocks.find((x) => x.id === el.dataset.block);
-      const list = ((b.more || {}).images || []).filter(shownImage);
-      const ref = list[Number(el.dataset.index)];
-      const src = images[ref] || (/^assets\//.test(ref) ? ref : null);
-      if (src) ui().openLightbox(src, b.title); else ui().toast('Beispielbild – eigene Fotos über den Stift hochladen');
+      const list = ((b.more || {}).images || []).filter(shownImage).slice(0, 100);
+      if (!list.length) { ui().toast('Beispielbild – eigene Fotos über den Stift hochladen'); return; }
+      openGallery(list, b.title, true, Number(el.dataset.index) || 0);
     },
     'team-post': (el) => openTeamPost(el.dataset.team, el.dataset.id),
     'gallery-open': (el) => {
