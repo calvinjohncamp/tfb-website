@@ -1115,6 +1115,7 @@
   }
 
   // ---------- Baustein-Editor ----------
+  const wideScreen = () => window.matchMedia('(min-width: 1100px)').matches;
   function field(label, name, value, opts = {}) {
     const v = esc(value == null ? '' : value);
     if (opts.area && opts.rich) return `<div class="field rich-field"><span>${label}</span>
@@ -1191,9 +1192,9 @@
         <div class="image-field">
           <div class="image-preview">${picture(ref, seed)}</div>
           <div class="image-actions">
-            <label class="btn">${ref ? 'Foto ersetzen' : 'Foto wählen'}<input type="file" accept="image/*" data-image-input data-target="${target}" hidden></label>
+            <label class="btn small">${ref ? 'Foto ersetzen' : 'Foto wählen'}<input type="file" accept="image/*" data-image-input data-target="${target}" hidden></label>
             ${frameButton(ref)}
-            ${ref ? `<button type="button" class="link" data-image-remove="${target}">Foto entfernen</button>` : ''}
+            ${ref ? `<button type="button" class="btn small" data-image-remove="${target}">Foto entfernen</button>` : ''}
           </div>
         </div>
       </div>`;
@@ -1206,6 +1207,8 @@
     if (!original) return;
     const draft = JSON.parse(JSON.stringify(original));
     let edTab = startTab;
+    const edMore = {};   // „Mehr Gestaltung“ je Reiter auf/zu (bleibt beim Neuzeichnen)
+    const moreBox = (k, inner) => `<details class="ed-more" data-edmore="${k}" ${edMore[k] ? 'open' : ''}><summary>Mehr Gestaltung <small>freiwillig – ohne Änderung sieht alles gut aus</small></summary>${inner}</details>`;
     const live = draft.type === 'feature';   // Themen: Seitenleiste mit Live-Vorschau
     const label = (BLOCK_TYPES.find(([t]) => t === draft.type) || [0, 'Baustein'])[1];
 
@@ -1225,56 +1228,60 @@
           const seg = (attr, cur, opts) => `<div class="seg">${opts.map(([v, l, off]) =>
             `<button type="button" class="${cur === v ? 'on' : ''}" data-${attr}="${v}" ${off ? 'disabled' : ''}>${l}</button>`).join('')}</div>`;
           const homePanel = `
-            <p class="ed-hint">So erscheint das Thema auf der <b>Startseite</b>. Links siehst du die Vorschau.</p>
-            <h3 class="editor-sub">Bild</h3>
-            <div class="field"><span>Anordnung</span>${seg('layout', draft.layout || 'wide', [['wide', 'Breit oben'], ['portrait', 'Hochformat links'], ['square', 'Quadrat links'], ['portrait-right', 'Hochformat rechts'], ['square-right', 'Quadrat rechts']])}</div>`
-            + ((draft.images || []).length ? '' : imageField(draft.image, draft.id)) + newsPhotoField(draft)
-            + `<h3 class="editor-sub">Texte</h3>`
-            + field('Kleine Zeile über der Überschrift', 'kicker', draft.kicker, { placeholder: 'z. B. Neu in Bielstein' })
-            + field('Überschrift', 'title', draft.title) + field('Unterzeile', 'subtitle', draft.subtitle)
-            + field('Kurzer Text', 'text', draft.text, { area: true, rich: true, rows: 5, placeholder: 'Zwei, drei Sätze – Wörter markieren und oben gestalten' })
-            + `<div class="field"><span>Textgröße (gilt auch auf der Unterseite)</span>${seg('textsize', draft.textSize || 'normal', [['normal', 'Normal'], ['gross', 'Groß']])}</div>`
-            + `<h3 class="editor-sub">Bild und Überschrift</h3><label class="field"><span>Beim Anklicken öffnen</span><select name="navigation" data-rerender>${[['detail','Eigene Detailseite'],['link','Verknüpften Link'],['none','Nichts']].map(([v,l]) => `<option value="${v}" ${v === (draft.navigation || (hasMore(draft) ? 'detail' : 'link')) ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
-              <label class="meet-check"><input type="checkbox" name="showMore" ${draft.showMore !== false ? 'checked' : ''}><span>„Mehr erfahren“ bei eigener Detailseite anzeigen</span></label><h3 class="editor-sub">Link</h3>`
+            <p class="ed-hint">So erscheint das Thema auf der <b>Startseite</b>. ${wideScreen() ? 'Links siehst du jede Änderung sofort.' : 'Mit „Vorschau ansehen“ siehst du die Seite.'}</p>
+            <h3 class="editor-sub">1 · Foto</h3>`
+            + ((draft.images || []).length ? newsPhotoField(draft) : imageField(draft.image, draft.id, ''))
+            + `<h3 class="editor-sub">2 · Überschrift</h3>` + field('', 'title', draft.title)
+            + `<h3 class="editor-sub">3 · Kurzer Text</h3>`
+            + field('', 'text', draft.text, { area: true, rich: true, rows: 5, placeholder: 'Zwei, drei Sätze – Wörter markieren und oben gestalten' })
+            + `<h3 class="editor-sub">4 · Link (freiwillig)</h3>`
             + linkTargetField(lk.url)
-            + field('Link-Text (für Knopf und Vorschau-Karte – der dezente Link zeigt die Adresse)', 'linkLabel', lk.label, { placeholder: 'z. B. Jetzt Platz buchen' })
-            + (() => {
-              const n = String(draft.text || '').split(/\n{2,}/).filter((x) => x.trim()).length;
-              const cur = lk.position || 'right';
-              const opts = [['left', 'Links unter der Unterzeile'], ...Array.from({ length: n }, (_, i) => [`right-${i}`, i === 0 ? 'Rechts vor dem Text' : `Rechts nach Absatz ${i}`]), ['right', 'Rechts unter dem Text']];
-              return `<label class="field"><span>Platz (oder auf der Seite im Bearbeiten-Modus mit der Maus ziehen)</span><select name="linkPos">${opts.map(([v, l]) => `<option value="${v}" ${v === cur ? 'selected' : ''}>${l}</option>`).join('')}</select></label>`;
-            })()
-            + `<div class="field"><span>Darstellung</span>${seg('linkstyle', lk.style || 'chip', [['chip', 'Dezent'], ['button', 'Knopf'], ['card', 'Vorschau-Karte']])}</div>`
-            + iconField('linkIcon', lk.icon)
-            + (ext ? `<p class="muted small">Für die Vorschau (kleines Bild beim dezenten Link, große Karte): im Echtbetrieb holt die App Bild, Titel und Text automatisch von der Website – bis dahin hier eintragen.</p>`
-              + field('Vorschau: Titel', 'linkTitle', lk.title) + field('Vorschau: Text', 'linkText', lk.text, { area: true, rows: 3 })
-              + imageField(lk.image, lk.url, 'Vorschau: Bild', 'link')
-              : imageField(lk.image, lk.url || 'intern', 'Rundes Bild im Link (leer = Symbol der Seite)', 'link'));
+            + field('Link-Text', 'linkLabel', lk.label, { placeholder: 'z. B. Jetzt Platz buchen' })
+            + moreBox('home', `
+              <div class="field"><span>Anordnung des Fotos</span>${seg('layout', draft.layout || 'wide', [['wide', 'Breit oben'], ['portrait', 'Hochformat links'], ['square', 'Quadrat links'], ['portrait-right', 'Hochformat rechts'], ['square-right', 'Quadrat rechts']])}</div>`
+              + ((draft.images || []).length ? '' : newsPhotoField(draft))
+              + field('Kleine Zeile über der Überschrift', 'kicker', draft.kicker, { placeholder: 'z. B. Neu in Bielstein' })
+              + field('Unterzeile', 'subtitle', draft.subtitle)
+              + `<div class="field"><span>Textgröße (gilt auch auf der Unterseite)</span>${seg('textsize', draft.textSize || 'normal', [['normal', 'Normal'], ['gross', 'Groß']])}</div>`
+              + `<label class="field"><span>Klick auf Bild und Überschrift öffnet</span><select name="navigation" data-rerender>${[['detail','Eigene Detailseite'],['link','Verknüpften Link'],['none','Nichts']].map(([v,l]) => `<option value="${v}" ${v === (draft.navigation || (hasMore(draft) ? 'detail' : 'link')) ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
+              <label class="meet-check"><input type="checkbox" name="showMore" ${draft.showMore !== false ? 'checked' : ''}><span>„Mehr erfahren“ bei eigener Detailseite anzeigen</span></label>`
+              + (() => {
+                const n = String(draft.text || '').split(/\n{2,}/).filter((x) => x.trim()).length;
+                const cur = lk.position || 'right';
+                const opts = [['left', 'Links unter der Unterzeile'], ...Array.from({ length: n }, (_, i) => [`right-${i}`, i === 0 ? 'Rechts vor dem Text' : `Rechts nach Absatz ${i}`]), ['right', 'Rechts unter dem Text']];
+                return `<label class="field"><span>Platz des Links (oder auf der Seite mit der Maus ziehen)</span><select name="linkPos">${opts.map(([v, l]) => `<option value="${v}" ${v === cur ? 'selected' : ''}>${l}</option>`).join('')}</select></label>`;
+              })()
+              + `<div class="field"><span>Link-Darstellung</span>${seg('linkstyle', lk.style || 'chip', [['chip', 'Dezent'], ['button', 'Knopf'], ['card', 'Vorschau-Karte']])}</div>`
+              + iconField('linkIcon', lk.icon)
+              + (ext ? `<p class="muted small">Für die Vorschau (kleines Bild beim dezenten Link, große Karte): im Echtbetrieb holt die App Bild, Titel und Text automatisch von der Website – bis dahin hier eintragen.</p>`
+                + field('Vorschau: Titel', 'linkTitle', lk.title) + field('Vorschau: Text', 'linkText', lk.text, { area: true, rows: 3 })
+                + imageField(lk.image, lk.url, 'Vorschau: Bild', 'link')
+                : imageField(lk.image, lk.url || 'intern', 'Rundes Bild im Link (leer = Symbol der Seite)', 'link')));
           const subPanel = `
-            <p class="ed-hint">Die <b>Unterseite</b> öffnet sich über „Mehr erfahren“, sobald hier ein Text, ein Zitat oder Fotos stehen. Kleine Zeile, Überschrift, Unterzeile und Link kommen vom Reiter „Startseite“.</p>
-            <h3 class="editor-sub">Titelbild oben</h3>
-            <div class="field"><span>Quelle</span>${seg('herosrc', heroSrc, [['same', 'Wie auf der Startseite'], ['own', 'Eigene Fotos']])}</div>
-            ${heroSrc === 'own' ? `<div class="field"><span>Fotos (1 bis 4)</span>
-              <div class="gallery-edit">
-                ${heroImgs.map((ref, i) => thumbEdit(ref, 'hero', i, heroImgs.length, 'data-hero-remove')).join('')}
-                ${heroImgs.length < 4 ? `<label class="gallery-add">${ui().icon.plus}<span>Foto</span><input type="file" accept="image/*" multiple data-hero-input hidden></label>` : ''}
-              </div></div>` : ''}
-            <div class="field"><span>Darstellung</span>${seg('heromode', heroMode, [['wide', 'Breit'], ['original', 'Originalformat'], ['squares', '2–4 Quadrate nebeneinander', heroSrc !== 'own' || heroImgs.length < 2]])}</div>
-            ${heroMode === 'original' ? `<div class="field"><span>Ausrichtung</span><div class="seg align-seg">${[['left', 'Links'], ['center', 'Mitte'], ['right', 'Rechts']].map(([v, l]) =>
-                `<button type="button" class="${(more.heroAlign || 'center') === v ? 'on' : ''}" data-align="hero:${v}">${l}</button>`).join('')}</div></div>` : ''}
-            <h3 class="editor-sub">Texte</h3>`
-            + field('Ausführlicher Text', 'moreText', more.text, { area: true, rich: true, rows: 10, placeholder: 'Beliebig lang – Wörter markieren und oben gestalten' })
-            + `<div class="field"><span>Großer Textanfang (rot)</span>${seg('dropcap', String(more.dropcap == null ? 1 : more.dropcap), [['0', 'Aus'], ['1', '1 Zeichen'], ['2', '2 Zeichen'], ['3', '3 Zeichen']])}</div>`
-            + field('Zitat (freiwillig)', 'moreQuote', more.quote, { placeholder: 'z. B. „Nach zehn Minuten hatte jeder ein Grinsen im Gesicht.“' })
-            + field('Zitat von', 'moreQuoteBy', more.quoteBy, { placeholder: 'z. B. Jan, Herren 40' })
-            + `<h3 class="editor-sub">Fotokollage unten</h3>
-               <label class="meet-check"><input type="checkbox" name="moreOriginal" data-rerender ${more.original ? 'checked' : ''}><span>Fotos im Originalformat zeigen (nicht zuschneiden – 4:3, 1:1, 16:9 …)</span></label>
-               ${more.original ? `<div class="field"><span>Ausrichtung</span><div class="seg align-seg">${[['left', 'Links'], ['center', 'Mitte'], ['right', 'Rechts']].map(([v, l]) =>
-                `<button type="button" class="${(more.collageAlign || 'center') === v ? 'on' : ''}" data-align="collage:${v}">${l}</button>`).join('')}</div></div>` : ''}
+            <p class="ed-hint">Die <b>Unterseite</b> öffnet sich über „Mehr erfahren“, sobald hier ein Text, ein Zitat oder Fotos stehen. Überschrift und Link kommen vom Reiter „Startseite“.</p>
+            <h3 class="editor-sub">1 · Ausführlicher Text</h3>`
+            + field('', 'moreText', more.text, { area: true, rich: true, rows: 10, placeholder: 'Beliebig lang – Wörter markieren und oben gestalten' })
+            + `<h3 class="editor-sub">2 · Fotos (unten als Kollage, freiwillig)</h3>
                <div class="field"><div class="gallery-edit">
                   ${(() => { const l = (more.images || []).filter(shownImage); return l.map((ref, i) => thumbEdit(ref, 'more', i, l.length, 'data-more-remove')).join(''); })()}
                   <label class="gallery-add">${ui().icon.plus}<span>Fotos</span><input type="file" accept="image/*" multiple data-more-input hidden></label>
-                </div></div>`;
+                </div></div>`
+            + moreBox('sub', `
+              <div class="field"><span>Titelbild oben</span>${seg('herosrc', heroSrc, [['same', 'Wie auf der Startseite'], ['own', 'Eigene Fotos']])}</div>
+              ${heroSrc === 'own' ? `<div class="field"><span>Eigene Titelfotos (1 bis 4)</span>
+                <div class="gallery-edit">
+                  ${heroImgs.map((ref, i) => thumbEdit(ref, 'hero', i, heroImgs.length, 'data-hero-remove')).join('')}
+                  ${heroImgs.length < 4 ? `<label class="gallery-add">${ui().icon.plus}<span>Foto</span><input type="file" accept="image/*" multiple data-hero-input hidden></label>` : ''}
+                </div></div>` : ''}
+              <div class="field"><span>Titelbild: Darstellung</span>${seg('heromode', heroMode, [['wide', 'Breit'], ['original', 'Originalformat'], ['squares', '2–4 Quadrate nebeneinander', heroSrc !== 'own' || heroImgs.length < 2]])}</div>
+              ${heroMode === 'original' ? `<div class="field"><span>Ausrichtung</span><div class="seg align-seg">${[['left', 'Links'], ['center', 'Mitte'], ['right', 'Rechts']].map(([v, l]) =>
+                  `<button type="button" class="${(more.heroAlign || 'center') === v ? 'on' : ''}" data-align="hero:${v}">${l}</button>`).join('')}</div></div>` : ''}`
+              + `<div class="field"><span>Großer Textanfang (rot)</span>${seg('dropcap', String(more.dropcap == null ? 1 : more.dropcap), [['0', 'Aus'], ['1', '1 Zeichen'], ['2', '2 Zeichen'], ['3', '3 Zeichen']])}</div>`
+              + field('Zitat', 'moreQuote', more.quote, { placeholder: 'z. B. „Nach zehn Minuten hatte jeder ein Grinsen im Gesicht.“' })
+              + field('Zitat von', 'moreQuoteBy', more.quoteBy, { placeholder: 'z. B. Jan, Herren 40' })
+              + `<label class="meet-check"><input type="checkbox" name="moreOriginal" data-rerender ${more.original ? 'checked' : ''}><span>Kollage: Fotos im Originalformat zeigen (nicht zuschneiden)</span></label>
+                 ${more.original ? `<div class="field"><span>Ausrichtung der Kollage</span><div class="seg align-seg">${[['left', 'Links'], ['center', 'Mitte'], ['right', 'Rechts']].map(([v, l]) =>
+                  `<button type="button" class="${(more.collageAlign || 'center') === v ? 'on' : ''}" data-align="collage:${v}">${l}</button>`).join('')}</div></div>` : ''}`);
           const albumPanel = `<label class="meet-check"><input type="checkbox" name="albumEnabled" data-rerender ${album.enabled ? 'checked' : ''}><span>Separate Fotokollage veröffentlichen</span></label>
             ${field('Überschrift der Fotoseite', 'albumTitle', album.title || draft.title)}
             ${field('Link-Text', 'albumLabel', album.label || 'Fotos der Veranstaltung')}
@@ -1285,7 +1292,7 @@
           return `
             <div class="ed-tabs" role="tablist">
               <button type="button" role="tab" class="${edTab === 'home' ? 'on' : ''}" data-edtab="home">Startseite</button>
-              <button type="button" role="tab" class="${edTab === 'sub' ? 'on' : ''}" data-edtab="sub">Unterseite „Mehr erfahren“</button>
+              <button type="button" role="tab" class="${edTab === 'sub' ? 'on' : ''}" data-edtab="sub">Unterseite</button>
               <button type="button" role="tab" class="${edTab === 'album' ? 'on' : ''}" data-edtab="album">Fotokollage</button>
             </div>
             <div class="ed-panel" data-panel="home" ${edTab === 'home' ? '' : 'hidden'}>${homePanel}</div>
@@ -1386,6 +1393,7 @@
         form.addEventListener('input', () => schedulePreview());
         form.addEventListener('change', () => schedulePreview());
       }
+      form.addEventListener('toggle', (e) => { if (e.target.dataset && e.target.dataset.edmore) edMore[e.target.dataset.edmore] = e.target.open; }, true);
       form.addEventListener('submit', (e) => { e.preventDefault(); save(form); });
       form.addEventListener('click', async (e) => {
         const factMove = e.target.closest('[data-fact-move]');
@@ -1663,7 +1671,6 @@
     portraitDraft = { key, data: draft };
     let timer = null;
     let moreOpen = false;   // „Mehr Gestaltung“ bleibt beim Neuzeichnen auf/zu
-    const wide = () => window.matchMedia('(min-width: 1100px)').matches;
     const refresh = () => { clearTimeout(timer); timer = setTimeout(async () => { const y = window.scrollY; await ui().renderView(); window.scrollTo(0, y); }, 220); };
     const seg = (attr, cur, opts) => `<div class="seg">${opts.map(([v, l, off]) => `<button type="button" class="${cur === v ? 'on' : ''}" data-${attr}="${v}" ${off ? 'disabled' : ''}>${l}</button>`).join('')}</div>`;
     const align = (key2, cur) => `<div class="field"><span>Ausrichtung</span>${seg('palign', `${key2}:${cur || 'center'}`, [['left', 'Links'], ['center', 'Mitte'], ['right', 'Rechts']].map(([v, l]) => [`${key2}:${v}`, l]))}</div>`;
@@ -1675,7 +1682,7 @@
       openSheet(`
         <form class="editor editor-live" data-editor="portrait" novalidate>
           <h2>Mannschaftsporträt</h2>
-          <p class="ed-hint">${esc(found ? teamName(found.team) : key)} – so sieht es jeder Besucher. ${wide() ? 'Links siehst du jede Änderung sofort.' : 'Mit „Vorschau ansehen“ siehst du die Seite.'} Ohne eigene Fotos erscheint oben das Teamfoto.</p>
+          <p class="ed-hint">${esc(found ? teamName(found.team) : key)} – so sieht es jeder Besucher. ${wideScreen() ? 'Links siehst du jede Änderung sofort.' : 'Mit „Vorschau ansehen“ siehst du die Seite.'} Ohne eigene Fotos erscheint oben das Teamfoto.</p>
           <h3 class="editor-sub">1 · Fotos oben (bis zu 4)</h3>
           <div class="field"><div class="gallery-edit">
             ${heroImgs.map((ref, i) => thumbEdit(ref, 'hero', i, heroImgs.length, 'data-premove')).join('')}

@@ -718,7 +718,7 @@ button.shop-card { border: 0; text-align: left; font: inherit; }
 .link-order svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; }
 .album-page h1 { font-family: var(--serif); font-size: 2rem; margin: 20px 0; overflow-wrap: anywhere; }
 .album-page .collage-item { border-radius: 8px; }
-.ed-tabs [data-edtab="album"] { grid-column: 1 / -1; }
+.ed-tabs:has([data-edtab="album"]) { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .link-slot.filled .link-drag { display: flex; align-items: center; gap: 8px; width: fit-content; max-width: 100%; margin-bottom: 8px; }
 .block-board .person small { white-space: normal; overflow: visible; text-overflow: clip; letter-spacing: 0; line-height: 1.45; margin-bottom: 4px; }
 @media (max-width: 650px) { .block-board .people-grid { grid-template-columns: minmax(0, 1fr); } .block-board .person-dot { width: 80px; height: 80px; } }
@@ -2130,3 +2130,10 @@ h1, h2, h3, .event h3, .feature-body h2, .story-head h1, .post-body h3 { -webkit
 .ed-more[open] > summary::before { content: "–"; }
 .ed-more > summary small { font-weight: 500; color: var(--muted); font-size: .78rem; }
 .ed-more[open] { padding-bottom: 14px; }
+
+/* Einheitliche Umschalter: Sport (Mannschaften/Training) im selben Look wie Aktuell */
+.sport-switch { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; padding: 4px; background: #EFEBE3; border-radius: 12px; max-width: 420px; margin: 0 0 24px; }
+.sport-switch a { min-height: 0; border: 0; background: transparent; border-radius: 9px; padding: 9px 4px; font-weight: 750; font-size: .84rem; color: var(--muted); }
+.sport-switch a.on { background: #fff; color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+/* Roter Knopf immer mit weißer Schrift */
+.membership-actions .membership-apply-button { color: #fff; }

@@ -3,7 +3,7 @@
 **Zuerst lesen.** Ausführlicher Verlauf: [PROJEKTGEDAECHTNIS.md](PROJEKTGEDAECHTNIS.md).
 Diese Zusammenfassung hat Vorrang vor älteren Zwischenständen.
 
-Stand: **11.10.2026 abends, Aufräumen Stufe 2**. Cache **tfb-kiosk-v101**.
+Stand: **11.10.2026 abends, Aufräumen Stufe 3**. Cache **tfb-kiosk-v102**.
 Alles committet (Sicherungspunkt v99 `f8e6c90`, danach Stufe 1). Nicht veröffentlicht.
 
 ## Neu: Ordner heißt jetzt „9. TFB-Website“
@@ -40,11 +40,21 @@ Alles committet (Sicherungspunkt v99 `f8e6c90`, danach Stufe 1). Nicht veröffen
 - Beim Wegschieben bleibt die Kopfzeile sichtbar („antippen zum Weiterbearbeiten“),
   Rückkehr an dieselbe Stelle – gilt auch für den Home-Themen-Editor (`togglePeek`).
 
-## Nächste Stufen (vereinbart, noch offen)
+## Neu in v102 (Aufräumen Stufe 3)
 
-- **Stufe 3:** Home-Editor (3 Reiter, 33 Felder) nach gleichem Prinzip vereinfachen;
-  Knöpfe seitenübergreifend vereinheitlichen (Segment vs. Pillen, rot mit schwarzer
-  Schrift). Untertitel „Ohne Chat-Chaos“ bei Verabreden überdenken.
+- Home-Themen-Editor nach gleichem Muster: Reiter **Startseite** = 1 Foto,
+  2 Überschrift, 3 Kurzer Text, 4 Link (Ziel + Link-Text); Reiter **Unterseite** =
+  1 Ausführlicher Text, 2 Fotos. Alles Weitere (Anordnung, kleine Zeile, Unterzeile,
+  Textgröße, Klickziel, Link-Platz/-Darstellung/-Symbol/-Vorschau, Titelbild der
+  Unterseite, Großer Textanfang, Zitat, Originalformat) unter „Mehr Gestaltung“.
+  Wird eine Fotokollage statt Einzelfoto genutzt, steht sie in Schritt 1.
+- Reiter „Startseite · Unterseite · Fotokollage“ in einer Zeile (auch Handy).
+- Einheitliche Knöpfe: Sport-Umschalter Mannschaften/Training im selben
+  Segment-Look wie Aktuell; Filter (Saison) bleiben Pillen; „Zum Anmeldeformular“
+  rot mit weißer Schrift; „Foto ersetzen/entfernen“ als gleich große kleine Knöpfe.
+- Verabreden-Untertitel: „Training, Einzel, Doppel – wer ist dabei?“
+- Alle drei Aufräum-Stufen erledigt. Nächster Schritt: Nutzer prüft, dann Arbeit
+  an der Live-Seite.
 
 ## Neu in v99
 

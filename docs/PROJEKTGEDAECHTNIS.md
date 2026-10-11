@@ -19,7 +19,8 @@ Neues bitte unten bei „Verlauf“ ergänzen.
   (Sicherungspunkt v99), `1d0b829`, `02f8fb3`.
 - Ordner umbenannt in `9. TFB-Website`, `TFB-Kiosk öffnen.html` gelöscht.
 - Stufe 2 erledigt (v101): Porträt-Editor in Schritten 1–4 + „Mehr Gestaltung“,
-  Handy-Vorschau-Knopf. Offen: Stufe 3 (Home-Editor nach gleichem Muster, Knöpfe).
+  Handy-Vorschau-Knopf. Stufe 3 erledigt (v102): Home-Editor in Schritten +
+  „Mehr Gestaltung“, einheitliche Umschalter/Knöpfe. Danach: Live-Seite.
 
 ## Verbindlicher Stand 11.10.2026 – Projekt-Update
 
