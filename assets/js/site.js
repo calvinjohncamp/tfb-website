@@ -198,19 +198,6 @@
       </a>`;
   }
 
-  // Symbole für die vier Info-Knöpfe (Club)
-  const TILE_ICONS = {
-    info: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg>',
-    member: '<svg viewBox="0 0 24 24"><circle cx="9" cy="8.5" r="3.3"/><path d="M3 20c.6-3.6 3-5.6 6-5.6s5.4 2 6 5.6M17 8v6M14 11h6"/></svg>',
-    people: '<svg viewBox="0 0 24 24"><circle cx="8" cy="9" r="3"/><circle cx="16.5" cy="9.5" r="2.6"/><path d="M2.5 19.5c.6-3.3 2.8-5 5.5-5s4.9 1.7 5.5 5M13.5 15c.9-.8 1.9-1.1 3-1.1 2.3 0 4.2 1.5 4.7 4.6"/></svg>',
-    place: '<svg viewBox="0 0 24 24"><path d="M12 21s-6.5-6.2-6.5-11a6.5 6.5 0 0 1 13 0c0 4.8-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.4"/></svg>',
-    history: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>',
-    ball: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M5.6 6.4c2.7 2.5 2.7 8.7 0 11.2M18.4 6.4c-2.7 2.5-2.7 8.7 0 11.2"/></svg>',
-    money: '<svg viewBox="0 0 24 24"><rect x="3" y="6.5" width="18" height="11" rx="2"/><circle cx="12" cy="12" r="2.6"/></svg>',
-    mail: '<svg viewBox="0 0 24 24"><rect x="3" y="5.5" width="18" height="13" rx="2"/><path d="M3.5 7l8.5 6 8.5-6"/></svg>',
-  };
-  const TILE_ICON_LABELS = [['info', 'Info'], ['member', 'Mitglied'], ['people', 'Personen'], ['place', 'Ort'], ['history', 'Chronik'], ['ball', 'Sport'], ['money', 'Beitrag'], ['mail', 'Kontakt']];
-
   // ---------- Bausteine darstellen ----------
   function renderBlock(b, page) {
     switch (b.type) {
@@ -315,13 +302,6 @@
         const ext = /^https?:/i.test(b.url || '');
         return `<p class="block-button"><a class="btn primary" href="${esc(b.url || '#')}" ${ext ? 'target="_blank" rel="noopener"' : ''}>${esc(b.label || 'Mehr')}${ext ? ' ↗' : ''}</a></p>`;
       }
-      case 'tiles':
-        return `<nav class="info-tiles" aria-label="Informationen">${(b.items || []).slice(0, 4).map((t) => `
-          <a class="info-tile" href="#${routeOf(page)}/${esc(b.id)}~${esc(t.id)}">
-            <span class="info-tile-icon">${TILE_ICONS[t.icon] || TILE_ICONS.info}</span>
-            <span class="info-tile-text"><b>${esc(t.label || 'Info')}</b>${t.sub ? `<small>${esc(t.sub)}</small>` : ''}</span>
-            <span class="info-tile-go" aria-hidden="true">→</span>
-          </a>`).join('')}</nav>`;
       case 'teams':
         return teamsMarkup(b);
       default:
@@ -517,28 +497,6 @@
       ${partner}`;
   }
 
-  // Seite hinter einem der vier Info-Knöpfe – im Magazin-Look wie die Home-Unterseiten
-  function tileDetail(key, ref) {
-    const { icon, state, partnerSlot } = ui();
-    const [blockId, tileId] = ref.split('~');
-    const block = (site.pages[key].blocks || []).find((x) => x.id === blockId);
-    const t = block && (block.items || []).find((x) => x.id === tileId);
-    if (!t) return `${ui().viewHead(site.pages[key].title, 'Diese Information gibt es nicht mehr.', false)}`;
-    const imgs = (t.images || []).filter(shownImage);
-    const b = {
-      id: 'ct-' + t.id, layout: 'wide', image: null, noPlaceholder: true, textSize: t.textSize,
-      kicker: site.pages[key].title, title: t.title || t.label, subtitle: t.sub,
-      more: { text: t.text, quote: t.quote, quoteBy: t.quoteBy, dropcap: t.dropcap == null ? 0 : t.dropcap,
-        heroSource: imgs.length ? 'own' : 'same', heroImages: imgs, heroMode: imgs.length >= 2 ? 'squares' : (t.original ? 'original' : 'wide') },
-      link: t.linkUrl ? { url: t.linkUrl, label: t.linkLabel || 'Mehr', style: 'button' } : null,
-    };
-    return storyHtml(b, {
-      editHtml: state.member && state.member.isAdmin ? `<button type="button" class="view-close" data-action="tile-edit" data-page="${esc(key)}" data-block="${esc(blockId)}" data-tile="${esc(tileId)}" aria-label="Bearbeiten">${icon.pencil}</button>` : '',
-      closeHref: '#' + routeOf(key), backLabel: `Zurück zu ${site.pages[key].title}`,
-      partner: partnerSlot(key, site.pages[key].partnerKicker || 'Präsentiert von'),
-    });
-  }
-
   async function featureDetail(id) {
     const { icon, state, partnerSlot } = ui();
     const b = homeBlocks().find((x) => x.id === id);
@@ -568,7 +526,6 @@
     if (key === 'home' && preview && preview.tab === 'sub') return featureDetail(preview.id);
     if (key === 'home' && !preview && location.hash.split('/')[2] === 'fotos') return albumDetail(location.hash.split('/')[1]);
     if (key === 'home' && !preview && location.hash.split('/')[1]) return featureDetail(location.hash.split('/')[1]);
-    if (key !== 'home' && /~/.test(location.hash.split('/')[1] || '')) return tileDetail(key, location.hash.split('/')[1]);
     const { state, icon, partnerSlot } = ui();
     const page = site.pages[key];
     const edit = editing === key && state.member && state.member.isAdmin && !preview;
@@ -599,7 +556,6 @@
         </nav>` : ''}
         ${blocks}
         ${edit && (key !== 'sport' || training) ? `<button type="button" class="btn block add-section" data-action="block-new">${icon.plus} Baustein hinzufügen</button>` : ''}
-        ${key === 'aktuell' && !edit ? '<p class="fineprint">Vorführversion: Termine und Beiträge sind Beispiele.</p>' : ''}
         ${edit || legal ? '' : partnerSlot(key, page.partnerKicker || 'Präsentiert von')}
       </div>`;
   }
@@ -764,7 +720,7 @@
     return `
       <section class="feed" data-scope="${esc(scope)}">
         <header class="feed-head">
-          <h2 class="block-heading">${esc(isTeam ? copy.teamLabel : copy.feedTitle)}</h2>
+          ${opts.chat ? '' : `<h2 class="block-heading">${esc(isTeam ? copy.teamLabel : copy.feedTitle)}</h2>`}
           <div class="feed-sub">
             <p class="muted small">${isTeam ? `Hier schreiben die Spieler${opts.teamName ? ` von ${esc(opts.teamName)}` : ''} – Spielberichte, Touren, Training.` : esc(copy.feedIntro)}</p>
             <div class="feed-actions">${action}${overviewLink}</div>
@@ -832,7 +788,7 @@
     await ensure();
     return `<div class="chat-page"><header class="view-head page-head"><div><h1>${esc(chatText().title)}</h1></div>${chatEditButton()}</header>
       <div class="chat-stream">${await feedSection('club', { withTeams: true, chat: true })}</div>
-      ${ui().partnerSlot('aktuell', site.pages.aktuell.partnerKicker || 'Präsentiert von')}</div>`;
+      ${ui().partnerSlot('aktuell', 'Der Chat wird dir präsentiert von')}</div>`;
   };
   let ovPeriod = '';
   function applyOverviewFilters() {
@@ -1236,14 +1192,13 @@
       </div>`;
   }
 
-  function openBlockEditor(id, isNew = false, startTab = 'home', preTile = null) {
+  function openBlockEditor(id, isNew = false, startTab = 'home') {
     if (id === 'v-vorstand') return TFB.board.open();
     const { openSheet, closeSheet } = ui();
     const original = findBlock(id);
     if (!original) return;
     const draft = JSON.parse(JSON.stringify(original));
     let edTab = startTab;
-    let tileIdx = Math.max(0, (draft.items || []).findIndex((x) => x.id === preTile));
     const live = draft.type === 'feature';   // Themen: Seitenleiste mit Live-Vorschau
     const label = (BLOCK_TYPES.find(([t]) => t === draft.type) || [0, 'Baustein'])[1];
 
@@ -1369,27 +1324,6 @@
           </div>`).join('')}</div>`;
         case 'button': return field('Beschriftung', 'label', draft.label) + field('Ziel (Website oder #aktuell, #sport, #club, #kiosk)', 'url', draft.url) + (draft.id === 'v-mitglied-btn' || draft.url === '#aufnahme' ? field('Hinweis neben den Buttons (optional)', 'note', draft.note) : '');
         case 'teams': return field('Überschrift', 'title', draft.title) + '<p class="muted small">Die Liste kommt automatisch aus nuLiga.</p>';
-        case 'tiles': {
-          const t = draft.items[tileIdx];
-          const imgs = (t.images || []).filter(shownImage);
-          return `
-            <div class="ed-tabs tiles-tabs" role="tablist">${draft.items.map((x, i) => `<button type="button" class="${i === tileIdx ? 'on' : ''}" data-tileidx="${i}">${esc(x.label || `Knopf ${i + 1}`)}</button>`).join('')}</div>
-            <p class="ed-hint">Knopf ${tileIdx + 1} von 4 – oben die Beschriftung des Knopfes, darunter der Inhalt der Seite, die sich beim Antippen öffnet.</p>
-            <h3 class="editor-sub">Knopf</h3>
-            ${field('Beschriftung', 't_label', t.label, { placeholder: 'z. B. Mitglied werden' })}
-            ${field('Kleine Zeile darunter', 't_sub', t.sub, { placeholder: 'z. B. Beiträge & Anmeldung' })}
-            <div class="field"><span>Symbol</span><div class="seg icon-seg">${TILE_ICON_LABELS.map(([v, l]) => `<button type="button" class="${(t.icon || 'info') === v ? 'on' : ''}" data-tileicon="${v}" title="${l}">${TILE_ICONS[v]}<span>${l}</span></button>`).join('')}</div></div>
-            <h3 class="editor-sub">Seite hinter dem Knopf</h3>
-            ${field('Überschrift der Seite', 't_title', t.title, { placeholder: t.label || '' })}
-            ${field('Text', 't_text', t.text, { area: true, rich: true, rows: 9, placeholder: 'Alles, was man dazu wissen muss – Wörter markieren und oben gestalten' })}
-            <div class="field"><span>Fotos oben (bis zu 4 – ab 2 als Quadrate nebeneinander)</span><div class="gallery-edit">
-              ${imgs.map((ref, i) => thumbEdit(ref, 'tile', i, imgs.length, 'data-tileimg-remove')).join('')}
-              ${imgs.length < 4 ? `<label class="gallery-add">${ui().icon.plus}<span>Foto</span><input type="file" accept="image/*" multiple data-tile-input hidden></label>` : ''}
-            </div></div>
-            ${field('Zitat (freiwillig)', 't_quote', t.quote)}
-            ${field('Knopf auf der Seite: Ziel (freiwillig)', 't_linkUrl', t.linkUrl, { placeholder: 'https://… oder #aktuell' })}
-            ${field('Knopf auf der Seite: Beschriftung', 't_linkLabel', t.linkLabel, { placeholder: 'z. B. Zum Anmeldeformular' })}`;
-        }
         default: return '';
       }
     };
@@ -1467,12 +1401,6 @@
           commit('Baustein gelöscht');
         }
         if (e.target.closest('[data-att-remove]')) { collect(form); delete draft.attachment; render(); return; }
-        const ti = e.target.closest('[data-tileidx]');
-        if (ti) { collect(form); tileIdx = Number(ti.dataset.tileidx); render(); return; }
-        const tic = e.target.closest('[data-tileicon]');
-        if (tic) { collect(form); draft.items[tileIdx].icon = tic.dataset.tileicon; render(); return; }
-        const tir = e.target.closest('[data-tileimg-remove]');
-        if (tir) { collect(form); const t = draft.items[tileIdx]; t.images = (t.images || []).filter((r) => r !== tir.dataset.tileimgRemove); render(); return; }
         const dc = e.target.closest('[data-dropcap]');
         if (dc) { collect(form); draft.more = { ...(draft.more || {}), dropcap: Number(dc.dataset.dropcap) }; render(); return; }
         const al = e.target.closest('[data-align]');
@@ -1564,7 +1492,6 @@
             else draft.image = ids[0];
           }
           if (input.matches('[data-gallery-input]')) draft.images = [...(draft.images || []), ...ids];
-          if (input.matches('[data-tile-input]')) { const t = draft.items[tileIdx]; t.images = [...(t.images || []), ...ids].slice(0, 4); }
           if (input.matches('[data-hero-input]')) {
             const list = [...((draft.more || {}).heroImages || []), ...ids].slice(0, 4);
             draft.more = { ...(draft.more || {}), heroImages: list, heroMode: list.length >= 2 ? 'squares' : ((draft.more || {}).heroMode || 'wide') };
@@ -1578,7 +1505,7 @@
 
     // Foto in einer Liste von Position a nach b verschieben (nur angezeigte Fotos zählen)
     function moveInList(list, a, b) {
-      const get = () => (list === 'album' ? draft.album?.images : list === 'hero' ? (draft.more || {}).heroImages : list === 'more' ? (draft.more || {}).images : list === 'tile' ? draft.items[tileIdx].images : draft.images) || [];
+      const get = () => (list === 'album' ? draft.album?.images : list === 'hero' ? (draft.more || {}).heroImages : list === 'more' ? (draft.more || {}).images : draft.images) || [];
       const visible = get().filter(list === 'gallery' ? (r) => images[r] : shownImage);
       if (b < 0 || b >= visible.length || a === b) return;
       const [item] = visible.splice(a, 1);
@@ -1586,7 +1513,6 @@
       if (list === 'album') draft.album = { ...(draft.album || {}), images: visible };
       else if (list === 'hero') draft.more = { ...(draft.more || {}), heroImages: visible };
       else if (list === 'more') draft.more = { ...(draft.more || {}), images: visible };
-      else if (list === 'tile') draft.items[tileIdx].images = visible;
       else draft.images = visible;
     }
 
@@ -1597,10 +1523,6 @@
       if (f.imgOriginal) draft.original = f.imgOriginal.checked;
       if (f.navigation) { draft.navigation = f.navigation.value; draft.showMore = f.showMore.checked; }
       if (f.albumEnabled) draft.album = { ...(draft.album || {}), enabled: f.albumEnabled.checked, title: f.albumTitle.value.trim(), label: f.albumLabel.value.trim() || 'Fotos der Veranstaltung', position: f.albumPos.value, icon: f.albumIcon.value, original: f.albumOriginal.checked };
-      if (f.t_label) {
-        const t = draft.items[tileIdx];
-        ['label', 'sub', 'title', 'text', 'quote', 'linkUrl', 'linkLabel'].forEach((k) => { if (f['t_' + k]) t[k] = f['t_' + k].value.trim(); });
-      }
       if (f.moreText) draft.more = { ...(draft.more || {}), text: f.moreText.value.trim(), quote: f.moreQuote.value.trim(), quoteBy: f.moreQuoteBy.value.trim(), original: Boolean(f.moreOriginal && f.moreOriginal.checked) };
       if (f.linkUrl) {
         const url = f.linkApp ? f.linkApp.value : f.linkUrl.value.trim();
@@ -1647,7 +1569,6 @@
       post: { date: today(), title: '', text: '', image: null }, image: { image: null, caption: '' },
       gallery: { title: 'Galerie', images: [] }, people: { title: 'Ansprechpartner', people: [] },
       facts: { items: Array.from({ length: 5 }, () => ({ value: '–', label: 'Kennzahl' })) }, button: { label: 'Mehr erfahren', url: '' }, teams: { title: 'Mannschaften' },
-      tiles: { items: [1, 2, 3, 4].map((n) => ({ id: 't' + n + Date.now().toString(36), label: `Knopf ${n}`, sub: '', icon: 'info', text: '', images: [] })) },
     };
     return { id, type, ...defaults[type] };
   };
@@ -2127,7 +2048,6 @@
       if (grid) grid.className = `page-grid news-dates show-${aktuellTab}`;
     },
     'post-new': (el) => openCompose(el.dataset.scope),
-    'tile-edit': (el) => { editing = el.dataset.page; detailEditing = true; openBlockEditor(el.dataset.block, false, 'home', el.dataset.tile); },
     'portrait-edit': (el) => openPortraitEditor(el.dataset.team),
     'post-open': (el) => openPost(el.dataset.id),
     'post-edit': (el) => { const p = postCache[el.dataset.id]; if (p) openCompose(p.scope, p.id); },
