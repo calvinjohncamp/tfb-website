@@ -32,9 +32,11 @@
     ['teams', 'Mannschaften', 'automatisch aus nuLiga'],
   ];
 
+  let teamCounts = {};
   async function ensure() {
     if (!site) site = await ui().api.site();
     if (!imagesLoaded) { images = await ui().api.images(); imagesLoaded = true; }
+    try { teamCounts = await ui().api.teamPostCounts(); } catch (_) { teamCounts = {}; }
   }
 
   // ---------- Formatierung ----------
@@ -307,14 +309,14 @@
           ${current.teams.map((t) => {
             const extra = teamContent(teamKey(t.name));
             const photo = extra.photo && (images[extra.photo] || /^assets\//.test(extra.photo)) ? picture(extra.photo, t.name) : '';
-            const count = extra.posts.length;
+            const count = teamCounts[teamKey(t.name)] || 0;
             return `
             <a class="team" href="#team/${esc(teamKey(t.name))}">
               <span class="team-rank ${t.rank === '1' ? 'top' : ''}" title="Tabellenplatz">${esc(t.rank || '–')}</span>
               <span class="team-main">
                 ${photo ? `<span class="team-thumb">${photo}</span>` : ''}
                 <span class="team-name"><strong>${esc(t.name)}</strong><small>${esc(t.group)}</small>
-                ${count ? `<em class="team-news">${count === 1 ? '1 Beitrag' : `${count} Beiträge`}</em>` : ''}</span>
+                ${count ? `<em class="team-news">${count} Insider News</em>` : ''}</span>
               </span>
               <span class="team-captain"><small>Mannschaftsführer</small>${esc(t.captain)}</span>
               <span class="team-points">${esc(t.points)}<small>Punkte</small></span>
@@ -477,9 +479,10 @@
     const edit = editing === key && state.member && state.member.isAdmin && !preview;
     const admin = state.member && state.member.isAdmin;
     const list = (key === 'home' ? homeBlocks() : page.blocks).filter((b) => !b._new || (preview && b.id === preview.id));
+    const feed = key === 'aktuell' && !edit ? await feedSection('club', { withTeams: true }) : '';
     const blocks = edit
       ? list.map((b, i) => editWrap(b, i, list.length, renderBlock(b, key))).join('')
-      : layoutBlocks(list, key);
+      : layoutBlocks(list, key, feed);
     return `
       <div class="site-page ${edit ? 'editing-page' : ''}" data-page="${key}">
         ${edit ? `
@@ -504,7 +507,8 @@
   // Ansicht (nicht Bearbeiten): Bausteine zu Gruppen bündeln, damit sie sich auf
   // breiten Bildschirmen in Spalten ordnen. Termine (mit ihrer Überschrift davor)
   // wandern in eine eigene Spalte – auf dem Handy stehen sie oben.
-  function layoutBlocks(list, key) {
+  let aktuellTab = 'feed';   // Handy: welche Spalte unter Aktuell sichtbar ist
+  function layoutBlocks(list, key, feed = '') {
     const eventIdx = list.map((b, i) => (b.type === 'event' ? i : -1)).filter((i) => i >= 0);
     const asideIdx = new Set(eventIdx);
     if (eventIdx.length && list[eventIdx[0] - 1] && list[eventIdx[0] - 1].type === 'heading') asideIdx.add(eventIdx[0] - 1);
@@ -529,6 +533,17 @@
       else if (kind === 'text' && run.length > 1) html += `<div class="run run-texts">${run.map((h) => `<div class="unit">${h}</div>`).join('')}</div>`;
       else html += run.join('');
       i = j;
+    }
+    if (feed) {
+      return `
+        <div class="seg aktuell-switch" role="tablist">
+          ${[['news', 'News'], ['feed', 'Clubgeflüster'], ['dates', 'Termine']].map(([v, l]) => `<button type="button" class="${aktuellTab === v ? 'on' : ''}" data-action="aktuell-tab" data-tab="${v}">${l}</button>`).join('')}
+        </div>
+        <div class="page-grid three show-${aktuellTab}">
+          <div class="page-main col-news">${html}</div>
+          <div class="page-feed col-feed">${feed}</div>
+          <aside class="page-aside col-dates">${aside.map((b) => renderBlock(b, key)).join('')}</aside>
+        </div>`;
     }
     if (!aside.length) return `<div class="page-grid single"><div class="page-main">${html}</div></div>`;
     return `
@@ -586,6 +601,246 @@
       ids.push(id);
     }
     return ids;
+  }
+
+  // ---------- Clubgeflüster & Insider News ----------
+  // Mitglieder schreiben selbst: Text plus bis zu 4 Fotos. Lesen darf jeder, schreiben nur Mitglieder;
+  // Insider News nur die gemeldeten Spieler der Mannschaft. Jugendliche nach Einverständnis der Eltern.
+  const FEED_PAGE = 10;
+  const feedOpen = {};          // „Ältere anzeigen“ je Bereich
+  const agoText = (iso) => {
+    const min = Math.round((Date.now() - new Date(iso)) / 60000);
+    if (min < 1) return 'gerade eben';
+    if (min < 60) return `vor ${min} Min.`;
+    if (min < 1440) return `vor ${Math.round(min / 60)} Std.`;
+    const d = Math.round(min / 1440);
+    if (d < 7) return d === 1 ? 'gestern' : `vor ${d} Tagen`;
+    return new Date(iso).toLocaleDateString('de-DE', { day: 'numeric', month: 'long' });
+  };
+  const postText = (t) => esc(t).replace(/(https?:\/\/[^\s<]+)/g, '<a class="inline-link" href="$1" target="_blank" rel="noopener">$1</a>').replace(/\n/g, '<br>');
+  const teamLabel = (key) => { const f = findTeam(key); return f ? f.team.name.replace(/\s*\(.*?\)/g, '') : key; };
+  const initialsOf = (name) => String(name || '?').split(' ').map((x) => x[0]).join('').slice(0, 2).toUpperCase();
+
+  function postHtml(p, loggedIn) {
+    const imgs = (p.images || []).filter(shownImage);
+    return `
+      <article class="fpost ${p.hidden ? 'is-hidden' : ''} ${p.teaser ? 'is-teaser' : ''}" data-post="${esc(p.id)}">
+        <header class="fpost-head">
+          <span class="fpost-avatar">${p.avatar ? `<img src="${esc(p.avatar)}" alt="">` : esc(initialsOf(p.author))}</span>
+          <span class="fpost-who"><b>${esc(p.author)}</b>
+            <small>${esc(agoText(p.createdAt))}${p.editedAt ? ' · bearbeitet' : ''}${p.teaser ? ` · <a href="#team/${esc(p.team)}">Insider News · ${esc(teamLabel(p.team))}</a>` : ''}${p.hidden ? ' · <em>ausgeblendet</em>' : ''}</small></span>
+        </header>
+        ${p.text ? `<div class="fpost-text">${postText(p.text)}</div>` : ''}
+        ${imgs.length ? `<button type="button" class="fpost-media" data-action="post-gallery" data-id="${esc(p.id)}" aria-label="Fotos ansehen">
+          ${picture(imgs[0], imgs[0], '')}${imgs.length > 1 ? `<span class="fpost-more">+${imgs.length - 1}</span>` : ''}</button>` : ''}
+        ${loggedIn ? `<footer class="fpost-tools">
+          ${p.mine ? `<button type="button" data-action="post-edit" data-id="${esc(p.id)}">Bearbeiten</button><button type="button" data-action="post-delete" data-id="${esc(p.id)}">Löschen</button>` : ''}
+          ${p.canModerate && !p.mine ? `<button type="button" data-action="post-hide" data-id="${esc(p.id)}" data-hidden="${p.hidden ? '0' : '1'}">${p.hidden ? 'Wieder zeigen' : 'Ausblenden'}</button><button type="button" data-action="post-delete" data-id="${esc(p.id)}">Löschen</button>` : ''}
+          ${!p.mine && !p.canModerate ? `<button type="button" data-action="post-report" data-id="${esc(p.id)}">Melden</button>` : ''}
+        </footer>` : ''}
+      </article>`;
+  }
+  let postCache = {};
+  async function feedSection(scope, opts = {}) {
+    const { api, state, icon } = ui();
+    const list = await api.posts(scope, { withTeams: Boolean(opts.withTeams) });
+    list.forEach((p) => { postCache[p.id] = p; });
+    const may = await api.canWrite(scope);
+    const isTeam = scope.startsWith('team:');
+    const shown = feedOpen[scope] ? list : list.slice(0, FEED_PAGE);
+    const roster = isTeam && state.member ? await api.teamRoster(scope.slice(5)) : [];
+    let action = '';
+    if (!state.member) action = `<button type="button" class="btn small" data-action="login">Zum Mitschreiben anmelden</button>`;
+    else if (may.ok || may.reason === 'rules' || may.reason === 'parents') action = `<button type="button" class="btn signal small" data-action="post-new" data-scope="${esc(scope)}">${icon.plus} Schreib was</button>`;
+    else if (may.reason === 'team') action = '<small class="muted">Schreiben dürfen die Spieler dieser Mannschaft.</small>';
+    return `
+      <section class="feed" data-scope="${esc(scope)}">
+        <header class="feed-head">
+          <div><h2 class="block-heading">${isTeam ? 'Insider News' : 'Clubgeflüster'}</h2>
+            <p class="muted small">${isTeam ? `Hier schreiben die Spieler${opts.teamName ? ` von ${esc(opts.teamName)}` : ''} – Spielberichte, Touren, Training.` : 'Hier schreiben unsere Mitglieder.'}</p></div>
+          ${action}
+        </header>
+        ${shown.length ? `<div class="feed-list">${shown.map((p) => postHtml(p, Boolean(state.member))).join('')}</div>`
+          : `<p class="feed-empty muted">${isTeam ? 'Noch keine Insider News – schreibt den ersten Bericht!' : 'Noch ist es still hier. Schreib den ersten Beitrag!'}</p>`}
+        ${list.length > shown.length ? `<button type="button" class="link center" data-action="feed-more" data-scope="${esc(scope)}">Ältere anzeigen (${list.length - shown.length})</button>` : ''}
+        ${isTeam && state.member ? `<details class="feed-roster"><summary>Wer darf hier schreiben?</summary><p class="small muted">Die gemeldeten Spieler der Mannschaft – im Echtbetrieb automatisch aus der nuLiga-Spielermeldung – und die Admins${roster.length ? `: ${esc(roster.join(', '))}` : '.'}</p></details>` : ''}
+      </section>`;
+  }
+
+  // Schreiben: Hinweise (einmalig) → bei Jugendlichen Einverständnis der Eltern → Beitrag mit bis zu 4 Fotos
+  async function openCompose(scope, editId = null) {
+    const { api, openSheet, closeSheet, toast, state } = ui();
+    if (!state.member) { toast('Bitte zuerst anmelden'); return; }
+    const may = await api.canWrite(scope);
+    if (!editId && may.reason === 'team') { toast('Insider News schreiben die Spieler dieser Mannschaft.'); return; }
+    if (!editId && may.reason === 'parents') return openParentConsent(scope);
+    if (!editId && may.reason === 'rules') return openRules(scope);
+    const existing = editId ? postCache[editId] : null;
+    const draft = { text: existing ? existing.text : '', images: existing ? (existing.images || []).filter((r) => images[r]) : [] };
+    const isTeam = scope.startsWith('team:');
+    const render = () => {
+      openSheet(`
+        <form class="editor compose" data-compose novalidate>
+          <h2>${existing ? 'Beitrag bearbeiten' : isTeam ? `Insider News · ${esc(teamLabel(scope.slice(5)))}` : 'Clubgeflüster'}</h2>
+          <textarea name="text" rows="5" maxlength="2000" placeholder="${isTeam ? 'Wie lief das Spiel? Was war los bei der Tour?' : 'Was gibt’s Neues im Club?'}">${esc(draft.text)}</textarea>
+          <div class="compose-photos">
+            ${draft.images.map((ref, i) => `<div class="gallery-thumb">${picture(ref, ref)}<button type="button" data-cremove="${i}" aria-label="Foto entfernen">×</button>
+              <span class="thumb-move"><button type="button" data-cmove="${i}" data-dir="-1" ${i === 0 ? 'disabled' : ''} aria-label="Nach vorne">‹</button><button type="button" data-cmove="${i}" data-dir="1" ${i === draft.images.length - 1 ? 'disabled' : ''} aria-label="Nach hinten">›</button></span></div>`).join('')}
+            ${draft.images.length < 4 ? `<label class="gallery-add">${ui().icon.camera}<span>Foto${draft.images.length ? '' : 's'}</span><input type="file" accept="image/*" multiple data-cphoto hidden></label>` : ''}
+          </div>
+          <p class="small muted">Bis zu 4 Fotos – das erste erscheint im Beitrag, alle zusammen per Klick.</p>
+          ${draft.images.length ? '<label class="meet-check"><input type="checkbox" name="photoOk" required><span>Die abgebildeten Personen sind mit der Veröffentlichung einverstanden.</span></label>' : ''}
+          <p class="form-error" role="alert"></p>
+          <button type="submit" class="btn signal block big">${existing ? 'Speichern' : 'Veröffentlichen'}</button>
+          <p class="fineprint">Öffentlich sichtbar mit deinem Namen${state.member.isMinor ? ' (Vorname und Anfangsbuchstabe)' : ''}.</p>
+        </form>`);
+      const form = document.querySelector('[data-compose]');
+      const keep = () => { draft.text = form.elements.text.value; };
+      form.addEventListener('click', (e) => {
+        const rm = e.target.closest('[data-cremove]');
+        if (rm) { keep(); draft.images.splice(Number(rm.dataset.cremove), 1); render(); return; }
+        const mv = e.target.closest('[data-cmove]');
+        if (mv) { keep(); const a = Number(mv.dataset.cmove); const b = a + Number(mv.dataset.dir); [draft.images[a], draft.images[b]] = [draft.images[b], draft.images[a]]; render(); }
+      });
+      form.addEventListener('change', async (e) => {
+        if (!e.target.matches('[data-cphoto]') || !e.target.files.length) return;
+        keep();
+        const files = [...e.target.files].slice(0, 4 - draft.images.length);
+        try {
+          for (const file of files) {
+            const img = await ui().loadImage(file);
+            const url = ui().largeImage(img, 1600);
+            const ref = await api.putMemberImage(url);
+            images[ref] = url;
+            draft.images.push(ref);
+          }
+          render();
+        } catch (err) { toast(err.message); }
+      });
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        keep();
+        const err = form.querySelector('.form-error');
+        if (draft.images.length && !form.elements.photoOk.checked) { err.textContent = 'Bitte bestätigen, dass die Abgebildeten einverstanden sind.'; return; }
+        try {
+          if (existing) await api.editPost(existing.id, draft);
+          else await api.addPost({ scope, ...draft });
+          closeSheet();
+          toast(existing ? 'Gespeichert' : 'Veröffentlicht – danke!', true);
+          ui().renderView();
+        } catch (ex) { err.textContent = ex.message; }
+      });
+      form.elements.text.focus();
+    };
+    render();
+  }
+  function openRules(scope) {
+    const { openSheet, closeSheet, api } = ui();
+    openSheet(`
+      <form class="editor" data-rules novalidate>
+        <h2>Kurz vorab</h2>
+        <p class="muted">Clubgeflüster und Insider News sind öffentlich – jeder Besucher kann sie lesen. Damit es für alle angenehm bleibt:</p>
+        <ul class="rules-list">
+          <li>Freundlich und fair bleiben – wie auf dem Platz.</li>
+          <li>Fotos von anderen nur, wenn sie einverstanden sind.</li>
+          <li>Keine Werbung, keine privaten Daten (Telefonnummern, Adressen).</li>
+          <li>Der Vorstand kann Beiträge ausblenden.</li>
+        </ul>
+        <label class="meet-check"><input type="checkbox" name="ok"><span>Verstanden – ich halte mich daran.</span></label>
+        <p class="form-error" role="alert"></p>
+        <button type="submit" class="btn signal block">Weiter zum Schreiben</button>
+      </form>`);
+    const form = document.querySelector('[data-rules]');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!form.elements.ok.checked) { form.querySelector('.form-error').textContent = 'Bitte kurz bestätigen.'; return; }
+      ui().state.member = await api.acceptFeedRules();
+      closeSheet();
+      openCompose(scope);
+    });
+  }
+  function openParentConsent(scope) {
+    const { openSheet, closeSheet, api, state } = ui();
+    openSheet(`
+      <form class="editor" data-parents novalidate>
+        <h2>Hallo ${esc(state.member.firstName)}! 👋</h2>
+        <p>Schön, dass du mitschreiben willst. Weil du noch nicht 18 bist, brauchen wir einmal das <b>Einverständnis deiner Eltern</b>.</p>
+        <p class="muted small">Deine Beiträge erscheinen mit Vorname und Anfangsbuchstaben (z. B. „${esc(state.member.firstName)} ${esc(state.member.lastName[0])}.“). Deine Eltern können das Einverständnis jederzeit beim Vorstand zurückziehen.</p>
+        <label class="field"><span>Name eines Elternteils</span><input name="parent" autocomplete="off" placeholder="Vor- und Nachname"></label>
+        <label class="meet-check"><input type="checkbox" name="ok"><span>Mein Elternteil hat das gelesen und ist einverstanden, dass ich Beiträge und Fotos veröffentliche.</span></label>
+        <p class="form-error" role="alert"></p>
+        <button type="submit" class="btn signal block">Einverständnis speichern</button>
+        <p class="fineprint">Im Echtbetrieb bekommt der Elternteil zusätzlich eine E-Mail zur Bestätigung.</p>
+      </form>`);
+    const form = document.querySelector('[data-parents]');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const err = form.querySelector('.form-error');
+      if (!form.elements.ok.checked) { err.textContent = 'Bitte das Häkchen setzen.'; return; }
+      try {
+        ui().state.member = await api.setParentConsent(form.elements.parent.value);
+        closeSheet();
+        openCompose(scope);
+      } catch (ex) { err.textContent = ex.message; }
+    });
+  }
+
+  // Galerie eines Beitrags: erst alle Fotos als Kollage, dann einzeln blättern (Pfeile, Wischen, Tasten)
+  function openGallery(refs, title) {
+    const list = refs.filter(shownImage);
+    if (!list.length) return;
+    let index = list.length > 1 ? -1 : 0;   // -1 = Kollage
+    const box = document.createElement('div');
+    box.className = 'viewer gallery';
+    const draw = () => {
+      const single = index >= 0;
+      box.innerHTML = `
+        <div class="viewer-stage">
+          ${single
+            ? `<div class="gal-single">${picture(list[index], list[index], title)}</div>`
+            : `<div class="gal-collage n${Math.min(list.length, 4)}">${list.map((r, i) => `<button type="button" class="gal-tile" data-gi="${i}">${picture(r, r, '')}</button>`).join('')}</div>`}
+        </div>
+        <div class="viewer-bar">
+          ${single && list.length > 1 ? `<button type="button" class="gal-back" data-gback>▦ Alle Fotos</button><span>${index + 1} / ${list.length}</span>` : `<span>${esc(title)}</span>`}
+        </div>
+        ${single && list.length > 1 ? `<button type="button" class="gal-nav prev" data-gstep="-1" aria-label="Vorheriges Foto">‹</button><button type="button" class="gal-nav next" data-gstep="1" aria-label="Nächstes Foto">›</button>` : ''}
+        <button type="button" class="viewer-close" aria-label="Schließen">${ui().icon.close}</button>`;
+    };
+    const step = (d) => { if (index < 0) return; index = (index + d + list.length) % list.length; draw(); };
+    const close = () => {
+      box.classList.remove('open');
+      document.removeEventListener('keydown', onKey);
+      document.body.classList.remove('no-scroll');
+      setTimeout(() => box.remove(), 200);
+    };
+    const onKey = (e) => {
+      if (e.key === 'Escape') close();
+      if (e.key === 'ArrowRight') step(1);
+      if (e.key === 'ArrowLeft') step(-1);
+    };
+    box.addEventListener('click', (e) => {
+      if (e.target.closest('.viewer-close')) return close();
+      const tile = e.target.closest('[data-gi]');
+      if (tile) { index = Number(tile.dataset.gi); draw(); return; }
+      if (e.target.closest('[data-gback]')) { index = -1; draw(); return; }
+      const st = e.target.closest('[data-gstep]');
+      if (st) { step(Number(st.dataset.gstep)); return; }
+      if (e.target.closest('.gal-single > *, .viewer-bar')) return;
+      close();
+    });
+    let touchX = null;
+    box.addEventListener('touchstart', (e) => { touchX = e.touches[0].clientX; }, { passive: true });
+    box.addEventListener('touchend', (e) => {
+      if (touchX == null) return;
+      const dx = e.changedTouches[0].clientX - touchX;
+      if (Math.abs(dx) > 50) step(dx < 0 ? 1 : -1);
+      touchX = null;
+    });
+    draw();
+    document.addEventListener('keydown', onKey);
+    document.body.appendChild(box);
+    document.body.classList.add('no-scroll');
+    requestAnimationFrame(() => box.classList.add('open'));
   }
 
   // ---------- Anhänge an Terminen (Bild oder PDF) mit Großansicht ----------
@@ -1107,17 +1362,13 @@
         </section>
         <p class="block-button"><a class="btn" href="${esc(team.teamUrl)}" target="_blank" rel="noopener">Spielplan &amp; Tabelle bei nuLiga ↗</a></p>
 
-        <div class="section-head team-news-head">
-          <h2 class="block-heading">Aus dem Team</h2>
-          ${can ? `<button type="button" class="btn primary small" data-action="team-post" data-team="${esc(key)}">${icon.plus} Beitrag</button>` : ''}
-        </div>
-        ${posts.length
-          ? `<div class="run run-posts">${posts.map((b) => `
-              <div class="team-post">${renderBlock({ ...b, type: 'post' }, 'team')}
-                ${can ? `<button type="button" class="view-close team-post-edit" data-action="team-post" data-team="${esc(key)}" data-id="${esc(b.id)}" aria-label="Beitrag bearbeiten">${icon.pencil}</button>` : ''}
-              </div>`).join('')}</div>`
-          : `<p class="muted">${can ? 'Noch keine Beiträge. Spielberichte, Mannschaftstouren, Erfolge – bis zu 10 Beiträge passen hier untereinander.' : 'Hier berichtet die Mannschaft bald über Spiele und Touren.'}</p>`}
-        ${can ? `<p class="fineprint">Schreiben dürfen Admins – im Echtbetrieb auch der Mannschaftsführer. Höchstens ${MAX_TEAM_POSTS} Beiträge; beim elften fällt der älteste weg.</p>` : ''}
+        ${await feedSection('team:' + key, { teamName: team.name.replace(/\s*\(.*?\)/g, '') })}
+        ${posts.length ? `
+          <h2 class="block-heading">Berichte vom Club</h2>
+          <div class="run run-posts">${posts.map((b) => `
+            <div class="team-post">${renderBlock({ ...b, type: 'post' }, 'team')}
+              ${can ? `<button type="button" class="view-close team-post-edit" data-action="team-post" data-team="${esc(key)}" data-id="${esc(b.id)}" aria-label="Beitrag bearbeiten">${icon.pencil}</button>` : ''}
+            </div>`).join('')}</div>` : ''}
         ${partnerSlot('sport', 'Der Sport wird dir präsentiert von')}
       </div>`;
   }
@@ -1238,6 +1489,22 @@
     'team-photo': (el) => openTeamPhoto(el.dataset.team),
     'link-move': (el) => moveLink(el.dataset.block, el.dataset.slot),
     'feature-edit': (el) => { editing = 'home'; detailEditing = true; openBlockEditor(el.dataset.id, false, 'sub'); },
+    'aktuell-tab': (el) => {
+      aktuellTab = el.dataset.tab;
+      document.querySelectorAll('.aktuell-switch button').forEach((b) => b.classList.toggle('on', b === el));
+      const grid = document.querySelector('.page-grid.three');
+      if (grid) grid.className = `page-grid three show-${aktuellTab}`;
+    },
+    'post-new': (el) => openCompose(el.dataset.scope),
+    'post-edit': (el) => { const p = postCache[el.dataset.id]; if (p) openCompose(p.scope, p.id); },
+    'post-delete': async (el) => {
+      if (!el.dataset.armed) { el.dataset.armed = '1'; el.textContent = 'Wirklich löschen?'; return; }
+      try { await ui().api.deletePost(el.dataset.id); ui().toast('Beitrag gelöscht', true); ui().renderView(); } catch (err) { ui().toast(err.message); }
+    },
+    'post-hide': async (el) => { await ui().api.hidePost(el.dataset.id, el.dataset.hidden === '1'); ui().toast(el.dataset.hidden === '1' ? 'Ausgeblendet' : 'Wieder sichtbar', true); ui().renderView(); },
+    'post-report': async (el) => { await ui().api.reportPost(el.dataset.id); ui().toast('Danke – der Vorstand schaut sich das an.', true); },
+    'post-gallery': (el) => { const p = postCache[el.dataset.id]; if (p) openGallery(p.images || [], `${p.author} · ${agoText(p.createdAt)}`); },
+    'feed-more': (el) => { feedOpen[el.dataset.scope] = true; ui().renderView(); },
     'att-open': (el) => openViewer(el.dataset.ref, el.dataset.kind, el.dataset.title),
     'hero-open': (el) => {
       const b = homeBlocks().find((x) => x.id === el.dataset.block);

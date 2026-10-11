@@ -401,3 +401,22 @@ Monatsabschluss.
   kleines Vorschaubild bzw. PDF-Symbol rechts. **Großansicht** (`openViewer` in site.js): Bild in
   Seitengröße, Klick aufs Bild = Lesegröße (volle Breite, scrollbar) und zurück; PDF im
   eingebauten Betrachter (Blob-URL, „In neuem Tab öffnen“). Schließen mit ×, Klick außerhalb oder Esc.
+- **11.10.2026** – **Clubgeflüster & Insider News (erster Entwurf).** Mitglieder schreiben selbst.
+  - **Aktuell** in drei Spalten (ab 1024 px): News · **Clubgeflüster** (Mitte) · Save the Date;
+    Handy: Umschalter News · Clubgeflüster · Termine (Standard Clubgeflüster).
+  - **Sport → Team-Seite:** „Insider News“ (Spielberichte, Touren, Training); Mannschaftsliste zeigt
+    „n Insider News“. Neue Insider News erscheinen auch im Clubgeflüster (roter Rand, Link zum Team).
+  - Beitrag: Text (max. 2000 Zeichen, Links werden klickbar) + bis zu 4 Fotos (sortierbar);
+    erstes Foto im Beitrag, „+n“; Klick → Kollage → Einzelansicht zum Blättern (Pfeile, Wischen,
+    Tasten), schließen mit ×, Klick daneben, Esc. Neueste oben, „Ältere anzeigen“ ab 10.
+  - **Rechte:** Lesen öffentlich. Schreiben: Clubgeflüster alle angemeldeten Mitglieder; Insider
+    News nur gemeldete Spieler der Mannschaft (`community.rosters`, im Echtbetrieb aus nuLiga-
+    Spielermeldung + Abgleich Mitgliederliste) und Admins. Eigene Beiträge bearbeiten/löschen;
+    Admins: ausblenden/löschen; andere: „Melden“.
+  - Einmalig **Clubregeln** bestätigen; bei Fotos Häkchen „Abgebildete sind einverstanden“.
+  - **Jugendliche** (unter 18, `birthYear` in der Mitgliederliste): einmal **Einverständnis der
+    Eltern** (Name eines Elternteils + Häkchen; Echtbetrieb zusätzlich Bestätigungsmail).
+    Anzeige nur „Vorname N.“. Demo-Jugendliche: Paul Jung (Junioren 15), Mia Kramer.
+  - Daten: `db.community = { rosters, posts[] }`; API `posts`, `addPost`, `editPost`, `deletePost`,
+    `hidePost`, `reportPost`, `canWrite`, `acceptFeedRules`, `setParentConsent`, `putMemberImage`,
+    `teamPostCounts`, `teamRoster`. Für echten Betrieb über mehrere Geräte: Supabase.

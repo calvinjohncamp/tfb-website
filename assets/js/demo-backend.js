@@ -243,6 +243,65 @@
     });
     if (changed) save(db);
   }
+  // ---------- Clubgeflüster & Insider News (Beiträge der Mitglieder) ----------
+  // Beispiel-Jugendliche (erfunden) für die Vorführung der Eltern-Zustimmung
+  const YOUTH = [
+    { id: 'm-j1', memberNo: '1101', firstName: 'Paul', lastName: 'Jung', email: 'paul.jung@beispiel.de', birthYear: 2011, active: true },
+    { id: 'm-j2', memberNo: '1102', firstName: 'Mia', lastName: 'Kramer', email: 'mia.kramer@beispiel.de', birthYear: 2012, active: true },
+  ];
+  if (db.members && !db.members.some((m) => m.id === 'm-j1')) { db.members.push(...clone(YOUTH)); save(db); }
+  if (!db.community) {
+    const ago = (min) => new Date(Date.now() - min * 60000).toISOString();
+    db.community = {
+      // Wer darf in den Insider News einer Mannschaft schreiben? Im Echtbetrieb aus der
+      // nuLiga-Spielermeldung (Abgleich mit der Mitgliederliste), hier Beispiel-Zuordnung.
+      rosters: {
+        'herren-40-1': ['m-demo', 'm2', 'm4', 'm6', 'm8', 'm10', 'm12', 'm14', 'm16'],
+        'herren-30-1': ['m18', 'm9', 'm11'],
+        'damen-30-1': ['m1', 'm3', 'm5', 'm7', 'm13', 'm15', 'm17'],
+        'junioren-15-1': ['m-j1', 'm-j2'],
+        'herren-1': ['m6', 'm10'],
+      },
+      posts: [
+        { id: 'p-s1', scope: 'club', authorId: 'm13', createdAt: ago(42), images: ['ph:c1', 'ph:c2'],
+          text: 'Was für ein Sonnenuntergang heute auf Platz 3! 🌅 Wer kommt morgen Abend zum lockeren Doppel? Ich bin ab 18 Uhr da.' },
+        { id: 'p-s2', scope: 'club', authorId: 'm6', createdAt: ago(60 * 5), images: [],
+          text: 'Großes Danke an alle, die beim Arbeitseinsatz am Samstag geholfen haben. Die Plätze sehen top aus – und das Kölsch danach hatten wir uns verdient.' },
+        { id: 'p-s3', scope: 'club', authorId: 'm1', createdAt: ago(60 * 26), images: ['ph:c3', 'ph:c4', 'ph:c5', 'ph:c6'],
+          text: 'Unser Damen-30-Ausflug an die Mosel – vier Tage Tennis, Wein und viel gelacht. Danke an Petra für die Organisation!' },
+        { id: 'p-s4', scope: 'club', authorId: 'm4', createdAt: ago(60 * 24 * 3), images: [],
+          text: 'Hat jemand eine Ballmaschine, die man mal ausleihen könnte? Meine Vorhand braucht dringend Nachhilfe 😅' },
+        { id: 'p-t1', scope: 'team:herren-40-1', authorId: 'm2', createdAt: ago(60 * 9), images: ['ph:t5', 'ph:t2'],
+          text: 'Auswärtssieg in Hennef! 4:2 nach den Einzeln, dann beide Doppel souverän. Jan mit einem Match-Tiebreak für die Geschichtsbücher.' },
+        { id: 'p-t2', scope: 'team:herren-40-1', authorId: 'm14', createdAt: ago(60 * 24 * 4), images: [],
+          text: 'Saisonvorbereitung läuft: ab sofort dienstags 19 Uhr Training auf Platz 1–2. Wer Bälle mitbringt, hat einen gut.' },
+        { id: 'p-t3', scope: 'team:junioren-15-1', authorId: 'm-j1', createdAt: ago(60 * 30), images: ['ph:t3'],
+          text: 'Erstes Medenspiel gewonnen!!! 🎉 Danke an unseren Trainer und an alle Eltern, die gefahren sind.' },
+      ],
+    };
+    save(db);
+  }
+  const isMinor = (m) => Boolean(m && m.birthYear && new Date().getFullYear() - m.birthYear < 18);
+  const displayName = (m) => (m ? (isMinor(m) ? `${m.firstName} ${m.lastName[0]}.` : `${m.firstName} ${m.lastName}`) : 'Mitglied');
+  const teamOf = (scope) => (String(scope).startsWith('team:') ? scope.slice(5) : null);
+  function mayWrite(member, scope) {
+    if (!member) return { ok: false, reason: 'login' };
+    const team = teamOf(scope);
+    if (team && !member.isAdmin && !((db.community.rosters[team] || []).includes(member.id))) return { ok: false, reason: 'team' };
+    const acc = accountOf(member.id) || {};
+    if (isMinor(member) && !acc.parentConsent) return { ok: false, reason: 'parents' };
+    if (!acc.feedRules) return { ok: false, reason: 'rules' };
+    return { ok: true };
+  }
+  function publicPost(p) {
+    const author = db.members.find((m) => m.id === p.authorId);
+    const acc = author ? accountOf(author.id) : null;
+    const me = sessionMemberId();
+    const meM = db.members.find((m) => m.id === me);
+    return { ...clone(p), author: displayName(author), avatar: (acc && acc.avatar) || null,
+      mine: p.authorId === me, canModerate: Boolean(meM && meM.isAdmin), team: teamOf(p.scope) };
+  }
+
   if (!db.catalog || db.catalogVersion !== CATALOG_VERSION) {
     db.catalog = clone(DEFAULT_CATALOG);
     db.catalogVersion = CATALOG_VERSION;
@@ -364,6 +423,10 @@
       phone: (account && account.phone) || '',
       infoMails: !(account && account.infoMails === false),
       openInvites: !(account && account.openInvites === false),
+      isMinor: isMinor(member),
+      parentConsent: (account && account.parentConsent) || null,
+      feedRules: Boolean(account && account.feedRules),
+      teams: Object.entries((db.community && db.community.rosters) || {}).filter(([, ids]) => ids.includes(member.id)).map(([k]) => k),
     };
   }
 
@@ -424,6 +487,87 @@
       Object.assign(account, { phone: tel, infoMails: Boolean(infoMails), openInvites: Boolean(openInvites) });
       if (!save(db)) throw new Error('Speichern nicht möglich.');
       return publicMember(member);
+    },
+
+    // ---------- Clubgeflüster & Insider News ----------
+    // Lesen: öffentlich. Schreiben: nur angemeldete Mitglieder (Insider News: gemeldete Spieler).
+    async posts(scope, { withTeams = false } = {}) {
+      const me = db.members.find((m) => m.id === sessionMemberId());
+      return db.community.posts
+        .filter((p) => p.scope === scope || (withTeams && String(p.scope).startsWith('team:')))
+        .filter((p) => !p.hidden || (me && (me.isAdmin || p.authorId === me.id)))
+        .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+        .map((p) => ({ ...publicPost(p), teaser: withTeams && p.scope !== scope }));
+    },
+    async teamPostCounts() {
+      const out = {};
+      db.community.posts.filter((p) => !p.hidden && teamOf(p.scope)).forEach((p) => { out[teamOf(p.scope)] = (out[teamOf(p.scope)] || 0) + 1; });
+      return out;
+    },
+    async teamRoster(team) {
+      return (db.community.rosters[team] || []).map((id) => displayName(db.members.find((m) => m.id === id))).filter(Boolean);
+    },
+    async canWrite(scope) {
+      const member = db.members.find((m) => m.id === sessionMemberId() && m.active);
+      return mayWrite(member || null, scope);
+    },
+    async acceptFeedRules() {
+      const member = requireMember();
+      accountOf(member.id).feedRules = new Date().toISOString();
+      save(db);
+      return publicMember(member);
+    },
+    async setParentConsent(parentName) {
+      const member = requireMember();
+      const name = String(parentName || '').trim();
+      if (name.length < 3) throw new Error('Bitte den Namen eines Elternteils eintragen.');
+      accountOf(member.id).parentConsent = { name, at: new Date().toISOString() };
+      save(db);
+      return publicMember(member);
+    },
+    // Fotos für Beiträge dürfen alle Mitglieder hochladen
+    async putMemberImage(dataUrl) {
+      requireMember();
+      if (!/^data:image\/(jpeg|png|webp);base64,/.test(dataUrl)) throw new Error('Dieses Bild lässt sich nicht verwenden.');
+      const id = 'img:' + uid();
+      await done((await imgStore('readwrite')).put(dataUrl, id));
+      return id;
+    },
+    async addPost({ scope, text, images = [] }) {
+      const member = requireMember();
+      const allowed = mayWrite(member, scope);
+      if (!allowed.ok) throw new Error(allowed.reason === 'team' ? 'Insider News schreiben die Spieler dieser Mannschaft.' : 'Bitte zuerst die Hinweise bestätigen.');
+      const t = String(text || '').trim();
+      if (!t && !images.length) throw new Error('Bitte einen Text schreiben oder ein Foto wählen.');
+      const post = { id: 'p-' + uid(), scope, authorId: member.id, createdAt: new Date().toISOString(), text: t.slice(0, 2000), images: images.slice(0, 4) };
+      db.community.posts.push(post);
+      if (!save(db)) throw new Error('Speichern nicht möglich.');
+      return publicPost(post);
+    },
+    async editPost(id, { text, images }) {
+      const member = requireMember();
+      const p = db.community.posts.find((x) => x.id === id);
+      if (!p || (p.authorId !== member.id && !member.isAdmin)) throw new Error('Diesen Beitrag kannst du nicht ändern.');
+      Object.assign(p, { text: String(text || '').trim().slice(0, 2000), images: (images || []).slice(0, 4), editedAt: new Date().toISOString() });
+      save(db);
+      return publicPost(p);
+    },
+    async deletePost(id) {
+      const member = requireMember();
+      const p = db.community.posts.find((x) => x.id === id);
+      if (!p || (p.authorId !== member.id && !member.isAdmin)) throw new Error('Diesen Beitrag kannst du nicht löschen.');
+      db.community.posts = db.community.posts.filter((x) => x.id !== id);
+      save(db);
+    },
+    async hidePost(id, hidden = true) {
+      const member = requireMember();
+      if (!member.isAdmin) throw new Error('Nur Admins dürfen Beiträge ausblenden.');
+      const p = db.community.posts.find((x) => x.id === id);
+      if (p) { p.hidden = hidden; save(db); }
+    },
+    async reportPost(id) {
+      const p = db.community.posts.find((x) => x.id === id);
+      if (p) { p.reports = (p.reports || 0) + 1; save(db); }
     },
 
     // ---------- Sichern und Laden (alle Demo-Inhalte inkl. Fotos in einer Datei) ----------
