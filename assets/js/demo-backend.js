@@ -281,6 +281,15 @@
     };
     save(db);
   }
+  // Vorführung der vierspaltigen Strichliste: einmalig ein paar Kränze und Snacks (erfundene Mitglieder)
+  if (!db.demoTallyMix && db.catalog) {
+    const find = (id) => db.catalog.products.find((p) => p.id === id);
+    const at = (h) => new Date(Date.now() - h * 3600000);
+    [['m2', 'koelsch-kranz', 26], ['m6', 'koelsch-kranz', 50], ['m6', 'snickers', 49], ['m1', 'hanuta', 30], ['m13', 'mars', 5], ['m13', 'snickers', 5], ['m8', 'koelsch-kranz', 74]]
+      .forEach(([m, id, h]) => { const pr = find(id); if (pr && db.members.some((x) => x.id === m)) db.items.push(makeItem(m, pr, at(h))); });
+    db.demoTallyMix = true;
+    save(db);
+  }
   const isMinor = (m) => Boolean(m && m.birthYear && new Date().getFullYear() - m.birthYear < 18);
   const displayName = (m) => (m ? (isMinor(m) ? `${m.firstName} ${m.lastName[0]}.` : `${m.firstName} ${m.lastName}`) : 'Mitglied');
   const teamOf = (scope) => (String(scope).startsWith('team:') ? scope.slice(5) : null);
@@ -827,10 +836,20 @@
       requireMember();
       const firstDay = dayKey(new Date(Date.now() - (cfg.tallyDays - 1) * DAY));
       const byMember = new Map();
+      // Kategorie je Artikel: Kranz (eigene Spalte, großer Betrag), Snacks, Equipment (Shop), sonst Getränke
+      const catOf = (item) => {
+        const p = db.catalog.products.find((x) => x.id === item.productId) || {};
+        if (p.art === 'kranz' || /kranz/i.test(item.productName || '')) return 'kranz';
+        if (p.section === 'snacks') return 'snacks';
+        if (p.section === 'shop') return 'equipment';
+        return 'drinks';
+      };
       for (const item of db.items) {
         if (item.status === 'cancelled' || dayKey(new Date(item.createdAt)) < firstDay) continue;
-        const row = byMember.get(item.memberId) || { counts: {}, total: 0 };
+        const row = byMember.get(item.memberId) || { counts: {}, total: 0, cats: {} };
         row.counts[item.productName] = (row.counts[item.productName] || 0) + 1;
+        const c = catOf(item);
+        row.cats[c] = (row.cats[c] || 0) + 1;
         row.total++;
         byMember.set(item.memberId, row);
       }

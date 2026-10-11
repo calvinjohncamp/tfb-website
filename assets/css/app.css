@@ -1826,3 +1826,29 @@ h1, h2, h3, .event h3, .feature-body h2, .story-head h1, .post-body h3 { -webkit
 .avatar-wrap { justify-items: end; }
 .avatar-name { text-align: right; }
 .feed-sub { margin-top: 0; }
+
+/* ===== Strichliste in vier Spalten: Getränke · Kranz · Snacks · Equipment ===== */
+.tally-head, .paper-row.tally-row { grid-template-columns: minmax(0, 1fr) repeat(4, 44px); gap: 4px 8px; }
+.tally-head { display: grid; align-items: end; padding: 4px 16px 8px 66px; border-bottom: 1.5px solid #C9D6E0; }
+.tally-head span { text-align: center; font-size: .6rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.tally-head .kranz { color: var(--signal); }
+.tally-head .full { display: none; }
+.tally-cell { display: flex; flex-wrap: wrap; justify-content: center; align-content: center; gap: 3px 5px; min-height: 26px; border-left: 1px dashed #DCE6EE; }
+.tally-cell .bundle { height: 20px; }
+.tally-cell.kranz .bundle { stroke: var(--signal); }
+.tally-cell em { font-style: normal; font-size: .72rem; font-weight: 800; color: var(--muted); align-self: center; }
+@media (min-width: 640px) {
+  .tally-head, .paper-row.tally-row { grid-template-columns: minmax(0, 1fr) repeat(4, 84px); gap: 4px 10px; }
+  .tally-head span { font-size: .66rem; }
+  .tally-head .full { display: inline; }
+  .tally-head .short { display: none; }
+  .tally-cell .bundle { height: 24px; }
+}
+/* Handy: Name in eigener Zeile, darunter die vier Strichspalten */
+@media (max-width: 639px) {
+  .tally-head, .paper-row.tally-row { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 2px 0; }
+  .tally-head > span:first-child { display: none; }
+  .paper-row.tally-row .paper-name { grid-column: 1 / -1; overflow-wrap: normal; }
+  .paper-row.tally-row .tally-cell:nth-of-type(1) { border-left: 0; }
+  .tally-cell { min-height: 24px; }
+}

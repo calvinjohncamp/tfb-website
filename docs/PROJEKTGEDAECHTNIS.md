@@ -456,3 +456,9 @@ Monatsabschluss.
   **Profilbild-Ausschnitt** (`openAvatarCropper` in app.js): verschieben + zoomen im Kreis, gespeichert
   wird nur das kleine Bild (320 px), Original bleibt; „Ausschnitt anpassen“ in der Accountkarte.
   **Kopf:** Profilbild oben bündig mit „TFB“, Name dezent rechtsbündig darunter.
+- **11.10.2026** – Name unter dem Profilbild wieder entfernt (Nutzer: vorherige Version edler);
+  Profilbild wie zuvor unten bündig. **Strichliste in vier Spalten: Getränke · Kranz · Snacks ·
+  Equipment** (`tally()` liefert `cats`; Kranz = Artikel mit Symbol „kranz“, Snacks = Bereich
+  `snacks`, Equipment = Bereich `shop`, alles andere Getränke). Kranz-Striche in Signal-Rot.
+  Handy: Name in eigener Zeile, darunter die vier Spalten; Desktop: Name links, 4 × 84 px.
+  Ab 10 Strichen pro Feld „+n“. Demo: einmalig einige Kränze/Snacks ergänzt (`db.demoTallyMix`).

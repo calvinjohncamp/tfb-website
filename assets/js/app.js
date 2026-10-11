@@ -302,13 +302,9 @@
           <a class="brand" href="#home" aria-label="${esc(cfg.clubName)} – Startseite">
             <span class="tfb-logo-split header-logo" role="img" aria-label="${esc(cfg.clubName)}"><span class="tfb-logo-noball"></span><span class="tfb-logo-ball"></span></span>
           </a>
-          <div class="avatar-wrap">
-            ${state.member
-              ? `<button class="avatar" type="button" data-action="profile" aria-label="Profil">${avatarFace(state.member)}</button>
-                 <span class="avatar-name">${esc(state.member.firstName)} ${esc(state.member.lastName)}</span>`
-              : `<button class="avatar guest" type="button" data-action="login" aria-label="Anmelden">${icon.user}</button>
-                 <span class="avatar-name">Anmelden</span>`}
-          </div>
+          ${state.member
+            ? `<button class="avatar" type="button" data-action="profile" aria-label="Profil">${avatarFace(state.member)}</button>`
+            : `<button class="avatar guest" type="button" data-action="login" aria-label="Anmelden">${icon.user}</button>`}
         </div>
         <nav class="topnav" aria-label="Bereiche">
           ${tabs.map(([id, label, ic, url]) => url
@@ -538,21 +534,29 @@
   }
 
   // ---------- Strichliste ----------
+  // Strichliste in vier Spalten – so sieht jeder auf einen Blick, ob Getränke, Kränze, Snacks und
+  // Equipment wirklich angeschrieben wurden. Zuordnung über den Bereich im Sortiment (demo-backend.js).
+  const TALLY_CATS = [['drinks', 'Getränke', 'Getr.'], ['kranz', 'Kranz', 'Kranz'], ['snacks', 'Snacks', 'Snacks'], ['equipment', 'Equipment', 'Equip.']];
   async function tallyView() {
     const rows = await api.tally();
     const from = new Date(Date.now() - (cfg.tallyDays - 1) * 864e5);
     const range = `${from.toLocaleDateString('de-DE', { day: 'numeric', month: 'short', timeZone: cfg.timeZone })} – heute`;
     return `
       ${viewHead('Strichliste', `Letzte ${cfg.tallyDays} Tage · ${esc(range)}`)}
-      <section class="paper">
+      <section class="paper tally-paper">
+        ${rows.length ? `<div class="tally-head" aria-hidden="true"><span></span>${TALLY_CATS.map(([c, l, short]) => `<span class="${c}"><b class="full">${l}</b><b class="short">${short}</b></span>`).join('')}</div>` : ''}
         ${rows.length ? rows.map((r, i) => {
           const key = `${r.lastName}|${r.firstName}`;
           const open = state.openTallyRow === key;
           const detail = Object.entries(r.counts).sort((a, b) => b[1] - a[1]).map(([name, n]) => `${n} × ${esc(name)}`).join(' · ');
+          const cell = (cat) => {
+            const n = r.cats[cat] || 0;
+            return `<span class="tally-cell ${cat}" aria-label="${TALLY_CATS.find(([c]) => c === cat)[1]}: ${strokesWord(n)}">${n ? TFB.strokes(Math.min(n, 10), key + cat) + (n > 10 ? `<em>+${n - 10}</em>` : '') : ''}</span>`;
+          };
           return `
-            <button type="button" class="paper-row ${r.isMe ? 'me' : ''} ${open ? 'open' : ''}" data-action="tally-row" data-key="${esc(key)}" aria-expanded="${open}">
+            <button type="button" class="paper-row tally-row ${r.isMe ? 'me' : ''} ${open ? 'open' : ''}" data-action="tally-row" data-key="${esc(key)}" aria-expanded="${open}">
               <span class="paper-name">${esc(r.lastName)}, ${esc(r.firstName)}${r.isMe ? ' <em>du</em>' : ''}</span>
-              <span class="paper-strokes" aria-label="${strokesWord(r.total)}">${TFB.strokes(r.total, key)}</span>
+              ${TALLY_CATS.map(([c]) => cell(c)).join('')}
               ${open ? `<span class="paper-detail">${detail}</span>` : ''}
             </button>`;
         }).join('') : '<p class="paper-empty">In den letzten sieben Tagen hat noch niemand angeschrieben.</p>'}
@@ -1106,8 +1110,6 @@
   function refreshAvatars() {
     const btn = document.querySelector('.topbar .avatar');
     if (btn) btn.innerHTML = avatarFace(state.member);
-    const name = document.querySelector('.topbar .avatar-name');
-    if (name && state.member) name.textContent = `${state.member.firstName} ${state.member.lastName}`;
   }
 
   // Profilbild-Ausschnitt: Foto im Kreis verschieben und zoomen. Das Original bleibt unverändert,
