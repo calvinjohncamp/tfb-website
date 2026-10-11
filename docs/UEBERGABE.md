@@ -3,8 +3,8 @@
 **Zuerst lesen.** Ausführlicher Verlauf: [PROJEKTGEDAECHTNIS.md](PROJEKTGEDAECHTNIS.md).
 Diese Zusammenfassung hat Vorrang vor älteren Zwischenständen.
 
-Stand: **11.10.2026 abends – EINGEFROREN** als Git-Tag **`stand-2026-10-11-abend`**.
-Cache **tfb-kiosk-v119** (Nachträge v117–v119 siehe unten). Alles committet, 32 Tests grün. Nicht veröffentlicht.
+Stand: **11.10.2026 spät – EINGEFROREN** als Git-Tag **`stand-2026-10-11-spaet`** (inkl. Nachträge v117–v120; vorheriger Tag `stand-2026-10-11-abend`).
+Cache **tfb-kiosk-v120** (Nachträge v117–v120 siehe unten). Alles committet, 32 Tests grün. Nicht veröffentlicht.
 
 ## Eingefrorener Stand (vom Nutzer abgenommen: „das gefällt mir sehr gut alles jetzt“)
 
@@ -39,6 +39,9 @@ Cache **tfb-kiosk-v119** (Nachträge v117–v119 siehe unten). Alles committet, 
 - v119: History **ohne Fotos oben** (`STORY_PAGES.history.noHero`): Editor 1 Überschrift ·
   2 Inhalt · 3 Fotos – Galerie unter dem Text (bis 100). Früher oben abgelegte Fotos
   wandern automatisch an den Anfang der Galerie (`mergeHeroIntoGallery`).
+
+- v120: Speichern der History-Seite geprüft (Texte + Fotos, Neuladen, zweites Speichern) –
+  funktioniert; Meldung heißt jetzt „History gespeichert“. Nutzer: „Sehr schön. Bitte so einfrieren.“
 
 ## Nächster großer Job: Verabreden
 

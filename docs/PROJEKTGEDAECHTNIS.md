@@ -47,6 +47,8 @@ Neues bitte unten bei „Verlauf“ ergänzen.
   Menü oben (Namen, Ziele intern/extern, Reihenfolge, sichtbar) im Admin bearbeitbar.
 - **11.10.2026 abends eingefroren** als Tag `stand-2026-10-11-abend` (v116), vom Nutzer
   abgenommen. Nächster großer Job: **Verabreden** aufdröseln und rund machen.
+- **11.10.2026 spät erneut eingefroren** als Tag `stand-2026-10-11-spaet` (v120): zusätzlich
+  blätterbare Galerien, Club → History (Galerie bis 100 Fotos unter dem Text).
 
 ## Verbindlicher Stand 11.10.2026 – Projekt-Update
 
