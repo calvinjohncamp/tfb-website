@@ -1897,3 +1897,11 @@ h1, h2, h3, .event h3, .feature-body h2, .story-head h1, .post-body h3 { -webkit
 .tally-cell.drinks { flex-wrap: nowrap; gap: 3px 4px; padding-left: 2px; }
 .tally-cell.drinks em { font-size: .68rem; margin-left: 1px; }
 @media (max-width: 639px) { .tally-head, .paper-row.tally-row { grid-template-columns: minmax(0, 2.5fr) repeat(3, minmax(0, 1fr)); } }
+
+/* Partner-Logos um ein Drittel kleiner (Kacheln, Logos und Breite × 2/3) – auf allen Seiten */
+.pbsp-duo { max-width: 67%; gap: 8px; }
+.pbsp-tile { height: 69px; padding: 0 10px; border-radius: 11px; }
+.pbsp-tile img { max-height: 40px; }
+@media (min-width: 520px) { .pbsp-tile { height: 82px; } .pbsp-tile img { max-height: 47px; } }
+@media (min-width: 640px) { .pbsp-duo { max-width: 427px; } .pbsp-tile { height: 88px; } .pbsp-tile img { max-height: 51px; } }
+@media (min-width: 1024px) { .pbsp-duo { max-width: 507px; gap: 12px; } .pbsp-tile { height: 100px; } .pbsp-tile img { max-height: 56px; } }
