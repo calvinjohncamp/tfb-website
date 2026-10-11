@@ -3,7 +3,7 @@
 **Zuerst lesen.** Ausführlicher Verlauf: [PROJEKTGEDAECHTNIS.md](PROJEKTGEDAECHTNIS.md).
 Diese Zusammenfassung hat Vorrang vor älteren Zwischenständen.
 
-Stand: **11.10.2026 abends, Chat-Überschriften, Porträt = Unterseite**. Cache **tfb-kiosk-v111**.
+Stand: **11.10.2026 abends, Titelfotos im Seitenformat einpassen**. Cache **tfb-kiosk-v112**.
 Alles committet (Sicherungspunkt v99 `f8e6c90`, danach Stufe 1). Nicht veröffentlicht.
 
 ## Neu: Ordner heißt jetzt „9. TFB-Website“
@@ -39,6 +39,19 @@ Alles committet (Sicherungspunkt v99 `f8e6c90`, danach Stufe 1). Nicht veröffen
   sich an (Desktop: „Links siehst du jede Änderung sofort“).
 - Beim Wegschieben bleibt die Kopfzeile sichtbar („antippen zum Weiterbearbeiten“),
   Rückkehr an dieselbe Stelle – gilt auch für den Home-Themen-Editor (`togglePeek`).
+
+## Neu in v112: Titelfotos im Seitenformat einpassen
+
+- „Foto einpassen“ (Kamera-Symbol) an den Titelfotos von Unterseite und Porträt
+  öffnet im Format der Seite: 1 Foto = breit (21:9, `wide`), 2–4 = quadratisch.
+  Keine Formatwahl, Hinweis „Ausschnitt genau wie auf der Seite“; breiter Dialog.
+- Ohne eigene Titelfotos zeigt Schritt 1 das Ersatzfoto (Teamfoto bzw. Startseitenfoto)
+  mit „Foto einpassen“ (vorher nicht erreichbar → abgeschnittene Köpfe).
+- Gespeichert werden nur Mittelpunkt/Zoom; das bisherige Format des Fotos bleibt
+  (`photo-frame.js`, Option `format`), damit Teamfoto/Home-Foto an anderen Stellen ihr
+  Format behalten. Hinweis: Mittelpunkt/Zoom gelten pro Foto überall.
+- Anzeige: `.story-photo` behält 16:10 / 2:1 / 21:9, `.story-square` 1:1; das
+  eingepasste Foto füllt den Rahmen.
 
 ## Neu in v111: Chat-Überschriften, Porträt-Editor = Unterseiten-Editor
 

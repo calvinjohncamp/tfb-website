@@ -2299,3 +2299,17 @@ h1, h2, h3, .event h3, .feature-body h2, .story-head h1, .post-body h3 { -webkit
 .compose-title { width: 100%; margin: 0 0 8px; padding: 10px 12px; border: 1.5px solid var(--line); border-radius: 12px; background: #fff; font-family: var(--serif); font-size: 1.1rem; font-weight: 800; color: var(--signal); }
 .compose-title::placeholder { font-family: var(--font); font-weight: 500; font-size: .95rem; color: #A9A398; }
 [data-editor=portrait] .editor-sub { font-size: .72rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--signal); margin: 20px 0 2px; }
+
+/* Titelfotos der Unterseiten/Porträts: Format gibt die Seite vor (breit bzw. quadratisch),
+   „Foto einpassen“ liefert Mittelpunkt und Zoom – so wird nichts mehr abgeschnitten, was wichtig ist */
+.story .story-photo:not(.natural):has(> .photo-frame.active) { aspect-ratio: 16 / 10 !important; }
+@media (min-width: 640px) { .story .story-photo:not(.natural):has(> .photo-frame.active) { aspect-ratio: 2 / 1 !important; } }
+@media (min-width: 1024px) { .story .story-photo:not(.natural):has(> .photo-frame.active) { aspect-ratio: 21 / 9 !important; } }
+.story .story-photo:not(.natural) > .photo-frame.active { width: 100%; height: 100%; aspect-ratio: auto; }
+.story .story-square > .photo-frame.active { width: 100%; height: 100%; aspect-ratio: auto; }
+.frame-lock { margin: 0 0 12px; font-size: .82rem; color: var(--muted); background: #F6F3EC; border-radius: 10px; padding: 8px 12px; }
+.hero-fallback { display: flex; align-items: center; gap: 12px; margin: 4px 0 6px; }
+.hero-fallback > .ph, .hero-fallback > img, .hero-fallback > .photo-frame { width: 120px !important; height: 52px !important; aspect-ratio: auto !important; border-radius: 8px; overflow: hidden; object-fit: cover; flex: none; }
+.hero-fallback > div { display: grid; gap: 6px; justify-items: start; font-size: .82rem; }
+.photo-frame-dialog.wide { width: min(100%, 760px); }
+.frame-stage.wide { width: 100%; }

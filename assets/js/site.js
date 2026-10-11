@@ -1314,13 +1314,13 @@
       </div>`;
   }
   // Foto in einer Fotoliste des Editors: × entfernen, ‹ › verschieben, mit der Maus ziehen
-  function frameButton(ref, compact = false) {
+  function frameButton(ref, compact = false, format = '') {
     if (!ref || !ui().state.member?.isAdmin || !shownImage(ref)) return '';
-    return `<button type="button" class="${compact ? 'thumb-frame' : 'btn small'}" data-action="photo-frame" data-ref="${esc(ref)}" title="Rahmen und Bildausschnitt anpassen" aria-label="Rahmen und Bildausschnitt anpassen">${ui().icon.camera}${compact ? '' : ' Foto einpassen'}</button>`;
+    return `<button type="button" class="${compact ? 'thumb-frame' : 'btn small'}" data-action="photo-frame" data-ref="${esc(ref)}" ${format ? `data-format="${format}"` : ''} title="Bildausschnitt anpassen (ziehen, zoomen)" aria-label="Bildausschnitt anpassen">${ui().icon.camera}${compact ? '' : ' Foto einpassen'}</button>`;
   }
-  function thumbEdit(ref, list, i, n, removeAttr) {
+  function thumbEdit(ref, list, i, n, removeAttr, format = '') {
     return `<div class="gallery-thumb sortable" draggable="true" data-list="${list}" data-index="${i}">
-      ${picture(ref, ref)}${frameButton(ref, true)}
+      ${picture(ref, ref)}${frameButton(ref, true, format)}
       <span class="thumb-grip" aria-hidden="true" title="Ziehen zum Sortieren">⠿</span>
       <button type="button" ${removeAttr}="${esc(ref)}" aria-label="Foto entfernen">×</button>
       <span class="thumb-move">
@@ -1422,9 +1422,10 @@
             <p class="ed-hint">Die <b>Unterseite</b> öffnet sich über „Mehr erfahren“. Hier bearbeitest du sie von oben nach unten – so wie sie erscheint. Überschrift, Unterzeile und Link kommen vom Reiter „Startseite“.</p>
             <h3 class="editor-sub">1 · Fotos oben (1 bis 4)</h3>
             <div class="field"><div class="gallery-edit">
-              ${ownHero.map((ref, i) => thumbEdit(ref, 'hero', i, ownHero.length, 'data-hero-remove')).join('')}
+              ${ownHero.map((ref, i) => thumbEdit(ref, 'hero', i, ownHero.length, 'data-hero-remove', ownHero.length >= 2 ? 'square' : heroMode === 'original' ? '' : 'wide')).join('')}
               ${ownHero.length < 4 ? `<label class="gallery-add">${ui().icon.plus}<span>Foto</span><input type="file" accept="image/*" multiple data-hero-input hidden></label>` : ''}
             </div></div>
+            ${!ownHero.length && draft.image && shownImage(draft.image) ? `<div class="hero-fallback">${picture(draft.image, draft.id)}<div><b>Oben erscheint das Foto der Startseite.</b>${frameButton(draft.image, false, 'wide')}</div></div>` : ''}
             <p class="muted small ed-note">${!ownHero.length ? 'Ohne eigene Fotos erscheint oben das Foto der Startseite.' : ownHero.length === 1 ? (heroMode === 'original' ? 'Ein Foto im Originalformat.' : 'Ein Foto, breit über der Seite.') : `${ownHero.length} Fotos als Quadrate nebeneinander.`}</p>
             <h3 class="editor-sub">2 · Inhalt</h3>
             <p class="muted small ed-note">Die Seite besteht aus Abschnitten: <b>Text</b>, <b>Überschrift</b> (rot) und <b>Zitat</b> – immer in derselben Gestaltung. Mit den Pfeilen verschieben, unten ergänzen.</p>`
@@ -1888,9 +1889,10 @@
           <p class="ed-hint">${esc(found ? teamName(found.team) : key)} – so sieht es jeder Besucher. ${wideScreen() ? 'Links siehst du jede Änderung sofort.' : 'Mit „Vorschau ansehen“ siehst du die Seite.'}</p>
           <h3 class="editor-sub">1 · Fotos oben (bis zu 4)</h3>
           <div class="field"><div class="gallery-edit">
-            ${heroImgs.map((ref, i) => thumbEdit(ref, 'hero', i, heroImgs.length, 'data-premove')).join('')}
+            ${heroImgs.map((ref, i) => thumbEdit(ref, 'hero', i, heroImgs.length, 'data-premove', heroImgs.length >= 2 ? 'square' : mode === 'original' ? '' : 'wide')).join('')}
             ${heroImgs.length < 4 ? `<label class="gallery-add">${icon.plus}<span>Foto</span><input type="file" accept="image/*" multiple data-pphoto="hero" hidden></label>` : ''}
           </div></div>
+          ${!heroImgs.length && teamContent(key).photo && shownImage(teamContent(key).photo) ? `<div class="hero-fallback">${picture(teamContent(key).photo, key)}<div><b>Oben erscheint das Teamfoto.</b>${frameButton(teamContent(key).photo, false, 'wide')}</div></div>` : ''}
           <p class="muted small ed-note">${!heroImgs.length ? 'Ohne eigene Fotos erscheint oben das Teamfoto.' : heroImgs.length === 1 ? (mode === 'original' ? 'Ein Foto im Originalformat.' : 'Ein Foto, breit über der Seite.') : `${heroImgs.length} Fotos als Quadrate nebeneinander.`}</p>
           <h3 class="editor-sub">2 · Überschrift</h3>
           ${field('Kleine Zeile darüber', 'kicker', draft.kicker, { placeholder: 'z. B. Mannschaftsporträt · Saison 2026' })}
@@ -2189,7 +2191,7 @@
           if (img.dataset.photoRef === ref) (img.closest('.photo-frame') || img).outerHTML = picture(ref, ref, img.alt);
         });
         ui().toast('Fotoausschnitt gespeichert', true);
-      }, el);
+      }, el, { format: el.dataset.format || '' });
     },
     'chat-text-edit': editChatText,
     'membership-fees': () => {

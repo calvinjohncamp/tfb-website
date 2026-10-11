@@ -1,6 +1,6 @@
 // Non-destructive photo framing; no canvas export or file:// image access required.
 (function () {
-  const ratios = { portrait: 3 / 4, landscape: 3 / 2, square: 1 };
+  const ratios = { portrait: 3 / 4, landscape: 3 / 2, square: 1, wide: 21 / 9 };   // wide = Titelfoto der Unterseiten
   const clamp = (n, min, max, fallback) => Number.isFinite(Number(n)) ? Math.max(min, Math.min(max, Number(n))) : fallback;
   const normalize = (value) => value && Object.hasOwn(ratios, value.format) ? {
     format: value.format, zoom: clamp(value.zoom, 1, 4, 1),
@@ -12,16 +12,22 @@
     return { width, height, excessX: iw * scale - width, excessY: ih * scale - height };
   }
   const style = (frame) => `--photo-ratio:${ratios[frame.format]};--photo-zoom:${frame.zoom};--photo-x:${frame.x * 100}%;--photo-y:${frame.y * 100}%`;
-  function open(src, initial, save, trigger) {
+  // opts.format: Format fest vorgeben (z. B. Titelfoto: so breit bzw. quadratisch wie auf der Seite)
+  function open(src, initial, save, trigger, opts = {}) {
+    const lock = Object.hasOwn(ratios, opts.format || '') ? opts.format : null;
     const ui = TFB.ui;
     let frame = normalize(initial) || { format: 'landscape', zoom: 1, x: .5, y: .5 };
+    // Bei festem Format nur Mittelpunkt und Zoom übernehmen – das gespeicherte Format (für andere Stellen) bleibt
+    let baseFormat = normalize(initial)?.format || null;
+    if (lock) frame = { ...frame, format: lock };
     let loaded = false, drag = null, busy = false;
     const root = document.createElement('div');
     root.className = 'photo-frame-overlay';
-    root.innerHTML = `<section class="photo-frame-dialog" role="dialog" aria-modal="true" aria-labelledby="photo-frame-title">
+    root.innerHTML = `<section class="photo-frame-dialog ${lock === 'wide' ? 'wide' : ''}" role="dialog" aria-modal="true" aria-labelledby="photo-frame-title">
       <header><h2 id="photo-frame-title">Foto einpassen</h2><button type="button" data-frame-close aria-label="Schließen">${ui.icon.close}</button></header>
-      <div class="seg frame-formats" aria-label="Rahmenformat">${[['portrait','Hochformat'],['landscape','Querformat'],['square','Quadratisch']].map(([v,l]) => `<button type="button" data-frame-format="${v}" aria-pressed="${v === frame.format}">${l}</button>`).join('')}</div>
-      <div class="frame-stage"><div class="photo-frame active" data-frame-stage><img src="${ui.esc(src)}" alt="Bildausschnitt" draggable="false"></div></div>
+      ${lock ? `<p class="frame-lock">Ausschnitt genau wie auf der Seite (${lock === 'wide' ? 'breites Titelfoto' : lock === 'square' ? 'quadratisch' : lock === 'portrait' ? 'Hochformat' : 'Querformat'}). Foto ziehen und zoomen.</p>`
+        : `<div class="seg frame-formats" aria-label="Rahmenformat">${[['portrait','Hochformat'],['landscape','Querformat'],['square','Quadratisch']].map(([v,l]) => `<button type="button" data-frame-format="${v}" aria-pressed="${v === frame.format}">${l}</button>`).join('')}</div>`}
+      <div class="frame-stage ${lock === 'wide' ? 'wide' : ''}"><div class="photo-frame active" data-frame-stage><img src="${ui.esc(src)}" alt="Bildausschnitt" draggable="false"></div></div>
       <label class="field"><span>Zoom</span><input type="range" min="1" max="4" step=".01" value="${frame.zoom}" data-frame-zoom></label>
       <div class="field-row"><label class="field"><span>Horizontal</span><input type="range" min="0" max="1" step=".001" value="${frame.x}" data-frame-x></label><label class="field"><span>Vertikal</span><input type="range" min="0" max="1" step=".001" value="${frame.y}" data-frame-y></label></div>
       <p class="form-error" role="alert"></p>
@@ -74,7 +80,7 @@
       if (e.target === root || button?.hasAttribute('data-frame-close')) close();
       if (button?.dataset.frameFormat) { frame.format = button.dataset.frameFormat; drag = null; draw(); }
       if (button?.hasAttribute('data-frame-original')) persist(null);
-      if (button?.hasAttribute('data-frame-save') && loaded) persist(normalize(frame));
+      if (button?.hasAttribute('data-frame-save') && loaded) persist(normalize(lock ? { ...frame, format: baseFormat || 'landscape' } : frame));
     });
     root.addEventListener('input', e => {
       for (const k of ['zoom','x','y']) if (e.target.hasAttribute(`data-frame-${k}`)) { frame[k] = Number(e.target.value); draw(); }
@@ -98,7 +104,8 @@
       loaded = true;
       if (!normalize(initial)) {
         const ratio = image.naturalWidth / image.naturalHeight;
-        frame.format = ratio < .95 ? 'portrait' : ratio > 1.05 ? 'landscape' : 'square';
+        const guess = ratio < .95 ? 'portrait' : ratio > 1.05 ? 'landscape' : 'square';
+        if (lock) baseFormat = guess; else frame.format = guess;
         draw();
       }
       root.querySelector('[data-frame-save]').disabled = false;
