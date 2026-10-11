@@ -1949,7 +1949,7 @@
   function storyPageView(key) {
     const sp = STORY_PAGES[key];
     const { icon, state, partnerSlot } = ui();
-    const p = portraitOf(key);
+    const p = sp.noHero ? mergeHeroIntoGallery(portraitOf(key)) : portraitOf(key);
     const admin = Boolean(state.member && state.member.isAdmin);
     if (!portraitFilled(p) && !portraitDraft) {
       return `${ui().viewHead(esc(sp.label), 'Noch gibt es hier keine Inhalte.', false)}
@@ -1998,9 +1998,14 @@
 
   // Eigene Magazin-Seiten außerhalb der Mannschaften (gleicher Editor wie das Mannschaftsporträt)
   const STORY_PAGES = {
-    history: { route: '#club/history', label: 'History', kicker: 'Clubgeschichte', back: '#club', backLabel: 'Zurück zum Club', partner: 'verein',
+    history: { route: '#club/history', label: 'History', kicker: 'Clubgeschichte', noHero: true, back: '#club', backLabel: 'Zurück zum Club', partner: 'verein',
       load: () => (site.stories && site.stories.history) || {},
       save: (d) => ui().api.saveSite({ ...JSON.parse(JSON.stringify(site)), stories: { ...(site.stories || {}), history: d } }) },
+  };
+  // Seiten ohne Titelfotos: früher oben abgelegte Fotos wandern an den Anfang der Galerie
+  const mergeHeroIntoGallery = (p) => {
+    const hero = (p.heroImages || []).filter((r) => !(p.images || []).includes(r));
+    return hero.length ? { ...p, images: [...hero, ...(p.images || [])].slice(0, 100), heroImages: [], heroSource: 'same' } : { ...p, heroImages: [], heroSource: 'same' };
   };
   function openPortraitEditor(key) {
     const sp = STORY_PAGES[key];
@@ -2013,7 +2018,7 @@
     const { openSheet, closeSheet, api, toast, icon } = ui();
     const found = sp ? null : findTeam(key);
     const pageName = sp ? sp.label : found ? teamName(found.team) : key;
-    const draft = JSON.parse(JSON.stringify(sp ? sp.load() : (teamContent(key).portrait || {})));
+    const draft = JSON.parse(JSON.stringify(sp ? (sp.noHero ? mergeHeroIntoGallery(sp.load()) : sp.load()) : (teamContent(key).portrait || {})));
     initSections(draft);
     portraitDraft = { key, data: draft };
     let timer = null;
@@ -2025,29 +2030,30 @@
       const heroImgs = (draft.heroImages || []).filter(shownImage);
       const coll = (draft.images || []).filter(shownImage);
       const mode = draft.heroMode || 'wide';
+      const n0 = sp && sp.noHero ? 0 : 1;   // Schrittnummern ohne „Fotos oben“
       const keep = document.querySelector('#sheet-root .sheet') ? document.querySelector('#sheet-root .sheet').scrollTop : 0;
       openSheet(`
         <form class="editor editor-live" data-editor="portrait" novalidate>
           <h2>${sp ? `${esc(sp.label)} bearbeiten` : 'Mannschaftsporträt'}</h2>
           <p class="ed-hint">${esc(pageName)} – so sieht es jeder Besucher. ${wideScreen() ? 'Links siehst du jede Änderung sofort.' : 'Mit „Vorschau ansehen“ siehst du die Seite.'}</p>
-          <h3 class="editor-sub">1 · Fotos oben (bis zu 4)</h3>
+          ${sp && sp.noHero ? '' : `<h3 class="editor-sub">1 · Fotos oben (bis zu 4)</h3>
           <div class="field"><div class="gallery-edit">
             ${heroImgs.map((ref, i) => thumbEdit(ref, 'hero', i, heroImgs.length, 'data-premove', heroImgs.length >= 2 ? 'square' : mode === 'original' ? '' : 'wide')).join('')}
             ${heroImgs.length < 4 ? `<label class="gallery-add">${icon.plus}<span>Foto</span><input type="file" accept="image/*" multiple data-pphoto="hero" hidden></label>` : ''}
           </div></div>
           ${!heroImgs.length && teamContent(key).photo && shownImage(teamContent(key).photo) ? `<div class="hero-fallback">${picture(teamContent(key).photo, key)}<div><b>Oben erscheint das Teamfoto.</b>${frameButton(teamContent(key).photo, false, 'wide')}</div></div>` : ''}
-          <p class="muted small ed-note">${!heroImgs.length ? 'Ohne eigene Fotos erscheint oben das Teamfoto.' : heroImgs.length === 1 ? (mode === 'original' ? 'Ein Foto im Originalformat.' : 'Ein Foto, breit über der Seite.') : `${heroImgs.length} Fotos als Quadrate nebeneinander.`}</p>
-          <h3 class="editor-sub">2 · Überschrift</h3>
+          <p class="muted small ed-note">${!heroImgs.length ? 'Ohne eigene Fotos erscheint oben das Teamfoto.' : heroImgs.length === 1 ? (mode === 'original' ? 'Ein Foto im Originalformat.' : 'Ein Foto, breit über der Seite.') : `${heroImgs.length} Fotos als Quadrate nebeneinander.`}</p>`}
+          <h3 class="editor-sub">${n0 + 1} · Überschrift</h3>
           ${field('Kleine Zeile darüber', 'kicker', draft.kicker, { placeholder: sp ? `z. B. ${sp.kicker}` : 'z. B. Mannschaftsporträt · Saison 2026' })}
           ${field('Überschrift', 'title', draft.title, { placeholder: pageName })}
           ${field('Unterzeile darunter', 'subtitle', draft.subtitle, { placeholder: 'z. B. Aufsteiger, Freunde, Kölschliebhaber' })}
-          <h3 class="editor-sub">3 · Inhalt</h3>
+          <h3 class="editor-sub">${n0 + 2} · Inhalt</h3>
           <p class="muted small ed-note">Abschnitte: <b>Text</b>, <b>Überschrift</b> (rot) und <b>Zitat</b> – immer in derselben Gestaltung. Mit den Pfeilen verschieben, unten ergänzen.</p>
           ${sectionsEditor(draft.sections)}
-          <h3 class="editor-sub">4 · Fotos unten (Kollage, freiwillig)</h3>
+          <h3 class="editor-sub">${n0 + 3} · ${sp && sp.noHero ? `Fotos – Galerie unter dem Text (${coll.length} von 100)` : 'Fotos unten (Kollage, freiwillig)'}</h3>
           <div class="field"><div class="gallery-edit">
             ${coll.map((ref, i) => thumbEdit(ref, 'more', i, coll.length, 'data-premove')).join('')}
-            <label class="gallery-add">${icon.plus}<span>Fotos</span><input type="file" accept="image/*" multiple data-pphoto="more" hidden></label>
+            ${coll.length < 100 ? `<label class="gallery-add">${icon.plus}<span>Fotos</span><input type="file" accept="image/*" multiple data-pphoto="more" hidden></label>` : ''}
           </div></div>
           <details class="ed-more" data-pmore ${moreOpen ? 'open' : ''}>
             <summary>Mehr Gestaltung <small>freiwillig – ohne Änderung sieht alles gut aus</small></summary>
@@ -2108,6 +2114,7 @@
         try {
           for (const file of [...e.target.files]) {
             if (which === 'hero' && (draft.heroImages || []).length >= 4) break;
+            if (which === 'more' && (draft.images || []).length >= 100) { toast('Höchstens 100 Fotos in der Galerie.'); break; }
             const img = await ui().loadImage(file);
             const url = ui().largeImage(img, 1800);
             const ref = await api.putMemberImage(url);

@@ -4,7 +4,7 @@
 Diese Zusammenfassung hat Vorrang vor älteren Zwischenständen.
 
 Stand: **11.10.2026 abends – EINGEFROREN** als Git-Tag **`stand-2026-10-11-abend`**.
-Cache **tfb-kiosk-v118** (Nachträge v117/v118 siehe unten). Alles committet, 32 Tests grün. Nicht veröffentlicht.
+Cache **tfb-kiosk-v119** (Nachträge v117–v119 siehe unten). Alles committet, 32 Tests grün. Nicht veröffentlicht.
 
 ## Eingefrorener Stand (vom Nutzer abgenommen: „das gefällt mir sehr gut alles jetzt“)
 
@@ -35,6 +35,10 @@ Cache **tfb-kiosk-v118** (Nachträge v117/v118 siehe unten). Alles committet, 32
   blätterbar). Ablage `site.stories.history`; Konfiguration `STORY_PAGES` in site.js –
   weitere solche Seiten lassen sich dort ergänzen. Kurztext im Club-Admin, Unterseite über
   „+ History anlegen“ bzw. Stift (nur Admins).
+
+- v119: History **ohne Fotos oben** (`STORY_PAGES.history.noHero`): Editor 1 Überschrift ·
+  2 Inhalt · 3 Fotos – Galerie unter dem Text (bis 100). Früher oben abgelegte Fotos
+  wandern automatisch an den Anfang der Galerie (`mergeHeroIntoGallery`).
 
 ## Nächster großer Job: Verabreden
 
