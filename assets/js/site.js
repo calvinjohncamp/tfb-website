@@ -2134,7 +2134,7 @@
           portraitDraft = null;
           endPortraitLive();
           closeSheet();
-          toast('Porträt gespeichert', true);
+          toast(sp ? `${sp.label} gespeichert` : 'Porträt gespeichert', true);
           ui().renderView();
         } catch (err) { form.querySelector('.form-error').textContent = err.message; }
       });
