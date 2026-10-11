@@ -255,7 +255,9 @@
             </div>
           </article>`;
       case 'image':
-        return `<figure class="block-image card">${picture(b.image, b.id, b.caption)}${b.caption ? `<figcaption>${esc(b.caption)}</figcaption>` : ''}</figure>`;
+        return b.original
+          ? `<figure class="block-image natural ${alignClass(b.align)}">${picture(b.image, b.id, b.caption)}${b.caption ? `<figcaption>${esc(b.caption)}</figcaption>` : ''}</figure>`
+          : `<figure class="block-image card">${picture(b.image, b.id, b.caption)}${b.caption ? `<figcaption>${esc(b.caption)}</figcaption>` : ''}</figure>`;
       case 'gallery': {
         const list = (b.images || []).filter((ref) => images[ref]);
         if (!list.length && editing !== page) return '';
@@ -381,11 +383,12 @@
   const shownImage = (ref) => ref && (images[ref] || /^assets\//.test(ref) || /^ph:/.test(ref));
 
   // Fotokollage: wechselnde Kachelgrößen, damit es nach Magazin aussieht – Antippen zeigt das Foto groß.
-  function collage(list, blockId, original = false) {
+  const alignClass = (a) => `align-${a === 'left' || a === 'right' ? a : 'center'}`;
+  function collage(list, blockId, original = false, align = 'center') {
     const imgs = list.filter(shownImage);
     if (!imgs.length) return '';
     return `
-      <div class="collage ${original ? 'natural' : ''} collage-${Math.min(imgs.length, 5)}">
+      <div class="collage ${original ? `natural ${alignClass(align)}` : ''} collage-${Math.min(imgs.length, 5)}">
         ${imgs.map((ref, i) => `
           <button type="button" class="collage-item" data-action="collage-open" data-block="${esc(blockId)}" data-index="${i}" aria-label="Foto ${i + 1} groß ansehen">
             ${picture(ref, ref, '')}
@@ -413,7 +416,7 @@
     if (mode === 'squares' && heroRefs.length >= 2) {
       heroHtml = `<div class="story-squares n${heroRefs.length}">${heroRefs.map((r, i) => `<button type="button" class="story-square" data-action="hero-open" data-block="${esc(b.id)}" data-index="${i}" aria-label="Foto groß ansehen">${picture(r, r)}</button>`).join('')}</div>`;
     } else if (mode === 'original') {
-      heroHtml = `<div class="story-photo natural">${picture(heroRefs[0], seed, b.title)}</div>`;
+      heroHtml = `<div class="story-photo natural ${alignClass(more.heroAlign)}">${picture(heroRefs[0], seed, b.title)}</div>`;
     } else if (!sideImage) {
       heroHtml = `<div class="story-photo">${picture(heroRefs[0], seed, b.title)}</div>`;
     }
@@ -438,7 +441,7 @@
             ${parts.length > cut ? `<div class="story-text ${size}">${paragraphs(parts.slice(cut).join('\n\n'))}</div>` : ''}
           </div>
         </div>
-        ${collage(more.images || [], b.id, Boolean(more.original))}
+        ${collage(more.images || [], b.id, Boolean(more.original), more.collageAlign)}
         <div class="story-foot">
           <a class="more-link back" href="#home"><span aria-hidden="true">←</span> Zur Startseite</a>
         </div>
@@ -695,12 +698,16 @@
                 ${heroImgs.length < 4 ? `<label class="gallery-add">${ui().icon.plus}<span>Foto</span><input type="file" accept="image/*" multiple data-hero-input hidden></label>` : ''}
               </div></div>` : ''}
             <div class="field"><span>Darstellung</span>${seg('heromode', heroMode, [['wide', 'Breit'], ['original', 'Originalformat'], ['squares', '2–4 Quadrate nebeneinander', heroSrc !== 'own' || heroImgs.length < 2]])}</div>
+            ${heroMode === 'original' ? `<div class="field"><span>Ausrichtung</span><div class="seg align-seg">${[['left', 'Links'], ['center', 'Mitte'], ['right', 'Rechts']].map(([v, l]) =>
+                `<button type="button" class="${(more.heroAlign || 'center') === v ? 'on' : ''}" data-align="hero:${v}">${l}</button>`).join('')}</div></div>` : ''}
             <h3 class="editor-sub">Texte</h3>`
             + field('Ausführlicher Text', 'moreText', more.text, { area: true, rich: true, rows: 10, placeholder: 'Beliebig lang – Wörter markieren und oben gestalten' })
             + field('Zitat (freiwillig)', 'moreQuote', more.quote, { placeholder: 'z. B. „Nach zehn Minuten hatte jeder ein Grinsen im Gesicht.“' })
             + field('Zitat von', 'moreQuoteBy', more.quoteBy, { placeholder: 'z. B. Jan, Herren 40' })
             + `<h3 class="editor-sub">Fotokollage unten</h3>
-               <label class="meet-check"><input type="checkbox" name="moreOriginal" ${more.original ? 'checked' : ''}><span>Fotos im Originalformat zeigen (nicht zuschneiden – 4:3, 1:1, 16:9 …)</span></label>
+               <label class="meet-check"><input type="checkbox" name="moreOriginal" data-rerender ${more.original ? 'checked' : ''}><span>Fotos im Originalformat zeigen (nicht zuschneiden – 4:3, 1:1, 16:9 …)</span></label>
+               ${more.original ? `<div class="field"><span>Ausrichtung</span><div class="seg align-seg">${[['left', 'Links'], ['center', 'Mitte'], ['right', 'Rechts']].map(([v, l]) =>
+                `<button type="button" class="${(more.collageAlign || 'center') === v ? 'on' : ''}" data-align="collage:${v}">${l}</button>`).join('')}</div></div>` : ''}
                <div class="field"><div class="gallery-edit">
                   ${(() => { const l = (more.images || []).filter(shownImage); return l.map((ref, i) => thumbEdit(ref, 'more', i, l.length, 'data-more-remove')).join(''); })()}
                   <label class="gallery-add">${ui().icon.plus}<span>Fotos</span><input type="file" accept="image/*" multiple data-more-input hidden></label>
@@ -719,7 +726,10 @@
           + field('Titel', 'title', draft.title) + field('Ort', 'place', draft.place) + field('Kurzinfo', 'text', draft.text, { area: true, rows: 3 });
         case 'post': return imageField(draft.image, draft.id) + field('Datum', 'date', draft.date, { type: 'date' })
           + field('Überschrift', 'title', draft.title) + field('Text', 'text', draft.text, { area: true, rich: true, rows: 7, placeholder: 'Text schreiben – Wörter markieren und oben gestalten' });
-        case 'image': return imageField(draft.image, draft.id) + field('Bildunterschrift', 'caption', draft.caption);
+        case 'image': return imageField(draft.image, draft.id) + field('Bildunterschrift', 'caption', draft.caption)
+          + `<label class="meet-check"><input type="checkbox" name="imgOriginal" data-rerender ${draft.original ? 'checked' : ''}><span>Originalformat (nicht zuschneiden)</span></label>`
+          + (draft.original ? `<div class="field"><span>Ausrichtung</span><div class="seg align-seg">${[['left', 'Links'], ['center', 'Mitte'], ['right', 'Rechts']].map(([v, l]) =>
+                `<button type="button" class="${(draft.align || 'center') === v ? 'on' : ''}" data-align="image:${v}">${l}</button>`).join('')}</div></div>` : '');
         case 'gallery': return field('Überschrift', 'title', draft.title) + `
           <div class="field"><span>Fotos</span>
             <div class="gallery-edit">
@@ -796,6 +806,15 @@
           closeSheet();
           commit('Baustein gelöscht');
         }
+        const al = e.target.closest('[data-align]');
+        if (al) {
+          collect(form);
+          const [where, val] = al.dataset.align.split(':');
+          if (where === 'image') draft.align = val;
+          else draft.more = { ...(draft.more || {}), [where === 'hero' ? 'heroAlign' : 'collageAlign']: val };
+          render();
+          return;
+        }
         const mv = e.target.closest('[data-move-list]');
         if (mv) { collect(form); moveInList(mv.dataset.moveList, Number(mv.dataset.moveIndex), Number(mv.dataset.moveIndex) + Number(mv.dataset.moveDir)); render(); return; }
         const tabBtn = e.target.closest('[data-edtab]');
@@ -839,6 +858,7 @@
       });
       form.addEventListener('change', async (e) => {
         const input = e.target;
+        if (input.matches('[data-rerender]')) { collect(form); render(); return; }
         if (!input.files || !input.files.length) return;
         collect(form);
         try {
@@ -875,6 +895,7 @@
     const collect = (form) => {
       const f = form.elements;
       ['title', 'text', 'date', 'time', 'place', 'caption', 'label', 'url', 'kicker', 'subtitle'].forEach((k) => { if (f[k]) draft[k] = f[k].value.trim(); });
+      if (f.imgOriginal) draft.original = f.imgOriginal.checked;
       if (f.moreText) draft.more = { ...(draft.more || {}), text: f.moreText.value.trim(), quote: f.moreQuote.value.trim(), quoteBy: f.moreQuoteBy.value.trim(), original: Boolean(f.moreOriginal && f.moreOriginal.checked) };
       if (f.linkUrl) {
         const url = f.linkApp ? f.linkApp.value : f.linkUrl.value.trim();

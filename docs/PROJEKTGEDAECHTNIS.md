@@ -388,3 +388,7 @@ Monatsabschluss.
 - **11.10.2026** – Fotos im Editor **sortierbar**: Titelfotos der Unterseite, Fotokollage und
   Galerie-Bausteine – Pfeile ‹ › auf jedem Vorschaubild oder per Maus ziehen (Griff ⠿);
   `thumbEdit()` / `moveInList()` in site.js. Live-Vorschau zeigt die neue Reihenfolge sofort.
+- **11.10.2026** – **Ausrichtung von Fotos im Originalformat** (Links/Mitte/Rechts, Standard Mitte):
+  Titelbild der Unterseite (`more.heroAlign`), Fotokollage (`more.collageAlign`; Fotos max. 80 %
+  Bildschirmhöhe) und Foto-Baustein (neu `original` + `align`). Auswahl erscheint im Editor nur,
+  wenn „Originalformat“ aktiv ist – bei zugeschnittenen Fotos füllt das Bild ohnehin die Breite.
