@@ -447,3 +447,12 @@ Monatsabschluss.
     neben „Schreib was“; kompakte Karten (Desktop 4 Spalten, Handy 2), Suche nach Name/Stichwort,
     Bereich (Clubgeflüster / Insider News / einzelne Mannschaft), Zeitraum (7/30 Tage), nur mit Fotos;
     Karte antippen öffnet den Beitrag.
+- **11.10.2026** – Feinschliff 3: roter Strich unter Zwischenüberschriften mit mehr Luft
+  (12 px Strich, 20 px darunter). **Einheitliche Typografie** in News · Clubgeflüster · Save the Date
+  (Fließtext .95rem/1.55, Kartenüberschriften 1.15rem Auszeichnungsschrift, 16 px Kartenabstand).
+  Automatische Silbentrennung wieder aus. Clubgeflüster-Kopf: Überschrift volle Breite, darunter
+  Hinweis links + „Schreib was“ und Pfeil rechts. Beiträge mit **Datum und Uhrzeit** („11. Okt. · 08:38“).
+  Bearbeiten/Löschen nur Verfasser; Admin nur „Ausblenden (Admin)“.
+  **Profilbild-Ausschnitt** (`openAvatarCropper` in app.js): verschieben + zoomen im Kreis, gespeichert
+  wird nur das kleine Bild (320 px), Original bleibt; „Ausschnitt anpassen“ in der Accountkarte.
+  **Kopf:** Profilbild oben bündig mit „TFB“, Name dezent rechtsbündig darunter.

@@ -302,9 +302,13 @@
           <a class="brand" href="#home" aria-label="${esc(cfg.clubName)} – Startseite">
             <span class="tfb-logo-split header-logo" role="img" aria-label="${esc(cfg.clubName)}"><span class="tfb-logo-noball"></span><span class="tfb-logo-ball"></span></span>
           </a>
-          ${state.member
-            ? `<button class="avatar" type="button" data-action="profile" aria-label="Profil">${avatarFace(state.member)}</button>`
-            : `<button class="avatar guest" type="button" data-action="login" aria-label="Anmelden">${icon.user}</button>`}
+          <div class="avatar-wrap">
+            ${state.member
+              ? `<button class="avatar" type="button" data-action="profile" aria-label="Profil">${avatarFace(state.member)}</button>
+                 <span class="avatar-name">${esc(state.member.firstName)} ${esc(state.member.lastName)}</span>`
+              : `<button class="avatar guest" type="button" data-action="login" aria-label="Anmelden">${icon.user}</button>
+                 <span class="avatar-name">Anmelden</span>`}
+          </div>
         </div>
         <nav class="topnav" aria-label="Bereiche">
           ${tabs.map(([id, label, ic, url]) => url
@@ -938,7 +942,7 @@
             <span class="acct-photo-preview">${avatarFace(m)}</span>
             <div class="acct-photo-actions">
               <label class="btn small">Bild auswählen<input type="file" accept="image/*" data-avatar-input hidden></label>
-              ${m.avatar ? '<button type="button" class="btn small ghost-danger" data-action="avatar-remove">Entfernen</button>' : ''}
+              ${m.avatar ? '<button type="button" class="btn small" data-action="avatar-crop">Ausschnitt anpassen</button><button type="button" class="btn small ghost-danger" data-action="avatar-remove">Entfernen</button>' : ''}
             </div>
             <p class="acct-hint">Wird rund angezeigt und automatisch verkleinert. Antippen zeigt es groß.</p>
           </div>
@@ -1102,6 +1106,57 @@
   function refreshAvatars() {
     const btn = document.querySelector('.topbar .avatar');
     if (btn) btn.innerHTML = avatarFace(state.member);
+    const name = document.querySelector('.topbar .avatar-name');
+    if (name && state.member) name.textContent = `${state.member.firstName} ${state.member.lastName}`;
+  }
+
+  // Profilbild-Ausschnitt: Foto im Kreis verschieben und zoomen. Das Original bleibt unverändert,
+  // gespeichert wird nur das kleine runde Bild (320 px) als Ausschnitt.
+  function openAvatarCropper(src, onSave) {
+    const V = 260;
+    const img = new Image();
+    img.onload = () => {
+      const base = Math.max(V / img.naturalWidth, V / img.naturalHeight);
+      let zoom = 1, x = 0, y = 0;
+      openSheet(`
+        <div class="editor cropper">
+          <h2>Ausschnitt wählen</h2>
+          <p class="muted small">Foto mit dem Finger oder der Maus verschieben, mit dem Regler vergrößern. Das Originalfoto bleibt unverändert.</p>
+          <div class="crop-view" data-crop><img class="crop-img" src="${src}" alt="" draggable="false"></div>
+          <label class="crop-zoom"><span>−</span><input type="range" min="1" max="4" step="0.01" value="1" data-crop-zoom aria-label="Zoom"><span>+</span></label>
+          <button type="button" class="btn primary block" data-crop-save>Übernehmen</button>
+          <button type="button" class="link center" data-action="close-sheet">Abbrechen</button>
+        </div>`);
+      const view = document.querySelector('[data-crop]');
+      const el = view.querySelector('img');
+      const size = () => ({ w: img.naturalWidth * base * zoom, h: img.naturalHeight * base * zoom });
+      const clamp = () => {
+        const { w, h } = size();
+        x = Math.max(-(w - V) / 2, Math.min((w - V) / 2, x));
+        y = Math.max(-(h - V) / 2, Math.min((h - V) / 2, y));
+      };
+      const draw = () => {
+        clamp();
+        const { w, h } = size();
+        Object.assign(el.style, { width: `${w}px`, height: `${h}px`, left: `${V / 2 - w / 2 + x}px`, top: `${V / 2 - h / 2 + y}px` });
+      };
+      let drag = null;
+      view.addEventListener('pointerdown', (e) => { drag = { sx: e.clientX, sy: e.clientY, x, y }; view.setPointerCapture(e.pointerId); });
+      view.addEventListener('pointermove', (e) => { if (!drag) return; x = drag.x + e.clientX - drag.sx; y = drag.y + e.clientY - drag.sy; draw(); });
+      view.addEventListener('pointerup', () => { drag = null; });
+      view.addEventListener('wheel', (e) => { e.preventDefault(); zoom = Math.max(1, Math.min(4, zoom - e.deltaY * 0.002)); document.querySelector('[data-crop-zoom]').value = zoom; draw(); }, { passive: false });
+      document.querySelector('[data-crop-zoom]').addEventListener('input', (e) => { zoom = Number(e.target.value); draw(); });
+      document.querySelector('[data-crop-save]').addEventListener('click', async () => {
+        const out = 320, k = out / V;
+        const { w, h } = size();
+        const c = document.createElement('canvas');
+        c.width = out; c.height = out;
+        c.getContext('2d').drawImage(img, (V / 2 - w / 2 + x) * k, (V / 2 - h / 2 + y) * k, w * k, h * k);
+        try { await onSave(c.toDataURL('image/jpeg', 0.88)); } catch (err) { toast(err.message); }
+      });
+      draw();
+    };
+    img.src = src;
   }
 
   // Freies Farbfeld: live ausprobieren beim Ziehen, belegen beim Bestätigen.
@@ -1136,11 +1191,13 @@
     if (e.target.matches('[data-avatar-input]') && e.target.files[0]) {
       try {
         const file = e.target.files[0];
-        const [small, img] = await Promise.all([shrinkImage(file), loadImage(file)]);
-        state.member = await api.setAvatar(small, largeImage(img));
-        refreshAvatars();
-        openProfile();
-        toast('Profilbild gespeichert');
+        const large = largeImage(await loadImage(file));
+        openAvatarCropper(large, async (small) => {
+          state.member = await api.setAvatar(small, large);
+          refreshAvatars();
+          openProfile();
+          toast('Profilbild gespeichert', true);
+        });
       } catch (err) { toast(err.message); }
       return;
     }
@@ -1228,6 +1285,14 @@
     else if (action === 'section-move') moveSection(el.dataset.id, Number(el.dataset.dir));
     else if (action === 'section-edit') openSectionEditor(el.dataset.id);
     else if (action === 'section-new') { openSectionEditor(null);
+    } else if (action === 'avatar-crop') {
+      const large = state.member.avatarLarge || state.member.avatar;
+      openAvatarCropper(large, async (small) => {
+        state.member = await api.setAvatar(small, large);
+        refreshAvatars();
+        openProfile();
+        toast('Ausschnitt gespeichert', true);
+      });
     } else if (action === 'avatar-zoom') {
       openLightbox(state.member.avatarLarge || state.member.avatar, `${state.member.firstName} ${state.member.lastName}`);
     } else if (action === 'lightbox-close') {

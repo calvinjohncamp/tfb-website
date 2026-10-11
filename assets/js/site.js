@@ -612,6 +612,13 @@
     if (d < 7) return d === 1 ? 'gestern' : `vor ${d} Tagen`;
     return new Date(iso).toLocaleDateString('de-DE', { day: 'numeric', month: 'long' });
   };
+  // Datum und Uhrzeit eines Beitrags, z. B. „11. Okt. · 09:12“ (älter als dieses Jahr: mit Jahr)
+  const whenText = (iso) => {
+    const d = new Date(iso);
+    const sameYear = d.getFullYear() === new Date().getFullYear();
+    const day = d.toLocaleDateString('de-DE', { day: 'numeric', month: 'short', ...(sameYear ? {} : { year: 'numeric' }) });
+    return `${day} · ${d.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })}`;
+  };
   const postText = (t) => esc(t).replace(/(https?:\/\/[^\s<]+)/g, '<a class="inline-link" href="$1" target="_blank" rel="noopener">$1</a>').replace(/\n/g, '<br>');
   const teamLabel = (key) => { const f = findTeam(key); return f ? f.team.name.replace(/\s*\(.*?\)/g, '') : key; };
   const initialsOf = (name) => String(name || '?').split(' ').map((x) => x[0]).join('').slice(0, 2).toUpperCase();
@@ -623,14 +630,14 @@
         <header class="fpost-head">
           <span class="fpost-avatar">${p.avatar ? `<img src="${esc(p.avatar)}" alt="">` : esc(initialsOf(p.author))}</span>
           <span class="fpost-who"><b>${esc(p.author)}</b>
-            <small>${esc(agoText(p.createdAt))}${p.editedAt ? ' · bearbeitet' : ''}${p.fromClub ? ' · auch im Clubgeflüster' : ''}${p.teaser ? ` · <a href="#team/${esc(p.team)}">Insider News · ${esc(teamLabel(p.team))}</a>` : ''}${p.hidden ? ' · <em>ausgeblendet</em>' : ''}</small></span>
+            <small>${esc(whenText(p.createdAt))}${p.editedAt ? ' · bearbeitet' : ''}${p.fromClub ? ' · auch im Clubgeflüster' : ''}${p.teaser ? ` · <a href="#team/${esc(p.team)}">Insider News · ${esc(teamLabel(p.team))}</a>` : ''}${p.hidden ? ' · <em>ausgeblendet</em>' : ''}</small></span>
         </header>
         ${p.text ? `<div class="fpost-text">${postText(p.text)}</div>` : ''}
         ${imgs.length ? `<button type="button" class="fpost-media" data-action="post-gallery" data-id="${esc(p.id)}" aria-label="Fotos ansehen">
           ${picture(imgs[0], imgs[0], '')}${imgs.length > 1 ? `<span class="fpost-more">+${imgs.length - 1}</span>` : ''}</button>` : ''}
         ${loggedIn ? `<footer class="fpost-tools">
           ${p.mine ? `<button type="button" data-action="post-edit" data-id="${esc(p.id)}">Bearbeiten</button><button type="button" data-action="post-delete" data-id="${esc(p.id)}">Löschen</button>` : ''}
-          ${p.canModerate && !p.mine ? `<button type="button" data-action="post-hide" data-id="${esc(p.id)}" data-hidden="${p.hidden ? '0' : '1'}">${p.hidden ? 'Wieder zeigen' : 'Ausblenden'}</button><button type="button" data-action="post-delete" data-id="${esc(p.id)}">Löschen</button>` : ''}
+          ${p.canModerate && !p.mine ? `<button type="button" data-action="post-hide" data-id="${esc(p.id)}" data-hidden="${p.hidden ? '0' : '1'}">${p.hidden ? 'Wieder zeigen' : 'Ausblenden (Admin)'}</button>` : ''}
           ${!p.mine && !p.canModerate ? `<button type="button" data-action="post-report" data-id="${esc(p.id)}">Melden</button>` : ''}
         </footer>` : ''}
       </article>`;
@@ -652,9 +659,11 @@
     return `
       <section class="feed" data-scope="${esc(scope)}">
         <header class="feed-head">
-          <div><h2 class="block-heading">${isTeam ? 'Insider News' : 'Clubgeflüster'}</h2>
-            <p class="muted small">${isTeam ? `Hier schreiben die Spieler${opts.teamName ? ` von ${esc(opts.teamName)}` : ''} – Spielberichte, Touren, Training.` : 'Hier schreiben unsere Mitglieder.'}</p></div>
-          <div class="feed-actions">${action}${overviewLink}</div>
+          <h2 class="block-heading">${isTeam ? 'Insider News' : 'Clubgeflüster'}</h2>
+          <div class="feed-sub">
+            <p class="muted small">${isTeam ? `Hier schreiben die Spieler${opts.teamName ? ` von ${esc(opts.teamName)}` : ''} – Spielberichte, Touren, Training.` : 'Hier schreiben unsere Mitglieder.'}</p>
+            <div class="feed-actions">${action}${overviewLink}</div>
+          </div>
         </header>
         ${shown.length ? `<div class="feed-list">${shown.map((p) => postHtml(p, Boolean(state.member))).join('')}</div>`
           : `<p class="feed-empty muted">${isTeam ? 'Noch keine Insider News – schreibt den ersten Bericht!' : 'Noch ist es still hier. Schreib den ersten Beitrag!'}</p>`}
@@ -682,7 +691,7 @@
           data-teams="${esc(teams.join(' '))}" data-where="${p.team ? 'team' : 'club'}" data-photos="${imgs.length}" data-at="${esc(p.createdAt)}">
           ${imgs.length ? `<span class="mini-img">${picture(imgs[0], imgs[0], '')}${imgs.length > 1 ? `<i>+${imgs.length - 1}</i>` : ''}</span>` : ''}
           <span class="mini-head"><span class="fpost-avatar">${p.avatar ? `<img src="${esc(p.avatar)}" alt="">` : esc(initialsOf(p.author))}</span>
-            <span><b>${esc(p.author)}</b><small>${esc(agoText(p.createdAt))}</small></span></span>
+            <span><b>${esc(p.author)}</b><small>${esc(whenText(p.createdAt))}</small></span></span>
           <span class="mini-where">${p.team ? `Insider News · ${esc(teamLabel(p.team))}` : 'Clubgeflüster'}</span>
           ${p.text ? `<span class="mini-text">${esc(p.text)}</span>` : ''}
         </button>`;
@@ -1623,7 +1632,7 @@
     },
     'post-hide': async (el) => { await ui().api.hidePost(el.dataset.id, el.dataset.hidden === '1'); ui().toast(el.dataset.hidden === '1' ? 'Ausgeblendet' : 'Wieder sichtbar', true); ui().renderView(); },
     'post-report': async (el) => { await ui().api.reportPost(el.dataset.id); ui().toast('Danke – der Vorstand schaut sich das an.', true); },
-    'post-gallery': (el) => { const p = postCache[el.dataset.id]; if (p) openGallery(p.images || [], `${p.author} · ${agoText(p.createdAt)}`); },
+    'post-gallery': (el) => { const p = postCache[el.dataset.id]; if (p) openGallery(p.images || [], `${p.author} · ${whenText(p.createdAt)}`); },
     'feed-more': (el) => { feedOpen[el.dataset.scope] = true; ui().renderView(); },
     'att-open': (el) => openViewer(el.dataset.ref, el.dataset.kind, el.dataset.title),
     'hero-open': (el) => {
