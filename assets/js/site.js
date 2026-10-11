@@ -362,8 +362,9 @@
             ${postPhotos(b)}
             <div class="post-body">
               <p class="post-date">${esc(fmt(b.date, { day: 'numeric', month: 'long', year: 'numeric' }))}</p>
-              <h3>${esc(b.title)}</h3>
-              ${paragraphs(b.text)}
+              ${editing === page ? `<h3>${esc(b.title)}</h3>` : `<h3><a class="post-title-link" href="#aktuell/${esc(b.id)}">${esc(b.title)}</a></h3>`}
+              <div class="post-text">${paragraphs(b.text)}</div>
+              ${b.text && editing !== page ? `<p class="feature-more"><a class="more-link" href="#aktuell/${esc(b.id)}">Mehr erfahren <span aria-hidden="true">→</span></a></p>` : ''}
             </div>
           </article>`;
       case 'image':
@@ -624,6 +625,24 @@
       ${partner}`;
   }
 
+  // Aktuell-Beitrag als eigene Seite im Unterseiten-Look (Fotos oben, Initiale, voller Text)
+  function postDetail(id) {
+    const { icon, state, partnerSlot } = ui();
+    const p = (site.pages.aktuell.blocks || []).find((x) => x.id === id && x.type === 'post');
+    if (!p) return `${ui().viewHead('Aktuell', 'Diesen Beitrag gibt es nicht mehr.', false)}<p><a class="btn" href="#aktuell">Zu Aktuell</a></p>`;
+    const imgs = ((p.images || []).length ? p.images : [p.image]).filter(shownImage).slice(0, 4);
+    const story = {
+      id: 'post-' + p.id, title: p.title, kicker: fmt(p.date, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }),
+      image: imgs[0] || null, noPlaceholder: true,
+      more: { heroSource: imgs.length ? 'own' : 'same', heroImages: imgs, sections: [{ type: 'text', text: p.text || '' }], dropcap: 1 },
+    };
+    return storyHtml(story, {
+      editHtml: state.member && state.member.isAdmin ? `<button type="button" class="view-close" data-action="post-detail-edit" data-id="${esc(p.id)}" aria-label="Beitrag bearbeiten">${icon.pencil}</button>` : '',
+      closeHref: '#aktuell', backLabel: 'Zurück zu Aktuell',
+      partner: partnerSlot('aktuell', site.pages.aktuell.partnerKicker || 'Präsentiert von'),
+    });
+  }
+
   async function featureDetail(id) {
     const { icon, state, partnerSlot } = ui();
     const b = homeBlocks().find((x) => x.id === id);
@@ -653,6 +672,7 @@
     if (key === 'home' && preview && preview.tab === 'sub') return featureDetail(preview.id);
     if (key === 'home' && !preview && location.hash.split('/')[2] === 'fotos') return albumDetail(location.hash.split('/')[1]);
     if (key === 'home' && !preview && location.hash.split('/')[1]) return featureDetail(location.hash.split('/')[1]);
+    if (key === 'aktuell' && location.hash.split('/')[1]) return postDetail(location.hash.split('/')[1]);
     const { state, icon, partnerSlot } = ui();
     const page = site.pages[key];
     const edit = editing === key && state.member && state.member.isAdmin && !preview;
@@ -1493,7 +1513,7 @@
                 : `<label class="btn">Bild oder PDF wählen<input type="file" accept="image/*,application/pdf" data-att-input hidden></label>`}
             </div>`;
         case 'post': return postPhotosField(draft) + field('Datum', 'date', draft.date, { type: 'date' })
-          + field('Überschrift', 'title', draft.title) + field('Text', 'text', draft.text, { area: true, rich: true, rows: 7, placeholder: 'Text schreiben – Wörter markieren und oben gestalten' });
+          + field('Überschrift', 'title', draft.title) + field('Text', 'text', draft.text, { area: true, rich: true, simple: true, rows: 9, placeholder: 'Text schreiben – Wort markieren, dann Fett, Kursiv oder Rot' });
         case 'image': return imageField(draft.image, draft.id) + field('Bildunterschrift', 'caption', draft.caption)
           + `<label class="meet-check"><input type="checkbox" name="imgOriginal" data-rerender ${draft.original ? 'checked' : ''}><span>Originalformat (nicht zuschneiden)</span></label>`
           + (draft.original ? `<div class="field"><span>Ausrichtung</span><div class="seg align-seg">${[['left', 'Links'], ['center', 'Mitte'], ['right', 'Rechts']].map(([v, l]) =>
@@ -2301,6 +2321,7 @@
       return commit('Links sortiert');
     },
     'album-edit': (el) => { editing = 'home'; detailEditing = true; openBlockEditor(el.dataset.id, false, 'album'); },
+    'post-detail-edit': (el) => { editing = 'aktuell'; detailEditing = true; openBlockEditor(el.dataset.id, false); },
     'feature-edit': (el) => { editing = 'home'; detailEditing = true; openBlockEditor(el.dataset.id, false, 'sub'); },
     'aktuell-tab': (el) => {
       aktuellTab = el.dataset.tab;
