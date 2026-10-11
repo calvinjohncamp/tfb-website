@@ -244,8 +244,8 @@
               <h3>${esc(b.title)}</h3>
               <p class="muted small">${[b.time && `${esc(b.time)} Uhr`, esc(b.place)].filter(Boolean).join(' · ')}</p>
               ${b.text ? `<p class="small">${esc(b.text)}</p>` : ''}
+              ${attachmentThumb(b)}
             </div>
-            ${attachmentThumb(b)}
           </article>`;
       case 'post':
         return `
@@ -311,15 +311,13 @@
             const photo = extra.photo && (images[extra.photo] || /^assets\//.test(extra.photo)) ? picture(extra.photo, t.name) : '';
             const count = teamCounts[teamKey(t.name)] || 0;
             return `
-            <a class="team" href="#team/${esc(teamKey(t.name))}">
-              <span class="team-rank ${t.rank === '1' ? 'top' : ''}" title="Tabellenplatz">${esc(t.rank || '–')}</span>
-              <span class="team-main">
-                ${photo ? `<span class="team-thumb">${photo}</span>` : ''}
-                <span class="team-name"><strong>${esc(t.name)}</strong><small>${esc(t.group)}</small>
-                ${count ? `<em class="team-news">${count} Insider News</em>` : ''}</span>
+            <a class="team team-row" href="#team/${esc(teamKey(t.name))}">
+              <span class="team-name"><strong>${esc(t.name.replace(/\s*\(.*?\)/g, ''))}${/\((.*?)\)/.test(t.name) ? ` <i>${esc(t.name.match(/\((.*?)\)/)[1])}</i>` : ''}</strong><small>${esc(t.group)}</small></span>
+              <span class="team-mid">
+                <span class="team-thumb ${photo ? '' : 'empty'}">${photo || ui().icon.camera}</span>
+                <span class="team-news ${count ? 'has' : ''}" data-count="${count}">${count ? `${count} Insider News` : 'Insider News'}<b aria-hidden="true">→</b></span>
               </span>
-              <span class="team-captain"><small>Mannschaftsführer</small>${esc(t.captain)}</span>
-              <span class="team-points">${esc(t.points)}<small>Punkte</small></span>
+              <span class="team-stand"><b class="${t.rank === '1' ? 'top' : ''}">${esc(t.rank || '–')}.</b><small>Platz · ${esc(t.points)}</small></span>
             </a>`;
           }).join('')}
         </div>
@@ -628,7 +626,7 @@
         <header class="fpost-head">
           <span class="fpost-avatar">${p.avatar ? `<img src="${esc(p.avatar)}" alt="">` : esc(initialsOf(p.author))}</span>
           <span class="fpost-who"><b>${esc(p.author)}</b>
-            <small>${esc(agoText(p.createdAt))}${p.editedAt ? ' · bearbeitet' : ''}${p.teaser ? ` · <a href="#team/${esc(p.team)}">Insider News · ${esc(teamLabel(p.team))}</a>` : ''}${p.hidden ? ' · <em>ausgeblendet</em>' : ''}</small></span>
+            <small>${esc(agoText(p.createdAt))}${p.editedAt ? ' · bearbeitet' : ''}${p.fromClub ? ' · auch im Clubgeflüster' : ''}${p.teaser ? ` · <a href="#team/${esc(p.team)}">Insider News · ${esc(teamLabel(p.team))}</a>` : ''}${p.hidden ? ' · <em>ausgeblendet</em>' : ''}</small></span>
         </header>
         ${p.text ? `<div class="fpost-text">${postText(p.text)}</div>` : ''}
         ${imgs.length ? `<button type="button" class="fpost-media" data-action="post-gallery" data-id="${esc(p.id)}" aria-label="Fotos ansehen">
@@ -676,7 +674,8 @@
     if (!editId && may.reason === 'parents') return openParentConsent(scope);
     if (!editId && may.reason === 'rules') return openRules(scope);
     const existing = editId ? postCache[editId] : null;
-    const draft = { text: existing ? existing.text : '', images: existing ? (existing.images || []).filter((r) => images[r]) : [] };
+    const draft = { text: existing ? existing.text : '', images: existing ? (existing.images || []).filter((r) => images[r]) : [], alsoTeams: existing ? (existing.alsoTeams || []) : [] };
+    const myTeams = scope === 'club' ? (state.member.teams || []) : [];
     const isTeam = scope.startsWith('team:');
     const render = () => {
       openSheet(`
@@ -690,12 +689,16 @@
           </div>
           <p class="small muted">Bis zu 4 Fotos – das erste erscheint im Beitrag, alle zusammen per Klick.</p>
           ${draft.images.length ? '<label class="meet-check"><input type="checkbox" name="photoOk" required><span>Die abgebildeten Personen sind mit der Veröffentlichung einverstanden.</span></label>' : ''}
+          ${myTeams.length ? `<div class="compose-teams">${myTeams.map((k) => `<label class="meet-check"><input type="checkbox" name="alsoTeam" value="${esc(k)}" ${draft.alsoTeams.includes(k) ? 'checked' : ''}><span>Auch in den <b>Insider News · ${esc(teamLabel(k))}</b> zeigen</span></label>`).join('')}</div>` : ''}
           <p class="form-error" role="alert"></p>
           <button type="submit" class="btn signal block big">${existing ? 'Speichern' : 'Veröffentlichen'}</button>
           <p class="fineprint">Öffentlich sichtbar mit deinem Namen${state.member.isMinor ? ' (Vorname und Anfangsbuchstabe)' : ''}.</p>
         </form>`);
       const form = document.querySelector('[data-compose]');
-      const keep = () => { draft.text = form.elements.text.value; };
+      const keep = () => {
+        draft.text = form.elements.text.value;
+        if (myTeams.length) draft.alsoTeams = [...form.querySelectorAll('[name=alsoTeam]:checked')].map((x) => x.value);
+      };
       form.addEventListener('click', (e) => {
         const rm = e.target.closest('[data-cremove]');
         if (rm) { keep(); draft.images.splice(Number(rm.dataset.cremove), 1); render(); return; }
@@ -1342,6 +1345,8 @@
     const { team, season } = found;
     const extra = teamContent(key);
     const can = canEditTeam();
+    const me = ui().state.member;
+    const canPhoto = Boolean(me && (me.isAdmin || (me.teams || []).includes(key)));
     const posts = extra.posts.slice().sort((a, b) => String(b.date).localeCompare(String(a.date)));
     const hasPhoto = extra.photo && (images[extra.photo] || /^assets\//.test(extra.photo));
     return `
@@ -1350,19 +1355,26 @@
           <div><p class="page-kicker">Mannschaft · ${esc(season)}</p><h1>${esc(team.name.replace(/\s*\(.*?\)/g, ''))}</h1><p class="muted">${esc(team.group)}</p></div>
           <a class="view-close" href="#sport" aria-label="Zurück zu den Mannschaften">${icon.close}</a>
         </header>
-        ${hasPhoto || can ? `
+        <div class="team-top">
           <figure class="team-photo ${hasPhoto ? '' : 'empty'}">
             ${hasPhoto ? picture(extra.photo, key, `Teamfoto ${team.name}`) : `<div class="team-photo-empty">${icon.camera}<span>Noch kein Teamfoto</span></div>`}
-            ${can ? `<button type="button" class="btn small team-photo-btn" data-action="team-photo" data-team="${esc(key)}">${icon.camera} ${hasPhoto ? 'Teamfoto ändern' : 'Teamfoto hinzufügen'}</button>` : ''}
-          </figure>` : ''}
-        <section class="team-facts">
-          <div><b class="${team.rank === '1' ? 'top' : ''}">${esc(team.rank || '–')}</b><span>Tabellenplatz</span></div>
-          <div><b>${esc(team.points || '–')}</b><span>Punkte</span></div>
-          <div><b class="team-facts-name">${esc(team.captain || '–')}</b><span>Mannschaftsführer</span></div>
-        </section>
-        <p class="block-button"><a class="btn" href="${esc(team.teamUrl)}" target="_blank" rel="noopener">Spielplan &amp; Tabelle bei nuLiga ↗</a></p>
+            ${canPhoto ? `<button type="button" class="btn small team-photo-btn" data-action="team-photo" data-team="${esc(key)}">${icon.camera} ${hasPhoto ? 'Teamfoto ändern' : 'Teamfoto hinzufügen'}</button>` : ''}
+          </figure>
+          <aside class="team-card">
+            <div class="team-card-stats">
+              <div><b class="${team.rank === '1' ? 'top' : ''}">${esc(team.rank || '–')}.</b><span>Tabellenplatz</span></div>
+              <div><b>${esc(team.points || '–')}</b><span>Punkte</span></div>
+            </div>
+            <div class="team-card-row"><span>Mannschaftsführer</span><b>${esc(team.captain || '–')}</b></div>
+            <div class="team-card-row"><span>Liga</span><b>${esc(team.group)}</b></div>
+            <div class="team-card-links">
+              <a href="${esc(team.teamUrl)}" target="_blank" rel="noopener">Spielplan &amp; Mannschaft <span>nuLiga ↗</span></a>
+              ${team.groupUrl ? `<a href="${esc(team.groupUrl)}" target="_blank" rel="noopener">Tabelle der Gruppe <span>nuLiga ↗</span></a>` : ''}
+            </div>
+          </aside>
+        </div>
 
-        ${await feedSection('team:' + key, { teamName: team.name.replace(/\s*\(.*?\)/g, '') })}
+        <div class="team-feed">${await feedSection('team:' + key, { teamName: team.name.replace(/\s*\(.*?\)/g, '') })}</div>
         ${posts.length ? `
           <h2 class="block-heading">Berichte vom Club</h2>
           <div class="run run-posts">${posts.map((b) => `
@@ -1393,11 +1405,24 @@
       form.addEventListener('click', (e) => { if (e.target.closest('[data-image-remove]')) { content.photo = null; render(); } });
       form.addEventListener('change', async (e) => {
         if (!e.target.files || !e.target.files.length) return;
-        const [id] = await uploadFiles([e.target.files[0]]);
-        content.photo = id;
-        render();
+        try {
+          const img = await ui().loadImage(e.target.files[0]);
+          const url = ui().largeImage(img, 1800);
+          const id = await ui().api.putMemberImage(url);
+          images[id] = url;
+          content.photo = id;
+          render();
+        } catch (err) { ui().toast(err.message); }
       });
-      form.addEventListener('submit', (e) => { e.preventDefault(); closeSheet(); saveTeam(key, content, 'Teamfoto gespeichert'); });
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        try {
+          site = await ui().api.setTeamPhoto(key, content.photo);
+          closeSheet();
+          ui().toast('Teamfoto gespeichert', true);
+          ui().renderView();
+        } catch (err) { ui().toast(err.message); }
+      });
     };
     render();
   }

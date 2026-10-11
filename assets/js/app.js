@@ -919,9 +919,12 @@
 
         <form class="acct-card acct-form" data-account-form novalidate>
           <h3 class="acct-section">Deine Angaben</h3>
-          <label class="field"><span>Name</span><input value="${esc(m.firstName)} ${esc(m.lastName)}" readonly></label>
-          <label class="field"><span>E-Mail</span><input value="${esc(m.email)}" readonly></label>
-          <p class="acct-hint">Name und E-Mail stammen aus der Mitgliederliste. Änderungen bitte über den Vorstand.</p>
+          <div class="field-row">
+            <label class="field"><span>Vorname</span><input name="firstName" value="${esc(m.firstName)}" autocomplete="given-name"></label>
+            <label class="field"><span>Nachname</span><input name="lastName" value="${esc(m.lastName)}" autocomplete="family-name"></label>
+          </div>
+          <label class="field"><span>E-Mail</span><input name="email" type="email" inputmode="email" value="${esc(m.email)}" autocomplete="email"></label>
+          <p class="acct-hint">Name und E-Mail sind deine Daten in der Mitgliederliste des Clubs. Änderst du sie hier, gelten sie auch beim Club – mit der neuen E-Mail meldest du dich künftig an. Der Vorstand sieht jede Änderung.</p>
           <label class="field"><span>Handynummer <em>freiwillig</em></span><input name="phone" type="tel" inputmode="tel" value="${esc(m.phone)}" placeholder="z. B. 0170 1234567"></label>
 
           <h3 class="acct-section">Benachrichtigungen</h3>
@@ -1037,8 +1040,14 @@
     if (acct) {
       e.preventDefault();
       try {
-        state.member = await api.updateProfile({ phone: acct.elements.phone.value, infoMails: acct.elements.infoMails.checked, openInvites: acct.elements.openInvites.checked });
-        toast('Angaben gespeichert', true);
+        const before = state.member.email;
+        state.member = await api.updateProfile({
+          firstName: acct.elements.firstName.value, lastName: acct.elements.lastName.value, email: acct.elements.email.value,
+          phone: acct.elements.phone.value, infoMails: acct.elements.infoMails.checked, openInvites: acct.elements.openInvites.checked,
+        });
+        toast(before !== state.member.email ? `Gespeichert – anmelden künftig mit ${state.member.email}` : 'Angaben gespeichert', true);
+        refreshAvatars();
+        openProfile();
       } catch (err) { toast(err.message); }
       return;
     }

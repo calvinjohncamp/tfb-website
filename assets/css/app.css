@@ -1649,3 +1649,62 @@ button.meet-row:hover { background: #FAF8F3; }
 .gal-nav.prev { left: 14px; }
 .gal-nav.next { right: 14px; }
 .gal-back { border: 0; background: rgba(255,255,255,.15); color: #fff; border-radius: 99px; padding: 6px 12px; font-weight: 700; }
+
+/* ===== 11.10.: Mannschaftsliste neu – links Name, Mitte Teamfoto + Insider News, rechts Platz ===== */
+.team.team-row { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 14px; align-items: center; padding: 12px 16px; }
+.team-row .team-name strong { font-size: .98rem; }
+.team-row .team-name strong i { font-style: normal; font-weight: 600; font-size: .74rem; color: var(--muted); background: #F1EEE7; border-radius: 6px; padding: 1px 6px; margin-left: 4px; vertical-align: 2px; }
+.team-mid { display: flex; align-items: center; gap: 10px; }
+.team-row .team-thumb { width: 72px; height: 48px; border-radius: 8px; overflow: hidden; display: grid; place-items: center; background: #F1EEE7; }
+.team-row .team-thumb.empty svg { width: 20px; height: 20px; fill: none; stroke: #C3BCAE; stroke-width: 1.6; }
+.team-row .team-news { display: none; font-style: normal; font-size: .76rem; font-weight: 700; color: var(--muted); white-space: nowrap; }
+.team-row .team-news.has { color: var(--signal); }
+.team-row .team-news b { margin-left: 4px; transition: transform .15s; display: inline-block; }
+.team-row:hover .team-news b { transform: translateX(3px); }
+.team-stand { display: grid; justify-items: end; min-width: 64px; }
+.team-stand b { font-family: var(--serif); font-size: 1.3rem; font-weight: 800; line-height: 1; }
+.team-stand b.top { color: var(--signal); }
+.team-stand small { font-size: .68rem; color: var(--muted); font-weight: 600; white-space: nowrap; margin-top: 2px; }
+@media (min-width: 640px) {
+  .team.team-row { grid-template-columns: minmax(0, 1fr) 230px 90px; }
+  .team-row .team-news { display: inline; }
+}
+@media (max-width: 639px) {
+  .team-row .team-thumb { width: 56px; height: 40px; }
+  /* Handy: Zahl der Insider News als roter Punkt am Foto */
+  .team-mid { position: relative; }
+  .team-row .team-news.has { display: grid; place-items: center; position: absolute; top: -6px; right: -6px; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 99px; background: var(--signal); color: #fff; font-size: 0; }
+  .team-row .team-news.has::before { content: attr(data-count); font-size: .66rem; font-weight: 800; }
+  .team-row .team-news.has b { display: none; }
+}
+
+/* ===== Team-Seite: Foto + Infokarte, darunter Insider News ===== */
+.team-top { display: grid; gap: 14px; margin-bottom: 8px; }
+.team-top .team-photo { margin: 0; }
+.team-card { background: #fff; border-radius: 18px; box-shadow: 0 1px 3px rgba(28,26,23,.08); padding: 16px 18px; display: grid; gap: 12px; align-content: start; }
+.team-card-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.team-card-stats div { background: #F6F3EC; border-radius: 12px; padding: 12px; display: grid; gap: 2px; }
+.team-card-stats b { font-family: var(--serif); font-size: 1.9rem; font-weight: 800; line-height: 1; }
+.team-card-stats b.top { color: var(--signal); }
+.team-card-stats span, .team-card-row span { font-size: .66rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.team-card-row { display: grid; gap: 2px; padding-top: 10px; border-top: 1px solid #F1EEE7; }
+.team-card-row b { font-size: .92rem; font-weight: 650; }
+.team-card-links { display: grid; gap: 6px; padding-top: 10px; border-top: 1px solid #F1EEE7; }
+.team-card-links a { display: flex; justify-content: space-between; align-items: center; gap: 10px; text-decoration: none; color: var(--ink); font-weight: 700; font-size: .9rem; padding: 10px 12px; border-radius: 10px; background: #F6F3EC; }
+.team-card-links a span { font-size: .74rem; font-weight: 700; color: var(--signal); }
+.team-card-links a:hover { box-shadow: 0 0 0 1.5px var(--signal); }
+.team-feed { margin-top: 36px; }
+.team-page .team-feed .feed { max-width: 760px; }
+@media (min-width: 1024px) {
+  .team-top { grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr); align-items: stretch; }
+  .team-top .team-photo { aspect-ratio: auto; min-height: 340px; height: 100%; }
+  .team-top .team-photo.empty { min-height: 300px; }
+  .view[data-view="team"] { max-width: 1100px; }
+}
+
+/* ===== Termine: Anhang als Quadrat unter dem Text ===== */
+.event .event-att { width: 76px; height: 76px; margin-top: 10px; }
+.compose-teams { display: grid; gap: 2px; margin: 4px 0 6px; }
+.team-photo.empty { display: grid; place-content: center; justify-items: center; gap: 12px; padding: 20px; }
+.team-photo.empty .team-photo-empty { height: auto; }
+.team-photo.empty .team-photo-btn { position: static; }

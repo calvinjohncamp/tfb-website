@@ -479,11 +479,34 @@
     async signOut() { setSession(null); },
 
     // Eigene Angaben im Account (Name und E-Mail kommen aus der Mitgliederliste des Vereins).
-    async updateProfile({ phone, infoMails, openInvites }) {
+    // Eigene Daten ändern. Name und E-Mail sind die Daten der Mitgliederliste des Clubs: eine geänderte
+    // E-Mail wird zugleich die beim Club hinterlegte Adresse (Anmeldung, Clubgeflüster, Mannschaftsrechte
+    // hängen daran). Jede Änderung landet im Protokoll für den Vorstand (db.changeLog).
+    async updateProfile({ firstName, lastName, email, phone, infoMails, openInvites }) {
       const member = requireMember();
       const account = accountOf(member.id);
       const tel = String(phone || '').trim();
       if (tel && !/^[+\d][\d\s/()-]{5,}$/.test(tel)) throw new Error('Bitte eine gültige Handynummer eingeben.');
+      const changes = [];
+      const setField = (field, value) => {
+        if (value == null) return;
+        const v = String(value).trim();
+        if (v && v !== member[field]) { changes.push({ field, from: member[field], to: v }); member[field] = v; }
+      };
+      if (firstName != null && !String(firstName).trim()) throw new Error('Bitte einen Vornamen eingeben.');
+      if (lastName != null && !String(lastName).trim()) throw new Error('Bitte einen Nachnamen eingeben.');
+      if (email != null) {
+        const e = String(email).trim().toLowerCase();
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(e)) throw new Error('Bitte eine gültige E-Mail-Adresse eingeben.');
+        if (db.members.some((m) => m.id !== member.id && norm(m.email) === e)) throw new Error('Diese E-Mail-Adresse gehört schon zu einem anderen Mitglied.');
+        if (e !== norm(member.email)) { changes.push({ field: 'email', from: member.email, to: e }); member.email = e; }
+      }
+      setField('firstName', firstName);
+      setField('lastName', lastName);
+      if (changes.length) {
+        db.changeLog = db.changeLog || [];
+        changes.forEach((c) => db.changeLog.push({ memberId: member.id, memberNo: member.memberNo, ...c, at: new Date().toISOString() }));
+      }
       Object.assign(account, { phone: tel, infoMails: Boolean(infoMails), openInvites: Boolean(openInvites) });
       if (!save(db)) throw new Error('Speichern nicht möglich.');
       return publicMember(member);
@@ -494,15 +517,28 @@
     async posts(scope, { withTeams = false } = {}) {
       const me = db.members.find((m) => m.id === sessionMemberId());
       return db.community.posts
-        .filter((p) => p.scope === scope || (withTeams && String(p.scope).startsWith('team:')))
+        .filter((p) => p.scope === scope || (withTeams && String(p.scope).startsWith('team:'))
+          || (teamOf(scope) && (p.alsoTeams || []).includes(teamOf(scope))))
         .filter((p) => !p.hidden || (me && (me.isAdmin || p.authorId === me.id)))
         .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
-        .map((p) => ({ ...publicPost(p), teaser: withTeams && p.scope !== scope }));
+        .map((p) => ({ ...publicPost(p), teaser: withTeams && p.scope !== scope, fromClub: Boolean(teamOf(scope)) && p.scope === 'club' }));
     },
     async teamPostCounts() {
       const out = {};
-      db.community.posts.filter((p) => !p.hidden && teamOf(p.scope)).forEach((p) => { out[teamOf(p.scope)] = (out[teamOf(p.scope)] || 0) + 1; });
+      db.community.posts.filter((p) => !p.hidden).forEach((p) => {
+        [teamOf(p.scope), ...(p.alsoTeams || [])].filter(Boolean).forEach((t) => { out[t] = (out[t] || 0) + 1; });
+      });
       return out;
+    },
+    // Teamfoto: Admins und die Spieler der Mannschaft
+    async setTeamPhoto(team, ref) {
+      const member = requireMember();
+      if (!member.isAdmin && !((db.community.rosters[team] || []).includes(member.id))) throw new Error('Das Teamfoto ändern die Spieler dieser Mannschaft.');
+      db.site = db.site || clone(TFB.siteSeed);
+      db.site.teams = db.site.teams || {};
+      db.site.teams[team] = { posts: [], ...(db.site.teams[team] || {}), photo: ref || null };
+      save(db);
+      return clone(db.site);
     },
     async teamRoster(team) {
       return (db.community.rosters[team] || []).map((id) => displayName(db.members.find((m) => m.id === id))).filter(Boolean);
@@ -533,22 +569,24 @@
       await done((await imgStore('readwrite')).put(dataUrl, id));
       return id;
     },
-    async addPost({ scope, text, images = [] }) {
+    async addPost({ scope, text, images = [], alsoTeams = [] }) {
       const member = requireMember();
       const allowed = mayWrite(member, scope);
       if (!allowed.ok) throw new Error(allowed.reason === 'team' ? 'Insider News schreiben die Spieler dieser Mannschaft.' : 'Bitte zuerst die Hinweise bestätigen.');
       const t = String(text || '').trim();
       if (!t && !images.length) throw new Error('Bitte einen Text schreiben oder ein Foto wählen.');
-      const post = { id: 'p-' + uid(), scope, authorId: member.id, createdAt: new Date().toISOString(), text: t.slice(0, 2000), images: images.slice(0, 4) };
+      const mine = alsoTeams.filter((k) => member.isAdmin || (db.community.rosters[k] || []).includes(member.id));
+      const post = { id: 'p-' + uid(), scope, authorId: member.id, createdAt: new Date().toISOString(), text: t.slice(0, 2000), images: images.slice(0, 4), ...(scope === 'club' && mine.length ? { alsoTeams: mine } : {}) };
       db.community.posts.push(post);
       if (!save(db)) throw new Error('Speichern nicht möglich.');
       return publicPost(post);
     },
-    async editPost(id, { text, images }) {
+    async editPost(id, { text, images, alsoTeams }) {
       const member = requireMember();
       const p = db.community.posts.find((x) => x.id === id);
       if (!p || (p.authorId !== member.id && !member.isAdmin)) throw new Error('Diesen Beitrag kannst du nicht ändern.');
       Object.assign(p, { text: String(text || '').trim().slice(0, 2000), images: (images || []).slice(0, 4), editedAt: new Date().toISOString() });
+      if (alsoTeams && p.scope === 'club') p.alsoTeams = alsoTeams.filter((k) => member.isAdmin || (db.community.rosters[k] || []).includes(member.id));
       save(db);
       return publicPost(p);
     },

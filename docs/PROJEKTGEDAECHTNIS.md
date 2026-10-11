@@ -420,3 +420,16 @@ Monatsabschluss.
   - Daten: `db.community = { rosters, posts[] }`; API `posts`, `addPost`, `editPost`, `deletePost`,
     `hidePost`, `reportPost`, `canWrite`, `acceptFeedRules`, `setParentConsent`, `putMemberImage`,
     `teamPostCounts`, `teamRoster`. Für echten Betrieb über mehrere Geräte: Supabase.
+- **11.10.2026** – Feinschliff Mitmach-Funktionen:
+  - **Accountkarte:** Vorname, Nachname, E-Mail, Handy selbst änderbar (auch Admin). Name/E-Mail
+    sind die Daten der Mitgliederliste: neue E-Mail = neue Club-Adresse und Login (Prüfung auf
+    Format und Dopplung). Jede Änderung in `db.changeLog` für den Vorstand (Anzeige in der
+    Verwaltung steht noch aus; Echtbetrieb: Bestätigungsmail an die neue Adresse).
+  - **Mannschaftsliste:** links Name (+ „4er“-Kennzeichen), Mitte Teamfoto + „n Insider News →“
+    (Handy: roter Zähler am Foto), rechts Platz und Punkte; Mannschaftsführer nur noch auf der Team-Seite.
+  - **Team-Seite:** Teamfoto groß + Infokarte (Platz, Punkte, Mannschaftsführer, Liga, Links
+    „Spielplan & Mannschaft“ / „Tabelle der Gruppe“ bei nuLiga), darunter mit Abstand Insider News.
+    **Teamfoto ändern dürfen jetzt die Spieler der Mannschaft** (`api.setTeamPhoto`).
+  - **Clubgeflüster:** Spieler sehen beim Schreiben „Auch in den Insider News · <Team> zeigen“
+    (`post.alsoTeams`); dort mit Hinweis „auch im Clubgeflüster“.
+  - **Termine:** Anhang als 76-px-Quadrat unter dem Text (überlagert keine Überschrift mehr).
