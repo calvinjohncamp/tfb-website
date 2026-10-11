@@ -243,6 +243,7 @@
               <p class="muted small">${[b.time && `${esc(b.time)} Uhr`, esc(b.place)].filter(Boolean).join(' · ')}</p>
               ${b.text ? `<p class="small">${esc(b.text)}</p>` : ''}
             </div>
+            ${attachmentThumb(b)}
           </article>`;
       case 'post':
         return `
@@ -587,6 +588,82 @@
     return ids;
   }
 
+  // ---------- Anhänge an Terminen (Bild oder PDF) mit Großansicht ----------
+  const readDataUrl = (file) => new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(r.result);
+    r.onerror = () => reject(new Error('Datei lässt sich nicht lesen.'));
+    r.readAsDataURL(file);
+  });
+  async function uploadAttachment(file) {
+    const { api, loadImage, largeImage } = ui();
+    if (file.type === 'application/pdf' || /\.pdf$/i.test(file.name)) {
+      const url = await readDataUrl(file);
+      const ref = await api.putFile(url.replace(/^data:[^;]*;/, 'data:application/pdf;'));
+      images[ref] = url.replace(/^data:[^;]*;/, 'data:application/pdf;');
+      return { ref, kind: 'pdf', name: file.name };
+    }
+    const img = await loadImage(file);
+    const dataUrl = largeImage(img, 2400);   // Flyer sollen lesbar bleiben
+    const ref = await api.putImage(dataUrl);
+    images[ref] = dataUrl;
+    return { ref, kind: 'image', name: file.name };
+  }
+  const PDF_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5"/><path d="M9.5 16.5h5M9.5 13h5"/></svg>';
+  function attachmentThumb(b, inEditor = false) {
+    const a = b.attachment;
+    if (!a || !images[a.ref]) return '';
+    const inner = a.kind === 'pdf'
+      ? `<span class="att-pdf">${PDF_ICON}<b>PDF</b></span>`
+      : `<img src="${images[a.ref]}" alt="">`;
+    if (inEditor) return `<span class="event-att ${a.kind}">${inner}</span>`;
+    return `<button type="button" class="event-att ${a.kind}" data-action="att-open" data-ref="${esc(a.ref)}" data-kind="${esc(a.kind)}" data-title="${esc(b.title || '')}" aria-label="${a.kind === 'pdf' ? 'PDF' : 'Bild'} groß ansehen">${inner}</button>`;
+  }
+  function dataUrlToBlobUrl(dataUrl) {
+    const [head, body] = dataUrl.split(',');
+    const bin = atob(body);
+    const bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    return URL.createObjectURL(new Blob([bytes], { type: head.slice(5).split(';')[0] }));
+  }
+  // Großansicht: Bild in Seitengröße (Klick = Lesegröße), PDF im Betrachter; schließen mit ×, Klick daneben oder Esc
+  function openViewer(ref, kind, title) {
+    const src = images[ref];
+    if (!src) return;
+    const blobUrl = kind === 'pdf' ? dataUrlToBlobUrl(src) : null;
+    const box = document.createElement('div');
+    box.className = `viewer ${kind}`;
+    box.innerHTML = `
+      <div class="viewer-stage">
+        ${kind === 'pdf'
+          ? `<iframe class="viewer-doc" src="${blobUrl}" title="${esc(title)}"></iframe>`
+          : `<img class="viewer-img" src="${src}" alt="${esc(title)}" title="Klicken: Lesegröße / Seitenansicht">`}
+      </div>
+      <div class="viewer-bar">
+        <span>${esc(title)}</span>
+        ${kind === 'pdf' ? `<a href="${blobUrl}" target="_blank" rel="noopener">In neuem Tab öffnen ↗</a>` : '<span class="viewer-hint">Bild antippen: Lesegröße</span>'}
+      </div>
+      <button type="button" class="viewer-close" aria-label="Schließen">${ui().icon.close}</button>`;
+    const close = () => {
+      box.classList.remove('open');
+      document.removeEventListener('keydown', onKey);
+      document.body.classList.remove('no-scroll');
+      setTimeout(() => { box.remove(); if (blobUrl) URL.revokeObjectURL(blobUrl); }, 200);
+    };
+    const onKey = (e) => { if (e.key === 'Escape') close(); };
+    box.addEventListener('click', (e) => {
+      if (e.target.closest('.viewer-close')) return close();
+      const img = e.target.closest('.viewer-img');
+      if (img) { box.classList.toggle('zoomed'); box.querySelector('.viewer-hint').textContent = box.classList.contains('zoomed') ? 'Bild antippen: Seitenansicht' : 'Bild antippen: Lesegröße'; return; }
+      if (e.target.closest('.viewer-doc, .viewer-bar')) return;
+      close();   // Klick außerhalb von Bild/PDF
+    });
+    document.addEventListener('keydown', onKey);
+    document.body.appendChild(box);
+    document.body.classList.add('no-scroll');
+    requestAnimationFrame(() => box.classList.add('open'));
+  }
+
   // ---------- Baustein-Editor ----------
   function field(label, name, value, opts = {}) {
     const v = esc(value == null ? '' : value);
@@ -741,7 +818,14 @@
         case 'heading': return field('Überschrift', 'title', draft.title);
         case 'text': return field('Überschrift', 'title', draft.title) + field('Text', 'text', draft.text, { area: true, rich: true, rows: 8, placeholder: 'Text schreiben – Wörter markieren und oben gestalten' });
         case 'event': return `<div class="field-row">${field('Datum', 'date', draft.date, { type: 'date' })}${field('Uhrzeit', 'time', draft.time, { type: 'time' })}</div>`
-          + field('Titel', 'title', draft.title) + field('Ort', 'place', draft.place) + field('Kurzinfo', 'text', draft.text, { area: true, rows: 3 });
+          + field('Titel', 'title', draft.title) + field('Ort', 'place', draft.place) + field('Kurzinfo', 'text', draft.text, { area: true, rows: 3 })
+          + `<div class="field"><span>Anhang: Bild oder PDF (z. B. Flyer, Ausschreibung)</span>
+              ${draft.attachment && images[draft.attachment.ref]
+                ? `<div class="att-edit">${attachmentThumb(draft, true)}<div><strong>${esc(draft.attachment.name || (draft.attachment.kind === 'pdf' ? 'PDF' : 'Bild'))}</strong>
+                    <div class="image-actions"><label class="btn small">Ersetzen<input type="file" accept="image/*,application/pdf" data-att-input hidden></label>
+                    <button type="button" class="link" data-att-remove>Entfernen</button></div></div></div>`
+                : `<label class="btn">Bild oder PDF wählen<input type="file" accept="image/*,application/pdf" data-att-input hidden></label>`}
+            </div>`;
         case 'post': return imageField(draft.image, draft.id) + field('Datum', 'date', draft.date, { type: 'date' })
           + field('Überschrift', 'title', draft.title) + field('Text', 'text', draft.text, { area: true, rich: true, rows: 7, placeholder: 'Text schreiben – Wörter markieren und oben gestalten' });
         case 'image': return imageField(draft.image, draft.id) + field('Bildunterschrift', 'caption', draft.caption)
@@ -824,6 +908,7 @@
           closeSheet();
           commit('Baustein gelöscht');
         }
+        if (e.target.closest('[data-att-remove]')) { collect(form); delete draft.attachment; render(); return; }
         const dc = e.target.closest('[data-dropcap]');
         if (dc) { collect(form); draft.more = { ...(draft.more || {}), dropcap: Number(dc.dataset.dropcap) }; render(); return; }
         const al = e.target.closest('[data-align]');
@@ -879,6 +964,15 @@
       form.addEventListener('change', async (e) => {
         const input = e.target;
         if (input.matches('[data-rerender]')) { collect(form); render(); return; }
+        if (input.matches('[data-att-input]') && input.files && input.files[0]) {
+          collect(form);
+          try {
+            draft.attachment = await uploadAttachment(input.files[0]);
+            ui().toast('Anhang hinzugefügt', true);
+            render();
+          } catch (err) { ui().toast(err.message); }
+          return;
+        }
         if (!input.files || !input.files.length) return;
         collect(form);
         try {
@@ -1144,6 +1238,7 @@
     'team-photo': (el) => openTeamPhoto(el.dataset.team),
     'link-move': (el) => moveLink(el.dataset.block, el.dataset.slot),
     'feature-edit': (el) => { editing = 'home'; detailEditing = true; openBlockEditor(el.dataset.id, false, 'sub'); },
+    'att-open': (el) => openViewer(el.dataset.ref, el.dataset.kind, el.dataset.title),
     'hero-open': (el) => {
       const b = homeBlocks().find((x) => x.id === el.dataset.block);
       const ref = ((b.more || {}).heroImages || []).filter(shownImage)[Number(el.dataset.index)];

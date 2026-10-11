@@ -444,7 +444,7 @@
       await done(store.clear());
       const write = await imgStore('readwrite');
       await Promise.all(Object.entries(data.images || {})
-        .filter(([id, url]) => /^img:/.test(id) && /^data:image\//.test(url))
+        .filter(([id, url]) => (/^img:/.test(id) && /^data:image\//.test(url)) || (/^doc:/.test(id) && /^data:application\/pdf/.test(url)))
         .map(([id, url]) => done(write.put(url, id))));
       return { photos: Object.keys(data.images || {}).length };
     },
@@ -528,6 +528,17 @@
       if (!member.isAdmin) throw new Error('Nur Admins dürfen Fotos hochladen.');
       if (!/^data:image\/(jpeg|png|webp);base64,/.test(dataUrl)) throw new Error('Dieses Bild lässt sich nicht verwenden.');
       const id = 'img:' + uid();
+      await done((await imgStore('readwrite')).put(dataUrl, id));
+      return id;
+    },
+
+    // PDF ablegen (z. B. Flyer zu einem Termin) → Kennung "doc:<id>"; höchstens ca. 10 MB
+    async putFile(dataUrl) {
+      const member = requireMember();
+      if (!member.isAdmin) throw new Error('Nur Admins dürfen Dateien hochladen.');
+      if (!/^data:application\/pdf;base64,/.test(dataUrl)) throw new Error('Bitte ein PDF wählen.');
+      if (dataUrl.length > 14000000) throw new Error('Das PDF ist zu groß (höchstens etwa 10 MB).');
+      const id = 'doc:' + uid();
       await done((await imgStore('readwrite')).put(dataUrl, id));
       return id;
     },

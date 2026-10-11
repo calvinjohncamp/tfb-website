@@ -395,3 +395,9 @@ Monatsabschluss.
 - **11.10.2026** – **Großer Textanfang** auf Unterseiten einstellbar: Aus / 1 / 2 / 3 Zeichen
   (`more.dropcap`, Standard 1). Umgesetzt als `<span class="lead-letters">` statt `::first-letter`,
   damit z. B. „50“ komplett groß steht; Leerzeichen am Ende werden nicht mitgenommen.
+- **11.10.2026** – **Anhang an Terminen** (Aktuell): Bild oder PDF (`block.attachment = {ref, kind, name}`).
+  Bilder werden auf 2400 px verkleinert (Flyer bleiben lesbar), PDFs als `doc:<id>` im
+  Bildspeicher (`api.putFile`, max. ca. 10 MB; Sichern & Laden nimmt sie mit). Im Termin ein
+  kleines Vorschaubild bzw. PDF-Symbol rechts. **Großansicht** (`openViewer` in site.js): Bild in
+  Seitengröße, Klick aufs Bild = Lesegröße (volle Breite, scrollbar) und zurück; PDF im
+  eingebauten Betrachter (Blob-URL, „In neuem Tab öffnen“). Schließen mit ×, Klick außerhalb oder Esc.
