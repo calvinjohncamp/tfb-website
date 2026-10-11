@@ -1453,3 +1453,30 @@ button.meet-row:hover { background: #FAF8F3; }
 .field .rich-area span, .field .rich-tools span:not(.rich-sep) { display: inline; margin: 0; font-size: inherit; font-weight: inherit; }
 .field .rich-area .tx-l { font-size: 1.25em; }
 .field .rich-area .tx-xl { font-size: 1.65em; font-weight: 800; }
+
+/* 11.10.: Unterseite im Look der Startseite – Foto ohne Schrift, Texte linksbündig */
+.story-tools { display: flex; justify-content: flex-end; gap: 8px; margin: 0 0 10px; }
+.story-photo { border-radius: 20px; overflow: hidden; aspect-ratio: 16 / 10; background: #EEE; }
+.story-photo > img, .story-photo > .ph { width: 100%; height: 100%; object-fit: cover; display: block; }
+.story-grid { display: grid; gap: 22px; margin-top: 22px; }
+.story-head .feature-kicker { margin: 0 0 14px; }
+.story-head h1 { font-family: var(--serif); font-size: 2.1rem; line-height: 1.05; margin: 0; }
+.story-head .feature-sub { margin-top: 18px; }
+.story-link { margin-top: 24px; }
+.story-link .feature-link { margin: 0; }
+.story .story-body { max-width: 720px; margin: 0; }
+.story .story-foot { max-width: none; margin: 32px 0 0; justify-content: flex-start; }
+@media (min-width: 640px) {
+  .story-photo { aspect-ratio: 2 / 1; }
+  .story-head h1 { font-size: 2.5rem; }
+}
+@media (min-width: 1024px) {
+  .story-photo { aspect-ratio: 21 / 9; }
+  .story-grid { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); column-gap: 48px; align-items: start; margin-top: 28px; }
+  .story-head { position: sticky; top: 140px; }
+  .story-head h1 { font-size: 3.1rem; }
+  .story .story-body { max-width: none; }
+}
+/* Editor: Link-Ziel */
+.link-target .seg { margin-bottom: 8px; }
+.link-target select, .link-target input[type=url] { width: 100%; min-height: 48px; padding: 0 14px; border: 1.5px solid var(--line); border-radius: 12px; background: var(--paper); font-size: 16px; }

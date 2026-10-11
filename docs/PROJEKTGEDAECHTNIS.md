@@ -368,3 +368,8 @@ Monatsabschluss.
   Einmal-Update: hochgeladenes Titelfoto des Kiosk-Themas auf die Unterseite verschoben
   (Original-Format an), Startseite zeigt wieder das gezeichnete Motiv.
   Gelernt: `.field span { display:block }` störte execCommand im Editor → für `.rich-area` zurückgesetzt.
+- **11.10.2026** – **Link-Ziel** im Editor wählbar: „Website“ (Adresse, ohne https:// wird ergänzt)
+  oder „Seite der App“ (Auswahl: Home, Kiosk, Strichliste, Abrechnungen, Aktuell, Sport, Club,
+  Verabreden und Home-Unterseiten). **Unterseite** im Look der Startseite: Foto oben ohne Schrift,
+  darunter links Kicker/Überschrift/Unterzeile/Link (Desktop mitlaufend), rechts Text, Zitat –
+  alles linksbündig; Bearbeiten/Schließen über dem Foto.

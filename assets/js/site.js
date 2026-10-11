@@ -346,26 +346,30 @@
     const parts = String(more.text || '').split(/\n{2,}/);
     const cut = Math.min(2, parts.length);
     const admin = state.member && state.member.isAdmin;
+    const n = String(site.pages.home.blocks.filter((x) => x.type === 'feature').indexOf(b) + 1).padStart(2, '0');
+    const size = b.textSize === 'gross' ? 'text-l' : '';
     return `
       <article class="story">
-        <header class="story-hero">
-          <div class="story-hero-img">${picture(b.image, b.id, b.title)}</div>
-          <div class="story-hero-text">
-            <p class="feature-kicker"><span>${esc(String(site.pages.home.blocks.filter((x) => x.type === 'feature').indexOf(b) + 1).padStart(2, '0'))}</span>${esc(b.kicker || '')}</p>
+        <div class="story-tools">
+          ${admin ? `<button type="button" class="view-close" data-action="feature-edit" data-id="${esc(b.id)}" aria-label="Bearbeiten">${icon.pencil}</button>` : ''}
+          <a class="view-close" href="#home" aria-label="Zurück zur Startseite">${icon.close}</a>
+        </div>
+        <div class="story-photo">${picture(b.image, b.id, b.title)}</div>
+        <div class="story-grid">
+          <header class="story-head">
+            <p class="feature-kicker"><span>${n}</span>${esc(b.kicker || '')}</p>
             <h1>${esc(b.title)}</h1>
+            ${b.subtitle ? `<p class="feature-sub">${esc(b.subtitle)}</p>` : ''}
+            ${b.link && b.link.url ? `<div class="story-link">${linkMarkup(b.link)}</div>` : ''}
+          </header>
+          <div class="story-body">
+            <div class="story-text dropcap ${size}">${paragraphs(parts.slice(0, cut).join('\n\n') || b.text)}</div>
+            ${more.quote ? `<blockquote class="story-quote"><p>${esc(more.quote)}</p>${more.quoteBy ? `<cite>${esc(more.quoteBy)}</cite>` : ''}</blockquote>` : ''}
+            ${parts.length > cut ? `<div class="story-text ${size}">${paragraphs(parts.slice(cut).join('\n\n'))}</div>` : ''}
           </div>
-          <a class="view-close story-close" href="#home" aria-label="Zurück zur Startseite">${icon.close}</a>
-          ${admin ? `<button type="button" class="view-close story-edit" data-action="feature-edit" data-id="${esc(b.id)}" aria-label="Bearbeiten">${icon.pencil}</button>` : ''}
-        </header>
-        <div class="story-body">
-          ${b.subtitle ? `<p class="story-lead">${esc(b.subtitle)}</p>` : ''}
-          <div class="story-text dropcap ${b.textSize === 'gross' ? 'text-l' : ''}">${paragraphs(parts.slice(0, cut).join('\n\n') || b.text)}</div>
-          ${more.quote ? `<blockquote class="story-quote"><p>${esc(more.quote)}</p>${more.quoteBy ? `<cite>${esc(more.quoteBy)}</cite>` : ''}</blockquote>` : ''}
-          ${parts.length > cut ? `<div class="story-text">${paragraphs(parts.slice(cut).join('\n\n'))}</div>` : ''}
         </div>
         ${collage(more.images || [], b.id, Boolean(more.original))}
         <div class="story-foot">
-          ${linkMarkup(b.link)}
           <a class="more-link back" href="#home"><span aria-hidden="true">←</span> Zur Startseite</a>
         </div>
       </article>
@@ -517,6 +521,30 @@
     if (opts.area) return `<label class="field"><span>${label}</span><textarea name="${name}" rows="${opts.rows || 5}" placeholder="${esc(opts.placeholder || '')}">${v}</textarea></label>`;
     return `<label class="field"><span>${label}</span><input name="${name}" type="${opts.type || 'text'}" value="${v}" placeholder="${esc(opts.placeholder || '')}"></label>`;
   }
+  // Link-Ziel: entweder eine Website oder eine Seite der App (Menüpunkte und Home-Unterseiten)
+  function appTargets() {
+    const list = [['#home', 'Home'], ['#kiosk', 'Kiosk'], ['#strichliste', 'Kiosk · Strichliste'], ['#abrechnungen', 'Kiosk · Abrechnungen'],
+      ['#aktuell', 'Aktuell'], ['#sport', 'Sport'], ['#club', 'Club']];
+    if (TFB.config.features && TFB.config.features.treffen) list.push(['#treffen', 'Verabreden']);
+    (site.pages.home.blocks || []).filter((x) => x.type === 'feature' && hasMore(x))
+      .forEach((x) => list.push([`#home/${x.id}`, `Home · ${x.title}`]));
+    return list;
+  }
+  function linkTargetField(url) {
+    const isApp = /^#/.test(url || '');
+    const targets = appTargets();
+    return `
+      <div class="field link-target"><span>Ziel</span>
+        <div class="seg link-kind-seg">
+          <button type="button" class="${isApp ? '' : 'on'}" data-linkkind="web">Website</button>
+          <button type="button" class="${isApp ? 'on' : ''}" data-linkkind="app">Seite der App</button>
+        </div>
+        ${isApp
+          ? `<select name="linkApp">${targets.map(([v, l]) => `<option value="${esc(v)}" ${v === url ? 'selected' : ''}>${esc(l)}</option>`).join('')}</select>
+             <input type="hidden" name="linkUrl" value="${esc(url)}">`
+          : `<input name="linkUrl" type="url" inputmode="url" value="${esc(url || '')}" placeholder="https://www.beispiel.de">`}
+      </div>`;
+  }
   function imageField(ref, seed, label = 'Foto', target = '') {
     return `
       <div class="field"><span>${label}</span>
@@ -554,7 +582,7 @@
             + `<div class="field"><span>Textgröße (ganzer Text, Startseite und Unterseite)</span><div class="seg size-seg">${[['normal', 'Normal'], ['gross', 'Groß']].map(([v, l]) =>
                 `<button type="button" class="${(draft.textSize || 'normal') === v ? 'on' : ''}" data-textsize="${v}">${l}</button>`).join('')}</div></div>`
             + `<h3 class="editor-sub">Link</h3>`
-            + field('Ziel (Website oder #kiosk, #aktuell, #sport, #club)', 'linkUrl', lk.url, { placeholder: 'https://… oder #kiosk' })
+            + linkTargetField(lk.url)
             + field('Link-Text (für Knopf und Vorschau-Karte – der dezente Link zeigt die Adresse)', 'linkLabel', lk.label, { placeholder: 'z. B. Jetzt Platz buchen' })
             + (() => {
               const n = String(draft.text || '').split(/\n{2,}/).filter((x) => x.trim()).length;
@@ -621,6 +649,15 @@
           closeSheet();
           commit('Baustein gelöscht');
         }
+        const lk2 = e.target.closest('[data-linkkind]');
+        if (lk2) {
+          collect(form);
+          const cur = (draft.link || {}).url || '';
+          const toApp = lk2.dataset.linkkind === 'app';
+          if (toApp !== /^#/.test(cur)) draft.link = { ...(draft.link || {}), url: toApp ? '#kiosk' : '', image: toApp ? null : (draft.link || {}).image };
+          render();
+          return;
+        }
         const ts = e.target.closest('[data-textsize]');
         if (ts) { collect(form); draft.textSize = ts.dataset.textsize; render(); return; }
         const lay = e.target.closest('[data-layout]');
@@ -658,7 +695,8 @@
       ['title', 'text', 'date', 'time', 'place', 'caption', 'label', 'url', 'kicker', 'subtitle'].forEach((k) => { if (f[k]) draft[k] = f[k].value.trim(); });
       if (f.moreText) draft.more = { ...(draft.more || {}), text: f.moreText.value.trim(), quote: f.moreQuote.value.trim(), quoteBy: f.moreQuoteBy.value.trim(), original: Boolean(f.moreOriginal && f.moreOriginal.checked) };
       if (f.linkUrl) {
-        draft.link = { ...(draft.link || {}), url: f.linkUrl.value.trim(), label: f.linkLabel.value.trim(), ...(f.linkPos ? { position: f.linkPos.value } : {}) };
+        const url = f.linkApp ? f.linkApp.value : f.linkUrl.value.trim();
+        draft.link = { ...(draft.link || {}), url: url && !/^(https?:\/\/|#)/i.test(url) ? 'https://' + url : url, label: f.linkLabel.value.trim(), ...(f.linkPos ? { position: f.linkPos.value } : {}) };
         if (f.linkTitle) Object.assign(draft.link, { title: f.linkTitle.value.trim(), text: f.linkText.value.trim() });
       }
       if (f.people) draft.people = f.people.value.split('\n').map((l) => l.trim()).filter(Boolean)
