@@ -3,7 +3,7 @@
 **Zuerst lesen.** Ausführlicher Verlauf: [PROJEKTGEDAECHTNIS.md](PROJEKTGEDAECHTNIS.md).
 Diese Zusammenfassung hat Vorrang vor älteren Zwischenständen.
 
-Stand: **11.10.2026 abends, Aufräumen Stufe 3**. Cache **tfb-kiosk-v102**.
+Stand: **11.10.2026 abends, Home-Looks zur Auswahl**. Cache **tfb-kiosk-v103**.
 Alles committet (Sicherungspunkt v99 `f8e6c90`, danach Stufe 1). Nicht veröffentlicht.
 
 ## Neu: Ordner heißt jetzt „9. TFB-Website“
@@ -39,6 +39,22 @@ Alles committet (Sicherungspunkt v99 `f8e6c90`, danach Stufe 1). Nicht veröffen
   sich an (Desktop: „Links siehst du jede Änderung sofort“).
 - Beim Wegschieben bleibt die Kopfzeile sichtbar („antippen zum Weiterbearbeiten“),
   Rückkehr an dieselbe Stelle – gilt auch für den Home-Themen-Editor (`togglePeek`).
+
+## Neu in v103: sechs Home-Looks zur Auswahl (vorübergehend)
+
+- Auf Home unten ein schwarzer Schalter „Look · 1–6“ (nicht im Bearbeiten-Modus).
+  Gleiche Inhalte, andere Gestaltung; Wahl im Browser (`localStorage tfb_home_look`).
+  1 Heute · 2 Zeitung (Haarlinien, Serifen, Aufmacher + 2 Spalten) · 3 Magazin
+  (zentrierte Serifen-Überschriften, gerahmte Fotos, rote Trenner) · 4 Bühne
+  (Überschrift auf dem Foto; Hoch/Quadrat mit Text daneben) · 5 Kacheln (Karten,
+  Aufmacher quer, Text gekürzt) · 6 Wechselspiel (Foto/Text je halb, Seiten wechseln,
+  große Ziffer).
+- Looks 2–6 geben das Bildformat vor; ein mit „Foto einpassen“ gesetzter Ausschnitt
+  (Mittelpunkt + Zoom) bleibt dabei erhalten. Serifenschrift nur in Look 2/3
+  (`--look-serif`, Systemschriften, offline).
+- Code: `homeLook()`, `lookSwitch()`, Aktion `home-look` in `site.js`; CSS-Block
+  „Home-Looks“ am Ende von `app.css`. Nach der Entscheidung: gewählten Look fest
+  machen, Schalter und übrige Looks entfernen.
 
 ## Neu in v102 (Aufräumen Stufe 3)
 

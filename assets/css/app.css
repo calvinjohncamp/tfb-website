@@ -2137,3 +2137,140 @@ h1, h2, h3, .event h3, .feature-body h2, .story-head h1, .post-body h3 { -webkit
 .sport-switch a.on { background: #fff; color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,.08); }
 /* Roter Knopf immer mit weißer Schrift */
 .membership-actions .membership-apply-button { color: #fff; }
+
+/* =====================================================================
+   Home-Looks (Vorschau): dieselben Themen, sechs Gestaltungen.
+   Look 1 = heutiger Stand. Fotos mit „Foto einpassen“ behalten in jedem
+   Look ihren gewählten Ausschnitt (Mittelpunkt und Zoom) – nur das Format
+   gibt der Look vor.
+   ===================================================================== */
+.home-masthead { display: none; }
+.home-look-2, .home-look-3 { --look-serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif; }
+.site-page[class*="home-look-"]:not(.home-look-1) .feature-media { aspect-ratio: var(--look-ratio, 3 / 2); }
+.site-page[class*="home-look-"]:not(.home-look-1) .feature-media:has(> .photo-frame.active) { aspect-ratio: var(--look-ratio, 3 / 2) !important; }
+.site-page[class*="home-look-"]:not(.home-look-1) .feature-media > .photo-frame.active { height: 100%; aspect-ratio: auto; }
+.site-page[class*="home-look-"]:not(.home-look-1) .feature.img-right > :first-child { order: 0; }
+
+/* Schalter unten (nur vorübergehend) */
+.look-switch { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(14px + var(--safe-bottom)); z-index: 60; display: flex; align-items: center; gap: 10px; padding: 6px 6px 6px 14px; border-radius: 99px; background: rgba(28, 28, 28, .9); color: #fff; box-shadow: 0 10px 30px rgba(0,0,0,.25); backdrop-filter: blur(8px); font-size: .78rem; white-space: nowrap; }
+.look-name b { font-weight: 800; }
+.look-btns { display: flex; gap: 3px; }
+.look-btns button { width: 30px; height: 30px; border-radius: 50%; border: 0; background: transparent; color: rgba(255,255,255,.75); font-weight: 800; font-size: .8rem; cursor: pointer; }
+.look-btns button:hover { color: #fff; background: rgba(255,255,255,.12); }
+.look-btns button.on { background: var(--signal); color: #fff; }
+@media (max-width: 340px) { .look-name { display: none; } }
+
+/* ---------- Look 2 · Zeitung: Haarlinien, Serifen, Aufmacher + Spalten ---------- */
+.home-look-2 .home-masthead { display: flex; justify-content: space-between; padding: 9px 0; margin: 0 0 30px; border-top: 3px double var(--ink); border-bottom: 1px solid var(--ink); font-size: .68rem; font-weight: 800; letter-spacing: .2em; text-transform: uppercase; }
+.home-look-2 .page-main { display: grid; gap: 0 !important; }
+.home-look-2 .feature { display: block; padding: 0 0 30px; margin: 0 0 30px; border-bottom: 1px solid var(--ink); }
+.home-look-2 .feature-media { --look-ratio: 3 / 2; border-radius: 0; }
+.home-look-2 .feature-portrait .feature-media, .home-look-2 .feature-square .feature-media { --look-ratio: 4 / 3; }
+.home-look-2 .feature-body { display: block; margin-top: 18px; }
+.home-look-2 .feature-kicker { font-size: .66rem; letter-spacing: .18em; color: var(--ink); margin-bottom: 10px; }
+.home-look-2 .feature-kicker span { font-family: var(--font); font-size: .66rem; font-weight: 800; color: var(--signal); }
+.home-look-2 .feature-body h2 { font-family: var(--look-serif); font-weight: 700; font-size: 1.9rem; line-height: 1.08; letter-spacing: -.01em; }
+.home-look-2 .feature-sub { font-family: var(--look-serif); font-style: italic; font-weight: 400; color: var(--muted); font-size: 1.08rem; }
+.home-look-2 .feature-text { font-family: var(--look-serif); font-size: 1.02rem; line-height: 1.6; }
+@media (min-width: 1024px) {
+  .home-look-2 .page-main { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .home-look-2 .feature:first-child { grid-column: 1 / -1; }
+  .home-look-2 .feature:first-child .feature-media { --look-ratio: 21 / 9; }
+  .home-look-2 .feature:first-child .feature-body { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); column-gap: 44px; margin-top: 24px; }
+  .home-look-2 .feature:first-child .feature-body h2 { font-size: 3.2rem; }
+  .home-look-2 .feature:first-child .feature-text { columns: 2; column-gap: 36px; column-rule: 1px solid var(--line); margin-top: 0; }
+  .home-look-2 .feature:not(:first-child):nth-child(even) { padding-right: 30px; }
+  .home-look-2 .feature:not(:first-child):nth-child(odd) { padding-left: 30px; border-left: 1px solid var(--ink); }
+  .home-look-2 .feature:not(:first-child):nth-child(even):last-child { grid-column: 1 / -1; padding-right: 0; }
+}
+
+/* ---------- Look 3 · Magazin: zentrierte Überschriften, gerahmte Fotos, rote Trenner ---------- */
+.home-look-3 .home-masthead { display: flex; justify-content: center; gap: 18px; margin: 0 0 8px; font-size: .68rem; font-weight: 800; letter-spacing: .32em; text-transform: uppercase; color: var(--signal); }
+.home-look-3 .home-masthead span + span::before { content: "·"; margin-right: 18px; color: var(--muted); }
+.home-look-3 .page-main { gap: 0 !important; }
+.home-look-3 .feature { display: block; padding: 48px 0; }
+.home-look-3 .feature + .feature::before { content: ""; display: block; width: 64px; height: 3px; border-radius: 3px; background: var(--signal); margin: 0 auto 48px; }
+.home-look-3 .feature-media { --look-ratio: 3 / 2; max-width: 920px; margin: 0 auto; border-radius: 6px; }
+.home-look-3 .feature-portrait .feature-media { --look-ratio: 4 / 5; max-width: 480px; }
+.home-look-3 .feature-square .feature-media { --look-ratio: 1; max-width: 560px; }
+.home-look-3 .feature-body { display: block; max-width: 680px; margin: 34px auto 0; text-align: center; }
+.home-look-3 .feature-kicker { justify-content: center; letter-spacing: .3em; font-size: .68rem; color: var(--signal); margin-bottom: 14px; }
+.home-look-3 .feature-kicker span { display: none; }
+.home-look-3 .feature-body h2 { font-family: var(--look-serif); font-weight: 600; font-size: clamp(2.1rem, 5vw, 3.5rem); line-height: 1.04; letter-spacing: -.015em; }
+.home-look-3 .feature-sub { font-family: var(--look-serif); font-style: italic; font-weight: 400; color: var(--ink); font-size: 1.2rem; margin-top: 14px; }
+.home-look-3 .feature-text { text-align: left; max-width: 600px; margin: 24px auto 0; font-family: var(--look-serif); font-size: 1.08rem; line-height: 1.65; }
+.home-look-3 .link-place, .home-look-3 .feature-more { display: flex; justify-content: center; }
+.home-look-3 .feature-left > .link-place { margin-top: 20px; }
+
+/* ---------- Look 4 · Bühne: Überschrift auf dem Foto, Text darunter ---------- */
+.home-look-4 .page-main { gap: 64px !important; }
+.home-look-4 .feature { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0; }
+.home-look-4 .feature-body { display: contents; }
+.home-look-4 .feature > :first-child { grid-area: 1 / 1; }
+.home-look-4 .feature-media { --look-ratio: 4 / 5; border-radius: 22px; }
+.home-look-4 .feature-left { grid-area: 1 / 1; align-self: end; z-index: 1; padding: 120px 24px 26px; border-radius: 0 0 22px 22px; background: linear-gradient(to bottom, transparent, rgba(0,0,0,.5) 32%, rgba(0,0,0,.84)); color: #fff; }
+.home-look-4 .feature-left .feature-kicker { color: rgba(255,255,255,.82); }
+.home-look-4 .feature-left h2 { color: #fff; font-size: 2.2rem; text-shadow: 0 2px 18px rgba(0,0,0,.25); }
+.home-look-4 .feature .feature-hit:hover h2 { color: #fff; text-decoration: underline; text-decoration-color: var(--signal); text-decoration-thickness: 3px; text-underline-offset: 6px; }
+.home-look-4 .feature-left .feature-sub { color: #fff; opacity: .92; font-weight: 500; }
+.home-look-4 .feature-right { grid-area: 2 / 1; padding: 22px 4px 0; }
+.home-look-4 .feature-text { margin-top: 0; }
+@media (min-width: 900px) {
+  .home-look-4 .feature-media { --look-ratio: 16 / 9; }
+  .home-look-4 .feature-left { padding: 160px 44px 38px; max-width: none; }
+  .home-look-4 .feature-left h2 { font-size: 3.4rem; max-width: 14ch; }
+  .home-look-4 .feature-left .feature-sub { max-width: 46ch; }
+  .home-look-4 .feature-wide .feature-right { padding: 30px 44px 0; columns: 2; column-gap: 48px; }
+  .home-look-4 .feature-wide .feature-right > * { break-inside: avoid; }
+  /* Hoch- und Quadratformat: Foto mit Überschrift links (oder rechts), Text daneben */
+  .home-look-4 .feature-portrait, .home-look-4 .feature-square { grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); column-gap: 56px; }
+  .home-look-4 .feature-portrait .feature-media { --look-ratio: 4 / 5; }
+  .home-look-4 .feature-square .feature-media { --look-ratio: 1; }
+  .home-look-4 .feature-portrait .feature-left, .home-look-4 .feature-square .feature-left { padding: 140px 30px 30px; }
+  .home-look-4 .feature-portrait .feature-left h2, .home-look-4 .feature-square .feature-left h2 { font-size: 2.6rem; }
+  .home-look-4 .feature-portrait .feature-right, .home-look-4 .feature-square .feature-right { grid-area: 1 / 2; align-self: center; padding: 0; }
+  .home-look-4 .feature.img-right { grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); }
+  .home-look-4 .feature.img-right > :first-child, .home-look-4 .feature.img-right .feature-left { grid-column: 2; }
+  .home-look-4 .feature.img-right .feature-right { grid-column: 1; }
+}
+
+/* ---------- Look 5 · Kacheln: Karten, Aufmacher quer, Rest im Raster ---------- */
+.home-look-5 .page-main { display: grid; grid-template-columns: minmax(0, 1fr); gap: 22px !important; }
+.home-look-5 .feature { display: flex; flex-direction: column; gap: 0; background: #fff; border-radius: 22px; overflow: hidden; box-shadow: 0 0 0 1px #ECE7DD, 0 10px 30px rgba(28, 37, 32, .06); }
+.home-look-5 .feature-media { --look-ratio: 4 / 3; border-radius: 0; }
+.home-look-5 .feature.has-more .feature-hit:hover .feature-media { transform: none; box-shadow: none; }
+.home-look-5 .feature-body { display: flex; flex-direction: column; padding: 22px 24px 26px; flex: 1; }
+.home-look-5 .feature-kicker { align-self: flex-start; gap: 6px; padding: 5px 11px; border: 1px solid var(--line); border-radius: 99px; font-size: .62rem; letter-spacing: .1em; color: var(--ink); margin-bottom: 14px; }
+.home-look-5 .feature-kicker span { font-size: 0; }
+.home-look-5 .feature-kicker span::before { content: "●"; font-size: .7rem; color: var(--signal); }
+.home-look-5 .feature-body h2 { font-family: var(--font); font-weight: 800; font-size: 1.6rem; line-height: 1.15; letter-spacing: -.02em; }
+.home-look-5 .feature-sub { color: var(--muted); font-weight: 500; font-size: 1rem; }
+.home-look-5 .feature-text { font-size: .95rem; color: #3D443F; display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical; overflow: hidden; }
+.home-look-5 .feature-right { margin-top: auto; }
+@media (min-width: 900px) {
+  .home-look-5 .page-main { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .home-look-5 .feature:first-child, .home-look-5 .feature:nth-child(even):last-child { grid-column: 1 / -1; flex-direction: row; }
+  .home-look-5 .feature:first-child > :first-child, .home-look-5 .feature:nth-child(even):last-child > :first-child { flex: 0 0 58%; }
+  .home-look-5 .feature:first-child .feature-media, .home-look-5 .feature:nth-child(even):last-child .feature-media { --look-ratio: auto; height: 100%; min-height: 420px; }
+  .home-look-5 .feature:first-child .feature-body, .home-look-5 .feature:nth-child(even):last-child .feature-body { padding: 36px 38px; justify-content: center; }
+  .home-look-5 .feature:first-child .feature-body h2 { font-size: 2.3rem; }
+  .home-look-5 .feature:first-child .feature-right { margin-top: 0; }
+}
+
+/* ---------- Look 6 · Wechselspiel: Foto und Text je halb, Seiten wechseln, große Ziffer ---------- */
+.home-look-6 .page-main { gap: 26px !important; }
+.home-look-6 .feature { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0; background: var(--cream); border-radius: 26px; overflow: hidden; }
+.home-look-6 .feature-media { --look-ratio: 1; border-radius: 0; }
+.home-look-6 .feature-body { display: block; padding: 26px 24px 30px; }
+.home-look-6 .feature-kicker { flex-direction: column; align-items: flex-start; gap: 6px; }
+.home-look-6 .feature-kicker span { font-family: var(--serif); font-size: 4.2rem; line-height: .9; font-weight: 700; color: transparent; -webkit-text-stroke: 1.5px var(--signal); letter-spacing: -.02em; }
+.home-look-6 .feature-body h2 { font-size: 2.1rem; }
+@media (min-width: 900px) {
+  .home-look-6 .feature { grid-template-columns: repeat(2, minmax(0, 1fr)); min-height: 540px; }
+  .home-look-6 .feature > :first-child { height: 100%; }
+  .home-look-6 .feature-media { --look-ratio: auto; height: 100%; }
+  .home-look-6 .feature:nth-child(even) > :first-child { order: 2; }
+  .home-look-6 .feature-body { align-self: center; padding: 52px 54px; }
+  .home-look-6 .feature-kicker span { font-size: 6rem; }
+  .home-look-6 .feature-body h2 { font-size: 2.8rem; }
+}

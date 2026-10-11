@@ -21,6 +21,10 @@ Neues bitte unten bei „Verlauf“ ergänzen.
 - Stufe 2 erledigt (v101): Porträt-Editor in Schritten 1–4 + „Mehr Gestaltung“,
   Handy-Vorschau-Knopf. Stufe 3 erledigt (v102): Home-Editor in Schritten +
   „Mehr Gestaltung“, einheitliche Umschalter/Knöpfe. Danach: Live-Seite.
+- v103: Nutzer will Home hochwertiger/abwechslungsreicher (Vorlagen: Art Newspaper,
+  Stutterheim, Gazette, Tablet, Vanity Fair, Foks). Sechs Looks per Schalter zum
+  Vergleichen; Editor bleibt gleich. Danach: Mannschaftsporträt/Unterseiten mit
+  flexiblen Hoch-/Querformat-Fotos (Wunsch des Nutzers, noch offen).
 
 ## Verbindlicher Stand 11.10.2026 – Projekt-Update
 

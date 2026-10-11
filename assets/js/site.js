@@ -545,7 +545,7 @@
       ? list.map((b, i) => editWrap(b, i, list.length, renderBlock(b, key))).join('')
       : legal ? `<div class="legal-document">${list.map(b => renderBlock(b, key)).join('')}</div>` : layoutBlocks(list, key);
     return `
-      <div class="site-page ${edit ? 'editing-page' : ''}" data-page="${key}">
+      <div class="site-page ${edit ? 'editing-page' : ''} ${key === 'home' && !edit ? `home-look-${homeLook()}` : ''}" data-page="${key}">
         ${edit ? `
           <div class="editbar">
             <div><strong>${esc(page.title)} bearbeiten</strong><span>Bausteine antippen zum Ändern · Pfeile zum Sortieren</span></div>
@@ -561,10 +561,22 @@
           <a class="${training ? '' : 'on'}" href="#sport" ${training ? '' : 'aria-current="page"'}>Mannschaften</a>
           <a class="${training ? 'on' : ''}" href="#sport/training" ${training ? 'aria-current="page"' : ''}>Training</a>
         </nav>` : ''}
+        ${key === 'home' && !edit ? `<div class="home-masthead"><span>Neu im Club</span><span>${esc(new Date().toLocaleDateString('de-DE', { month: 'long', year: 'numeric' }))}</span></div>` : ''}
         ${blocks}
+        ${key === 'home' && !edit ? lookSwitch() : ''}
         ${edit && (key !== 'sport' || training) ? `<button type="button" class="btn block add-section" data-action="block-new">${icon.plus} Baustein hinzufügen</button>` : ''}
         ${edit || legal ? '' : partnerSlot(key, page.partnerKicker || 'Präsentiert von')}
       </div>`;
+  }
+  // Home: vorübergehender Look-Schalter (gleiche Inhalte, sechs Gestaltungen) – Wahl bleibt im Browser
+  const HOME_LOOKS = [['1', 'Heute'], ['2', 'Zeitung'], ['3', 'Magazin'], ['4', 'Bühne'], ['5', 'Kacheln'], ['6', 'Wechselspiel']];
+  function homeLook() {
+    try { const v = localStorage.getItem('tfb_home_look'); return HOME_LOOKS.some(([k]) => k === v) ? v : '1'; } catch { return '1'; }
+  }
+  function lookSwitch() {
+    const cur = homeLook();
+    return `<nav class="look-switch" aria-label="Look der Startseite (Vorschau)"><span class="look-name">Look · <b>${esc((HOME_LOOKS.find(([k]) => k === cur) || HOME_LOOKS[0])[1])}</b></span>
+      <span class="look-btns">${HOME_LOOKS.map(([k, l]) => `<button type="button" class="${k === cur ? 'on' : ''}" data-action="home-look" data-look="${k}" title="${l}" aria-pressed="${k === cur}">${k}</button>`).join('')}</span></nav>`;
   }
   ['home', 'aktuell', 'sport', 'verein', 'impressum', 'satzung'].forEach((key) => { TFB.views[routeOf(key)] = () => pageView(key); });
 
@@ -2031,6 +2043,7 @@
       if (ui().currentView() === routeOf(editing)) ui().renderView(); else location.hash = '#' + routeOf(editing);
       window.scrollTo(0, 0);
     },
+    'home-look': async (el) => { try { localStorage.setItem('tfb_home_look', el.dataset.look); } catch {} const y = window.scrollY; await ui().renderView(); window.scrollTo(0, y); },
     'site-done': () => { editing = null; ui().renderView(); window.scrollTo(0, 0); },
     'block-move': (el) => {
       const list = blocksOf();
