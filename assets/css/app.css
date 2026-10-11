@@ -1176,12 +1176,9 @@ button.meet-row:hover { background: #FAF8F3; }
 @media (min-width: 1024px) {
   .view[data-view="home"] .page-grid.single .page-main { gap: 80px; }
   .feature-wide .feature-media { aspect-ratio: 21 / 9; }
-  /* Breit: links Kicker, Überschrift, Unterzeile oben gestapelt – rechts Text, darunter die Links */
-  .feature-wide .feature-body { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); grid-template-rows: auto auto auto auto 1fr auto; column-gap: 48px; align-items: start; }
-  .feature-wide .feature-body > * { grid-column: 1; }
-  .feature-wide .feature-body > .feature-sub { margin-top: 12px; }
-  .feature-wide .feature-body > .feature-text { grid-column: 2; grid-row: 1 / 6; margin-top: 4px; }
-  .feature-wide .feature-body > .feature-actions { grid-column: 2; grid-row: 6; }
+  /* Breit: links Kicker, Überschrift, Unterzeile (+ ggf. Link) – rechts Text, Link, „Mehr erfahren“ */
+  .feature-wide .feature-body { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); column-gap: 48px; align-items: start; }
+  .feature-wide .feature-right { margin-top: 4px; }
   .feature-body h2 { font-size: 3.1rem; }
   .feature-portrait, .feature-square { gap: 56px; }
 }
@@ -1398,3 +1395,18 @@ button.meet-row:hover { background: #FAF8F3; }
 .dragging-link .link-slot.empty button { border-color: var(--signal); color: var(--signal); background: color-mix(in srgb, var(--signal) 6%, #fff); }
 .link-slot.over button, .link-slot.over .link-drag { box-shadow: 0 0 0 3px color-mix(in srgb, var(--signal) 35%, transparent); }
 .link-pos-seg button { font-size: .8rem; }
+
+/* Home-Themen: linke Spalte mit mehr Luft, Link-Plätze immer linksbündig */
+.feature-left .feature-kicker { margin-bottom: 14px; }
+.feature-left .feature-sub { margin-top: 18px; }
+.feature-left > .link-place, .feature-left > .link-slot.filled, .feature-left > .link-slot.with-button { margin-top: 24px; }
+.feature-text > .link-place, .feature-text > .link-slot.filled { margin: 2px 0 16px; }
+.feature-right > .link-place, .feature-right > .link-slot.filled, .feature-right > .link-slot.with-button { margin-top: 6px; }
+.feature-more { margin: 16px 0 0; }
+.link-place .feature-link, .link-slot .feature-link { margin: 0; }
+.feature-left > .link-slot.empty.with-button { margin-top: 24px; }
+/* Ablagelinien erscheinen nur beim Ziehen */
+.link-slot.empty:not(.with-button) { display: none; }
+.dragging-link .editing-page .feature.drag-src .link-slot.empty:not(.with-button) { display: block; margin: 4px 0 12px; }
+.link-drop { display: block; border: 2px dashed color-mix(in srgb, var(--signal) 45%, transparent); border-radius: 10px; padding: 6px 12px; font-size: .74rem; font-weight: 700; color: var(--signal); text-transform: uppercase; letter-spacing: .1em; }
+.link-slot.over .link-drop { background: color-mix(in srgb, var(--signal) 10%, #fff); border-color: var(--signal); }

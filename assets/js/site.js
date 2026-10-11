@@ -141,31 +141,36 @@
         const n = String(Math.max(1, list.findIndex((x) => x.id === b.id) + 1)).padStart(2, '0');
         const more = hasMore(b) && editing !== page ? `#home/${esc(b.id)}` : '';
         const wrap = (html) => (more ? `<a class="feature-hit" href="${more}">${html}</a>` : html);
-        // Link-Platz: „left“ = links unter der Unterzeile, „right“ = rechts unter dem Text (Standard).
-        // Im Bearbeiten-Modus mit der Maus zwischen beiden Plätzen ziehen oder „Link hierher“ tippen.
+        // Link-Platz (immer linksbündig): „left“ = links unter der Unterzeile, „right-<n>“ = rechts
+        // vor Absatz n, „right“ = rechts unter dem Text (Standard). Im Bearbeiten-Modus mit der Maus
+        // auf eine der Ablagelinien ziehen, die beim Ziehen erscheinen – oder im Editor unter „Platz“.
         const hasLink = Boolean(b.link && b.link.url);
-        const pos = (b.link && b.link.position) === 'left' ? 'left' : 'right';
+        const pos = (b.link && b.link.position) || 'right';
         const isEdit = editing === page;
-        const slot = (name) => {
+        const slot = (name, hint) => {
           if (!hasLink) return '';
-          if (!isEdit) return pos === name ? linkMarkup(b.link) : '';
-          return pos === name
-            ? `<div class="link-slot filled" data-slot="${name}" data-block="${esc(b.id)}"><div class="link-drag" draggable="true" data-block="${esc(b.id)}" title="Mit der Maus an einen anderen Platz ziehen">${linkMarkup(b.link)}</div></div>`
-            : `<div class="link-slot empty" data-slot="${name}" data-block="${esc(b.id)}"><button type="button" data-action="link-move" data-block="${esc(b.id)}" data-slot="${name}">Link hierher</button></div>`;
+          if (!isEdit) return pos === name ? `<div class="link-place">${linkMarkup(b.link)}</div>` : '';
+          if (pos === name) return `<div class="link-slot filled" data-slot="${name}" data-block="${esc(b.id)}"><div class="link-drag" draggable="true" data-block="${esc(b.id)}" title="Mit der Maus an eine andere Stelle ziehen">${linkMarkup(b.link)}</div></div>`;
+          return `<div class="link-slot empty ${hint ? 'with-button' : ''}" data-slot="${name}" data-block="${esc(b.id)}">${hint
+            ? `<button type="button" data-action="link-move" data-block="${esc(b.id)}" data-slot="${name}">${hint}</button>`
+            : '<span class="link-drop" aria-hidden="true">hier ablegen</span>'}</div>`;
         };
-        const left = slot('left');
+        const parts = String(b.text || '').split(/\n{2,}/).filter((x) => x.trim());
+        const textHtml = parts.map((p, i) => slot(`right-${i}`) + paragraphs(p)).join('');
         return `
           <article class="feature feature-${esc(b.layout || 'wide')} ${more ? 'has-more' : ''}">
             ${wrap(`<div class="feature-media">${picture(b.image, b.id, b.title)}</div>`)}
             <div class="feature-body">
-              <p class="feature-kicker"><span>${n}</span>${esc(b.kicker || '')}</p>
-              ${wrap(`<h2>${esc(b.title)}</h2>`)}
-              ${b.subtitle ? `<p class="feature-sub">${esc(b.subtitle)}</p>` : ''}
-              ${left ? `<div class="feature-link-left">${left}</div>` : ''}
-              <div class="feature-text">${paragraphs(b.text)}</div>
-              <div class="feature-actions">
-                ${more ? `<a class="more-link" href="${more}">Mehr erfahren <span aria-hidden="true">→</span></a>` : ''}
-                ${slot('right')}
+              <div class="feature-left">
+                <p class="feature-kicker"><span>${n}</span>${esc(b.kicker || '')}</p>
+                ${wrap(`<h2>${esc(b.title)}</h2>`)}
+                ${b.subtitle ? `<p class="feature-sub">${esc(b.subtitle)}</p>` : ''}
+                ${slot('left', 'Link hierher')}
+              </div>
+              <div class="feature-right">
+                <div class="feature-text">${textHtml}</div>
+                ${slot('right', 'Link hierher')}
+                ${more ? `<p class="feature-more"><a class="more-link" href="${more}">Mehr erfahren <span aria-hidden="true">→</span></a></p>` : ''}
               </div>
             </div>
           </article>`;
@@ -479,8 +484,12 @@
             + `<h3 class="editor-sub">Link</h3>`
             + field('Ziel (Website oder #kiosk, #aktuell, #sport, #club)', 'linkUrl', lk.url, { placeholder: 'https://… oder #kiosk' })
             + field('Link-Text (für Knopf und Vorschau-Karte – der dezente Link zeigt die Adresse)', 'linkLabel', lk.label, { placeholder: 'z. B. Jetzt Platz buchen' })
-            + `<div class="field"><span>Platz</span><div class="seg link-pos-seg">${[['left', 'Links unter der Unterzeile'], ['right', 'Rechts unter dem Text']].map(([v, l]) =>
-                `<button type="button" class="${((lk.position === 'left') ? 'left' : 'right') === v ? 'on' : ''}" data-linkpos="${v}">${l}</button>`).join('')}</div></div>`
+            + (() => {
+              const n = String(draft.text || '').split(/\n{2,}/).filter((x) => x.trim()).length;
+              const cur = lk.position || 'right';
+              const opts = [['left', 'Links unter der Unterzeile'], ...Array.from({ length: n }, (_, i) => [`right-${i}`, i === 0 ? 'Rechts vor dem Text' : `Rechts nach Absatz ${i}`]), ['right', 'Rechts unter dem Text']];
+              return `<label class="field"><span>Platz (oder im Bearbeiten-Modus mit der Maus ziehen)</span><select name="linkPos">${opts.map(([v, l]) => `<option value="${v}" ${v === cur ? 'selected' : ''}>${l}</option>`).join('')}</select></label>`;
+            })()
             + `<div class="field"><span>Darstellung</span><div class="seg link-style-seg">${[['chip', 'Dezent'], ['button', 'Knopf'], ['card', 'Vorschau-Karte']].map(([v, l]) =>
                 `<button type="button" class="${(lk.style || 'chip') === v ? 'on' : ''}" data-linkstyle="${v}">${l}</button>`).join('')}</div></div>`
             + (ext ? `<p class="muted small">Für die Vorschau (kleines Bild beim dezenten Link, große Karte): im Echtbetrieb holt die App Bild, Titel und Text automatisch von der Website – bis dahin hier eintragen.</p>`
@@ -540,8 +549,6 @@
         }
         const lay = e.target.closest('[data-layout]');
         if (lay) { collect(form); draft.layout = lay.dataset.layout; render(); return; }
-        const lp = e.target.closest('[data-linkpos]');
-        if (lp) { collect(form); draft.link = { ...(draft.link || {}), position: lp.dataset.linkpos }; render(); return; }
         const ls = e.target.closest('[data-linkstyle]');
         if (ls) { collect(form); draft.link = { ...(draft.link || {}), style: ls.dataset.linkstyle }; render(); return; }
         const mr = e.target.closest('[data-more-remove]');
@@ -575,7 +582,7 @@
       ['title', 'text', 'date', 'time', 'place', 'caption', 'label', 'url', 'kicker', 'subtitle'].forEach((k) => { if (f[k]) draft[k] = f[k].value.trim(); });
       if (f.moreText) draft.more = { ...(draft.more || {}), text: f.moreText.value.trim(), quote: f.moreQuote.value.trim(), quoteBy: f.moreQuoteBy.value.trim() };
       if (f.linkUrl) {
-        draft.link = { ...(draft.link || {}), url: f.linkUrl.value.trim(), label: f.linkLabel.value.trim() };
+        draft.link = { ...(draft.link || {}), url: f.linkUrl.value.trim(), label: f.linkLabel.value.trim(), ...(f.linkPos ? { position: f.linkPos.value } : {}) };
         if (f.linkTitle) Object.assign(draft.link, { title: f.linkTitle.value.trim(), text: f.linkText.value.trim() });
       }
       if (f.people) draft.people = f.people.value.split('\n').map((l) => l.trim()).filter(Boolean)
@@ -823,7 +830,7 @@
   function moveLink(blockId, slotName) {
     const b = site.pages.home.blocks.find((x) => x.id === blockId);
     if (!b || !b.link) return;
-    b.link.position = slotName === 'left' ? 'left' : 'right';
+    b.link.position = /^(left|right|right-\d+)$/.test(slotName) ? slotName : 'right';
     commit('Link verschoben');
   }
   let dragBlock = null;
@@ -834,11 +841,14 @@
     e.dataTransfer.effectAllowed = 'move';
     try { e.dataTransfer.setData('text/plain', dragBlock); } catch (_) {}
     document.body.classList.add('dragging-link');
+    const art = d.closest('.feature');
+    if (art) art.classList.add('drag-src');
   });
   document.addEventListener('dragend', () => {
     dragBlock = null;
     document.body.classList.remove('dragging-link');
     document.querySelectorAll('.link-slot.over').forEach((x) => x.classList.remove('over'));
+    document.querySelectorAll('.feature.drag-src').forEach((x) => x.classList.remove('drag-src'));
   });
   document.addEventListener('dragover', (e) => {
     const slot = e.target.closest && e.target.closest('.link-slot');

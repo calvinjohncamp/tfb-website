@@ -352,3 +352,8 @@ Monatsabschluss.
   Ablageplätze statt freier Pixel, damit es auf allen Geräten sauber bleibt. Dezenter Link
   zeigt jetzt fett die **echte Adresse** (z. B. padel-bielstein.de ↗); der Link-Text gilt nur
   noch für Knopf und Vorschau-Karte. Links öffnen im Bearbeiten-Modus nicht.
+- **11.10.2026** – Home-Themen in **linke/rechte Spalte** getrennt (`.feature-left`, `.feature-right`),
+  dadurch sitzt der Link rechts direkt unter dem Text. Link-Plätze jetzt fein: `left`, `right-<n>`
+  (vor Absatz n) und `right` (unter dem Text) – immer linksbündig. Beim Ziehen erscheinen nur die
+  Ablagelinien des eigenen Themas; „Link hierher“-Knöpfe links und rechts für Touch; im Editor
+  Auswahlliste „Platz“. Linke Spalte mit mehr Abstand zwischen Kicker, Überschrift, Unterzeile.
