@@ -385,3 +385,6 @@ Monatsabschluss.
   und „Breit“ gewählt, steht es links über der Überschrift statt quer zugeschnitten.
 - **11.10.2026** – Titelbild der Unterseite: bis zu **4 eigene Fotos**, „2–4 Quadrate nebeneinander“
   (4 Quadrate: Desktop in einer Reihe, Handy 2 × 2).
+- **11.10.2026** – Fotos im Editor **sortierbar**: Titelfotos der Unterseite, Fotokollage und
+  Galerie-Bausteine – Pfeile ‹ › auf jedem Vorschaubild oder per Maus ziehen (Griff ⠿);
+  `thumbEdit()` / `moveInList()` in site.js. Live-Vorschau zeigt die neue Reihenfolge sofort.

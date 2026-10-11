@@ -616,6 +616,18 @@
           : `<input name="linkUrl" type="url" inputmode="url" value="${esc(url || '')}" placeholder="https://www.beispiel.de">`}
       </div>`;
   }
+  // Foto in einer Fotoliste des Editors: × entfernen, ‹ › verschieben, mit der Maus ziehen
+  function thumbEdit(ref, list, i, n, removeAttr) {
+    return `<div class="gallery-thumb sortable" draggable="true" data-list="${list}" data-index="${i}">
+      ${picture(ref, ref)}
+      <span class="thumb-grip" aria-hidden="true" title="Ziehen zum Sortieren">⠿</span>
+      <button type="button" ${removeAttr}="${esc(ref)}" aria-label="Foto entfernen">×</button>
+      <span class="thumb-move">
+        <button type="button" data-move-list="${list}" data-move-index="${i}" data-move-dir="-1" ${i === 0 ? 'disabled' : ''} aria-label="Nach vorne">‹</button>
+        <button type="button" data-move-list="${list}" data-move-index="${i}" data-move-dir="1" ${i === n - 1 ? 'disabled' : ''} aria-label="Nach hinten">›</button>
+      </span>
+    </div>`;
+  }
   function imageField(ref, seed, label = 'Foto', target = '') {
     return `
       <div class="field"><span>${label}</span>
@@ -679,7 +691,7 @@
             <div class="field"><span>Quelle</span>${seg('herosrc', heroSrc, [['same', 'Wie auf der Startseite'], ['own', 'Eigene Fotos']])}</div>
             ${heroSrc === 'own' ? `<div class="field"><span>Fotos (1 bis 4)</span>
               <div class="gallery-edit">
-                ${heroImgs.map((ref) => `<div class="gallery-thumb">${picture(ref, ref)}<button type="button" data-hero-remove="${esc(ref)}" aria-label="Foto entfernen">×</button></div>`).join('')}
+                ${heroImgs.map((ref, i) => thumbEdit(ref, 'hero', i, heroImgs.length, 'data-hero-remove')).join('')}
                 ${heroImgs.length < 4 ? `<label class="gallery-add">${ui().icon.plus}<span>Foto</span><input type="file" accept="image/*" multiple data-hero-input hidden></label>` : ''}
               </div></div>` : ''}
             <div class="field"><span>Darstellung</span>${seg('heromode', heroMode, [['wide', 'Breit'], ['original', 'Originalformat'], ['squares', '2–4 Quadrate nebeneinander', heroSrc !== 'own' || heroImgs.length < 2]])}</div>
@@ -690,7 +702,7 @@
             + `<h3 class="editor-sub">Fotokollage unten</h3>
                <label class="meet-check"><input type="checkbox" name="moreOriginal" ${more.original ? 'checked' : ''}><span>Fotos im Originalformat zeigen (nicht zuschneiden – 4:3, 1:1, 16:9 …)</span></label>
                <div class="field"><div class="gallery-edit">
-                  ${(more.images || []).filter(shownImage).map((ref) => `<div class="gallery-thumb">${picture(ref, ref)}<button type="button" data-more-remove="${esc(ref)}" aria-label="Foto entfernen">×</button></div>`).join('')}
+                  ${(() => { const l = (more.images || []).filter(shownImage); return l.map((ref, i) => thumbEdit(ref, 'more', i, l.length, 'data-more-remove')).join(''); })()}
                   <label class="gallery-add">${ui().icon.plus}<span>Fotos</span><input type="file" accept="image/*" multiple data-more-input hidden></label>
                 </div></div>`;
           return `
@@ -711,7 +723,7 @@
         case 'gallery': return field('Überschrift', 'title', draft.title) + `
           <div class="field"><span>Fotos</span>
             <div class="gallery-edit">
-              ${(draft.images || []).filter((r) => images[r]).map((ref) => `<div class="gallery-thumb"><img src="${images[ref]}" alt=""><button type="button" data-gallery-remove="${esc(ref)}" aria-label="Foto entfernen">×</button></div>`).join('')}
+              ${(() => { const l = (draft.images || []).filter((r) => images[r]); return l.map((ref, i) => thumbEdit(ref, 'gallery', i, l.length, 'data-gallery-remove')).join(''); })()}
               <label class="gallery-add">${ui().icon.plus}<span>Fotos</span><input type="file" accept="image/*" multiple data-gallery-input hidden></label>
             </div>
           </div>`;
@@ -738,6 +750,37 @@
           <button type="button" class="btn block danger" data-delete>${live ? 'Thema löschen' : 'Baustein löschen'}</button>
         </form>`);
       const form = document.querySelector('[data-editor=block]');
+      // Fotos per Ziehen umsortieren (innerhalb derselben Liste)
+      let dragThumb = null;
+      form.addEventListener('dragstart', (e) => {
+        const t = e.target.closest && e.target.closest('.gallery-thumb.sortable');
+        if (!t) return;
+        dragThumb = t;
+        t.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'move';
+        try { e.dataTransfer.setData('text/plain', t.dataset.index); } catch (_) {}
+      });
+      form.addEventListener('dragover', (e) => {
+        const t = e.target.closest && e.target.closest('.gallery-thumb.sortable');
+        if (!dragThumb || !t || t.dataset.list !== dragThumb.dataset.list) return;
+        e.preventDefault();
+        form.querySelectorAll('.gallery-thumb.drop-target').forEach((x) => x !== t && x.classList.remove('drop-target'));
+        if (t !== dragThumb) t.classList.add('drop-target');
+      });
+      form.addEventListener('drop', (e) => {
+        const t = e.target.closest && e.target.closest('.gallery-thumb.sortable');
+        if (!dragThumb || !t || t.dataset.list !== dragThumb.dataset.list) return;
+        e.preventDefault();
+        collect(form);
+        moveInList(t.dataset.list, Number(dragThumb.dataset.index), Number(t.dataset.index));
+        dragThumb = null;
+        render();
+      });
+      form.addEventListener('dragend', () => {
+        if (dragThumb) dragThumb.classList.remove('dragging');
+        dragThumb = null;
+        form.querySelectorAll('.drop-target').forEach((x) => x.classList.remove('drop-target'));
+      });
       if (live) {
         startLive(id, draft, () => { collect(form); return edTab; });
         document.querySelector('#sheet-root .sheet').scrollTop = keepScroll;
@@ -753,6 +796,8 @@
           closeSheet();
           commit('Baustein gelöscht');
         }
+        const mv = e.target.closest('[data-move-list]');
+        if (mv) { collect(form); moveInList(mv.dataset.moveList, Number(mv.dataset.moveIndex), Number(mv.dataset.moveIndex) + Number(mv.dataset.moveDir)); render(); return; }
         const tabBtn = e.target.closest('[data-edtab]');
         if (tabBtn) {
           collect(form);
@@ -813,6 +858,18 @@
         } catch (err) { ui().toast(err.message); }
       });
     };
+
+    // Foto in einer Liste von Position a nach b verschieben (nur angezeigte Fotos zählen)
+    function moveInList(list, a, b) {
+      const get = () => (list === 'hero' ? (draft.more || {}).heroImages : list === 'more' ? (draft.more || {}).images : draft.images) || [];
+      const visible = get().filter(list === 'gallery' ? (r) => images[r] : shownImage);
+      if (b < 0 || b >= visible.length || a === b) return;
+      const [item] = visible.splice(a, 1);
+      visible.splice(b, 0, item);
+      if (list === 'hero') draft.more = { ...(draft.more || {}), heroImages: visible };
+      else if (list === 'more') draft.more = { ...(draft.more || {}), images: visible };
+      else draft.images = visible;
+    }
 
     // Formularwerte in den Entwurf übernehmen
     const collect = (form) => {
