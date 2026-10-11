@@ -346,3 +346,9 @@ Monatsabschluss.
   Neu: **einmalige Text-Updates** (`TFB.siteSeed.updates`, erledigte IDs in `site.applied`) –
   damit lassen sich Texte auf bereits gepflegten Geräten ersetzen, ohne Fotos/Links anzufassen.
   Breite Home-Ansicht: Kicker/Überschrift/Unterzeile links dicht gestapelt, Text + Links rechts.
+- **11.10.2026** – Link in Home-Themen **verschiebbar**: `link.position` = `left` (unter der
+  Unterzeile) oder `right` (unter dem Text, Standard). Im Bearbeiten-Modus mit der Maus ziehen
+  (HTML5 Drag & Drop) oder „Link hierher“ tippen; zusätzlich im Editor unter „Platz“. Feste
+  Ablageplätze statt freier Pixel, damit es auf allen Geräten sauber bleibt. Dezenter Link
+  zeigt jetzt fett die **echte Adresse** (z. B. padel-bielstein.de ↗); der Link-Text gilt nur
+  noch für Knopf und Vorschau-Karte. Links öffnen im Bearbeiten-Modus nicht.

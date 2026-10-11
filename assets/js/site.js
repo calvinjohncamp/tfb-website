@@ -118,8 +118,8 @@
     if (style === 'chip') return `
       <p class="feature-link"><a class="link-chip" href="${esc(link.url)}"${target}>
         ${ext && link.image ? `<span class="link-chip-img">${picture(link.image, link.url)}</span>` : ''}
-        <span class="link-chip-label">${label}</span>
-        ${ext ? `<small>${esc(hostOf(link.url))} ↗</small>` : '<small aria-hidden="true">→</small>'}
+        <span class="link-chip-label">${ext ? esc(hostOf(link.url)) : label}</span>
+        <small aria-hidden="true">${ext ? '↗' : '→'}</small>
       </a></p>`;
     return `
       <a class="link-card" href="${esc(link.url)}" target="_blank" rel="noopener">
@@ -141,6 +141,19 @@
         const n = String(Math.max(1, list.findIndex((x) => x.id === b.id) + 1)).padStart(2, '0');
         const more = hasMore(b) && editing !== page ? `#home/${esc(b.id)}` : '';
         const wrap = (html) => (more ? `<a class="feature-hit" href="${more}">${html}</a>` : html);
+        // Link-Platz: „left“ = links unter der Unterzeile, „right“ = rechts unter dem Text (Standard).
+        // Im Bearbeiten-Modus mit der Maus zwischen beiden Plätzen ziehen oder „Link hierher“ tippen.
+        const hasLink = Boolean(b.link && b.link.url);
+        const pos = (b.link && b.link.position) === 'left' ? 'left' : 'right';
+        const isEdit = editing === page;
+        const slot = (name) => {
+          if (!hasLink) return '';
+          if (!isEdit) return pos === name ? linkMarkup(b.link) : '';
+          return pos === name
+            ? `<div class="link-slot filled" data-slot="${name}" data-block="${esc(b.id)}"><div class="link-drag" draggable="true" data-block="${esc(b.id)}" title="Mit der Maus an einen anderen Platz ziehen">${linkMarkup(b.link)}</div></div>`
+            : `<div class="link-slot empty" data-slot="${name}" data-block="${esc(b.id)}"><button type="button" data-action="link-move" data-block="${esc(b.id)}" data-slot="${name}">Link hierher</button></div>`;
+        };
+        const left = slot('left');
         return `
           <article class="feature feature-${esc(b.layout || 'wide')} ${more ? 'has-more' : ''}">
             ${wrap(`<div class="feature-media">${picture(b.image, b.id, b.title)}</div>`)}
@@ -148,10 +161,11 @@
               <p class="feature-kicker"><span>${n}</span>${esc(b.kicker || '')}</p>
               ${wrap(`<h2>${esc(b.title)}</h2>`)}
               ${b.subtitle ? `<p class="feature-sub">${esc(b.subtitle)}</p>` : ''}
+              ${left ? `<div class="feature-link-left">${left}</div>` : ''}
               <div class="feature-text">${paragraphs(b.text)}</div>
               <div class="feature-actions">
                 ${more ? `<a class="more-link" href="${more}">Mehr erfahren <span aria-hidden="true">→</span></a>` : ''}
-                ${linkMarkup(b.link)}
+                ${slot('right')}
               </div>
             </div>
           </article>`;
@@ -464,7 +478,9 @@
             + field('Kurzer Text auf der Startseite', 'text', draft.text, { area: true, rich: true, rows: 5, placeholder: 'Zwei, drei Sätze. Leerzeile = neuer Absatz' })
             + `<h3 class="editor-sub">Link</h3>`
             + field('Ziel (Website oder #kiosk, #aktuell, #sport, #club)', 'linkUrl', lk.url, { placeholder: 'https://… oder #kiosk' })
-            + field('Link-Text', 'linkLabel', lk.label, { placeholder: 'z. B. Jetzt Platz buchen' })
+            + field('Link-Text (für Knopf und Vorschau-Karte – der dezente Link zeigt die Adresse)', 'linkLabel', lk.label, { placeholder: 'z. B. Jetzt Platz buchen' })
+            + `<div class="field"><span>Platz</span><div class="seg link-pos-seg">${[['left', 'Links unter der Unterzeile'], ['right', 'Rechts unter dem Text']].map(([v, l]) =>
+                `<button type="button" class="${((lk.position === 'left') ? 'left' : 'right') === v ? 'on' : ''}" data-linkpos="${v}">${l}</button>`).join('')}</div></div>`
             + `<div class="field"><span>Darstellung</span><div class="seg link-style-seg">${[['chip', 'Dezent'], ['button', 'Knopf'], ['card', 'Vorschau-Karte']].map(([v, l]) =>
                 `<button type="button" class="${(lk.style || 'chip') === v ? 'on' : ''}" data-linkstyle="${v}">${l}</button>`).join('')}</div></div>`
             + (ext ? `<p class="muted small">Für die Vorschau (kleines Bild beim dezenten Link, große Karte): im Echtbetrieb holt die App Bild, Titel und Text automatisch von der Website – bis dahin hier eintragen.</p>`
@@ -524,6 +540,8 @@
         }
         const lay = e.target.closest('[data-layout]');
         if (lay) { collect(form); draft.layout = lay.dataset.layout; render(); return; }
+        const lp = e.target.closest('[data-linkpos]');
+        if (lp) { collect(form); draft.link = { ...(draft.link || {}), position: lp.dataset.linkpos }; render(); return; }
         const ls = e.target.closest('[data-linkstyle]');
         if (ls) { collect(form); draft.link = { ...(draft.link || {}), style: ls.dataset.linkstyle }; render(); return; }
         const mr = e.target.closest('[data-more-remove]');
@@ -779,6 +797,7 @@
     },
     'team-season': (el) => { teamSeason = el.dataset.season; ui().renderView(); },
     'team-photo': (el) => openTeamPhoto(el.dataset.team),
+    'link-move': (el) => moveLink(el.dataset.block, el.dataset.slot),
     'feature-edit': (el) => { editing = 'home'; detailEditing = true; openBlockEditor(el.dataset.id); },
     'collage-open': (el) => {
       const b = site.pages.home.blocks.find((x) => x.id === el.dataset.block);
@@ -799,6 +818,48 @@
   window.addEventListener('hashchange', () => {
     if (detailEditing || (editing && location.hash.replace('#', '') !== routeOf(editing))) { editing = null; detailEditing = false; }
   });
+
+  // Link eines Home-Themas an den anderen Platz setzen
+  function moveLink(blockId, slotName) {
+    const b = site.pages.home.blocks.find((x) => x.id === blockId);
+    if (!b || !b.link) return;
+    b.link.position = slotName === 'left' ? 'left' : 'right';
+    commit('Link verschoben');
+  }
+  let dragBlock = null;
+  document.addEventListener('dragstart', (e) => {
+    const d = e.target.closest && e.target.closest('.link-drag');
+    if (!d) return;
+    dragBlock = d.dataset.block;
+    e.dataTransfer.effectAllowed = 'move';
+    try { e.dataTransfer.setData('text/plain', dragBlock); } catch (_) {}
+    document.body.classList.add('dragging-link');
+  });
+  document.addEventListener('dragend', () => {
+    dragBlock = null;
+    document.body.classList.remove('dragging-link');
+    document.querySelectorAll('.link-slot.over').forEach((x) => x.classList.remove('over'));
+  });
+  document.addEventListener('dragover', (e) => {
+    const slot = e.target.closest && e.target.closest('.link-slot');
+    if (!slot || !dragBlock || slot.dataset.block !== dragBlock) return;
+    e.preventDefault();
+    document.querySelectorAll('.link-slot.over').forEach((x) => x !== slot && x.classList.remove('over'));
+    slot.classList.add('over');
+  });
+  document.addEventListener('drop', (e) => {
+    const slot = e.target.closest && e.target.closest('.link-slot');
+    if (!slot || !dragBlock || slot.dataset.block !== dragBlock) return;
+    e.preventDefault();
+    const id = dragBlock;
+    dragBlock = null;
+    document.body.classList.remove('dragging-link');
+    moveLink(id, slot.dataset.slot);
+  });
+  // Im Bearbeiten-Modus öffnen Links nicht (sonst stört es beim Ziehen und Antippen)
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('.editing-page .link-drag a, .editing-page .feature-link a')) e.preventDefault();
+  }, true);
 
   // Werkzeugleiste über Textfeldern: Link, Fett, Zwischenüberschrift an der Cursor-Stelle einfügen
   document.addEventListener('click', (e) => {

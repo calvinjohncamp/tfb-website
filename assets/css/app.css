@@ -1177,11 +1177,11 @@ button.meet-row:hover { background: #FAF8F3; }
   .view[data-view="home"] .page-grid.single .page-main { gap: 80px; }
   .feature-wide .feature-media { aspect-ratio: 21 / 9; }
   /* Breit: links Kicker, Überschrift, Unterzeile oben gestapelt – rechts Text, darunter die Links */
-  .feature-wide .feature-body { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); grid-template-rows: auto auto auto 1fr auto; column-gap: 48px; align-items: start; }
+  .feature-wide .feature-body { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); grid-template-rows: auto auto auto auto 1fr auto; column-gap: 48px; align-items: start; }
   .feature-wide .feature-body > * { grid-column: 1; }
   .feature-wide .feature-body > .feature-sub { margin-top: 12px; }
-  .feature-wide .feature-body > .feature-text { grid-column: 2; grid-row: 1 / 5; margin-top: 4px; }
-  .feature-wide .feature-body > .feature-actions { grid-column: 2; grid-row: 5; }
+  .feature-wide .feature-body > .feature-text { grid-column: 2; grid-row: 1 / 6; margin-top: 4px; }
+  .feature-wide .feature-body > .feature-actions { grid-column: 2; grid-row: 6; }
   .feature-body h2 { font-size: 3.1rem; }
   .feature-portrait, .feature-square { gap: 56px; }
 }
@@ -1383,3 +1383,18 @@ button.meet-row:hover { background: #FAF8F3; }
 .feature-actions .feature-link { min-width: 0; max-width: 100%; }
 .link-chip-label, .link-chip small { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .story-text .text-sub, .feature-text .text-sub { font-family: var(--serif); text-transform: none; letter-spacing: -.015em; color: var(--ink); font-size: 1.4rem; font-weight: 800; margin: 1.5em 0 .35em; }
+
+/* Link-Platz links unter der Unterzeile; im Bearbeiten-Modus ziehbar */
+.feature-link-left { margin-top: 16px; }
+.feature-link-left .feature-link { margin: 0; }
+.link-slot { min-width: 0; }
+.link-slot.empty { display: none; }
+.editing-page .link-slot.empty { display: block; }
+.link-slot.empty button { border: 1.5px dashed #CFC8BA; background: transparent; border-radius: 99px; padding: 7px 14px; font-size: .78rem; font-weight: 700; color: var(--muted); }
+.link-slot.empty button:hover { border-color: var(--signal); color: var(--signal); }
+.link-drag { cursor: grab; display: inline-block; border-radius: 99px; outline: 1.5px dashed transparent; outline-offset: 4px; }
+.editing-page .link-drag { outline-color: color-mix(in srgb, var(--signal) 55%, transparent); }
+.link-drag:active { cursor: grabbing; }
+.dragging-link .link-slot.empty button { border-color: var(--signal); color: var(--signal); background: color-mix(in srgb, var(--signal) 6%, #fff); }
+.link-slot.over button, .link-slot.over .link-drag { box-shadow: 0 0 0 3px color-mix(in srgb, var(--signal) 35%, transparent); }
+.link-pos-seg button { font-size: .8rem; }
