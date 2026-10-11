@@ -213,6 +213,9 @@
   // Neu am 10.10.: Home-Seite ergänzen, „Verein“ heißt jetzt „Club“, Platz für Team-Inhalte.
   if (db.site && db.site.pages && TFB.siteSeed) {
     let changed = false;
+    Object.entries(TFB.legalPages || {}).forEach(([key, page]) => {
+      if (!db.site.pages[key]) { db.site.pages[key] = clone(page); changed = true; }
+    });
     if (!db.site.pages.home) { db.site.pages = { home: clone(TFB.siteSeed.pages.home), ...db.site.pages }; changed = true; }
     const club = db.site.pages.verein;
     if (club && club.title === 'Verein') { club.title = 'Club'; club.partnerKicker = TFB.siteSeed.pages.verein.partnerKicker; changed = true; }
@@ -227,6 +230,13 @@
     (TFB.siteSeed.updates || []).forEach((u) => {
       if (db.site.applied.includes(u.id)) return;
       const page = db.site.pages[u.page];
+      // Neuer Baustein oben auf einer Seite (z. B. vier Info-Knöpfe im Club), falls noch nicht vorhanden
+      if (u.insertBlock && page && !page.blocks.some((x) => x.id === u.insertBlock.id)) page.blocks.unshift(clone(u.insertBlock));
+      if (u.removeBlock && page) {
+        const before = page.blocks.length;
+        page.blocks = page.blocks.filter((x) => x.id !== u.removeBlock);
+        if (page.blocks.length !== before) changed = true;
+      }
       const block = page && page.blocks.find((x) => x.id === u.block);
       if (block) {
         // Hochgeladenes Titelfoto auf die Unterseite verschieben (Kollage, vorne) – Startseite zeigt wieder das Motiv
@@ -235,12 +245,50 @@
           block.more = { ...(block.more || {}), images: [block.image, ...imgs] };
           block.image = null;
         }
-        Object.assign(block, clone(u.set || {}));
+        if (!u.setWhenText || block.text === u.setWhenText) Object.assign(block, clone(u.set || {}));
+        if (u.fillFacts && block.type === 'facts') {
+          block.items = block.items || [];
+          while (block.items.length < u.fillFacts) block.items.push({ value: '–', label: 'Kennzahl' });
+        }
         if (u.more) block.more = { ...(block.more || {}), ...clone(u.more) };
       }
       db.site.applied.push(u.id);
       changed = true;
     });
+    if (changed) save(db);
+  }
+  // Keep edited/imported news; remove only untouched sample copy, never by author.
+  if (db.site?.pages && TFB.siteSeed) {
+    let changed = false;
+    const samples = TFB.siteSeed.pages.aktuell.blocks.filter(b => b.type === 'post');
+    for (const page of Object.values(db.site.pages)) {
+      const before = page.blocks.length;
+      page.blocks = page.blocks.filter(b => !samples.some(s => b.id === s.id && b.type === 'post'
+        && b.title === s.title && b.text === s.text && b.date === s.date
+        && !b.image && !(b.images || []).length));
+      changed ||= before !== page.blocks.length;
+    }
+    const home = db.site.pages.home;
+    if (home) {
+      const before = home.blocks.length;
+      home.blocks = home.blocks.filter(b => !TFB.siteSeed.pages.home.blocks.some(s => b.id === s.id
+        && b.type === 'feature' && b.title === s.title && b.text === s.text && b.subtitle === s.subtitle && b.kicker === s.kicker
+        && b.link?.url === s.link?.url && b.link?.label === s.link?.label
+        && !b.image && !(b.images || []).length && !(b.album?.images || []).length
+        && !(b.more?.heroImages || []).length && !(b.more?.images || []).some(r => !/^ph:/.test(r))
+        && (!b.more?.text || b.more.text === s.more?.text)
+        && (!b.more?.quote || b.more.quote === s.more?.quote)));
+      changed ||= before !== home.blocks.length;
+    }
+    const training = db.site.pages.sport;
+    if (training && !db.site.applied.includes('training-dates-without-calendar-v98')) {
+      const at = training.blocks.findIndex(b => b.id === 's-schnupper-btn');
+      if (at >= 0) training.blocks.splice(at, 1, { id: 's-schnupper-dates', type: 'text', title: 'Termine für Schnuppertraining demnächst', text: '' });
+      const intro = training.blocks.find(b => b.id === 's-schnupper');
+      if (intro) intro.text = String(intro.text || '').replace('\nBitte schaut in unseren Kalender, dort sind die Schnuppertrainingstage aufgeführt.', '');
+      db.site.applied.push('training-dates-without-calendar-v98');
+      changed = true;
+    }
     if (changed) save(db);
   }
   // ---------- Clubgeflüster & Insider News (Beiträge der Mitglieder) ----------
@@ -251,7 +299,6 @@
   ];
   if (db.members && !db.members.some((m) => m.id === 'm-j1')) { db.members.push(...clone(YOUTH)); save(db); }
   if (!db.community) {
-    const ago = (min) => new Date(Date.now() - min * 60000).toISOString();
     db.community = {
       // Wer darf in den Insider News einer Mannschaft schreiben? Im Echtbetrieb aus der
       // nuLiga-Spielermeldung (Abgleich mit der Mitgliederliste), hier Beispiel-Zuordnung.
@@ -262,23 +309,15 @@
         'junioren-15-1': ['m-j1', 'm-j2'],
         'herren-1': ['m6', 'm10'],
       },
-      posts: [
-        { id: 'p-s1', scope: 'club', authorId: 'm13', createdAt: ago(42), images: ['ph:c1', 'ph:c2'],
-          text: 'Was für ein Sonnenuntergang heute auf Platz 3! 🌅 Wer kommt morgen Abend zum lockeren Doppel? Ich bin ab 18 Uhr da.' },
-        { id: 'p-s2', scope: 'club', authorId: 'm6', createdAt: ago(60 * 5), images: [],
-          text: 'Großes Danke an alle, die beim Arbeitseinsatz am Samstag geholfen haben. Die Plätze sehen top aus – und das Kölsch danach hatten wir uns verdient.' },
-        { id: 'p-s3', scope: 'club', authorId: 'm1', createdAt: ago(60 * 26), images: ['ph:c3', 'ph:c4', 'ph:c5', 'ph:c6'],
-          text: 'Unser Damen-30-Ausflug an die Mosel – vier Tage Tennis, Wein und viel gelacht. Danke an Petra für die Organisation!' },
-        { id: 'p-s4', scope: 'club', authorId: 'm4', createdAt: ago(60 * 24 * 3), images: [],
-          text: 'Hat jemand eine Ballmaschine, die man mal ausleihen könnte? Meine Vorhand braucht dringend Nachhilfe 😅' },
-        { id: 'p-t1', scope: 'team:herren-40-1', authorId: 'm2', createdAt: ago(60 * 9), images: ['ph:t5', 'ph:t2'],
-          text: 'Auswärtssieg in Hennef! 4:2 nach den Einzeln, dann beide Doppel souverän. Jan mit einem Match-Tiebreak für die Geschichtsbücher.' },
-        { id: 'p-t2', scope: 'team:herren-40-1', authorId: 'm14', createdAt: ago(60 * 24 * 4), images: [],
-          text: 'Saisonvorbereitung läuft: ab sofort dienstags 19 Uhr Training auf Platz 1–2. Wer Bälle mitbringt, hat einen gut.' },
-        { id: 'p-t3', scope: 'team:junioren-15-1', authorId: 'm-j1', createdAt: ago(60 * 30), images: ['ph:t3'],
-          text: 'Erstes Medenspiel gewonnen!!! 🎉 Danke an unseren Trainer und an alle Eltern, die gefahren sind.' },
-      ],
+      posts: [],
     };
+    save(db);
+  }
+  // Remove only the former seed IDs, including after importing an older backup.
+  const examplePostIds = new Set(['p-s1', 'p-s2', 'p-s3', 'p-s4', 'p-t1', 'p-t2', 'p-t3']);
+  const memberPosts = db.community.posts.filter((post) => !examplePostIds.has(post.id));
+  if (memberPosts.length !== db.community.posts.length) {
+    db.community.posts = memberPosts;
     save(db);
   }
   // Vorführung der vierspaltigen Strichliste: einmalig ein paar Kränze und Snacks (erfundene Mitglieder)
@@ -340,7 +379,7 @@
     const acc = author ? accountOf(author.id) : null;
     const me = sessionMemberId();
     const meM = db.members.find((m) => m.id === me);
-    return { ...clone(p), author: displayName(author), avatar: (acc && acc.avatar) || null,
+    return { ...clone(p), author: displayName(author), avatar: author && photoAllowed(author, meM && meM.active ? 'members' : 'public') ? (acc && acc.avatar) || null : null,
       mine: p.authorId === me, canModerate: Boolean(meM && meM.isAdmin), team: teamOf(p.scope) };
   }
 
@@ -449,6 +488,37 @@
   function accountOf(memberId) {
     return db.accounts.find((a) => a.memberId === memberId) || null;
   }
+  const PHOTO_VERSION = 'tfb-fotos-v1';
+  function photoMinor(member) {
+    if (member.birthDate) {
+      const born = new Date(member.birthDate + 'T00:00:00');
+      return new Date(born.getFullYear() + 18, born.getMonth(), born.getDate()) > new Date();
+    }
+    // Ohne Geburtstag bleibt das 18. Lebensjahr vorsorglich freigabepflichtig.
+    return Boolean(member.birthYear && new Date().getFullYear() - member.birthYear <= 18);
+  }
+  function photoState(member) {
+    const account = accountOf(member.id) || {};
+    return { publicAvatar: Boolean(account.photoPublic), events: Boolean(account.photoEvents),
+      approval: clone(account.photoApproval || null), pending: clone(account.photoPending || null),
+      revision: account.avatarRevision || 0, version: PHOTO_VERSION };
+  }
+  function photoAllowed(member, scope) {
+    const account = accountOf(member.id) || {};
+    if (!account.avatar && scope !== 'events') return false;
+    if (scope === 'public' && !account.photoPublic) return false;
+    if (scope === 'events' && !account.photoEvents) return false;
+    if (!photoMinor(member)) return true;
+    if (account.photoPending && account.photoPending.scopes.includes(scope)) return false;
+    const approval = account.photoApproval;
+    return Boolean(approval && approval.version === PHOTO_VERSION && approval.scopes.includes(scope)
+      && (scope === 'events' || approval.revision === (account.avatarRevision || 0)));
+  }
+  function requireAdmin() {
+    const member = requireMember();
+    if (!member.isAdmin) throw new Error('Nur Admins dürfen diese Angaben bearbeiten.');
+    return member;
+  }
   function publicMember(member) {
     const account = accountOf(member.id);
     return {
@@ -467,6 +537,8 @@
       openInvites: !(account && account.openInvites === false),
       isMinor: isMinor(member),
       parentConsent: (account && account.parentConsent) || null,
+      photoMinor: photoMinor(member),
+      photoPermissions: photoState(member),
       feedRules: Boolean(account && account.feedRules),
       teams: db.community ? teamsOfMember(member.id) : [],
     };
@@ -627,8 +699,9 @@
       if (!allowed.ok) throw new Error(allowed.reason === 'team' ? 'Insider News schreiben die Spieler dieser Mannschaft.' : 'Bitte zuerst die Hinweise bestätigen.');
       const t = String(text || '').trim();
       if (!t && !images.length) throw new Error('Bitte einen Text schreiben oder ein Foto wählen.');
+      if (!Array.isArray(images) || images.length > 6) throw new Error('Pro Beitrag sind höchstens 6 Fotos möglich.');
       const mine = alsoTeams.filter((k) => member.isAdmin || inTeam(member, k));
-      const post = { id: 'p-' + uid(), scope, authorId: member.id, createdAt: new Date().toISOString(), text: t.slice(0, 2000), images: images.slice(0, 4), ...(scope === 'club' && mine.length ? { alsoTeams: mine } : {}) };
+      const post = { id: 'p-' + uid(), scope, authorId: member.id, createdAt: new Date().toISOString(), text: t.slice(0, 2000), images: images.slice(0, 6), ...(scope === 'club' && mine.length ? { alsoTeams: mine } : {}) };
       db.community.posts.push(post);
       if (!save(db)) throw new Error('Speichern nicht möglich.');
       return publicPost(post);
@@ -637,7 +710,8 @@
       const member = requireMember();
       const p = db.community.posts.find((x) => x.id === id);
       if (!p || (p.authorId !== member.id && !member.isAdmin)) throw new Error('Diesen Beitrag kannst du nicht ändern.');
-      Object.assign(p, { text: String(text || '').trim().slice(0, 2000), images: (images || []).slice(0, 4), editedAt: new Date().toISOString() });
+      if (images && (!Array.isArray(images) || images.length > 6)) throw new Error('Pro Beitrag sind höchstens 6 Fotos möglich.');
+      Object.assign(p, { text: String(text || '').trim().slice(0, 2000), images: (images || []).slice(0, 6), editedAt: new Date().toISOString() });
       if (alsoTeams && p.scope === 'club') p.alsoTeams = alsoTeams.filter((k) => member.isAdmin || inTeam(member, k));
       save(db);
       return publicPost(p);
@@ -701,14 +775,98 @@
         throw new Error('Dieses Bild lässt sich nicht verwenden.');
       }
       const account = accountOf(member.id);
-      const before = { avatar: account.avatar, avatarLarge: account.avatarLarge };
+      const before = clone(account);
       account.avatar = small || null;
       account.avatarLarge = small ? (large || small) : null;
+      account.avatarRevision = (account.avatarRevision || 0) + 1;
+      account.photoPublic = false;
+      account.photoPending = null;
       if (!save(db)) {
         Object.assign(account, before);
         throw new Error('Das Bild ist zu groß für den Demo-Speicher.');
       }
       return publicMember(member);
+    },
+
+    async setPhotoPermissions({ publicAvatar, events, parentName, parentEmail }) {
+      const member = requireMember();
+      const account = accountOf(member.id);
+      const before = clone(account);
+      const wantedPublic = Boolean(publicAvatar && account.avatar);
+      if (photoMinor(member)) {
+        const needsApproval = (account.avatar && !photoAllowed(member, 'members'))
+          || (wantedPublic && !photoAllowed(member, 'public')) || (events && !photoAllowed(member, 'events'));
+        if (needsApproval && (!String(parentName || '').trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(parentEmail || '').trim()))) {
+          throw new Error('Bitte Name und E-Mail einer sorgeberechtigten Person ergänzen.');
+        }
+        account.photoPending = needsApproval ? { parentName: String(parentName).trim(), parentEmail: norm(parentEmail),
+          scopes: [...(account.avatar ? ['members'] : []), ...(wantedPublic ? ['public'] : []), ...(events ? ['events'] : [])],
+          revision: account.avatarRevision || 0, version: PHOTO_VERSION, requestedAt: new Date().toISOString() } : null;
+      }
+      account.photoPublic = wantedPublic;
+      account.photoEvents = Boolean(events);
+      account.photoConsentAt = new Date().toISOString();
+      account.photoConsentVersion = PHOTO_VERSION;
+      if (!save(db)) { Object.assign(account, before); throw new Error('Speichern nicht möglich.'); }
+      return publicMember(member);
+    },
+    async photoRequests() {
+      requireAdmin();
+      return db.members.filter((m) => m.active && accountOf(m.id) && (accountOf(m.id).photoPending || accountOf(m.id).photoApproval || accountOf(m.id).avatar || accountOf(m.id).photoConsentVersion))
+        .map((m) => ({ id: m.id, firstName: m.firstName, lastName: m.lastName, photoMinor: photoMinor(m), ...photoState(m) }));
+    },
+    async reviewPhotoRequest(memberId, approve, acknowledged = false) {
+      const reviewer = requireAdmin();
+      const member = db.members.find((m) => m.id === memberId && m.active);
+      const account = member && accountOf(memberId);
+      if (!account) throw new Error('Mitglied nicht gefunden.');
+      const before = clone(account);
+      if (approve) {
+        if (!acknowledged || !account.photoPending) throw new Error('Bitte die vorliegende Elternzustimmung bestätigen.');
+        if (account.photoPending.revision !== (account.avatarRevision || 0)) throw new Error('Das Foto wurde inzwischen geändert.');
+        account.photoApproval = { ...clone(account.photoPending), confirmedAt: new Date().toISOString(), confirmedBy: reviewer.id };
+        account.photoPending = null;
+      } else {
+        account.photoApproval = null;
+        account.photoPending = null;
+        account.photoPublic = false;
+        account.photoEvents = false;
+      }
+      if (!save(db)) { Object.assign(account, before); throw new Error('Speichern nicht möglich.'); }
+      return true;
+    },
+    async searchBoardMembers(query) {
+      requireAdmin();
+      const q = norm(query);
+      if (q.length < 2) return [];
+      return db.members.filter((m) => m.active && (norm(`${m.firstName} ${m.lastName}`).includes(q) || norm(m.email).includes(q)))
+        .slice(0, 30).map((m) => ({ id: m.id, firstName: m.firstName, lastName: m.lastName,
+          email: m.email, memberNo: m.memberNo, avatar: photoAllowed(m, 'members') ? (accountOf(m.id) || {}).avatar || null : null,
+          publicPhoto: photoAllowed(m, 'public') }));
+    },
+    async boardMembers(ids) {
+      requireAdmin();
+      return db.members.filter((m) => m.active && ids.includes(m.id)).map((m) => ({ id: m.id,
+        firstName: m.firstName, lastName: m.lastName, email: m.email,
+        avatarRevision: (accountOf(m.id) || {}).avatarRevision || 0,
+        avatarLarge: photoAllowed(m, 'members') ? (accountOf(m.id) || {}).avatarLarge || (accountOf(m.id) || {}).avatar || null : null,
+        avatar: photoAllowed(m, 'members') ? (accountOf(m.id) || {}).avatar || null : null }));
+    },
+    async boardPeople() {
+      const block = ((db.site.pages.verein || {}).blocks || []).find((b) => b.id === 'v-vorstand');
+      return (block && block.people || []).map((p) => {
+        const member = p.memberId && db.members.find((m) => m.id === p.memberId && m.active);
+        if (p.memberId && !member) return { role: p.role, name: 'Nicht besetzt', avatar: null };
+        const account = member && photoAllowed(member, 'public') ? accountOf(member.id) || {} : {};
+        const source = member ? `member:${member.id}:${account.avatarRevision || 0}` : p.image;
+        const avatar = member ? account.avatar || null : (TFB.boardPhotoPreviews || {})[p.image] || p.image || null;
+        const cropped = avatar && p.photoCrop && p.photoCrop.source === source ? p.photoCrop.image : null;
+        return { role: p.role, name: member ? `${member.firstName} ${member.lastName}` : p.name,
+          email: p.publishEmail ? (member ? member.email : p.email || '') : '',
+          phone: p.publishPhone ? p.phone || '' : '',
+          avatar: cropped || avatar,
+          avatarLarge: member ? (account.avatar && (account.avatarLarge || account.avatar)) || null : p.image || null };
+      });
     },
 
     // ---------- Mitgliedersuche (für „Verabreden“) ----------
@@ -734,7 +892,7 @@
     // Kleine Profilbilder (nur von Mitgliedern, die eins hochgeladen haben).
     async memberAvatars(ids) {
       requireMember();
-      return Object.fromEntries(db.accounts.filter((a) => ids.includes(a.memberId) && a.avatar).map((a) => [a.memberId, a.avatar]));
+      return Object.fromEntries(db.members.filter((m) => ids.includes(m.id) && photoAllowed(m, 'members')).map((m) => [m.id, accountOf(m.id).avatar]));
     },
     async allMemberIds() {
       requireMember();
@@ -743,17 +901,49 @@
 
     // ---------- Website ----------
     async site() {
-      return clone(db.site || TFB.siteSeed);
+      const site = clone(db.site || TFB.siteSeed);
+      const member = db.members.find((m) => m.id === sessionMemberId() && m.active);
+      if (!member || !member.isAdmin) {
+        for (const page of Object.values(site.pages)) {
+          for (const block of page.blocks || []) {
+            for (const person of block.people || []) delete person.photoCrop;
+          }
+        }
+      }
+      return site;
     },
 
     async saveSite(site) {
       const member = requireMember();
       if (!member.isAdmin) throw new Error('Nur Admins dürfen die Seiten ändern.');
       if (!site || !site.pages) throw new Error('Ungültige Seiteninhalte.');
+      for (const page of Object.values(site.pages)) {
+        for (const block of page.blocks || []) {
+          if (['post', 'feature'].includes(block.type) && block.images != null
+            && (!Array.isArray(block.images) || block.images.length > 100)) throw new Error('Eine Fotokollage kann höchstens 100 Bilder enthalten.');
+        }
+      }
+      for (const block of site.pages.home?.blocks || []) {
+        if (block.album && (!Array.isArray(block.album.images || []) || (block.album.images || []).length > 100)) throw new Error('Eine Fotokollage kann höchstens 100 Bilder enthalten.');
+      }
       const before = db.site;
       db.site = clone(site);
       if (!save(db)) { db.site = before; throw new Error('Speichern nicht möglich – der Gerätespeicher ist voll.'); }
       return clone(db.site);
+    },
+
+    async setPhotoFrame(ref, frame) {
+      if (!requireMember().isAdmin) throw new Error('Nur Admins dürfen Fotoausschnitte ändern.');
+      if (!/^(img:|assets\/)/.test(ref || '')) throw new Error('Ungültiges Foto.');
+      const normalized = frame === null ? null : TFB.photoFrame.normalize(frame);
+      if (frame !== null && !normalized) throw new Error('Ungültiger Bildausschnitt.');
+      const before = db.site;
+      db.site = clone(db.site);
+      db.site.photoFrames = { ...(db.site.photoFrames || {}) };
+      if (normalized) db.site.photoFrames[ref] = normalized;
+      else delete db.site.photoFrames[ref];
+      if (!save(db)) { db.site = before; throw new Error('Fotoausschnitt konnte nicht gespeichert werden.'); }
+      return clone(db.site.photoFrames);
     },
 
     // Foto ablegen (bereits verkleinert, data-URL) → Kennung "img:<id>"

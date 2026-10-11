@@ -4,7 +4,80 @@ Für den schnellen Einstieg zuerst die kurze **[UEBERGABE.md](UEBERGABE.md)** le
 Diese Datei enthält alle Entscheidungen, Konzepte, offenen Punkte und den Verlauf.
 Neues bitte unten bei „Verlauf“ ergänzen.
 
-## Stand am Ende des 10.10.2026 (gilt vor älteren Abschnitten weiter unten)
+## Verbindlicher Stand 11.10.2026 – Projekt-Update
+
+Diese Zusammenfassung und die aktualisierte `UEBERGABE.md` haben Vorrang vor
+älteren Abschnitten. Maßgeblich bleiben aktuelle Software und Nutzerinhalte.
+**Nicht veröffentlicht**, lokale Browser-Datenschicht; Cache **v99**.
+Der Nutzer ist sehr zufrieden und hat genügend eigene Flüsternachrichten für
+die Vorstellung beim Vorstand gepflegt. Kein neuer Commit, Tag oder Release.
+
+- **Navigation/Home:** Home ist Startseite. Kiosk · Chat · Aktuell · Sport · Club ·
+  Verabreden · Padel. Home-Themen mit Detailseite/direktem Link/ohne Ziel;
+  „Mehr erfahren“ separat abschaltbar, verlinkte Titel mit rotem Hover. Links und
+  Symbole editierbar/sortierbar; Foto-Unterseiten mit bis zu 100 Bildern.
+  Home-Beispielhinweis entfernt; bestehende Inhalte bewahren.
+  Neu v98: ungepflegte Beispiel-News bereinigt, Home-/News-Bilder als sortierbare
+  Collage bis 100 Fotos, fünfteilige Vorschau, volle Collage vor Einzelbildern.
+  Schnupper-Kalenderlink durch bearbeitbare Terminüberschrift/-text ersetzt.
+  Neu v99: gemeinsame Vollbildfunktion für Einzelfotos, auch in Mannschaftsliste,
+  Porträt, Training und weiteren Inhaltsseiten. Foto zeigt Originalquelle, X/Klick
+  daneben/Escape schließen; Collagen und Fotoeditoren behalten ihre Bedienung.
+  32 Tests bestanden, Desktop-/Smartphone-Browserprüfung erfolgreich.
+- **Aktuell:** News 2/3, Save the Date 1/3; mobil umschaltbar. Clubgeflüster ausgelagert.
+- **Chat:** großer linksbündiger Feed, neueste Beiträge zuerst; `#chat/alle` mit Suche
+  und Filtern. Alte `#gefluester`-Adressen gültig. 24 Texte per Admin-Stift bearbeitbar
+  (`site.chatText`). Mannschaftsrechte erhalten. Bis zu sechs Bilder pro Beitrag;
+  erst große Gesamtcollage, dann Einzelbilder mit Pfeilen, Klick und horizontalem
+  Wischen. Keine persönlichen Direktnachrichten implementiert.
+- **Keine künstlichen Chats mehr:** Startbestand leer. Beim Laden werden nur sieben
+  bekannte Seed-IDs (`p-s1`–`p-s4`, `p-t1`–`p-t3`) entfernt, auch nach alten Backup-Imports.
+  Eigene Nachrichten, Bildreferenzen und Fotos bleiben erhalten. Nutzer-Chrome-Daten
+  nicht direkt verändert: Bereinigung erfolgt beim nächsten Laden der neuen Software.
+- **Club:** fünf sortierbare/editierbare Zahlen, unerwünschter Zusatzblock entfernt.
+  Schwarzer Beitragsbutton vor rotem Aufnahmebutton mit schwarzem Text; Beitragsfenster
+  mit X. Editierbarer Hinweis auf 10 Prozent Padel-Rabatt, keine Änderung der getrennten
+  Padel-Rabattberechnung. Sieben echte veröffentlichte Vorstandskontakte/Fotos übernommen;
+  runde Profilbilder mit Originalansicht. Basti/Marco aufgehellt, Originale erhalten.
+  Rollen, Kontakte, Mitgliedssuche mit Auswahl bei gemeinsamen E-Mails, Reihenfolge
+  und eigener Vorstands-Fotoausschnitt bearbeitbar.
+- **Foto-Freigaben:** freiwillig nach Aufnahme statt im Antrag. Öffentliche Anzeige
+  nur mit Freigabe, Minderjährige erst nach dokumentierter Elternzustimmung. Neues
+  Foto braucht neue Freigabe; echte Elternverifikation für Produktion noch offen.
+- **Sport:** Porträt-/Newsbutton ab 640px zwischen Informationen und Platzierung
+  zentriert; mobile kompakte Darstellung erhalten. Zwei Reiter: Mannschaften
+  (`#sport`) und Training (`#sport/training`). Training mit Leon Kaufmanns
+  Originalfoto und Kontakten, Schnuppertraining und „Termine für Schnuppertraining
+  demnächst“ als frei bearbeitbarer Termintext. Kalender-Link und Kalenderverweis
+  entfernt. Über Admin-Stift bearbeitbar, einschließlich Trainerfoto/Funktion/Telefon/E-Mail.
+- **Foto-Drop:** Dateibatches auf bestehenden Bildfeldern über denselben Uploadweg,
+  interne Sortierung erhalten. Tatsächliches Ziehen aus macOS Fotos nach Chrome
+  noch nicht geprüft; unaufgelöste Dateiversprechen mit JPEG-Export-Hinweis.
+- **Foto-Rahmen:** gemeinsamer Admin-Editor für Website-Fotos, Galerievorschauen,
+  Chat-Fotos und Bildanhänge: Hochformat/Querformat/Quadrat, Zoom und Position.
+  Pro Bildreferenz als `site.photoFrames` gespeichert, Original unverändert.
+  Kollageraster und runde Profil-/Vorstandsrahmen bleiben erhalten.
+- **Digitale Aufnahme:** lokal Simulation ohne Speicherung/Versand. Separater
+  Python-/SQLite-/SMTP-Prozess vorbereitet, Versand deaktiviert. Club-/Bankfreigaben,
+  Rechts-/Datenschutztexte, HTTPS und geschützter Betrieb nötig. Keine automatische
+  Mitgliedsanlage. Details in `digitale-aufnahme.md`; keine echten E-Mails versendet.
+- **Fußzeile:** Impressum und Satzung als eigene bearbeitbare Unterseiten, plus
+  Copyright-Jahr und Vereinsrechte an Inhalten, Gestaltung und App-Konzept.
+  Satzung vollständig/wortgetreu, Stand 20.03.2015. Register Köln VR 600693 und
+  USt-ID aus öffentlichem Padel-Impressum; Kai Eichmann vom Nutzer bestätigt.
+- **Prüfstand:** 32 Node-Tests im letzten Implementierungslauf bestanden
+  (Vorstand/Fotorechte, Home/Chat/Galerien, News-Collagen, Beispiel-Bereinigung,
+  Sport/Rechtstexte/Fotorahmen, Foto-Drop und Vollbild). Bei diesem reinen
+  Dokumentationsupdate keine Tests erneut ausgeführt, auch keine Aufnahme-Tests. Frühere
+  Desktop-/Mobilprüfungen in isolierter Vorschau; aktuelle direkte HTML-Prüfung
+  durch Browserrichtlinie nicht möglich.
+
+Vor Vorstandsvorstellung eigene Daten über Sichern & Laden sichern und im Nutzer-
+Chrome nach Neuladen kontrollieren. Veröffentlichung, eigene TFB-Datenbank,
+Mitgliederimport, SEPA und echte Push-Mitteilungen separat vorbereiten.
+Padel-Kopie samt deren Dokumentation bleibt unangetastet.
+
+## Historischer Stand am Ende des 10.10.2026
 
 Ältere Abschnitte beschreiben Zwischenstände (z. B. „Kiosk ist Startseite“, „Reiter Verein“,
 Garamond-artige Überschriften) – **überholt** durch:
@@ -484,3 +557,181 @@ Monatsabschluss.
   Fehlt rosters.js (z. B. frischer Checkout), läuft die App mit der Demo-Zuordnung.
 - **11.10.2026** – Partner-Logos auf allen Seiten um ein Drittel kleiner (Kacheln, Logos und Breite des Duos × 2/3).
 - **11.10.2026** – Partner-Duo jetzt auch unter **Verabreden** (Übersicht, Einzelansicht, Anmelde-Hinweis), Seitenschlüssel `treffen`, gleiche Rotation.
+- **11.10.2026** – Aktuellen Vorstand von https://www.tfbielstein.de/vorstand-ansprechpartner/
+  übernommen: sieben Personen in Originalreihenfolge, veröffentlichte Funktionen, Fotos,
+  Telefonnummern und E-Mails. Kai Eichmann nutzt laut direkt abgerufener aktueller Seite
+  `kai.eichmann.tennis@gmail.com` (Suchmaschinenkopie veraltet). Bilder lokal unter
+  `assets/images/board/`; zentrale Startdaten `TFB.boardSeed` in `assets/data/site-seed.js`.
+  Einmaliges Update `club-vorstand-import-2026-10-11` ersetzt auch gespeicherte Platzhalter;
+  spätere Änderungen bleiben erhalten. Vorstandseditor bewahrt importierte Bilder und
+  ergänzt Telefon/Veröffentlichungsschalter. Keine erfundenen Mitgliedsverknüpfungen;
+  bei späterer Verknüpfung gilt ausschließlich die öffentliche Profilfoto-Freigabe.
+  Desktop/Smartphone geprüft; sechs Vorstand-/Fototests bestanden. Cache v82.
+- **11.10.2026** – Vorstandsfotos als runde Profilbilder (88 px Desktop, 80 px Handy),
+  gleicher feiner Rand wie das persönliche Profilbild. Klick öffnet unbeschnittenes Original
+  in bestehender Lightbox; bei Mitgliedsverknüpfung sind Vorschau und Original gleichermaßen
+  durch öffentliche Foto-Freigabe geschützt. Originaldateien für Kai und Katja nachgeladen.
+  Basti und Marco haben separate aufgehellte Vorschauen unter
+  `assets/images/board/sebastian-manz-aufgehellt.png` und `marco-hennes-aufgehellt.png`;
+  unveränderte Originale bleiben für die Großansicht erhalten. Zuordnung über
+  `TFB.boardPhotoPreviews`, ohne gespeicherte Vorstandsangaben zu überschreiben.
+  Integriertes image_gen für beide Bearbeitungen; Vorgabe: Gesichtsschatten behutsam aufhellen,
+  Identität, Gesichtszüge, Ausdruck, Hautstruktur, Kleidung, Hintergrund, Bildausschnitt und
+  Schwarz-Weiß-Stil erhalten, keine Verschönerung oder neuen Details. Ausschnitte und
+  Originalansicht auf Desktop/Handy geprüft; sechs Tests bestanden. Cache v83.
+- **11.10.2026** – Vorstandseditor: je Foto „Ausschnitt anpassen“, gleicher Editor
+  wie im eigenen Profil (Verschieben/Zoom). Speichert nur einen 320-px-Ausschnitt in
+  `person.photoCrop` samt Zoom/Position und Quellkennung; Original und persönliches
+  Mitgliedsfoto unverändert. Neuer Quellstand/Fotowiderruf macht verknüpfte Ausschnitte
+  ungültig; öffentliche `site()`-Antwort entfernt Roh-Ausschnitte, `boardPeople()` prüft
+  Foto-Freigabe. `openAvatarCropper` über `TFB.ui` wiederverwendbar, optional mit
+  Startposition und Abbrechen-Rückkehr. Board-Änderungen erst mit „Vorstand speichern“
+  dauerhaft. Lokale HTML-Vorschau lädt bei Bedarf `assets/data/board-photo-data.js`
+  (mechanisch eingebettete sieben Quelldateien), um file://-Canvas-Beschränkungen zu
+  vermeiden. Datei bei Änderung der Quelldateien neu erzeugen. Vorschau: Verschieben,
+  Zoom, Übernehmen, Speichern, erneutes Öffnen und Handy-Layout geprüft. Direkte
+  file://-Browserprüfung durch Browserrichtlinie nicht möglich. Cache v84.
+- **11.10.2026** – Home-Themen: `navigation` = `detail` / `link` / `none` steuert
+  Bild/Überschrift unabhängig vom CTA. `showMore` blendet „Mehr erfahren“ bei einer
+  Detailseite aus, ohne vorhandene Detailtexte/Fotos zu löschen. Kiosk per einmaligem
+  Update auf direkten bestehenden Link umgestellt; Padel unverändert. Link-Symbol
+  auswählbar, eigenes rundes Link-Foto weiterhin möglich. Home-Vorführhinweis entfernt.
+  Jedes Thema kann eine separate `album`-Fotoseite unter `#home/<id>/fotos` erhalten,
+  ohne Artikeltext, mit bis zu 100 Fotos, optional Originalformat, Bildsortierung und
+  bestehender Großansicht. Reiter „Fotokollage“ im WYSIWYG-Editor; für `h-50` leer
+  vorbereitet, keine Testbilder in die eigentlichen Startdaten übernommen.
+  Hauptlink und Fotolink separat positionierbar/ziehbar; Pfeile ändern Reihenfolge am
+  gleichen Platz. Limit vor Upload und beim Speichern geprüft. Texte, Bilder und Links
+  bestehender Home-Beiträge bleiben erhalten. Vier neue Home-Tests und neun bestehende
+  Vorstand-/Fototests bestanden; Upload, Speichern, Großansicht, Reihenfolge und mobile
+  Kollage in isolierter Vorschau geprüft. Cache v85.
+- **11.10.2026** – Signature-Rot beim Hover auf Home-Überschriften gilt auch
+  für direkte Seitenlinks, nicht nur für Beiträge mit Detailseite. Tastaturfokus
+  erhält denselben Effekt. Cache v86.
+- **11.10.2026** – Club: schwarzer Button „Mitgliedsbeiträge“ vor dem Aufnahmebutton
+  (Signature-Rot mit schwarzem Text). Beitragsfenster mit Schnuppermitgliedschaft,
+  Jahresbeiträgen und Familien-/Aufnahmehinweisen aus der vom Nutzer gelieferten
+  Beitragsübersicht. Bestehendes Schließen-X und Escape bleiben nutzbar. Cache v87.
+- **11.10.2026** – Club-Aufnahmebuttons: optionaler, frei editierbarer Hinweis `note`
+  daneben; einmalig vorbelegt mit „TFB-Mitglieder erhalten 10 Prozent Rabatt auf alle
+  Padel-Buchungen.“ Im Knopf-Editor ändern oder leeren. Clubgeflüster und Insider News
+  akzeptieren sechs Fotos beim Schreiben/Bearbeiten; mehr als sechs werden abgewiesen,
+  nicht still gekürzt. Vorschau und Beitragsübersicht zeigen responsive Collagen:
+  bei sechs Fotos ein großes Bild, zwei rechts, drei darunter. Klick auf ein Beitragsfoto
+  öffnet direkt dessen Einzelansicht mit Navigation. Eigene persönliche Nachrichten sind
+  im aktuellen Projekt nicht implementiert; Collage-CSS ist wiederverwendbar.
+  Desktop-/Mobilvorschau und Einzelbildwechsel geprüft; 16 Tests bestanden. Cache v88.
+- **11.10.2026** – Chat-Galerie: erster Klick auf die Vorschau öffnet immer die
+  große vollständige Collage. Klick auf ein Collagefoto öffnet die Einzelansicht;
+  erst dort erscheinen Pfeile. Klick auf das Einzelbild blättert weiter, horizontales
+  Wischen vor/zurück ist möglich. Vertikales Scrollen und Mehrfingergesten lösen
+  keinen Bildwechsel aus; Folge-Klick nach einem Wischen wird unterdrückt.
+  Browser-Klickablauf geprüft, Wischlogik automatisiert getestet. 17 Tests, Cache v89.
+- **11.10.2026** – Neuer Hauptmenüpunkt **Chat** zwischen Kiosk und Aktuell.
+  `#chat` zeigt Clubgeflüster plus bisherige Team-Beiträge/Teaser als großen,
+  chronologischen Feed, neuester Beitrag zuerst. Schreiben und „Alle Beiträge“
+  stehen oben. `#chat/alle` bietet die bestehende Übersicht mit Suche und Filtern;
+  alte `#gefluester`-Links bleiben gültig und markieren Chat im Menü.
+  Aktuell enthält nur noch News (2/3) und Termine (1/3), mit jeweils einer
+  zusammenhängenden Spalte. Mobil: News / Save the Date umschaltbar, News als Start.
+  Bestehende Inhalte, Redaktionsbearbeitung und Mannschaftsrechte bleiben erhalten.
+  Chat kann auch als Linkziel im Home-Editor gewählt werden. Desktop und Smartphone
+  geprüft; 18 Tests bestanden. Cache v90.
+- **11.10.2026** – Chat-Feed linksbündig an derselben Kante wie die Seitenüberschrift,
+  weiterhin auf gut lesbare 760px begrenzt. Sportliste ab 640px mit vier Spalten:
+  Foto, Name, freier mittlerer Bereich, Platzierung. Porträt-/Newsbutton ist innerhalb
+  des freien Bereichs zentriert statt innerhalb der gesamten Zeile. Buttonbreite
+  passt sich schmalen Zeilen an. Ausrichtung auf Desktop und Tablet per Geometrie
+  überprüft (0px Abweichung, keine Überlappung). Cache v91.
+- **11.10.2026** – Chat-Texte sind über den Admin-Stift auf `#chat` und
+  `#chat/alle` editierbar. 24 Textfelder: Haupttitel, Clubgeflüster-Überschrift,
+  Beschreibungen, Aktionen, Übersichtsüberschrift/-kicker, Suchfeld, Filter,
+  Zeiträume, leere Zustände und Beitragszählung. Speicherung als `site.chatText`,
+  fehlende Felder fallen auf `TFB.siteSeed.chatText` zurück; leere Texte bleiben leer.
+  Bestehende Beiträge und Fotos werden nicht geändert. Speichern und Unterseitenstift
+  in isolierter Browser-Vorschau geprüft; 19 Tests bestanden. Cache v92.
+- **11.10.2026** – `photo-drop.js`: Datei-Drag-and-drop für vorhandene Bildfelder
+  (Chat, Website-/Galerieeditor, Profil), inklusive Hervorhebung. Übergibt FileList
+  an denselben Change-Handler wie die Dateiauswahl, ohne separate Speicherlogik.
+  Interne Sortiergesten bleiben unangetastet; Mehrfach-Drops auf Einzelfelder und
+  ungeeignete Dateien werden abgewiesen. Keine Datei-/Netzwerk-URLs werden aus
+  Drag-Texten geladen. Unaufgelöste macOS-Dateiversprechen bekommen eine Meldung
+  mit JPEG-Export als Ausweichweg. Echte Übergabe Fotos-App → Chrome nicht geprüft;
+  Dateibatches und Fehlerfälle automatisiert geprüft. 24 Tests, Cache v93.
+- **11.10.2026** – Die sieben automatisch erzeugten Beispielbeiträge werden nicht
+  mehr angelegt. Beim Laden werden ausschliesslich die alten IDs `p-s1` bis `p-s4`
+  und `p-t1` bis `p-t3` aus vorhandenen Chatdaten entfernt, auch nach dem Import
+  eines alten Backups. Eigene Nachrichten, Bildreferenzen und Bildspeicher bleiben
+  erhalten. Regressionstest fuer Erststart, wiederholtes Laden und Backup-Import;
+  Foto-Privatsphaerentest legt jetzt einen eigenen Testbeitrag an. Cache v94.
+- **11.10.2026** – Projekt-Update auf Nutzerwunsch: verbindlichen aktuellen Stand
+  vor den historischen Verlauf gesetzt und `UEBERGABE.md` neu konsolidiert.
+  Geänderte Navigation, Chat-/Galeriefunktionen, Club/Vorstand, Aufnahmegrenzen,
+  Foto-Drop, Prüfstand und offene Veröffentlichungsschritte zusammengeführt.
+  Nur Dokumentation geändert; keine Veröffentlichung, Mail, Datenlöschung oder Commit.
+- **11.10.2026** – Sport in Mannschaften und Training unterteilt, vorhandene
+  Bausteine bleiben im selben Seitenspeicher und Admin-Editor. Trainertext/Kontakte
+  anhand https://www.tfbielstein.de/trainer/ übernommen, Originalfoto lokal als
+  `assets/images/leon-kaufmann.jpg` (1200px breit), im Offline-Cache enthalten.
+  Schnuppertext vom Nutzer und Vereinsseite übernommen, Kalenderlink zur bisherigen
+  Website. Einmalige Inhaltsmigration ersetzt nur bekannte alte Standardtexte;
+  spätere oder bereits abweichende Texte bleiben erhalten. Bestehenden Jugendblock
+  bewahrt. Foto, Funktion, Telefon und E-Mail editierbar. Desktop-/Mobilvorschau und
+  Trainer-Editor geprüft; 26 Tests bestanden. Cache v95, keine Veröffentlichung.
+- **11.10.2026** – Globale dezente Fußzeile mit Impressum/Satzung und Copyright.
+  `assets/data/legal-pages.js` enthält alle 17 Paragraphen der Nutzer-Satzung mit
+  historischem Stand 20.03.2015, nur visuell gegliedert. SHA-256-Abgleich des gesamten
+  Wortlauts (Leerraum und §-Abstand normalisiert) bestanden. Neue Seiten nur bei
+  Fehlen ergänzt, spätere Admin-Änderungen erhalten. Eigener Stift und Verwaltung
+  führen in bestehenden Editor; keine Partnerwerbung auf Rechtstext-Unterseiten.
+  Registerdaten (Amtsgericht Köln, VR 600693), USt-ID DE330174727, Postanschrift und
+  Verantwortlicher Sebastian Manz aus https://padel-bielstein.de/ übernommen.
+  Abweichung im Vorsitz geklärt: Nutzer bestätigt Kai Eichmann, nicht den auf Padel
+  genannten Jens Kämper kommissarisch. Gemeinschaftliche Vertretung mit Sebastian
+  Manz und Daniel Pollmann. Rechte Dritter ausdrücklich vorbehalten.
+  Satzung nennt historisch Gummersbach und verlangt schriftlichen Mitgliedsantrag;
+  nicht eigenmächtig geändert. Vereinsprüfung vor Veröffentlichung bleibt nötig.
+  Desktop-/390px-Vorschau und Linkwechsel geprüft, mobil kein horizontaler Überlauf;
+  27 Tests bestanden, Cache v96. Keine Veröffentlichung, keine Padel-Änderung.
+- **11.10.2026** – Gemeinsamer nichtdestruktiver Foto-Rahmeneditor `photo-frame.js`:
+  Portrait 3:4, Landschaft 3:2, Quadrat; Zoom 1–4, normierte Position 0–1 mit
+  Pointer-Drag und zwei Reglern. Startformat ohne Einstellung aus Originalmaßen.
+  CSS-Cover, Position und Transform-Origin entsprechen der Drag-Geometrie; kein
+  Canvas, keine Datei-/CORS-Konvertierung notwendig. Originaldatei bleibt erhalten.
+  Admin-API `setPhotoFrame` prüft Rechte/Referenz/Format, begrenzt Zahlen und rollt
+  bei Speicherfehlern zurück. Speicherung als `site.photoFrames[ref]`, automatisch
+  Bestandteil der bestehenden Sicherung; gemeinsame Einstellung bei Wiederverwendung
+  derselben Referenz. Einzelbild-Galerie zeigt das Original, Collagen bleiben im Raster.
+  Foto-Felder und Galerie-/Hero-/Album-/Tile-Thumbnails, Chat-Komposition sowie
+  Bildanhänge bieten Einpassen. Profil/Board weiterhin bisheriger runder Cropper.
+  Separate zugängliche Dialogebene mit Fokus/Escape, darunterliegende Textentwürfe
+  bleiben offen und unangetastet. Übernehmen speichert sofort, Originalansicht setzt
+  nur Metadaten zurück. Desktop Drag/Zoom/Save/Reload und 390px-Dialog geprüft;
+  360px-Quadrat exakt, kein mobiler Überlauf. 28 Tests bestanden, Cache v97.
+- **11.10.2026, v98** – News-/Home-Felder mit `block.images` bis 100 Fotos:
+  vorhandenes Einzelbild beim ersten Collage-Upload übernehmen, Sortieren/Entfernen/
+  Einpassen im Admin. Serverseitige lokale API-Validierung des 100er-Limits;
+  fünfteilige Magazin-Vorschau plus Restanzahl, große scrollbar vollständige Collage
+  vor Original-Einzelbildern mit Klick/Pfeilen/Wischen. Keine Änderung der Chat-Grenze
+  von sechs Bildern. Unveränderte Beispiel-News anhand bekannter IDs und Inhalte
+  entfernen; gepflegte Texte/Fotos/Alben schützen, Bereinigung auch nach Backup-Import.
+  Kalenderknopf durch `s-schnupper-dates` ersetzt: „Termine für Schnuppertraining
+  demnächst“, leerer editierbarer Termintext statt erfundener Termine. Migration nur
+  einmal, spätere eigene Termintexte bleiben. 30 Tests bestanden.
+- **11.10.2026, v99** – Gemeinsame Einzelfoto-Vollbildfunktion `photo-viewer.js`:
+  Mannschaftslisten-/Porträt-/Trainer-/Inhaltsfotos sowie sichtbare Teilnehmer- und
+  Chat-Profilbilder per Klick oder Enter/Leertaste öffnen. Foto-Klick innerhalb von
+  Mannschafts-/Home-Links zeigt das Original; andere Linkflächen navigieren weiter.
+  Collagen/Galerien, bestehende Vorstands-Originalbilder, Link-Vorschaubilder,
+  Fotoeditoren und Profil-Menü behalten ihre Bedienung. Keine zusätzliche
+  Mitgliederabfrage, Freigaben unverändert. Unbeschnittenes Foto bis 1600px/84vh;
+  X, Hintergrund oder Escape schließen, Bildklick bleibt offen. Fokus und vorheriger
+  Scrollzustand zurück, Escape schließt kein darunterliegendes Formular. 32 Tests
+  bestanden; Desktop-Mannschaftsfoto und Trainerfoto, Schließwege und mobile
+  390×844-Ansicht erfolgreich in isolierter Vorschau geprüft.
+- **11.10.2026, Projekt-Update auf Nutzerwunsch** – Projektgedächtnis und Übergabe
+  auf v99 konsolidiert, veraltete Kalenderangaben und Testzahlen im aktuellen Stand
+  korrigiert, neuer Vollbild-Testbefehl und Modulverzeichnis ergänzt. Historische
+  Zwischenstände erhalten. Kein Code geändert, keine erneuten Tests, kein Commit,
+  kein Versand und keine Veröffentlichung; offene Produktions-/Rechts-/Bankfreigaben
+  bleiben bestehen. Padel-Projekt nicht verändert.

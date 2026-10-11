@@ -8,11 +8,11 @@
   const $sheet = document.getElementById('sheet-root');
   const $toast = document.getElementById('toast-root');
 
-  const VIEWS = ['home', 'kiosk', 'strichliste', 'abrechnungen', 'aktuell', 'gefluester', 'sport', 'team', 'club', 'treffen', 'verwaltung'];
+  const VIEWS = ['home', 'kiosk', 'strichliste', 'abrechnungen', 'chat', 'aktuell', 'gefluester', 'sport', 'team', 'club', 'treffen', 'verwaltung', 'impressum', 'satzung'];
   const KIOSK_AREA = ['kiosk', 'strichliste', 'abrechnungen'];   // nur mit Anmeldung
   // Reiter unten: Kiosk zuerst, dann die Vereinsseiten, dann der Padel-Link.
   // Team-Seiten gehören zu „Sport“
-  const areaOf = (view) => (KIOSK_AREA.includes(view) ? 'kiosk' : view === 'team' ? 'sport' : view === 'gefluester' ? 'aktuell' : view);
+  const areaOf = (view) => (KIOSK_AREA.includes(view) ? 'kiosk' : view === 'team' ? 'sport' : view === 'gefluester' ? 'chat' : view);
   const state = {
     member: null,
     catalog: null,
@@ -290,6 +290,7 @@
     const area = areaOf(view);
     const tabs = [
       ['kiosk', 'Kiosk', icon.kiosk],
+      ['chat', 'Chat', icon.news],
       ['aktuell', 'Aktuell', icon.news],
       ['sport', 'Sport', icon.sport],
       ['club', 'Club', icon.club],
@@ -312,7 +313,11 @@
             : `<a href="#${id}" class="tab tab-${id} ${id === area ? 'active' : ''}" ${id === area ? 'aria-current="page"' : ''}>${label}</a>`).join('')}
         </nav>
       </header>
-      <main class="view" id="view" data-view="${view}"><div class="loading"></div></main>`;
+      <main class="view" id="view" data-view="${view}"><div class="loading"></div></main>
+      <footer class="site-footer">
+        <nav aria-label="Vereinsinformationen"><a href="#impressum">Impressum</a><a href="#satzung">Satzung</a></nav>
+        <p>© ${new Date().getFullYear()} Tennisfreunde Bielstein e.V. · Inhalte, Gestaltung &amp; App-Konzept. Alle Rechte vorbehalten.</p>
+      </footer>`;
     return renderView(view);
   }
 
@@ -657,7 +662,9 @@
         <h2>Website</h2>
         <p class="muted">Seiten direkt bearbeiten: Bausteine anlegen, Fotos hochladen, Texte und Termine pflegen.</p>
         <div class="admin-links">
-          ${[['home', 'Home'], ['aktuell', 'Aktuell'], ['sport', 'Sport'], ['verein', 'Club']].map(([p, l]) => `<button type="button" class="btn" data-action="site-edit" data-page="${p}">${icon.pencil} ${l}</button>`).join('')}
+          ${[['home', 'Home'], ['aktuell', 'Aktuell'], ['sport', 'Sport'], ['verein', 'Club'], ['impressum', 'Impressum'], ['satzung', 'Satzung']].map(([p, l]) => `<button type="button" class="btn" data-action="site-edit" data-page="${p}">${icon.pencil} ${l}</button>`).join('')}
+          <button type="button" class="btn" data-action="board-edit">${icon.user} Vorstand</button>
+          <button type="button" class="btn" data-action="photo-admin">${icon.camera} Foto-Freigaben</button>
         </div>
       </section>
       <section class="card admin-card">
@@ -949,7 +956,8 @@
               <label class="btn small">Bild auswählen<input type="file" accept="image/*" data-avatar-input hidden></label>
               ${m.avatar ? '<button type="button" class="btn small" data-action="avatar-crop">Ausschnitt anpassen</button><button type="button" class="btn small ghost-danger" data-action="avatar-remove">Entfernen</button>' : ''}
             </div>
-            <p class="acct-hint">Wird rund angezeigt und automatisch verkleinert. Antippen zeigt es groß.</p>
+            <p class="acct-hint">Freiwillig. ${m.photoMinor ? 'Für die Anzeige bei anderen Mitgliedern ist eine Elternfreigabe erforderlich.' : 'Sichtbar für angemeldete Mitglieder. Öffentlich nur mit deiner zusätzlichen Freigabe.'}</p>
+            <button type="button" class="btn small" data-action="photo-settings">Foto-Freigaben</button>
           </div>
           <button type="submit" class="btn primary block">Speichern</button>
         </form>
@@ -980,22 +988,41 @@
   // ---------- Bild groß ansehen ----------
   function openLightbox(src, caption) {
     if (!src) return;
+    if (document.querySelector('.lightbox')) return;
+    const focus = document.activeElement;
+    const wasLocked = document.body.classList.contains('no-scroll');
     const box = document.createElement('div');
     box.className = 'lightbox';
-    box.dataset.action = 'lightbox-close';
     box.innerHTML = `
-      <figure role="dialog" aria-modal="true" aria-label="${esc(caption)}">
-        <img src="${esc(src)}" alt="Profilbild von ${esc(caption)}">
+      <figure role="dialog" aria-modal="true" aria-label="${esc(caption || 'Foto')}">
+        <img src="${esc(src)}" alt="${esc(caption || 'Foto')}">
         <figcaption>${logo('ball', 'lightbox-ball')}<span>${esc(caption)}</span></figcaption>
       </figure>
       <button type="button" class="lightbox-close" data-action="lightbox-close" aria-label="Schließen">${icon.close}</button>`;
+    const close = () => {
+      box.classList.remove('open');
+      document.removeEventListener('keydown', onKey, true);
+      if (!wasLocked) document.body.classList.remove('no-scroll');
+      focus?.focus?.();
+      setTimeout(() => box.remove(), 200);
+    };
+    box.closePhoto = close;
+    const onKey = (event) => {
+      if (event.key === 'Escape') { event.preventDefault(); event.stopImmediatePropagation(); close(); }
+      if (event.key === 'Tab') { event.preventDefault(); box.querySelector('.lightbox-close').focus(); }
+    };
+    box.addEventListener('click', (event) => {
+      event.stopPropagation();
+      if (event.target === box || event.target.closest('.lightbox-close')) close();
+    });
+    document.addEventListener('keydown', onKey, true);
     document.body.appendChild(box);
-    requestAnimationFrame(() => box.classList.add('open'));
+    document.body.classList.add('no-scroll');
+    requestAnimationFrame(() => { box.classList.add('open'); box.querySelector('.lightbox-close').focus(); });
   }
   function closeLightbox() {
     document.querySelectorAll('.lightbox').forEach((b) => {
-      b.classList.remove('open');
-      setTimeout(() => b.remove(), 200);
+      b.closePhoto();
     });
   }
 
@@ -1056,6 +1083,7 @@
         });
         toast(before !== state.member.email ? `Gespeichert – anmelden künftig mit ${state.member.email}` : 'Angaben gespeichert', true);
         refreshAvatars();
+        await TFB.refreshSite();
         openProfile();
       } catch (err) { toast(err.message); }
       return;
@@ -1115,20 +1143,21 @@
 
   // Profilbild-Ausschnitt: Foto im Kreis verschieben und zoomen. Das Original bleibt unverändert,
   // gespeichert wird nur das kleine runde Bild (320 px) als Ausschnitt.
-  function openAvatarCropper(src, onSave) {
+  function openAvatarCropper(src, onSave, options = {}) {
     const V = 260;
     const img = new Image();
     img.onload = () => {
       const base = Math.max(V / img.naturalWidth, V / img.naturalHeight);
-      let zoom = 1, x = 0, y = 0;
+      let zoom = Math.max(1, Math.min(4, Number(options.initial?.zoom) || 1));
+      let x = Number(options.initial?.x) || 0, y = Number(options.initial?.y) || 0;
       openSheet(`
         <div class="editor cropper">
           <h2>Ausschnitt wählen</h2>
           <p class="muted small">Foto mit dem Finger oder der Maus verschieben, mit dem Regler vergrößern. Das Originalfoto bleibt unverändert.</p>
           <div class="crop-view" data-crop><img class="crop-img" src="${src}" alt="" draggable="false"></div>
-          <label class="crop-zoom"><span>−</span><input type="range" min="1" max="4" step="0.01" value="1" data-crop-zoom aria-label="Zoom"><span>+</span></label>
+          <label class="crop-zoom"><span>−</span><input type="range" min="1" max="4" step="0.01" value="${zoom}" data-crop-zoom aria-label="Zoom"><span>+</span></label>
           <button type="button" class="btn primary block" data-crop-save>Übernehmen</button>
-          <button type="button" class="link center" data-action="close-sheet">Abbrechen</button>
+          <button type="button" class="link center" data-crop-cancel>Abbrechen</button>
         </div>`);
       const view = document.querySelector('[data-crop]');
       const el = view.querySelector('img');
@@ -1147,6 +1176,8 @@
       view.addEventListener('pointerdown', (e) => { drag = { sx: e.clientX, sy: e.clientY, x, y }; view.setPointerCapture(e.pointerId); });
       view.addEventListener('pointermove', (e) => { if (!drag) return; x = drag.x + e.clientX - drag.sx; y = drag.y + e.clientY - drag.sy; draw(); });
       view.addEventListener('pointerup', () => { drag = null; });
+      view.addEventListener('pointercancel', () => { drag = null; });
+      document.querySelector('[data-crop-cancel]').addEventListener('click', () => options.onCancel ? options.onCancel() : closeSheet());
       view.addEventListener('wheel', (e) => { e.preventDefault(); zoom = Math.max(1, Math.min(4, zoom - e.deltaY * 0.002)); document.querySelector('[data-crop-zoom]').value = zoom; draw(); }, { passive: false });
       document.querySelector('[data-crop-zoom]').addEventListener('input', (e) => { zoom = Number(e.target.value); draw(); });
       document.querySelector('[data-crop-save]').addEventListener('click', async () => {
@@ -1155,10 +1186,11 @@
         const c = document.createElement('canvas');
         c.width = out; c.height = out;
         c.getContext('2d').drawImage(img, (V / 2 - w / 2 + x) * k, (V / 2 - h / 2 + y) * k, w * k, h * k);
-        try { await onSave(c.toDataURL('image/jpeg', 0.88)); } catch (err) { toast(err.message); }
+        try { await onSave(c.toDataURL('image/jpeg', 0.88), { zoom, x, y }); } catch (err) { toast(err.message); }
       });
       draw();
     };
+    img.onerror = () => toast('Dieses Foto lässt sich nicht öffnen.');
     img.src = src;
   }
 
@@ -1198,6 +1230,7 @@
         openAvatarCropper(large, async (small) => {
           state.member = await api.setAvatar(small, large);
           refreshAvatars();
+          await TFB.refreshSite();
           openProfile();
           toast('Profilbild gespeichert', true);
         });
@@ -1293,6 +1326,7 @@
       openAvatarCropper(large, async (small) => {
         state.member = await api.setAvatar(small, large);
         refreshAvatars();
+        await TFB.refreshSite();
         openProfile();
         toast('Ausschnitt gespeichert', true);
       });
@@ -1303,6 +1337,7 @@
     } else if (action === 'avatar-remove') {
       state.member = await api.setAvatar(null);
       refreshAvatars();
+      await TFB.refreshSite();
       openProfile();
     } else if (action === 'tally-row') {
       state.openTallyRow = state.openTallyRow === el.dataset.key ? null : el.dataset.key;
@@ -1347,7 +1382,7 @@
   });
 
   // Schnittstelle für die Vereinsseiten (site.js)
-  TFB.ui = { state, api, cfg, esc, icon, logo, viewHead, partnerSlot, openSheet, closeSheet, toast, renderView, currentView, loadImage, largeImage, openLightbox };
+  TFB.ui = { state, api, cfg, esc, icon, logo, viewHead, partnerSlot, openSheet, closeSheet, toast, renderView, currentView, loadImage, largeImage, openLightbox, openAvatarCropper };
 
   if ('serviceWorker' in navigator && location.protocol === 'https:') {
     navigator.serviceWorker.register('sw.js').catch(() => {});

@@ -5,18 +5,71 @@
 // Bilder: null = gezeichneter Platzhalter (Tennisplatz-Linien); hochgeladene Bilder heißen "img:<id>".
 window.TFB = window.TFB || {};
 
+TFB.boardPhotoPreviews = {
+  'assets/images/board/sebastian-manz.jpg': 'assets/images/board/sebastian-manz-aufgehellt.png',
+  'assets/images/board/marco-hennes.jpg': 'assets/images/board/marco-hennes-aufgehellt.png',
+};
+
+// Veröffentlicht auf tfbielstein.de/vorstand-ansprechpartner/, übernommen am 11.10.2026.
+TFB.boardSeed = [
+  { role: '1. Vorsitzender', name: 'Kai Eichmann', phone: '0163 9757690', email: 'kai.eichmann.tennis@gmail.com', image: 'kai-eichmann.jpg' },
+  { role: '1. Geschäftsführer und Pressekontakt', name: 'Sebastian Manz', phone: '0173 5256226', email: 'sebastian.manz@tfbielstein.de', image: 'sebastian-manz.jpg' },
+  { role: 'Stellvertretende Geschäftsführerin', name: 'Katja Küpper', phone: '0151 22676915', email: 'katja.kuepper@tfbielstein.de', image: 'katja-kuepper.jpg' },
+  { role: 'Kassenwart', name: 'Daniel Pollmann', phone: '0171 2701747', email: 'daniel.pollmann@tfbielstein.de', image: 'daniel-pollmann.jpg' },
+  { role: '2. Vorsitzender', name: 'Thomas Heine', phone: '02262 97738', email: 'thomas.heine@tfbielstein.de', image: 'thomas-heine.jpg' },
+  { role: 'Sportwart', name: 'Marco Hennes', phone: '0174 3808785', email: 'marco.hennes@tfbielstein.de', image: 'marco-hennes.jpg' },
+  { role: 'Jugendwart', name: 'Katharina Pollmann', phone: '0175 4522855', email: 'katha.pollmann@web.de', image: 'katharina-pollmann.jpg' },
+].map((p) => ({ ...p, image: `assets/images/board/${p.image}`, publishEmail: true, publishPhone: true }));
+
 TFB.siteSeed = {
   version: 1,
+  chatText: {
+    title: 'Chat', feedTitle: 'Clubgeflüster', feedIntro: 'Hier schreiben unsere Mitglieder.',
+    writeLabel: 'Schreib was', allLabel: 'Alle Beiträge', olderLabel: 'Ältere anzeigen',
+    feedEmpty: 'Noch ist es still hier. Schreib den ersten Beitrag!', loginLabel: 'Zum Mitschreiben anmelden',
+    overviewKicker: 'Clubgeflüster & Insider News', overviewTitle: 'Alle Beiträge',
+    overviewIntro: 'Schnell finden, wer was geschrieben hat.', searchPlaceholder: 'Name oder Stichwort, z. B. Hennef',
+    allAreas: 'Alle Bereiche', clubFilter: 'Nur Clubgeflüster', teamFilter: 'Nur Insider News (alle Mannschaften)',
+    teamLabel: 'Insider News', periodAll: 'Alle', periodWeek: '7 Tage', periodMonth: '30 Tage',
+    photosOnly: 'Nur mit Fotos', overviewEmpty: 'Nichts gefunden – Filter lockern?',
+    guestNote: 'Zum Mitschreiben bitte anmelden.', countOne: 'Beitrag', countMany: 'Beiträge',
+  },
   teams: {},
   // Einmalige Text-Updates für Geräte, auf denen schon gepflegt wurde: ersetzen nur die
   // genannten Felder (Fotos und Link bleiben). Jedes Update läuft genau einmal.
   updates: [
+    { id: 'club-padel-rabatt-2026-10-11', page: 'verein', block: 'v-mitglied-btn', set: { note: 'TFB-Mitglieder erhalten 10 Prozent Rabatt auf alle Padel-Buchungen.' } },
+    { id: 'home-kiosk-direkt-2026-10-11', page: 'home', block: 'h-kiosk', set: { navigation: 'link', showMore: false } },
+    { id: 'home-jubilaeum-album-2026-10-11', page: 'home', block: 'h-50', set: { album: { enabled: true, label: 'Fotos der Veranstaltung', images: [], position: 'right', order: 1, icon: 'camera' } } },
+    { id: 'club-vorstand-import-2026-10-11', page: 'verein', block: 'v-vorstand', set: { people: TFB.boardSeed } },
     { id: 'padel-text-2026-10-11', page: 'home', block: 'h-padel',
       set: { kicker: 'Ab Mai 2027 im Freibad Bielstein', title: 'Padel kommt nach Bielstein.',
         subtitle: 'Zwei Outdoor-Courts, 365 Tage im Jahr geöffnet – für alle Tennis- und Padelfreunde.',
         text: 'Padel ist die am schnellsten wachsende Sportart in Deutschland: schnell gelernt, rasant gespielt und fast immer im Doppel. Anfang 2027 bauen die Tennisfreunde Bielstein die ersten beiden Courts, ab Mai wird gespielt.\n\nDas Beste daran: In der Freibad-Saison ist dein Buchungsticket gleichzeitig deine Eintrittskarte ins Freibad.' },
       more: { text: 'Padel boomt, und zwar zu Recht. Gespielt wird auf einem kleinen Feld mit Glaswänden, der Ball darf von der Wand zurückgespielt werden. Das sorgt für lange Ballwechsel, viel Bewegung und noch mehr Spaß. Die Regeln sind in fünf Minuten erklärt. Wer Tennis spielt, fühlt sich sofort zu Hause, und wer noch nie einen Schläger in der Hand hatte, hat nach einer Stunde trotzdem Spaß.\n\n## Zwei Courts im Freibad Bielstein\n\nAnfang 2027 bauen die Tennisfreunde Bielstein die ersten beiden Outdoor-Courts und erweitern damit ihr sportliches Angebot. Ab Mai 2027 geht es los, für Mitglieder und für alle, die Lust auf Padel haben.\n\n## 365 Tage geöffnet\n\nPadel Bielstein ist das ganze Jahr über geöffnet. Während der Freibad-Saison gilt dein Buchungsticket gleichzeitig als Eintrittskarte ins Freibad. Erst ein Match, dann ab ins Becken.\n\n**Hit. Run. Padel-Fun.** Wir freuen uns auf dich!', quote: 'Hit. Run. Padel-Fun.', quoteBy: '' } },
     { id: 'kiosk-foto-auf-unterseite-2026-10-11', page: 'home', block: 'h-kiosk', moveImageToMore: true, more: { original: true } },
+    { id: 'club-tiles-entfernen-2026-10-11', page: 'verein', removeBlock: 'v-tiles' },
+    { id: 'club-zahlen-vier-2026-10-11', page: 'verein', block: 'v-facts',
+      set: { items: [
+        { value: '1976', label: 'gegründet' },
+        { value: '28', label: 'Mannschaften 2026' },
+        { value: '50', label: 'Jahre Tennis in Bielstein' },
+        { value: '6', label: 'Außenplätze' },
+      ] } },
+    { id: 'club-zahlen-fuenf-2026-10-11', page: 'verein', block: 'v-facts',
+      fillFacts: 5 },
+    { id: 'club-aufnahme-digital-2026-10-11', page: 'verein', block: 'v-mitglied-btn',
+      set: { url: '#aufnahme' } },
+    { id: 'sport-trainer-2026-10-11', page: 'sport', block: 's-training',
+      setWhenText: 'Unser Trainer Leon Kaufmann ist vom Tennisverband Mittelrhein ausgebildet und trainiert Kinder, Jugendliche und Erwachsene – vom ersten Ballwechsel bis zur Turniervorbereitung.\n\nTrainingszeiten und freie Plätze erfahrt ihr direkt bei Leon oder beim Vorstand.',
+      set: { title: 'Leon Kaufmann', subtitle: 'Jugend- und Erwachsenentrainer',
+        text: 'Ausgebildet als Tennistrainer im Verband (TVM).\n\nAufgrund seiner hohen Spielstärke und Trainererfahrung ist Leon hervorragend für die Entwicklung der Jugend qualifiziert. Fortgeschrittene und Turnierspieler:innen unterstützt er bei der Entwicklung ihrer Schlagtechnik und Spielstrategie.',
+        phone: '0176 76731093', email: 'leonkaufmann2002@icloud.com', image: 'assets/images/leon-kaufmann.jpg' } },
+    { id: 'sport-schnupper-2026-10-11', page: 'sport', block: 's-schnupper',
+      setWhenText: 'An ausgewählten Samstagen bieten wir kostenloses Schnuppertraining an. Jedes Alter ist willkommen, Schläger stellen wir.',
+      set: { text: 'Die Tennisfreunde Bielstein bieten an verschiedenen Samstagen ein kostenloses Schnuppertraining an. Tennisinteressierte jeden Alters können erste Tennisschläge unter Anleitung eines professionellen Trainers durchführen.\n\nFalls noch kein eigener Tennisschläger vorhanden ist, stellt der Tennisclub Euch gerne einen Tennisschläger für das Schnuppertraining zur Verfügung.\n\n**Wann:**\nVerschiedene Termine an Samstagen.\nBitte schaut in unseren Kalender, dort sind die Schnuppertrainingstage aufgeführt.' } },
+    { id: 'sport-schnupper-kalender-2026-10-11', page: 'sport', block: 's-schnupper-btn',
+      set: { label: 'Schnuppertermine im Kalender', url: 'https://www.tfbielstein.de/kalender/' } },
   ],
   pages: {
     // Startseite für alle Besucher: drei große Themen (Beispiele – im Bearbeiten-Modus ersetzen).
@@ -95,16 +148,12 @@ TFB.siteSeed = {
           { value: '1976', label: 'gegründet' },
           { value: '28', label: 'Mannschaften 2026' },
           { value: '50', label: 'Jahre Tennis in Bielstein' },
+          { value: '6', label: 'Außenplätze' },
+          { value: '–', label: 'Kennzahl' },
         ] },
         { id: 'v-mitglied', type: 'text', title: 'Mitglied werden', text: 'Wir hegen und pflegen unsere Tennisfreundschaften – im Club und darüber hinaus. Neue Mitglieder empfangen wir mit einem Kennenlern-Abend, zwei Vorstandsmitglieder führen euch durch den Club. Von Anfang an helfen wir euch, Anschluss zu finden.' },
-        { id: 'v-mitglied-btn', type: 'button', label: 'Zum Anmeldeformular', url: 'https://www.tfbielstein.de/anmeldeformular/' },
-        { id: 'v-vorstand', type: 'people', title: 'Vorstand', people: [
-          { role: 'Vorsitz', name: 'Name folgt' },
-          { role: 'Stellvertretung', name: 'Name folgt' },
-          { role: 'Kasse', name: 'Name folgt' },
-          { role: 'Sport', name: 'Name folgt' },
-          { role: 'Jugend', name: 'Name folgt' },
-        ] },
+        { id: 'v-mitglied-btn', type: 'button', label: 'Zum Anmeldeformular', url: '#aufnahme', note: 'TFB-Mitglieder erhalten 10 Prozent Rabatt auf alle Padel-Buchungen.' },
+        { id: 'v-vorstand', type: 'people', title: 'Vorstand', people: TFB.boardSeed },
         { id: 'v-chronik', type: 'text', title: 'Chronik', text: '2026 feiern die Tennisfreunde 50 Jahre Tennis in Bielstein. Wir sind stolz auf die Entwicklung unseres Clubs und schauen dankbar zurück – auf das Engagement aller früheren Vorstände und den Einsatz unserer Mitglieder.' },
         { id: 'v-anfahrt', type: 'text', title: 'Anfahrt', text: 'Tennisfreunde Bielstein e.V.\nJahnstraße, 51674 Wiehl-Bielstein' },
         { id: 'v-anfahrt-btn', type: 'button', label: 'Route planen', url: 'https://maps.google.com/?q=Jahnstra%C3%9Fe+51674+Wiehl+Tennis' },

@@ -1,0 +1,13 @@
+{
+  "live": false,
+  "bankApproved": false,
+  "legalApproved": false,
+  "publicUrl": "https://www.tfbielstein.de",
+  "clubEmail": "info@tfbielstein.de",
+  "statutesUrl": "https://www.tfbielstein.de/satzung-des-tfb-e-v/",
+  "contributionsUrl": "",
+  "version": "tfb-aufnahme-v2",
+  "mandateText": "",
+  "privacyText": "",
+  "retentionDays": 90
+}

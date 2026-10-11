@@ -1,109 +1,211 @@
 # TFB – Übergabe für die nächste Sitzung
 
-**Zuerst lesen.** Diese Datei ist kurz und wird bei jedem Sitzungsende neu
-geschrieben. Ausführliche Entscheidungen, Konzepte und den Verlauf enthält
-[`PROJEKTGEDAECHTNIS.md`](PROJEKTGEDAECHTNIS.md).
+**Zuerst lesen.** Ausführlicher Verlauf: [PROJEKTGEDAECHTNIS.md](PROJEKTGEDAECHTNIS.md).
+Diese Zusammenfassung hat Vorrang vor älteren Zwischenständen.
 
-Stand: **10.10.2026, Sitzungsende** · Branch `main` · eingefroren: Tag `stand-2026-10-10-abend`
-(früher: `stand-2026-10-09`, `stand-2026-10-10`)
+Stand: **11.10.2026, konsolidiertes Projekt-Update nach Foto-Vollbildansicht**. Cache **tfb-kiosk-v99**.
+Änderungen liegen lokal vor. Kein neuer Commit, Tag oder Release bei diesem Update.
 
-## In einem Satz
+## Neu in v99
 
-Eigenständige Handy-App und Vereinswebsite der **Tennisfreunde Bielstein (TFB)** –
-Startseite **Home**, **Kiosk** mit digitaler Strichliste, **Aktuell · Sport (mit
-Team-Seiten) · Club**, **Verabreden** und Link zu **Padel**. Läuft im **Demo-Modus**
-(alle Daten im Browser). Ziel: Vorführung vor dem Vorstand. Der Nutzer ist sehr
-zufrieden („richtig schicke Seite“) und will als Nächstes **echte Bilder und Texte** einpflegen.
+- `photo-viewer.js`: Einzelfotos auf den Inhaltsseiten, Mannschaftslisten und
+  Porträtseiten sowie sichtbare Teilnehmer-/Chat-Profilfotos öffnen per Klick oder
+  Enter/Leertaste die gemeinsame Vollbildansicht. Bildklicks in Mannschafts-/Home-
+  Links öffnen das Foto; Text und übrige Linkfläche behalten die Navigation.
+- Vorhandene Galerie-/Collage-Viewer, Vorstands-Originalbilder, Link-Vorschaubilder,
+  Logo/Partnerlinks und Upload-/Ausschnitt-Editoren bleiben in ihrer bisherigen
+  Funktion. Es werden nur bereits sichtbare Fotoquellen verwendet, keine weiteren
+  Mitgliederdaten geladen und keine Foto-Freigaben verändert.
+- Vollbild zeigt die unbeschnittene Quelle bis 1600px/84vh. X, Hintergrundklick und
+  Escape schließen; Bildklick schließt nicht. Scrollzustand und Fokus werden
+  wiederhergestellt; Escape schließt nicht gleichzeitig das darunterliegende Formular.
+- 32 Tests bestanden, Mannschaftsbild-Klick und Trainerfoto auf Desktop und
+  Smartphone-Größe in isolierter Browservorschau geprüft.
 
-## Starten
+## Neu in v98
 
-- Per Doppelklick: `9. TFB-Kiosk/TFB-Website öffnen.html` oder `TFB-Kiosk öffnen.html` –
-  beide öffnen **Home**. Jeder neue Aufruf landet auf Home (Ausnahmen: Neu laden, Links wie `#treffen/<id>`).
-- **Offline getestet** (echtes Chrome, `file://`, ohne Internet): Texte und Fotos bleiben
-  nach Neustart erhalten. Daten liegen nur in diesem Browser auf diesem Mac →
-  regelmäßig **Verwaltung → Sichern & Laden** (eine JSON-Datei mit allem inkl. Fotos, in die Dropbox legen).
-  Nach dem Speichern Chrome nicht sofort hart beenden (localStorage schreibt verzögert).
-- Präsentieren: vom Mac offline möglich; auf dem iPad erst nach Veröffentlichung.
-- Vorschau-Server: `.claude/launch.json` → „tfb-kiosk“ (Port 5180) – hat **eigene** Daten, nicht die aus Chrome.
-- Demo-Zugang: `max@tfb-demo.de` (Admin), Passwort beim ersten Anmelden frei wählen.
-- Nach Änderungen an JS/CSS die Cache-Version in `sw.js` hochzählen (aktuell `tfb-kiosk-v45`).
+- Unveränderte Beispiel-News `p-1` bis `p-3` und ungepflegte Home-Themen werden beim
+  Laden entfernt. Geänderte Texte, eigene Fotos und Alben bleiben erhalten. Keine
+  pauschale Löschung anhand des Autors; Bereinigung auch nach älteren Backups.
+- Home-Themen und News-Bausteine können statt eines Einzelbildes bis zu 100 Bilder
+  in `block.images` enthalten. Admin-Fotoliste mit Entfernen, Sortieren, Foto einpassen
+  und vorhandener Drag-and-Drop-Upload-Funktion. Bestehendes Einzelbild wird beim
+  ersten Collage-Upload übernommen; Texte und Links bleiben.
+- Vorschau: fünf Fotos im Magazin-Raster plus Restanzahl. Klick: komplette,
+  scrollbar große Collage, dann Original-Einzelbilder mit Pfeilen, Klick und Wischen.
+- Training: Kalender-Knopf ersetzt durch Textbaustein `s-schnupper-dates`, Titel
+  „Termine für Schnuppertraining demnächst“. Über den Seiten-Stift Termintext mit
+  Datum/Uhrzeit/Treffpunkt pflegen; keine erfundenen Termine, kein Kalender.
+- 30 automatisierte Tests bestanden; neue Collage und Editor in isolierter lokaler
+  Browservorschau geprüft, Smartphone-Breite ohne horizontalen Überlauf.
 
-## Feste Regeln (nie brechen)
+## Ziel und Betriebszustand
 
-1. **Strikt getrennt von Padel.** Die Padel-Kopie im Elternordner nur lesen.
-   Ihr Push-Ziel ist absichtlich `KEIN_PUSH_padel-vorlage`. Die Padel-Supabase
-   (`hioaqcwqzeqcvvikollq`) niemals beschreiben.
-2. **Keine Mitgliederdaten ins Repo** (`.gitignore`: `*.xlsx`, `*.csv`, `.env*`),
-   keine Kontaktdaten einzelner Personen von der alten Vereinsseite.
-3. Abrechnung **monatlich per SEPA-Lastschrift des Vereins, kein Stripe.**
-4. Muss unter `file://` laufen: kein Build und keine Ressourcen, die CORS brauchen.
-5. Hit Journey Player: nur ansehen, nichts verändern.
-6. Downloads nur nach Zustimmung des Nutzers; keine Bilder fremder Seiten verwenden.
+Vereinswebsite der **Tennisfreunde Bielstein**, inklusive Kiosk. Nutzer hat echte
+Inhalte und eigene Flüsternachrichten gepflegt und ist sehr zufrieden.
+Nächstes Ziel: Vorstellung beim Vorstand. **Noch nicht veröffentlicht.**
+Mitglieder, Chats, Kiosk und Verabredungen nutzen lokale Browserdaten,
+keine gemeinsame produktive Vereinsdatenbank.
 
-## Aufbau in 30 Sekunden
+## Öffnen und Sichern
+
+- Doppelklick auf `TFB-Website öffnen.html` oder `TFB-Kiosk öffnen.html` im
+  Projekt-Elternordner; Startseite Home. Nach Änderungen Chrome neu laden.
+- Daten gehören zum jeweiligen Browser/Ursprung. Direkter HTML-Start und lokale
+  Vorschau-Server haben getrennte Datenbestände; Testdaten sind nicht Nutzerinhalte.
+- Regelmäßig **Verwaltung → Sichern & Laden**: JSON mit Daten und Fotos sichern.
+  Browserdaten niemals als vermeintliche Lösung für Layout-/Cacheprobleme löschen.
+- Demo-Admin: `max@tfb-demo.de`; Passwort beim ersten Anmelden frei wählen.
+- Aktuelle direkte HTML-Browserprüfung durch Browserrichtlinie nicht möglich.
+  Frühere Offline-Prüfungen sind historische Nachweise, keine neue Abnahme.
+
+## Aktueller Funktionsstand
+
+- **Menü:** Logo → Home; Kiosk · Chat · Aktuell · Sport · Club · Verabreden · Padel.
+  Dezente globale Fußzeile mit Impressum (`#impressum`), Satzung (`#satzung`) und
+  dynamischem Copyright-Jahr. Unterseiten ohne Werbung, einspaltig und im Admin
+  bearbeitbar (Stift oder Verwaltung). Rechte Dritter bleiben ausdrücklich erhalten.
+  Satzung vom Nutzer wortgetreu übernommen: 17 Paragraphen, Stand 20.03.2015.
+  Impressum: Amtsgericht Köln, VR 600693, USt-ID DE330174727 aus dem öffentlichen
+  Padel-Impressum; Kai Eichmann als Vorsitzender vom Nutzer ausdrücklich bestätigt.
+  Sebastian Manz und Daniel Pollmann, gemeinschaftliche Vertretung; Sebastian Manz
+  als inhaltlich Verantwortlicher übernommen. Keine Änderung am Padel-Projekt.
+- **Home:** Themen mit Detailseite, direktem Link oder ohne Ziel. „Mehr erfahren“
+  unabhängig ausblendbar. Kiosk-Titel/Link führen direkt zum Kiosk; echte Einzelfotos
+  öffnen seit v99 ihre Vollbildansicht. Verlinkte Titel
+  werden bei Hover Signature-Rot. Links, Symbole und Reihenfolge editierbar.
+  Separate Foto-Unterseite mit bis zu 100 Bildern, Collage und Großansicht.
+  Zusätzlich Collage statt Titelbild direkt im Home-/News-Feld: bis zu 100 Fotos,
+  sortierbar, fünfteilige Vorschau mit Restanzahl, Klick öffnet die gesamte Collage.
+  Home-Beispielhinweis und unveränderte Beispiel-News entfernt; gepflegte Inhalte bewahren.
+- **Aktuell:** News links 2/3, Save the Date rechts 1/3. Mobil umschaltbar.
+- **Chat:** `#chat` zeigt neueste Beiträge zuerst, groß und linksbündig (max. 760px).
+  „Alle Beiträge“ → `#chat/alle` mit Suche/Filtern. Alte `#gefluester`-Links gültig.
+  Admin-Stift auf Haupt-/Unterseite: 24 Texte editierbar (`site.chatText`).
+  Mannschafts-Insider-News und bisherige Rechte bleiben erhalten.
+- **Chat-Fotos:** bis zu sechs pro Beitrag; responsive Collage. Erster Klick öffnet
+  gesamte Collage groß, danach Einzelbilder mit Pfeilen, Klick und horizontalem Wischen.
+  Keine persönlichen Direktnachrichten implementiert.
+- **Beispiel-Chats:** exakt `p-s1` bis `p-s4` und `p-t1` bis `p-t3` werden beim
+  Laden entfernt und nicht mehr erzeugt, auch nach Import eines alten Backups.
+  Eigene Beiträge, Bildreferenzen und Bildspeicher bleiben erhalten.
+- **Club:** fünf editierbare/sortierbare Zahlen; unerwünschter „Vier Knöpfe“-Block
+  entfernt. Schwarzer Beitragsbutton vor rotem Aufnahmebutton mit schwarzem Text.
+  Beitragstabelle als Fenster mit X. Editierbarer Hinweis daneben:
+  „TFB-Mitglieder erhalten 10 Prozent Rabatt auf alle Padel-Buchungen.“
+  Dieser Text allein implementiert keine Rabattberechnung im getrennten Padel-System.
+- **Vorstand:** sieben veröffentlichte Personen mit Kontakten und lokalen Fotos.
+  Runde Bilder mit Originalansicht; Basti/Marco aufgehellt, Originale erhalten.
+  Rollen, Namen, Kontakte, Reihenfolge und Fotoausschnitt im Admin editierbar.
+  Mitgliedssuche nach Name/E-Mail mit Auswahl bei Familienadressen. Verknüpfte
+  Profilbilder erscheinen nur mit öffentlicher Freigabe.
+- **Sport:** Porträt-/Newsbutton ab 640px zwischen linkem Informationsbereich und
+  rechter Platzierung zentriert; mobile kompakte Darstellung bleibt erhalten.
+  Zwei Reiter: Mannschaften (`#sport`) und Training (`#sport/training`). Training
+  mit Leon Kaufmann, Originalfoto, Funktion, Text und anklickbaren Kontakten,
+  Schnuppertraining sowie „Termine für Schnuppertraining demnächst“ mit frei
+  bearbeitbarem Termintext (Datum, Uhrzeit, Treffpunkt); kein Kalender-Link mehr.
+  Trainerfoto, Funktion, Kontakte und Texte im vorhandenen Admin-Editor bearbeitbar.
+  Eigene abweichende Trainingstexte werden bei der Migration nicht überschrieben.
+- **Foto-Drop:** Dateibatches auf bestehende Bildfelder ziehen; gleicher Weg wie
+  Datei-Upload, interne Sortierung bleibt erhalten. Tatsächliche Übergabe macOS
+  Fotos → Chrome noch nicht geprüft. Unaufgelöste Dateiversprechen erhalten eine
+  Meldung mit JPEG-Export als Ausweichweg.
+- **Foto einpassen:** gemeinsamer Admin-Editor in Bildfeldern, Galerie-/Hero-/Album-
+  Vorschaubildern, Chat-Komposition und Bildanhängen. Hochformat (3:4), Querformat
+  (3:2), Quadrat; Zoom 1–4, Verschieben per Maus/Finger, horizontale/vertikale Regler.
+  Einstellungen als `site.photoFrames[ref]`, gelten für alle Verwendungen derselben
+  Bildreferenz. Originaldatei unverändert, Einzelbild-Großansicht bleibt unbeschnitten.
+  „Originalansicht“ entfernt nur die Rahmeneinstellung. Kollagen und kleine/runde
+  Vorschaurahmen behalten ihr Raster; darin werden Zoom/Position angewendet.
+  Eigene Profil-/Vorstandsfotos behalten ihren bisherigen runden Ausschnitt-Editor.
+  Übernehmen speichert den Ausschnitt sofort, ohne offene Textentwürfe zu schließen.
+- **Foto-Vollbild:** gemeinsame Ansicht für Einzelfotos, auch Mannschaftslisten,
+  Porträt-/Trainerfotos und sichtbare Chat-/Teilnehmerbilder. Originalquelle ohne
+  Rahmenzuschnitt; X, Hintergrundklick oder Escape schließen. Collagen, Fotoeditoren
+  und funktionale Link-Vorschaubilder behalten ihre bisherigen Aktionen.
+- **Kiosk/Verabreden:** bestehende lokale Funktionen erhalten. Kiosk-Abrechnung
+  vorgesehen als monatliche Vereins-SEPA, nicht Stripe. Push/automatische Antworten
+  bei Verabredungen bleiben Vorführung, kein echter Mitgliederbetrieb.
+
+## Aufnahme und Foto-Freigaben
+
+Details: [digitale-aufnahme.md](digitale-aufnahme.md).
+
+- Öffentlicher Aufnahmeantrag ohne Fotoeinwilligung. Lokaler HTML-Start simuliert nur:
+  keine Antragsdaten gespeichert oder versendet, keine Mitgliedschaft angelegt.
+- Separater Python-/SQLite-Dienst vorbereitet: Bestätigung durch Antragsteller/
+  Sorgeberechtigte und ggf. abweichende Kontoinhaber, geschützter Club-Posteingang,
+  SMTP-Warteschlange. Versand deaktiviert; keine echten E-Mails versendet.
+- Vor Livebetrieb: Satzung, Beitrags-/Datenschutztexte und digitales SEPA-Verfahren
+  durch Club/Bank freigeben; HTTPS, Hosting, SMTP und geschützte Datenablage einrichten.
+  Software ersetzt keine Rechts-/Bankfreigabe. Keine automatische Übernahme
+  bestätigter Anträge in die Mitgliederliste implementiert.
+- Freiwillige Foto-Freigaben nach Aufnahme. Minderjährige: Foto für andere erst
+  nach dokumentierter Elternzustimmung sichtbar; neues Foto benötigt neue Freigabe.
+  Echte Elternverifikation für Produktion noch umzusetzen.
+
+## Wichtige Dateien
 
 | Datei | Aufgabe |
 |---|---|
-| `assets/js/config.js` | Einstellungen, Schalter `features.treffen` |
-| `assets/js/demo-backend.js` | Datenschicht `TFB.api` (localStorage + IndexedDB für Fotos), Sichern/Laden, Profil. Wird später durch Supabase ersetzt |
-| `assets/js/app.js` | Gerüst, Kopf/Menü, Kiosk, Strichliste, Abrechnungen, Account-Karte, Verwaltung (Schrift, Farbe, Sichern), `TFB.ui` |
-| `assets/js/site.js` | Home (Themen + Unterseiten), Aktuell/Sport/Club aus Bausteinen, Bearbeiten, Foto-Upload, Mannschaften, Team-Seiten |
-| `assets/js/meet.js` | Verabreden (eigenständig, abschaltbar), Speicher `tfb_meet_demo_v2` |
-| `assets/js/art.js` | gezeichnete Produktsymbole |
-| `assets/js/partner-rotation.js` | Partner-Duo je Seite (Logik aus Padel) |
-| `assets/data/*` | Partner, Mannschaften (nuLiga), Startinhalte der Website (`site-seed.js`) |
-| `assets/home/` | Padel-Vorschaubild für den Link |
-| `assets/css/app.css` | gesamte Gestaltung inkl. Raster (640 / 1024 / 1280 px) |
-| `tools/update-teams.py` | Mannschaften aus nuLiga holen |
-| `tools/update-rosters.py` | Spielermeldungen aus nuLiga → `assets/data/rosters.js` (nur lokal, nicht im Repo) für den Abgleich Spieler ↔ Mitglieder |
-| `tools/build-brand.sh` | Logo-Masken erzeugen (u. a. Logo ohne Ball + Ball einzeln) |
+| `assets/js/demo-backend.js` | lokale Daten/Rechte, Sicherung, gezielte Beispiel-Chat-/News-Bereinigung |
+| `assets/js/app.js` | Menü, Kiosk, Account, Verwaltung, eigener Fotoausschnitt |
+| `assets/js/site.js` | Website, Chat, Collagen, Seiten-/Texteditoren |
+| `assets/js/board.js`, `member-photos.js` | Vorstand und Foto-Freigaben |
+| `assets/js/membership.js`, `server/` | Aufnahmevorschau und vorbereiteter Server |
+| `assets/js/photo-drop.js` | gemeinsame Drag-and-drop-Anbindung |
+| `assets/js/photo-frame.js` | nichtdestruktiver Rahmen-/Zoom-/Positionseditor |
+| `assets/js/photo-viewer.js` | gemeinsame Vollbild-Einstiege für Einzelfotos |
+| `assets/js/meet.js` | lokale Verabredungen |
+| `assets/data/site-seed.js` | Startinhalte und gezielte Migrationen |
+| `assets/data/legal-pages.js` | Satzungswortlaut und Impressum-Startdaten |
+| `assets/data/board-photo-data.js` | lokale Vorstandsquellen für HTML-Fotoausschnitt |
+| `assets/css/app.css`, `sw.js` | Gestaltung und Cache-Version |
 
-## Was steht (Überblick)
+## Prüfstand und Weiterarbeit
 
-- **Kopf:** TFB-Logo mit **Ball in Signal-Rot** (führt zu Home), Profilbild rechts. Menü
-  KIOSK (immer rot) · AKTUELL · SPORT · CLUB · VERABREDEN · PADEL; aktiver Bereich mit rotem Strich.
-  Desktop: Menüschrift .74rem wie im Hochformat, großzügige Abstände.
-- **Home:** drei Themen (Padel · Kiosk · 50 Jahre) mit Bild breit/hoch/quadratisch, Kicker mit
-  roter Nummer, Überschrift, rote Unterzeile, kurzer Text, **„Mehr erfahren“** und **dezenter Link**
-  (Pille; wählbar Dezent/Knopf/Vorschau-Karte). Unterseite `#home/<id>` im Magazin-Stil:
-  Titelbild mit Überschrift, rote Initiale, Zitat, **Fotokollage** mit Großansicht.
-  Startmotive gezeichnet, bis echte Fotos da sind. Texte = Beispiele.
-- **Editor (WYSIWYG):** Stift oben rechts (nur Admins), Knöpfe im Text für ↗ Link, Fett, Zwischenüberschrift.
-- **Kiosk:** Bierdeckel „Stapel“, Sortiment mit eigenen Symbolen, Strichliste 7 Tage, Abrechnungen, Storno 30 s.
-- **Sport:** Mannschaften aus nuLiga → eigene **Team-Seite** je Mannschaft (Teamfoto, Platz/Punkte/
-  Mannschaftsführer, nuLiga-Link, bis zu 10 Beiträge; schreiben: Admins, später Mannschaftsführer).
-- **Club** (früher „Verein“), **Aktuell** mit Terminen und Beiträgen.
-- **Verabreden:** Gruppen, Training/Einzel/Doppel/Anderes, Teilnehmer-Tabelle (✓ rot · offen grau ·
-  ✗ schwarz), Ersatzbank mit Nachrücken, Profilbilder, Mitteilungs-Vorschau. Details später.
-- **Account-Karte** nach Vorbild der Padel-App: Mitgliedschaft und Kiosk-Freischaltung mit Häkchen,
-  Heute/Monat/Einzug, Angaben, Benachrichtigungen, Profilbild, Verwaltung (nur Admins), Abmelden,
-  „Als App aufs Handy“ ganz unten.
-- **Verwaltung:** Website bearbeiten, Kiosk bearbeiten, **Schrift (Test)** mit 16 Schriften,
-  Markenfarbe, **Sichern & Laden**.
+**32 Node-Tests im letzten Implementierungslauf bestanden**: Vorstand/Fotorechte,
+Home/Chat/Galerien, News-Collagen bis 100 Bilder, gezielte Beispiel-Bereinigung,
+Sport, Rechtstexte, Foto-Drop/-Rahmen und Vollbild-Klick/Keyboard/Schließen.
+Bei diesem reinen Dokumentationsupdate nicht erneut ausgeführt.
+Foto-Editor: Format, Zoom, Drag, Übernehmen und Fortbestand nach Neuladen im Browser
+geprüft. Quadrat im Seitenlayout exakt 360×360px; Smartphone-Dialog ohne Überlauf.
+Satzungswortlaut per SHA-256 nach reiner Leerraum-/Paragraphenformatierung abgeglichen.
+Fußzeilenlinks, Unterseiten und Smartphone-Layout ohne Überlauf im Browser geprüft.
+Neue Trainingsansicht auf Desktop/390px geprüft: Foto geladen, kein horizontaler
+Überlauf; Trainer-Editor mit Foto-, Funktions- und Kontaktfeldern geprüft.
+Aus dem Projekt-Elternordner:
 
-## Schriften und Farben (Kurzfassung, Details im Projektgedächtnis)
+```sh
+node --test tfb-kiosk/tools/test-board-photos.mjs tfb-kiosk/tools/test-home-features.mjs tfb-kiosk/tools/test-photo-drop.mjs tfb-kiosk/tools/test-photo-viewer.mjs
+```
 
-- **Grundschrift** fest: Systemschrift (SF Pro / Segoe UI / Roboto) – fast alles.
-- **Auszeichnungsschrift** wählbar (`--serif`): Standard „Modern (System)“ – Überschriften, Zahlen, Beträge, Zitate.
-- **Handschrift** fest: Bradley Hand – Bierdeckel-Datum, Strichlisten-Namen.
-- Farben: **Kreideweiß** `#FBFBF8` (Hintergrund) · **Anthrazit** `#2A2D2E` (Markenfarbe, wählbar) ·
-  **Sandplatz-Rot** `#C4553A` (Signal, fest) · Schrift `#1C2520`/`#6A7069` · Linien `#E5DDCD`.
+Aufnahme-Tests separat aus `tfb-kiosk/server`:
+`python3 -B -m unittest -v test_membership.py`.
+Bei diesem Dokumentationsupdate nicht erneut ausgeführt.
+Frühere Desktop-/Mobilprüfungen in isolierter Vorschau; echte Fotos-App-Übergabe
+und aktuelle direkte HTML-Prüfung bleiben offen.
 
-## Nächste Schritte (Vorschlag)
+1. Vor Vorstandsvorführung Nutzer-Sicherung erstellen und in seinem Chrome
+   nach Neuladen kontrollieren, dass nur gewünschte echte Chats und News erscheinen.
+2. Fotos-App-Drop am Mac praktisch ausprobieren; iPhone/iPad nach HTTPS-Veröffentlichung prüfen.
+3. Veröffentlichung und eigene TFB-Datenbank separat planen. Aufnahme-Freigaben,
+   Mitgliederimport, SEPA-Abschluss und echte Benachrichtigungen noch offen.
+   Satzung von 2015 nennt in § 1 Gummersbach und in § 3 schriftliche Aufnahme;
+   historische Angaben nicht eigenmächtig korrigiert. Aktuelle Satzungsfassung,
+   Vertretungsregel, Impressum und Datenschutz vor Veröffentlichung durch Club prüfen.
 
-1. **Nutzer pflegt echte Inhalte ein** (Fotos, Texte, Unterseiten, Teamfotos) – danach Feinschliff.
-2. Schrift entscheiden (1–2 Favoriten); Google-Schrift dann selbst ausliefern (Datenschutz, offline).
-3. CSS aufräumen: Altlasten (`--green`, Karton-Farben) entfernen, Farben auf ~10 feste Werte.
-4. Verabreden: Details nach Rückmeldung.
-5. Foto der Papier-Strichliste → echtes Sortiment und Preise.
-6. Ab ca. Ende Oktober 2026: Supabase (eigenes Projekt), Veröffentlichung auf
-   `kiosk.joern-kaemper.de`, Mitglieder-Import, Monatsabschluss/SEPA, automatische Link-Vorschau,
-   Mannschaftsführer-Rechte, echte Push-Mitteilungen.
+## Verbindliche Arbeitsregeln
 
-## Arbeitsweise mit dem Nutzer
-
-- Deutsch, klare und ehrliche Einschätzungen statt Schönfärberei.
-- Gestaltung in kleinen Schritten, jede Änderung im Browser prüfen (Handy- und Desktop-Breite) und mit Screenshot belegen.
-- Der Nutzer arbeitet oft mit schmalem Vorschaufenster – für Screenshots Viewport emulieren.
-- Bei Aussagen wie „erst Feedback, nicht programmieren“ wirklich nur beraten.
-- Am Sitzungsende diese Datei und den Verlauf im Projektgedächtnis aktualisieren, dann committen.
+- Nur `tfb-kiosk/` bearbeiten. Padel-Kopie und deren Dokumentation sind ein anderes
+  Projekt; keine Padel-Datenbank oder Veröffentlichung verändern.
+- Aktuelle Software und Nutzerinhalte sind maßgeblich. Historische Gedächtnistexte
+  nicht als Anlass für Rücksetzungen nehmen. Migrationen eng auf bekannte IDs begrenzen.
+- Keine privaten Mitgliederlisten, Geheimnisse, Browserexporte oder echten
+  Aufnahmedaten ins Repository. Übernahme veröffentlichter Vorstandsdaten ausdrücklich
+  beauftragt; erforderliche Rechtsgrundlage/Information muss der Club sicherstellen.
+- Lokaler HTML-Start ohne Build erhalten. JS/CSS-Änderungen mit neuer Cache-Version.
+  Signature-Rot `#C4553A`; Gestaltung in kleinen Schritten.
+- Deutsch, kurz und ehrlich. Nicht still veröffentlichen, versenden oder committen.
+  Bestehende lokale Änderungen nicht zurücksetzen oder ungefragt insgesamt committen.
