@@ -3,8 +3,29 @@
 **Zuerst lesen.** Ausführlicher Verlauf: [PROJEKTGEDAECHTNIS.md](PROJEKTGEDAECHTNIS.md).
 Diese Zusammenfassung hat Vorrang vor älteren Zwischenständen.
 
-Stand: **11.10.2026 abends, Menü oben im Admin pflegbar**. Cache **tfb-kiosk-v116**.
-Alles committet (Sicherungspunkt v99 `f8e6c90`, danach Stufe 1). Nicht veröffentlicht.
+Stand: **11.10.2026 abends – EINGEFROREN** als Git-Tag **`stand-2026-10-11-abend`**.
+Cache **tfb-kiosk-v116**. Alles committet, 32 Tests grün. Nicht veröffentlicht.
+
+## Eingefrorener Stand (vom Nutzer abgenommen: „das gefällt mir sehr gut alles jetzt“)
+
+- **Home:** Look „Wechselspiel“ (Standard; Klassisch/Magazin im Admin), bis 10 Themen,
+  Themen-Leiste im Editor, feste Typografie, Fließtext Fett/Kursiv/Rot/Link, zwei Links.
+- **Unterseiten und Mannschaftsporträts:** gleiche Bedienung – 1 Fotos oben (1 breit,
+  2–4 Quadrate, im Seitenformat einpassbar), 2 Überschrift (3 Zeilen), 3 Inhalt aus
+  Abschnitten (Text · Überschrift · Zitat, rotes ⊕, Pfeile), 4 Fotos unten (Kollage).
+- **Aktuell:** Beiträge kurz und knackig ohne Unterseiten, 1–4 Fotos (breit/Quadrate),
+  schlanke Werkzeugleiste.
+- **Chat:** Seite „Clubgeflüster“, Beiträge mit freiwilliger roter Überschrift.
+- **Menü oben** im Admin pflegbar (Namen, Ziel App-Seite/Website, Reihenfolge, sichtbar).
+- **Leitziel:** Mitglieder und Jugendliche ohne EDV-Erfahrung pflegen alles selbst –
+  einfach, WYSIWYG, nichts verstecken, was auf der Seite sichtbar ist.
+
+## Nächster großer Job: Verabreden
+
+- Nutzer: „Verabredungen aufdröseln und rund machen – im Moment noch nicht optimal.“
+- Vorgehen wie bisher: erst gemeinsam mit echten Daten ansehen und bewerten, dann
+  Plan, dann umsetzen. Code: `assets/js/meet.js` (Route `#treffen`, Menüname „Verabreden“).
+
 
 ## Neu: Ordner heißt jetzt „9. TFB-Website“
 

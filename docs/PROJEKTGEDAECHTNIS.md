@@ -45,6 +45,8 @@ Neues bitte unten bei „Verlauf“ ergänzen.
   Aktuell ohne Unterseiten (Nutzer: „kurz und knackig“), Texteditor überall gleich schlank.
 - v116: Leitziel bestätigt – Laien (Mitglieder, Jugendliche) sollen alles selbst pflegen.
   Menü oben (Namen, Ziele intern/extern, Reihenfolge, sichtbar) im Admin bearbeitbar.
+- **11.10.2026 abends eingefroren** als Tag `stand-2026-10-11-abend` (v116), vom Nutzer
+  abgenommen. Nächster großer Job: **Verabreden** aufdröseln und rund machen.
 
 ## Verbindlicher Stand 11.10.2026 – Projekt-Update
 
