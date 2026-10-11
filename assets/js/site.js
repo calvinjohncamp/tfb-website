@@ -313,7 +313,7 @@
             <a class="team team-row" href="#team/${esc(teamKey(t.name))}">
               <span class="team-thumb ${photo ? '' : 'empty'}">${photo || ui().icon.camera}${count ? `<span class="team-dot">${count}</span>` : ''}</span>
               <span class="team-name"><strong>${esc(t.name.replace(/\s*\(.*?\)/g, ''))}${/\((.*?)\)/.test(t.name) ? ` <i>${esc(t.name.match(/\((.*?)\)/)[1])}</i>` : ''}</strong><small>${esc(t.group)}</small></span>
-              <span class="team-news-btn ${count ? 'has' : ''}">Insider News${count ? `<b>${count}</b>` : ''}<span aria-hidden="true">→</span></span>
+              <span class="team-news-btn ${count ? 'has' : ''}">Mannschaftsporträt + News${count ? `<b>${count}</b>` : ''}<span aria-hidden="true">→</span></span>
               <span class="team-stand"><b class="${t.rank === '1' ? 'top' : ''}">${esc(t.rank || '–')}.</b><small>Platz · ${esc(t.points)}</small></span>
             </a>`;
           }).join('')}
@@ -411,24 +411,24 @@
     return `<p><span class="lead-letters">${html.slice(3, i)}</span>${html.slice(i)}`;
   }
 
-  async function featureDetail(id) {
-    const { icon, state, partnerSlot } = ui();
-    const b = homeBlocks().find((x) => x.id === id);
-    if (!b) return `${ui().viewHead('Home', 'Diesen Beitrag gibt es nicht mehr.', false)}<p><a class="btn" href="#home">Zur Startseite</a></p>`;
+  // Magazin-Seite (Unterseite der Home-Themen und Mannschaftsporträt) aus einem Block mit `more`
+  const storyIndex = {};   // Block je Kennung – für Großansicht von Titelfotos und Kollage
+  function storyHtml(b, { n = '', editHtml = '', closeHref = '#home', backLabel = 'Zur Startseite', partner = '' } = {}) {
+    const { icon } = ui();
+    storyIndex[b.id] = b;
     const more = b.more || {};
     const parts = String(more.text || '').split(/\n{2,}/);
     const cut = Math.min(2, parts.length);
-    const admin = state.member && state.member.isAdmin;
-    const n = String(homeBlocks().filter((x) => x.type === 'feature').indexOf(b) + 1).padStart(2, '0');
     const size = b.textSize === 'gross' ? 'text-l' : '';
-    // Titelbild: wie Startseite oder eigene Fotos; breit, im Originalformat oder 2–4 Quadrate nebeneinander
+    // Titelbild: wie Startseite (bzw. Teamfoto) oder eigene Fotos; breit, im Originalformat oder 2–4 Quadrate
     const own = more.heroSource === 'own' ? (more.heroImages || []).filter(shownImage) : [];
     const mode = more.heroMode || 'wide';
     const heroRefs = own.length ? own : [b.image];
     const seed = own.length ? own[0] : b.id;
     const sideImage = !own.length && mode === 'wide' && /^(portrait|square)/.test(b.layout || '');
     let heroHtml = '';
-    if (mode === 'squares' && heroRefs.length >= 2) {
+    if (!own.length && !b.image && b.noPlaceholder) heroHtml = '';
+    else if (mode === 'squares' && heroRefs.length >= 2) {
       heroHtml = `<div class="story-squares n${heroRefs.length}">${heroRefs.map((r, i) => `<button type="button" class="story-square" data-action="hero-open" data-block="${esc(b.id)}" data-index="${i}" aria-label="Foto groß ansehen">${picture(r, r)}</button>`).join('')}</div>`;
     } else if (mode === 'original') {
       heroHtml = `<div class="story-photo natural ${alignClass(more.heroAlign)}">${picture(heroRefs[0], seed, b.title)}</div>`;
@@ -438,30 +438,42 @@
     return `
       <article class="story">
         <div class="story-tools">
-          ${admin ? `<button type="button" class="view-close" data-action="feature-edit" data-id="${esc(b.id)}" aria-label="Bearbeiten">${icon.pencil}</button>` : ''}
-          <a class="view-close" href="#home" aria-label="Zurück zur Startseite">${icon.close}</a>
+          ${editHtml}
+          <a class="view-close" href="${esc(closeHref)}" aria-label="Zurück">${icon.close}</a>
         </div>
         ${heroHtml}
         <div class="story-grid ${sideImage ? 'with-side' : ''}">
           <header class="story-head">
             ${sideImage ? `<div class="story-side-img ${esc(String(b.layout).replace('-right', ''))}">${picture(b.image, b.id, b.title)}</div>` : ''}
-            <p class="feature-kicker"><span>${n}</span>${esc(b.kicker || '')}</p>
+            <p class="feature-kicker">${n ? `<span>${esc(n)}</span>` : ''}${esc(b.kicker || '')}</p>
             <h1>${esc(b.title)}</h1>
             ${b.subtitle ? `<p class="feature-sub">${esc(b.subtitle)}</p>` : ''}
             ${b.link && b.link.url ? `<div class="story-link">${linkMarkup(b.link)}</div>` : ''}
           </header>
           <div class="story-body">
-            <div class="story-text ${size}">${leadLetters(paragraphs(parts.slice(0, cut).join('\n\n') || b.text), more.dropcap == null ? 1 : Number(more.dropcap))}</div>
+            <div class="story-text ${size}">${leadLetters(paragraphs(parts.slice(0, cut).join('\n\n') || b.text || ''), more.dropcap == null ? 1 : Number(more.dropcap))}</div>
             ${more.quote ? `<blockquote class="story-quote"><p>${esc(more.quote)}</p>${more.quoteBy ? `<cite>${esc(more.quoteBy)}</cite>` : ''}</blockquote>` : ''}
             ${parts.length > cut ? `<div class="story-text ${size}">${paragraphs(parts.slice(cut).join('\n\n'))}</div>` : ''}
           </div>
         </div>
         ${collage(more.images || [], b.id, Boolean(more.original), more.collageAlign)}
         <div class="story-foot">
-          <a class="more-link back" href="#home"><span aria-hidden="true">←</span> Zur Startseite</a>
+          <a class="more-link back" href="${esc(closeHref)}"><span aria-hidden="true">←</span> ${esc(backLabel)}</a>
         </div>
       </article>
-      ${partnerSlot('home', site.pages.home.partnerKicker || 'Präsentiert von')}`;
+      ${partner}`;
+  }
+
+  async function featureDetail(id) {
+    const { icon, state, partnerSlot } = ui();
+    const b = homeBlocks().find((x) => x.id === id);
+    if (!b) return `${ui().viewHead('Home', 'Diesen Beitrag gibt es nicht mehr.', false)}<p><a class="btn" href="#home">Zur Startseite</a></p>`;
+    const admin = state.member && state.member.isAdmin;
+    return storyHtml(b, {
+      n: String(homeBlocks().filter((x) => x.type === 'feature').indexOf(b) + 1).padStart(2, '0'),
+      editHtml: admin ? `<button type="button" class="view-close" data-action="feature-edit" data-id="${esc(b.id)}" aria-label="Bearbeiten">${icon.pencil}</button>` : '',
+      partner: partnerSlot('home', site.pages.home.partnerKicker || 'Präsentiert von'),
+    });
   }
 
   // ---------- Seite ----------
@@ -1439,10 +1451,189 @@
   // Wer darf schreiben? Admins – und später der Mannschaftsführer seines Teams (mit echter Mitgliederliste).
   const canEditTeam = () => Boolean(ui().state.member && ui().state.member.isAdmin);
 
+  // ---------- Mannschaftsporträt: Magazin-Seite wie die Unterseiten der Startseite ----------
+  let portraitDraft = null;   // Live-Vorschau beim Bearbeiten: { key, data }
+  const portraitOf = (key) => (portraitDraft && portraitDraft.key === key ? portraitDraft.data : (teamContent(key).portrait || {}));
+  const portraitFilled = (p) => Boolean(p && ((p.text || '').trim() || (p.heroImages || []).length || (p.images || []).length || p.quote || p.title));
+  const teamName = (team) => team.name.replace(/\s*\(.*?\)/g, '');
+  function portraitCard(key, team, canEdit, photo) {
+    const p = portraitOf(key);
+    if (portraitFilled(p)) {
+      const img = (p.heroImages || []).filter(shownImage)[0] || photo;
+      return `
+        <a class="portrait-cta" href="#team/${esc(key)}/portraet">
+          ${img ? `<span class="portrait-cta-img">${picture(img, img, '')}</span>` : ''}
+          <span class="portrait-cta-body"><small>Mannschaftsporträt</small><b>${esc(p.title || teamName(team))}</b>
+            ${p.subtitle ? `<span>${esc(p.subtitle)}</span>` : ''}<em>Porträt ansehen <i aria-hidden="true">→</i></em></span>
+        </a>`;
+    }
+    if (!canEdit) return '';
+    return `
+      <button type="button" class="portrait-cta empty" data-action="portrait-edit" data-team="${esc(key)}">
+        <span class="portrait-cta-body"><small>Mannschaftsporträt</small><b>+ Porträt anlegen</b>
+          <span>Wer seid ihr? Teamfotos, Geschichte, Ziele, Mannschaftstour – wie eine Magazinseite.</span></span>
+      </button>`;
+  }
+  async function teamPortraitView(key) {
+    await ensure();
+    const found = findTeam(key);
+    if (!found) return `${ui().viewHead('Mannschaft', 'Diese Mannschaft gibt es nicht (mehr).', false)}`;
+    const { team, season } = found;
+    const { icon, state, partnerSlot } = ui();
+    const extra = teamContent(key);
+    const p = portraitOf(key);
+    const can = Boolean(state.member && (state.member.isAdmin || (state.member.teams || []).includes(key)));
+    const photo = extra.photo && (images[extra.photo] || /^assets\//.test(extra.photo)) ? extra.photo : null;
+    if (!portraitFilled(p) && !portraitDraft) {
+      return `
+        ${ui().viewHead(`Mannschaftsporträt · ${esc(teamName(team))}`, 'Noch gibt es hier kein Porträt.', false)}
+        ${can ? `<p><button type="button" class="btn signal" data-action="portrait-edit" data-team="${esc(key)}">+ Porträt anlegen</button></p>` : ''}
+        <p><a class="more-link back" href="#team/${esc(key)}"><span aria-hidden="true">←</span> Zur Mannschaft</a></p>`;
+    }
+    const b = {
+      id: 'tp-' + key, layout: 'wide', image: photo, noPlaceholder: !photo, textSize: p.textSize,
+      kicker: p.kicker || `Mannschaftsporträt · ${season}`, title: p.title || teamName(team), subtitle: p.subtitle || team.group,
+      more: { ...p, heroSource: (p.heroImages || []).filter(shownImage).length ? 'own' : 'same' },
+    };
+    return storyHtml(b, {
+      editHtml: can ? `<button type="button" class="view-close" data-action="portrait-edit" data-team="${esc(key)}" aria-label="Porträt bearbeiten">${icon.pencil}</button>` : '',
+      closeHref: `#team/${key}`, backLabel: `Zur Mannschaft · ${teamName(team)}`,
+      partner: partnerSlot('sport', 'Der Sport wird dir präsentiert von'),
+    });
+  }
+
+  function openPortraitEditor(key) {
+    const route = `#team/${key}/portraet`;
+    if (location.hash !== route) {
+      window.addEventListener('hashchange', () => setTimeout(() => openPortraitEditor(key), 120), { once: true });
+      location.hash = route;
+      return;
+    }
+    const { openSheet, closeSheet, api, toast, icon } = ui();
+    const found = findTeam(key);
+    const draft = JSON.parse(JSON.stringify(teamContent(key).portrait || {}));
+    portraitDraft = { key, data: draft };
+    let timer = null;
+    const refresh = () => { clearTimeout(timer); timer = setTimeout(async () => { const y = window.scrollY; await ui().renderView(); window.scrollTo(0, y); }, 220); };
+    const seg = (attr, cur, opts) => `<div class="seg">${opts.map(([v, l, off]) => `<button type="button" class="${cur === v ? 'on' : ''}" data-${attr}="${v}" ${off ? 'disabled' : ''}>${l}</button>`).join('')}</div>`;
+    const align = (key2, cur) => `<div class="field"><span>Ausrichtung</span>${seg('palign', `${key2}:${cur || 'center'}`, [['left', 'Links'], ['center', 'Mitte'], ['right', 'Rechts']].map(([v, l]) => [`${key2}:${v}`, l]))}</div>`;
+    const render = () => {
+      const heroImgs = (draft.heroImages || []).filter(shownImage);
+      const coll = (draft.images || []).filter(shownImage);
+      const mode = draft.heroMode || 'wide';
+      const keep = document.querySelector('#sheet-root .sheet') ? document.querySelector('#sheet-root .sheet').scrollTop : 0;
+      openSheet(`
+        <form class="editor editor-live" data-editor="portrait" novalidate>
+          <h2>Mannschaftsporträt</h2>
+          <p class="ed-hint">${esc(found ? teamName(found.team) : key)} – so sieht es jeder Besucher. Links siehst du die Vorschau. Ohne eigene Fotos erscheint oben das Teamfoto.</p>
+          <h3 class="editor-sub">Titelfotos oben (1 bis 4)</h3>
+          <div class="field"><div class="gallery-edit">
+            ${heroImgs.map((ref, i) => thumbEdit(ref, 'hero', i, heroImgs.length, 'data-premove')).join('')}
+            ${heroImgs.length < 4 ? `<label class="gallery-add">${icon.plus}<span>Foto</span><input type="file" accept="image/*" multiple data-pphoto="hero" hidden></label>` : ''}
+          </div></div>
+          <div class="field"><span>Darstellung</span>${seg('pmode', mode, [['wide', 'Breit'], ['original', 'Originalformat'], ['squares', '2–4 Quadrate nebeneinander', heroImgs.length < 2]])}</div>
+          ${mode === 'original' ? align('hero', draft.heroAlign) : ''}
+          <h3 class="editor-sub">Texte</h3>
+          ${field('Kleine Zeile', 'kicker', draft.kicker, { placeholder: 'z. B. Mannschaftsporträt · Saison 2026' })}
+          ${field('Überschrift', 'title', draft.title, { placeholder: found ? teamName(found.team) : '' })}
+          ${field('Unterzeile', 'subtitle', draft.subtitle, { placeholder: 'z. B. Aufsteiger, Freunde, Kölschliebhaber' })}
+          ${field('Text über die Mannschaft', 'text', draft.text, { area: true, rich: true, rows: 10, placeholder: 'Wer seid ihr, was macht euch aus, was habt ihr vor?' })}
+          <div class="field"><span>Großer Textanfang (rot)</span>${seg('pdrop', String(draft.dropcap == null ? 1 : draft.dropcap), [['0', 'Aus'], ['1', '1 Zeichen'], ['2', '2 Zeichen'], ['3', '3 Zeichen']])}</div>
+          <div class="field"><span>Textgröße</span>${seg('psize', draft.textSize || 'normal', [['normal', 'Normal'], ['gross', 'Groß']])}</div>
+          ${field('Zitat (freiwillig)', 'quote', draft.quote, { placeholder: 'z. B. „Wir spielen, um danach zusammenzusitzen.“' })}
+          ${field('Zitat von', 'quoteBy', draft.quoteBy)}
+          <h3 class="editor-sub">Fotokollage unten</h3>
+          <label class="meet-check"><input type="checkbox" name="original" ${draft.original ? 'checked' : ''}><span>Fotos im Originalformat zeigen (nicht zuschneiden)</span></label>
+          ${draft.original ? align('collage', draft.collageAlign) : ''}
+          <div class="field"><div class="gallery-edit">
+            ${coll.map((ref, i) => thumbEdit(ref, 'more', i, coll.length, 'data-premove')).join('')}
+            <label class="gallery-add">${icon.plus}<span>Fotos</span><input type="file" accept="image/*" multiple data-pphoto="more" hidden></label>
+          </div></div>
+          <p class="form-error" role="alert"></p>
+          <div class="ed-actions"><button type="submit" class="btn primary block">Speichern</button></div>
+        </form>`);
+      document.getElementById('sheet-root').classList.add('side-mode');
+      document.body.classList.add('side-editing');
+      document.body.classList.remove('no-scroll');
+      document.querySelector('#sheet-root .sheet').scrollTop = keep;
+      const form = document.querySelector('[data-editor=portrait]');
+      const collect = () => {
+        ['kicker', 'title', 'subtitle', 'text', 'quote', 'quoteBy'].forEach((k) => { draft[k] = form.elements[k].value.trim(); });
+        draft.original = form.elements.original.checked;
+      };
+      const list = (name) => (name === 'hero' ? 'heroImages' : 'images');
+      form.addEventListener('input', () => { setTimeout(() => { collect(); refresh(); }, 0); });
+      form.addEventListener('click', (e) => {
+        const t = e.target.closest('[data-pmode],[data-pdrop],[data-psize],[data-palign],[data-premove],[data-move-list]');
+        if (!t) return;
+        collect();
+        if (t.dataset.pmode) draft.heroMode = t.dataset.pmode;
+        if (t.dataset.pdrop) draft.dropcap = Number(t.dataset.pdrop);
+        if (t.dataset.psize) draft.textSize = t.dataset.psize;
+        if (t.dataset.palign) { const [w, v] = t.dataset.palign.split(':'); draft[w === 'hero' ? 'heroAlign' : 'collageAlign'] = v; }
+        if (t.dataset.premove) {
+          const box = t.closest('[data-list]');
+          const l = list(box.dataset.list);
+          draft[l] = (draft[l] || []).filter((r) => r !== t.dataset.premove);
+          if ((draft.heroImages || []).length < 2 && draft.heroMode === 'squares') draft.heroMode = 'wide';
+        }
+        if (t.dataset.moveList) {
+          const l = list(t.dataset.moveList);
+          const arr = (draft[l] || []).filter(shownImage);
+          const a = Number(t.dataset.moveIndex); const b = a + Number(t.dataset.moveDir);
+          if (b >= 0 && b < arr.length) { [arr[a], arr[b]] = [arr[b], arr[a]]; draft[l] = arr; }
+        }
+        render(); refresh();
+      });
+      form.addEventListener('change', async (e) => {
+        if (e.target.name === 'original') { collect(); render(); refresh(); return; }
+        const which = e.target.dataset.pphoto;
+        if (!which || !e.target.files.length) return;
+        collect();
+        try {
+          for (const file of [...e.target.files]) {
+            if (which === 'hero' && (draft.heroImages || []).length >= 4) break;
+            const img = await ui().loadImage(file);
+            const url = ui().largeImage(img, 1800);
+            const ref = await api.putMemberImage(url);
+            images[ref] = url;
+            const l = list(which);
+            draft[l] = [...(draft[l] || []), ref];
+          }
+          if (which === 'hero' && draft.heroImages.length >= 2 && !draft.heroMode) draft.heroMode = 'squares';
+          render(); refresh();
+        } catch (err) { toast(err.message); }
+      });
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        collect();
+        try {
+          site = await api.setTeamPortrait(key, draft);
+          portraitDraft = null;
+          endPortraitLive();
+          closeSheet();
+          toast('Porträt gespeichert', true);
+          ui().renderView();
+        } catch (err) { form.querySelector('.form-error').textContent = err.message; }
+      });
+    };
+    render();
+    refresh();
+  }
+  function endPortraitLive() {
+    document.getElementById('sheet-root').classList.remove('side-mode', 'peek');
+    document.body.classList.remove('side-editing');
+  }
+  new MutationObserver(() => {
+    const root = document.getElementById('sheet-root');
+    if (portraitDraft && root && !root.querySelector('[data-editor=portrait]')) { portraitDraft = null; endPortraitLive(); ui().renderView(); }
+  }).observe(document.getElementById('sheet-root') || document.body, { childList: true });
+
   async function teamView() {
     await ensure();
     const { icon, partnerSlot } = ui();
     const key = location.hash.split('/')[1] || '';
+    if (location.hash.split('/')[2] === 'portraet') return teamPortraitView(key);
     const found = findTeam(key);
     if (!found) return `${ui().viewHead('Mannschaft', 'Diese Mannschaft gibt es nicht (mehr).', false)}<p><a class="btn" href="#sport">Zu den Mannschaften</a></p>`;
     const { team, season } = found;
@@ -1477,6 +1668,7 @@
           </aside>
         </div>
 
+        ${portraitCard(key, team, canPhoto, hasPhoto ? extra.photo : null)}
         <div class="team-feed">${await feedSection('team:' + key, { teamName: team.name.replace(/\s*\(.*?\)/g, '') })}</div>
         ${posts.length ? `
           <h2 class="block-heading">Berichte vom Club</h2>
@@ -1624,6 +1816,7 @@
       if (grid) grid.className = `page-grid three show-${aktuellTab}`;
     },
     'post-new': (el) => openCompose(el.dataset.scope),
+    'portrait-edit': (el) => openPortraitEditor(el.dataset.team),
     'post-open': (el) => openPost(el.dataset.id),
     'post-edit': (el) => { const p = postCache[el.dataset.id]; if (p) openCompose(p.scope, p.id); },
     'post-delete': async (el) => {
@@ -1636,13 +1829,13 @@
     'feed-more': (el) => { feedOpen[el.dataset.scope] = true; ui().renderView(); },
     'att-open': (el) => openViewer(el.dataset.ref, el.dataset.kind, el.dataset.title),
     'hero-open': (el) => {
-      const b = homeBlocks().find((x) => x.id === el.dataset.block);
+      const b = storyIndex[el.dataset.block] || homeBlocks().find((x) => x.id === el.dataset.block);
       const ref = ((b.more || {}).heroImages || []).filter(shownImage)[Number(el.dataset.index)];
       const src = images[ref] || (/^assets\//.test(ref) ? ref : null);
       if (src) ui().openLightbox(src, b.title);
     },
     'collage-open': (el) => {
-      const b = site.pages.home.blocks.find((x) => x.id === el.dataset.block);
+      const b = storyIndex[el.dataset.block] || site.pages.home.blocks.find((x) => x.id === el.dataset.block);
       const list = ((b.more || {}).images || []).filter(shownImage);
       const ref = list[Number(el.dataset.index)];
       const src = images[ref] || (/^assets\//.test(ref) ? ref : null);

@@ -462,3 +462,11 @@ Monatsabschluss.
   `snacks`, Equipment = Bereich `shop`, alles andere Getränke). Kranz-Striche in Signal-Rot.
   Handy: Name in eigener Zeile, darunter die vier Spalten; Desktop: Name links, 4 × 84 px.
   Ab 10 Strichen pro Feld „+n“. Demo: einmalig einige Kränze/Snacks ergänzt (`db.demoTallyMix`).
+- **11.10.2026** – **Mannschaftsporträt.** Mannschaftsliste: Knopf „Mannschaftsporträt + News“
+  mittig zwischen Infos und Platz. Team-Seite: gut sichtbare Porträt-Karte (dunkel, Foto, Titel,
+  „Porträt ansehen →“) bzw. „+ Porträt anlegen“ für Spieler/Admins; Insider News bleiben.
+  Porträt-Seite `#team/<key>/portraet` im Look der Home-Unterseiten (gemeinsamer Baustein
+  `storyHtml()` in site.js): 1–4 Titelfotos (breit/Original/Quadrate, ohne eigene Fotos das
+  Teamfoto), Kicker/Überschrift/Unterzeile, Text mit großem Anfang, Zitat, Kollage (Original +
+  Ausrichtung). Editor als Seitenleiste mit Live-Vorschau; Fotos per ‹ › sortierbar.
+  Daten: `site.teams[key].portrait`, `api.setTeamPortrait` (Admins + Spieler der Mannschaft).

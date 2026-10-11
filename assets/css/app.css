@@ -1852,3 +1852,31 @@ h1, h2, h3, .event h3, .feature-body h2, .story-head h1, .post-body h3 { -webkit
   .paper-row.tally-row .tally-cell:nth-of-type(1) { border-left: 0; }
   .tally-cell { min-height: 24px; }
 }
+
+/* ===== Mannschaftsliste: Knopf „Mannschaftsporträt + News“ mittig zwischen Infos und Platz ===== */
+@media (min-width: 640px) {
+  .team.team-row { grid-template-columns: 96px minmax(0, 1.15fr) minmax(0, 1fr) 80px; }
+  .team-news-btn { justify-self: center; }
+}
+
+/* ===== Team-Seite: Mannschaftsporträt als gut sichtbarer Einstieg ===== */
+.portrait-cta { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 16px; align-items: center; margin: 22px 0 0; padding: 14px; border-radius: 18px; background: var(--brand); color: #fff; text-decoration: none; border: 0; width: 100%; text-align: left; font: inherit; cursor: pointer; transition: transform .15s, box-shadow .15s; }
+.portrait-cta:hover { transform: translateY(-1px); box-shadow: 0 10px 24px rgba(0,0,0,.15); }
+.portrait-cta-img { width: 110px; height: 80px; border-radius: 12px; overflow: hidden; display: block; }
+.portrait-cta-img > img, .portrait-cta-img > .ph { width: 100%; height: 100%; object-fit: cover; display: block; }
+.portrait-cta-body { display: grid; gap: 3px; min-width: 0; }
+.portrait-cta-body small { font-size: .68rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: color-mix(in srgb, var(--signal) 60%, #fff); }
+.portrait-cta-body b { font-family: var(--serif); font-size: 1.4rem; font-weight: 800; line-height: 1.15; }
+.portrait-cta-body > span { font-size: .88rem; opacity: .8; }
+.portrait-cta-body em { font-style: normal; font-weight: 800; color: #fff; margin-top: 4px; font-size: .9rem; }
+.portrait-cta-body em i { font-style: normal; color: var(--signal); display: inline-block; transition: transform .15s; }
+.portrait-cta:hover em i { transform: translateX(4px); }
+.portrait-cta.empty { grid-template-columns: 1fr; background: transparent; color: var(--ink); border: 2px dashed color-mix(in srgb, var(--signal) 45%, transparent); }
+.portrait-cta.empty .portrait-cta-body small { color: var(--signal); }
+.portrait-cta.empty .portrait-cta-body b { color: var(--signal); }
+.portrait-cta.empty .portrait-cta-body > span { color: var(--muted); opacity: 1; }
+@media (min-width: 640px) {
+  .portrait-cta { grid-template-columns: 180px minmax(0, 1fr); padding: 16px; }
+  .portrait-cta-img { width: 180px; height: 120px; }
+  .portrait-cta-body b { font-size: 1.7rem; }
+}

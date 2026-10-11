@@ -549,6 +549,16 @@
       save(db);
       return clone(db.site);
     },
+    // Mannschaftsporträt (Magazin-Seite): Admins und die Spieler der Mannschaft
+    async setTeamPortrait(team, portrait) {
+      const member = requireMember();
+      if (!member.isAdmin && !((db.community.rosters[team] || []).includes(member.id))) throw new Error('Das Porträt pflegen die Spieler dieser Mannschaft.');
+      db.site = db.site || clone(TFB.siteSeed);
+      db.site.teams = db.site.teams || {};
+      db.site.teams[team] = { posts: [], ...(db.site.teams[team] || {}), portrait: clone(portrait || {}) };
+      if (!save(db)) throw new Error('Speichern nicht möglich – der Gerätespeicher ist voll.');
+      return clone(db.site);
+    },
     async teamRoster(team) {
       return (db.community.rosters[team] || []).map((id) => displayName(db.members.find((m) => m.id === id))).filter(Boolean);
     },
