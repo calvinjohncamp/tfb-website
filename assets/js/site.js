@@ -48,9 +48,11 @@
   // Fließtext mit Auszeichnungen. Im Editor gestaltet man direkt (WYSIWYG); gespeichert wird als
   // schlichter Text mit Zeichen – so bleibt alles klein, sicher und übertragbar:
   //   [Text](https://… | #seite)  Link       **Text** fett     *Text* kursiv    __Text__ unterstrichen
-  //   {rot}…{/rot} {grau}…{/grau} {marker}…{/marker} Farbe   {gross}…{/gross} {sehrgross}…{/sehrgross} Größe
+  //   {rot}…{/rot} {grau}…{/grau} {marker}…{/marker} Farbe   {sehrklein} {klein} {gross} {sehrgross} … {/…} Größe
   //   ## Text (Zeilenanfang) Zwischenüberschrift
-  const SPANS = { rot: 'tx-red', grau: 'tx-gray', marker: 'tx-mark', gross: 'tx-l', sehrgross: 'tx-xl' };
+  const SPANS = { rot: 'tx-red', grau: 'tx-gray', marker: 'tx-mark', sehrklein: 'tx-xs', klein: 'tx-s', gross: 'tx-l', sehrgross: 'tx-xl' };
+  // Gruppen schließen sich aus: eine neue Farbe ersetzt die alte, eine neue Größe die alte
+  const SPAN_GROUPS = { color: ['tx-red', 'tx-gray'], size: ['tx-xs', 'tx-s', 'tx-l', 'tx-xl'] };
   function inline(raw) {
     const links = [];
     let h = esc(raw).replace(/\[([^\]]+)\]\(((?:https?:\/\/|#)[^\s)]+)\)/g, (_, label, url) => {
@@ -61,7 +63,7 @@
       .replace(/__([\s\S]+?)__/g, '<u>$1</u>')
       .replace(/(^|[^*])\*([^*\s][\s\S]*?)\*(?!\*)/g, '$1<em>$2</em>');
     for (let i = 0; i < 3; i++) {   // verschachtelte Farben/Größen
-      h = h.replace(/\{(rot|grau|marker|gross|sehrgross)\}([\s\S]*?)\{\/\1\}/g, (_, k, t) => `<span class="${SPANS[k]}">${t}</span>`);
+      h = h.replace(/\{(rot|grau|marker|sehrklein|klein|gross|sehrgross)\}([\s\S]*?)\{\/\1\}/g, (_, k, t) => `<span class="${SPANS[k]}">${t}</span>`);
     }
     h = h.replace(/\u0000(\d+)\u0000/g, (_, i) => {
       const [label, url] = links[Number(i)];
@@ -1144,20 +1146,29 @@
     const v = esc(value == null ? '' : value);
     if (opts.area && opts.rich) return `<div class="field rich-field"><span>${label}</span>
       <div class="rich-tools" role="toolbar" aria-label="Text gestalten">
-        <button type="button" data-rich="bold" title="Fett"><b>F</b></button>
-        <button type="button" data-rich="italic" title="Kursiv"><i>K</i></button>
-        <button type="button" data-rich="underline" title="Unterstrichen"><u>U</u></button>
-        <span class="rich-sep"></span>
-        <button type="button" data-rich="rot" title="Rot"><span class="tx-red">A</span></button>
-        <button type="button" data-rich="grau" title="Grau"><span class="tx-gray">A</span></button>
-        <button type="button" data-rich="marker" title="Textmarker"><span class="tx-mark">A</span></button>
-        <span class="rich-sep"></span>
-        <button type="button" data-rich="gross" title="Größer">A+</button>
-        <button type="button" data-rich="sehrgross" title="Sehr groß">A++</button>
-        <span class="rich-sep"></span>
-        <button type="button" data-rich="link" title="Link">↗ Link</button>
-        <button type="button" data-rich="h" title="Zwischenüberschrift">Überschrift</button>
-        <button type="button" data-rich="clear" title="Gestaltung entfernen">⌫ Format</button>
+        <span class="rich-group" role="group" aria-label="Schrift">
+          <button type="button" data-rich="bold" title="Fett"><b>F</b></button>
+          <button type="button" data-rich="italic" title="Kursiv"><i>K</i></button>
+          <button type="button" data-rich="underline" title="Unterstrichen"><u>U</u></button>
+        </span>
+        <span class="rich-group" role="group" aria-label="Farbe">
+          <button type="button" data-rich="rot" title="Rot"><span class="sw sw-red"></span></button>
+          <button type="button" data-rich="grau" title="Grau"><span class="sw sw-gray"></span></button>
+          <button type="button" data-rich="marker" title="Textmarker"><span class="sw sw-mark"></span></button>
+          <button type="button" data-rich="nocolor" title="Farbe entfernen (wieder schwarz)"><span class="sw sw-ink"></span></button>
+        </span>
+        <span class="rich-group" role="group" aria-label="Größe">
+          <button type="button" data-rich="sehrklein" title="Sehr klein" class="sz sz-xs">A</button>
+          <button type="button" data-rich="klein" title="Klein" class="sz sz-s">A</button>
+          <button type="button" data-rich="nosize" title="Normale Größe" class="sz">A</button>
+          <button type="button" data-rich="gross" title="Groß" class="sz sz-l">A</button>
+          <button type="button" data-rich="sehrgross" title="Sehr groß" class="sz sz-xl">A</button>
+        </span>
+        <span class="rich-group" role="group" aria-label="Absatz">
+          <button type="button" data-rich="h" title="Markierten Absatz zur Zwischenüberschrift machen (nochmal = zurück)">Überschrift</button>
+          <button type="button" data-rich="link" title="Link">↗ Link</button>
+          <button type="button" data-rich="clear" title="Markierten Text wieder ganz schlicht machen">⌫ Schlicht</button>
+        </span>
       </div>
       <div class="rich-area" contenteditable="true" data-rich-for="${name}" data-placeholder="${esc(opts.placeholder || '')}">${paragraphs(value || '')}</div>
       <textarea name="${name}" hidden>${v}</textarea></div>`;
@@ -1281,28 +1292,32 @@
                 + field('Vorschau: Titel', 'linkTitle', lk.title) + field('Vorschau: Text', 'linkText', lk.text, { area: true, rows: 3 })
                 + imageField(lk.image, lk.url, 'Vorschau: Bild', 'link')
                 : imageField(lk.image, lk.url || 'intern', 'Rundes Bild im Link (leer = Symbol der Seite)', 'link')));
+          const ownHero = heroSrc === 'own' ? heroImgs : [];
           const subPanel = `
-            <p class="ed-hint">Die <b>Unterseite</b> öffnet sich über „Mehr erfahren“, sobald hier ein Text, ein Zitat oder Fotos stehen. Überschrift und Link kommen vom Reiter „Startseite“.</p>
-            <h3 class="editor-sub">1 · Ausführlicher Text</h3>`
-            + field('', 'moreText', more.text, { area: true, rich: true, rows: 10, placeholder: 'Beliebig lang – Wörter markieren und oben gestalten' })
-            + `<h3 class="editor-sub">2 · Fotos (unten als Kollage, freiwillig)</h3>
+            <p class="ed-hint">Die <b>Unterseite</b> öffnet sich über „Mehr erfahren“. Hier bearbeitest du sie von oben nach unten – so wie sie links erscheint. Überschrift, Unterzeile und Link kommen vom Reiter „Startseite“.</p>
+            <h3 class="editor-sub">1 · Fotos oben (1 bis 4)</h3>
+            <div class="field"><div class="gallery-edit">
+              ${ownHero.map((ref, i) => thumbEdit(ref, 'hero', i, ownHero.length, 'data-hero-remove')).join('')}
+              ${ownHero.length < 4 ? `<label class="gallery-add">${ui().icon.plus}<span>Foto</span><input type="file" accept="image/*" multiple data-hero-input hidden></label>` : ''}
+            </div></div>
+            <p class="muted small ed-note">${!ownHero.length ? 'Ohne eigene Fotos erscheint oben das Foto der Startseite.' : ownHero.length === 1 ? (heroMode === 'original' ? 'Ein Foto im Originalformat.' : 'Ein Foto, breit über der Seite.') : `${ownHero.length} Fotos als Quadrate nebeneinander.`}</p>
+            <h3 class="editor-sub">2 · Text</h3>`
+            + field('', 'moreText', more.text, { area: true, rich: true, rows: 12, placeholder: 'Beliebig lang – Wörter markieren und oben gestalten' })
+            + `<h3 class="editor-sub">3 · Zitat (freiwillig)</h3>
+               <p class="muted small ed-note">Erscheint groß mit rotem Strich nach den ersten beiden Absätzen.</p>`
+            + field('', 'moreQuote', more.quote, { placeholder: 'z. B. Eat. Sleep. Padel. Repeat.' })
+            + field('Zitat von (freiwillig)', 'moreQuoteBy', more.quoteBy, { placeholder: 'z. B. Jan, Herren 40' })
+            + `<h3 class="editor-sub">4 · Fotos unten (Kollage, freiwillig)</h3>
                <div class="field"><div class="gallery-edit">
                   ${(() => { const l = (more.images || []).filter(shownImage); return l.map((ref, i) => thumbEdit(ref, 'more', i, l.length, 'data-more-remove')).join(''); })()}
                   <label class="gallery-add">${ui().icon.plus}<span>Fotos</span><input type="file" accept="image/*" multiple data-more-input hidden></label>
                 </div></div>`
             + moreBox('sub', `
-              <div class="field"><span>Titelbild oben</span>${seg('herosrc', heroSrc, [['same', 'Wie auf der Startseite'], ['own', 'Eigene Fotos']])}</div>
-              ${heroSrc === 'own' ? `<div class="field"><span>Eigene Titelfotos (1 bis 4)</span>
-                <div class="gallery-edit">
-                  ${heroImgs.map((ref, i) => thumbEdit(ref, 'hero', i, heroImgs.length, 'data-hero-remove')).join('')}
-                  ${heroImgs.length < 4 ? `<label class="gallery-add">${ui().icon.plus}<span>Foto</span><input type="file" accept="image/*" multiple data-hero-input hidden></label>` : ''}
-                </div></div>` : ''}
-              <div class="field"><span>Titelbild: Darstellung</span>${seg('heromode', heroMode, [['wide', 'Breit'], ['original', 'Originalformat'], ['squares', '2–4 Quadrate nebeneinander', heroSrc !== 'own' || heroImgs.length < 2]])}</div>
-              ${heroMode === 'original' ? `<div class="field"><span>Ausrichtung</span><div class="seg align-seg">${[['left', 'Links'], ['center', 'Mitte'], ['right', 'Rechts']].map(([v, l]) =>
+              ${ownHero.length === 1 ? `<div class="field"><span>Ein Foto oben: Darstellung</span>${seg('heromode', heroMode === 'original' ? 'original' : 'wide', [['wide', 'Breit'], ['original', 'Originalformat']])}</div>` : ''}
+              ${ownHero.length === 1 && heroMode === 'original' ? `<div class="field"><span>Ausrichtung</span><div class="seg align-seg">${[['left', 'Links'], ['center', 'Mitte'], ['right', 'Rechts']].map(([v, l]) =>
                   `<button type="button" class="${(more.heroAlign || 'center') === v ? 'on' : ''}" data-align="hero:${v}">${l}</button>`).join('')}</div></div>` : ''}`
               + `<div class="field"><span>Großer Textanfang (rot)</span>${seg('dropcap', String(more.dropcap == null ? 1 : more.dropcap), [['0', 'Aus'], ['1', '1 Zeichen'], ['2', '2 Zeichen'], ['3', '3 Zeichen']])}</div>`
-              + field('Zitat', 'moreQuote', more.quote, { placeholder: 'z. B. „Nach zehn Minuten hatte jeder ein Grinsen im Gesicht.“' })
-              + field('Zitat von', 'moreQuoteBy', more.quoteBy, { placeholder: 'z. B. Jan, Herren 40' })
+              + `<div class="field"><span>Grundschrift des Textes</span>${seg('textsize', draft.textSize || 'normal', [['normal', 'Normal'], ['gross', 'Groß']])}</div>`
               + `<label class="meet-check"><input type="checkbox" name="moreOriginal" data-rerender ${more.original ? 'checked' : ''}><span>Kollage: Fotos im Originalformat zeigen (nicht zuschneiden)</span></label>
                  ${more.original ? `<div class="field"><span>Ausrichtung der Kollage</span><div class="seg align-seg">${[['left', 'Links'], ['center', 'Mitte'], ['right', 'Rechts']].map(([v, l]) =>
                   `<button type="button" class="${(more.collageAlign || 'center') === v ? 'on' : ''}" data-align="collage:${v}">${l}</button>`).join('')}</div></div>` : ''}`);
@@ -1469,7 +1484,7 @@
         const hm = e.target.closest('[data-heromode]');
         if (hm) { collect(form); draft.more = { ...(draft.more || {}), heroMode: hm.dataset.heromode }; render(); return; }
         const hr = e.target.closest('[data-hero-remove]');
-        if (hr) { collect(form); draft.more.heroImages = (draft.more.heroImages || []).filter((r) => r !== hr.dataset.heroRemove); if (draft.more.heroImages.length < 2 && draft.more.heroMode === 'squares') draft.more.heroMode = 'wide'; render(); return; }
+        if (hr) { collect(form); draft.more.heroImages = (draft.more.heroImages || []).filter((r) => r !== hr.dataset.heroRemove); if (draft.more.heroImages.length < 2 && draft.more.heroMode === 'squares') draft.more.heroMode = 'wide'; if (!draft.more.heroImages.length) draft.more.heroSource = 'same'; render(); return; }
         const lk2 = e.target.closest('[data-linkkind]');
         if (lk2) {
           collect(form);
@@ -1532,8 +1547,9 @@
           }
           if (input.matches('[data-gallery-input]')) draft.images = [...(draft.images || []), ...ids];
           if (input.matches('[data-hero-input]')) {
-            const list = [...((draft.more || {}).heroImages || []), ...ids].slice(0, 4);
-            draft.more = { ...(draft.more || {}), heroImages: list, heroMode: list.length >= 2 ? 'squares' : ((draft.more || {}).heroMode || 'wide') };
+            const m = draft.more || {};
+            const list = [...(m.heroSource === 'own' ? (m.heroImages || []).filter(shownImage) : []), ...ids].slice(0, 4);
+            draft.more = { ...m, heroSource: 'own', heroImages: list, heroMode: list.length >= 2 ? 'squares' : (m.heroMode === 'original' ? 'original' : 'wide') };
           }
           if (input.matches('[data-more-input]')) draft.more = { ...(draft.more || {}), images: [...((draft.more || {}).images || []).filter((r) => !/^ph:/.test(r)), ...ids] };
           ui().toast(ids.length > 1 ? `${ids.length} Fotos hinzugefügt` : 'Foto hinzugefügt', true);
@@ -1716,7 +1732,11 @@
           ${field('', 'title', draft.title, { placeholder: found ? teamName(found.team) : '' })}
           <h3 class="editor-sub">3 · Text über die Mannschaft</h3>
           ${field('', 'text', draft.text, { area: true, rich: true, rows: 10, placeholder: 'Wer seid ihr, was macht euch aus, was habt ihr vor?' })}
-          <h3 class="editor-sub">4 · Weitere Fotos (unten als Kollage, freiwillig)</h3>
+          <h3 class="editor-sub">4 · Zitat (freiwillig)</h3>
+          <p class="muted small ed-note">Erscheint groß mit rotem Strich nach den ersten beiden Absätzen.</p>
+          ${field('', 'quote', draft.quote, { placeholder: 'z. B. Wir spielen, um danach zusammenzusitzen.' })}
+          ${field('Zitat von (freiwillig)', 'quoteBy', draft.quoteBy)}
+          <h3 class="editor-sub">5 · Fotos unten (Kollage, freiwillig)</h3>
           <div class="field"><div class="gallery-edit">
             ${coll.map((ref, i) => thumbEdit(ref, 'more', i, coll.length, 'data-premove')).join('')}
             <label class="gallery-add">${icon.plus}<span>Fotos</span><input type="file" accept="image/*" multiple data-pphoto="more" hidden></label>
@@ -1729,8 +1749,6 @@
             ${field('Unterzeile', 'subtitle', draft.subtitle, { placeholder: 'z. B. Aufsteiger, Freunde, Kölschliebhaber' })}
             <div class="field"><span>Großer Textanfang (rot)</span>${seg('pdrop', String(draft.dropcap == null ? 1 : draft.dropcap), [['0', 'Aus'], ['1', '1 Zeichen'], ['2', '2 Zeichen'], ['3', '3 Zeichen']])}</div>
             <div class="field"><span>Textgröße</span>${seg('psize', draft.textSize || 'normal', [['normal', 'Normal'], ['gross', 'Groß']])}</div>
-            ${field('Zitat', 'quote', draft.quote, { placeholder: 'z. B. „Wir spielen, um danach zusammenzusitzen.“' })}
-            ${field('Zitat von', 'quoteBy', draft.quoteBy)}
             <label class="meet-check"><input type="checkbox" name="original" ${draft.original ? 'checked' : ''}><span>Kollage: Fotos im Originalformat zeigen (nicht zuschneiden)</span></label>
             ${draft.original ? align('collage', draft.collageAlign) : ''}
           </details>
@@ -2224,12 +2242,33 @@
     // Gleiche Gestaltung nochmal = wieder entfernen
     const inside = sel.anchorNode.parentElement && sel.anchorNode.parentElement.closest(`span.${className}`);
     if (inside && area.contains(inside)) { inside.replaceWith(...inside.childNodes); return; }
+    const group = Object.values(SPAN_GROUPS).find((g) => g.includes(className));
+    // Markierung deckt eine vorhandene Farbe/Größe derselben Gruppe ganz ab → nur austauschen
+    if (group) {
+      const node = range.commonAncestorContainer.nodeType === 1 ? range.commonAncestorContainer : range.commonAncestorContainer.parentElement;
+      const host = node && node.closest(group.map((c) => 'span.' + c).join(','));
+      if (host && area.contains(host) && host.textContent.trim() === range.toString().trim()) {
+        host.classList.remove(...group);
+        host.classList.add(className);
+        return;
+      }
+    }
     const span = document.createElement('span');
     span.className = className;
     span.appendChild(range.extractContents());
+    if (group) span.querySelectorAll(group.map((c) => 'span.' + c).join(',')).forEach((x) => x.replaceWith(...x.childNodes));
     range.insertNode(span);
     sel.removeAllRanges();
     const r = document.createRange(); r.selectNodeContents(span); sel.addRange(r);
+  }
+
+  // Farbe bzw. Größe im markierten Bereich entfernen (auch wenn die Markierung mitten in der Gestaltung liegt)
+  function unwrapGroup(area, classes) {
+    const sel = window.getSelection();
+    if (!sel.rangeCount || !area.contains(sel.anchorNode)) { ui().toast('Bitte zuerst Wörter im Text markieren'); return; }
+    const range = sel.getRangeAt(0);
+    const hits = [...area.querySelectorAll(classes.map((c) => 'span.' + c).join(','))].filter((x) => range.intersectsNode(x));
+    hits.forEach((x) => x.replaceWith(...x.childNodes));
   }
 
   document.addEventListener('click', (e) => {
@@ -2247,6 +2286,8 @@
     const cmd = btn.dataset.rich;
     if (['bold', 'italic', 'underline'].includes(cmd)) document.execCommand(cmd);
     else if (SPANS[cmd]) wrapSelection(area, SPANS[cmd]);
+    else if (cmd === 'nocolor') unwrapGroup(area, [...SPAN_GROUPS.color, 'tx-mark']);
+    else if (cmd === 'nosize') unwrapGroup(area, SPAN_GROUPS.size);
     else if (cmd === 'h') {
       const block = window.getSelection().anchorNode && window.getSelection().anchorNode.parentElement.closest('h3, p, div');
       document.execCommand('formatBlock', false, block && block.tagName === 'H3' ? 'p' : 'h3');

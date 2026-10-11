@@ -3,7 +3,7 @@
 **Zuerst lesen.** Ausführlicher Verlauf: [PROJEKTGEDAECHTNIS.md](PROJEKTGEDAECHTNIS.md).
 Diese Zusammenfassung hat Vorrang vor älteren Zwischenständen.
 
-Stand: **11.10.2026 abends, Home WYSIWYG im gewählten Look, bis 10 Themen**. Cache **tfb-kiosk-v105**.
+Stand: **11.10.2026 abends, Unterseiten-Editor rund gemacht**. Cache **tfb-kiosk-v106**.
 Alles committet (Sicherungspunkt v99 `f8e6c90`, danach Stufe 1). Nicht veröffentlicht.
 
 ## Neu: Ordner heißt jetzt „9. TFB-Website“
@@ -39,6 +39,23 @@ Alles committet (Sicherungspunkt v99 `f8e6c90`, danach Stufe 1). Nicht veröffen
   sich an (Desktop: „Links siehst du jede Änderung sofort“).
 - Beim Wegschieben bleibt die Kopfzeile sichtbar („antippen zum Weiterbearbeiten“),
   Rückkehr an dieselbe Stelle – gilt auch für den Home-Themen-Editor (`togglePeek`).
+
+## Neu in v106: Unterseite im Editor wie auf der Seite
+
+- Reiter „Unterseite“ in Seitenreihenfolge: 1 Fotos oben (1–4; ohne eigene Fotos
+  das Startseitenfoto; 1 Foto breit, 2–4 automatisch Quadrate), 2 Text, 3 Zitat,
+  4 Fotos unten (Kollage). „Mehr Gestaltung“: Darstellung bei 1 Foto
+  (Breit/Original + Ausrichtung), Großer Textanfang, Grundschrift, Kollage-Original.
+  (Fehler aus v102 behoben: Titelfotos/Zitat lagen versteckt unter „Mehr“.)
+- Werkzeugleiste in Gruppen: Schrift (F K U) · Farbe (Rot, Grau, Marker, „Farbe
+  entfernen“) · Größe (sehr klein, klein, normal, groß, sehr groß) · Absatz
+  (Überschrift, Link, Schlicht). Neue Zeichen `{klein}`, `{sehrklein}`; Farben und
+  Größen ersetzen sich gegenseitig statt zu verschachteln (`SPAN_GROUPS`).
+- Editor-Text sieht aus wie die Seite: Zwischenüberschriften groß/fett statt grauer
+  Großbuchstaben (globale `h3`-Regel überschrieben), Schriftgröße/Zeilenabstand wie
+  `.story-text`.
+- Mannschaftsporträt gleich geordnet: 1 Fotos oben, 2 Überschrift, 3 Text, 4 Zitat,
+  5 Fotos unten.
 
 ## Neu in v105: Home bearbeiten im gewählten Look, bis zu 10 Themen
 

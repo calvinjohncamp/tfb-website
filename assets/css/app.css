@@ -2203,3 +2203,34 @@ h1, h2, h3, .event h3, .feature-body h2, .story-head h1, .post-body h3 { -webkit
 .add-limit { text-align: center; margin: 18px 0; }
 /* Im Bearbeiten-Modus gleiche Abstände wie in der Ansicht (WYSIWYG) */
 .editing-page.home-look-6 .block-edit + .block-edit, .editing-page.home-look-3 .block-edit + .block-edit { margin-top: 26px; }
+
+/* =====================================================================
+   Texteditor: Größen und Farben, Editor-Text wie auf der Seite (WYSIWYG)
+   ===================================================================== */
+.tx-s { font-size: .86em; line-height: 1.5; }
+.tx-xs { font-size: .74em; line-height: 1.5; }
+.field .rich-area .tx-s { font-size: .86em; }
+.field .rich-area .tx-xs { font-size: .74em; }
+.field .rich-area .tx-xl { font-family: var(--serif); letter-spacing: -.015em; }
+
+.rich-tools { gap: 6px 10px; align-items: center; }
+.field .rich-tools .rich-group { display: inline-flex; gap: 3px; padding: 3px; border-radius: 10px; background: #F2EEE6; }
+.rich-tools .rich-group button { border: 0; background: transparent; min-width: 30px; height: 30px; padding: 0 8px; border-radius: 7px; display: inline-grid; place-items: center; }
+.rich-tools .rich-group button:hover { background: #fff; color: var(--ink); box-shadow: 0 0 0 1px var(--line); }
+.field .rich-tools .sw { display: block; width: 16px; height: 16px; border-radius: 50%; }
+.field .rich-tools .sw-red { background: var(--signal); }
+.field .rich-tools .sw-gray { background: var(--muted); }
+.field .rich-tools .sw-mark { border-radius: 3px; height: 10px; width: 18px; background: color-mix(in srgb, var(--signal) 35%, #fff); }
+.field .rich-tools .sw-ink { background: var(--ink); box-shadow: inset 0 0 0 2px #F2EEE6, 0 0 0 1.5px var(--ink); }
+.rich-tools .sz { font-weight: 800; font-family: var(--serif); padding: 0 5px; min-width: 24px; }
+.rich-tools .sz-xs { font-size: .62rem; }
+.rich-tools .sz-s { font-size: .74rem; }
+.rich-tools .sz { font-size: .86rem; }
+.rich-tools .sz-l { font-size: 1.02rem; }
+.rich-tools .sz-xl { font-size: 1.22rem; }
+
+/* Editor-Text sieht aus wie auf der Unterseite */
+.rich-area { font-size: 1.06rem; line-height: 1.7; }
+.rich-area h3, .rich-area h3.text-sub { font-family: var(--serif); text-transform: none; letter-spacing: -.015em; color: var(--ink); font-size: 1.4rem; font-weight: 800; line-height: 1.2; margin: 1.1em 0 .35em; }
+.rich-area > :first-child { margin-top: 0; }
+.ed-note { margin: -2px 0 10px; }

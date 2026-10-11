@@ -29,6 +29,9 @@ Neues bitte unten bei „Verlauf“ ergänzen.
   Admin umschaltbar (`site.homeLook`). Zeitung/Bühne/Kacheln verworfen.
 - v105: Nutzer will im Admin WYSIWYG im jeweils gewählten Look bearbeiten → umgesetzt;
   Home bis 10 Themen über Plus-Knopf „Neues Thema“.
+- v106: Unterseiten-Look (4 Quadrate oben, Text, Zitat, Kollage) gilt für alle
+  Unterseiten (Nutzer: „nicht zu kompliziert“). Editor folgt der Seitenreihenfolge;
+  Textgrößen inkl. Verkleinern, Farben, WYSIWYG-Überschriften.
 
 ## Verbindlicher Stand 11.10.2026 – Projekt-Update
 
