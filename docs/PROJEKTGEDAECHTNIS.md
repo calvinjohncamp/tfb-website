@@ -41,6 +41,8 @@ Neues bitte unten bei „Verlauf“ ergänzen.
   Zitat) mit Pfeilen und Plus, feste Gestaltung, nur zwei Schriftgrößen (Text/Überschrift).
 - v111: Nutzer zufrieden mit Unterseiten-Editor („genau so lassen“); gleiche Bedienung im
   Mannschaftsporträt. Chat-Beiträge mit freiwilliger Überschrift; Chat-Seite heißt „Clubgeflüster“.
+- v112–v115: Titelfotos im Seitenformat einpassen; Aktuell-Beiträge 1–4 Fotos (breit/Quadrate);
+  Aktuell ohne Unterseiten (Nutzer: „kurz und knackig“), Texteditor überall gleich schlank.
 
 ## Verbindlicher Stand 11.10.2026 – Projekt-Update
 

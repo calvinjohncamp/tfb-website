@@ -3,7 +3,7 @@
 **Zuerst lesen.** Ausführlicher Verlauf: [PROJEKTGEDAECHTNIS.md](PROJEKTGEDAECHTNIS.md).
 Diese Zusammenfassung hat Vorrang vor älteren Zwischenständen.
 
-Stand: **11.10.2026 abends, Aktuell-Beiträge mit eigener Seite**. Cache **tfb-kiosk-v114**.
+Stand: **11.10.2026 abends, Aktuell kurz und knackig**. Cache **tfb-kiosk-v115**.
 Alles committet (Sicherungspunkt v99 `f8e6c90`, danach Stufe 1). Nicht veröffentlicht.
 
 ## Neu: Ordner heißt jetzt „9. TFB-Website“
@@ -40,12 +40,10 @@ Alles committet (Sicherungspunkt v99 `f8e6c90`, danach Stufe 1). Nicht veröffen
 - Beim Wegschieben bleibt die Kopfzeile sichtbar („antippen zum Weiterbearbeiten“),
   Rückkehr an dieselbe Stelle – gilt auch für den Home-Themen-Editor (`togglePeek`).
 
-## Neu in v114: Aktuell-Beiträge mit „Mehr erfahren“
+## Neu in v115: Aktuell bleibt ohne Unterseiten
 
-- Karte auf Aktuell: Text auf 4 Zeilen gekürzt, darunter „Mehr erfahren →“;
-  Überschrift wird beim Überfahren rot; Klick auf Überschrift oder „Mehr erfahren“ öffnet
-  `#aktuell/<id>` (`postDetail`): Unterseiten-Look mit Fotos oben (1 breit / 2–4
-  Quadrate), Datum als kleine Zeile, Initiale, voller Text; Stift zum Bearbeiten.
+- Entscheidung des Nutzers: Aktuell-Beiträge werden komplett auf der Seite gezeigt,
+  kurz und knackig – **keine** Unterseiten, kein „Mehr erfahren“ (v114 zurückgenommen).
 - Beitragstext mit schlanker Werkzeugleiste (Fett · Kursiv · Rot · Link · Schlicht).
 
 ## Neu in v113: Aktuell-Beiträge mit 1–4 Fotos
