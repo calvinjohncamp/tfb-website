@@ -786,7 +786,7 @@
   TFB.views.chat = async () => {
     if (location.hash.split('/')[1] === 'alle') return overviewView();
     await ensure();
-    return `<div class="chat-page"><header class="view-head page-head"><div><h1>${esc(chatText().title)}</h1></div>${chatEditButton()}</header>
+    return `<div class="chat-page"><header class="view-head page-head"><div><p class="page-kicker">${esc(chatText().feedTitle)}</p><h1>${esc(chatText().title)}</h1></div>${chatEditButton()}</header>
       <div class="chat-stream">${await feedSection('club', { withTeams: true, chat: true })}</div>
       ${ui().partnerSlot('aktuell', 'Der Chat wird dir präsentiert von')}</div>`;
   };
