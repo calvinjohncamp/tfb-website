@@ -238,7 +238,7 @@ test('Aktuell separates news and dates, Chat preserves latest-first feed and sea
   context.location.hash = '#gefluester';
   assert.match(await context.TFB.views.gefluester(), /Alle Beiträge/);
   const app = readFileSync(new URL('assets/js/app.js', root), 'utf8');
-  assert.match(app, /\['kiosk', 'Kiosk'[^\n]+\n\s*\['chat', 'Chat'[^\n]+\n\s*\['aktuell'/);
+  assert.match(app, /\{ id: 'kiosk', label: 'Kiosk'[^}]+\}, \{ id: 'chat', label: 'Chat'[^}]+\},\s*\{ id: 'aktuell'/);   // Standard-Menü: Kiosk · Chat · Aktuell
 });
 
 test('club offers contributions before admission and opens the complete annual fee overview', async () => {
