@@ -562,21 +562,25 @@
           <a class="${training ? 'on' : ''}" href="#sport/training" ${training ? 'aria-current="page"' : ''}>Training</a>
         </nav>` : ''}
         ${key === 'home' && !edit ? `<div class="home-masthead"><span>Neu im Club</span><span>${esc(new Date().toLocaleDateString('de-DE', { month: 'long', year: 'numeric' }))}</span></div>` : ''}
+        ${key === 'home' && edit ? lookPicker() : ''}
         ${blocks}
-        ${key === 'home' && !edit ? lookSwitch() : ''}
         ${edit && (key !== 'sport' || training) ? `<button type="button" class="btn block add-section" data-action="block-new">${icon.plus} Baustein hinzufügen</button>` : ''}
         ${edit || legal ? '' : partnerSlot(key, page.partnerKicker || 'Präsentiert von')}
       </div>`;
   }
-  // Home: vorübergehender Look-Schalter (gleiche Inhalte, sechs Gestaltungen) – Wahl bleibt im Browser
-  const HOME_LOOKS = [['1', 'Heute'], ['2', 'Zeitung'], ['3', 'Magazin'], ['4', 'Bühne'], ['5', 'Kacheln'], ['6', 'Wechselspiel']];
-  function homeLook() {
-    try { const v = localStorage.getItem('tfb_home_look'); return HOME_LOOKS.some(([k]) => k === v) ? v : '1'; } catch { return '1'; }
-  }
-  function lookSwitch() {
+  // Home: Look der Startseite – im Admin wählbar, gilt für alle Besucher (Standard: Wechselspiel)
+  const HOME_LOOKS = [['6', 'Wechselspiel', 'Foto und Text je zur Hälfte, Seiten wechseln, große Ziffer – ruhig und gut lesbar'],
+    ['1', 'Klassisch', 'Breite, Hoch- und Quadratfotos wie im Editor gewählt'],
+    ['3', 'Magazin', 'Zentrierte Serifen-Überschriften, gerahmte Fotos, rote Trenner']];
+  const homeLook = () => (HOME_LOOKS.some(([k]) => k === site?.homeLook) ? site.homeLook : '6');
+  function lookPicker() {
     const cur = homeLook();
-    return `<nav class="look-switch" aria-label="Look der Startseite (Vorschau)"><span class="look-name">Look · <b>${esc((HOME_LOOKS.find(([k]) => k === cur) || HOME_LOOKS[0])[1])}</b></span>
-      <span class="look-btns">${HOME_LOOKS.map(([k, l]) => `<button type="button" class="${k === cur ? 'on' : ''}" data-action="home-look" data-look="${k}" title="${l}" aria-pressed="${k === cur}">${k}</button>`).join('')}</span></nav>`;
+    return `<section class="look-picker" aria-label="Look der Startseite">
+      <h2>Look der Startseite</h2>
+      <div class="look-options">${HOME_LOOKS.map(([k, l, d]) => `<button type="button" class="${k === cur ? 'on' : ''}" data-action="home-look" data-look="${k}" aria-pressed="${k === cur}">
+        <b>${esc(l)}${k === '6' ? ' <small>Standard</small>' : ''}</b><span>${esc(d)}</span></button>`).join('')}</div>
+      <p class="muted small">Gilt für alle Besucher. Sichtbar, sobald du oben auf „Fertig“ tippst.</p>
+    </section>`;
   }
   ['home', 'aktuell', 'sport', 'verein', 'impressum', 'satzung'].forEach((key) => { TFB.views[routeOf(key)] = () => pageView(key); });
 
@@ -2043,7 +2047,13 @@
       if (ui().currentView() === routeOf(editing)) ui().renderView(); else location.hash = '#' + routeOf(editing);
       window.scrollTo(0, 0);
     },
-    'home-look': async (el) => { try { localStorage.setItem('tfb_home_look', el.dataset.look); } catch {} const y = window.scrollY; await ui().renderView(); window.scrollTo(0, y); },
+    'home-look': async (el) => {
+      try {
+        site = await ui().api.saveSite({ ...JSON.parse(JSON.stringify(site)), homeLook: el.dataset.look });
+        ui().toast(`Look „${(HOME_LOOKS.find(([k]) => k === el.dataset.look) || [])[1]}“ gewählt`, true);
+        const y = window.scrollY; await ui().renderView(); window.scrollTo(0, y);
+      } catch (err) { ui().toast(err.message); }
+    },
     'site-done': () => { editing = null; ui().renderView(); window.scrollTo(0, 0); },
     'block-move': (el) => {
       const list = blocksOf();

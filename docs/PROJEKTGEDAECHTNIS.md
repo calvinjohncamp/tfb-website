@@ -25,6 +25,8 @@ Neues bitte unten bei „Verlauf“ ergänzen.
   Stutterheim, Gazette, Tablet, Vanity Fair, Foks). Sechs Looks per Schalter zum
   Vergleichen; Editor bleibt gleich. Danach: Mannschaftsporträt/Unterseiten mit
   flexiblen Hoch-/Querformat-Fotos (Wunsch des Nutzers, noch offen).
+- v104: Entscheidung – Look 6 „Wechselspiel“ ist Standard; Klassisch und Magazin im
+  Admin umschaltbar (`site.homeLook`). Zeitung/Bühne/Kacheln verworfen.
 
 ## Verbindlicher Stand 11.10.2026 – Projekt-Update
 

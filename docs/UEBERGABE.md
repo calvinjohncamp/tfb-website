@@ -3,7 +3,7 @@
 **Zuerst lesen.** Ausführlicher Verlauf: [PROJEKTGEDAECHTNIS.md](PROJEKTGEDAECHTNIS.md).
 Diese Zusammenfassung hat Vorrang vor älteren Zwischenständen.
 
-Stand: **11.10.2026 abends, Home-Looks zur Auswahl**. Cache **tfb-kiosk-v103**.
+Stand: **11.10.2026 abends, Home-Look Wechselspiel als Standard**. Cache **tfb-kiosk-v104**.
 Alles committet (Sicherungspunkt v99 `f8e6c90`, danach Stufe 1). Nicht veröffentlicht.
 
 ## Neu: Ordner heißt jetzt „9. TFB-Website“
@@ -40,7 +40,16 @@ Alles committet (Sicherungspunkt v99 `f8e6c90`, danach Stufe 1). Nicht veröffen
 - Beim Wegschieben bleibt die Kopfzeile sichtbar („antippen zum Weiterbearbeiten“),
   Rückkehr an dieselbe Stelle – gilt auch für den Home-Themen-Editor (`togglePeek`).
 
-## Neu in v103: sechs Home-Looks zur Auswahl (vorübergehend)
+## Neu in v104: Home-Look festgelegt
+
+- **Standard: Look 6 „Wechselspiel“** (Foto/Text je halb, Seiten wechseln, große
+  Ziffer) – Nutzer: ruhig, gut lesbar; Fotos komplett per Klick ansehbar.
+- Im Admin (Home → Stift → oben „Look der Startseite“) umschaltbar: Wechselspiel ·
+  Klassisch (bisheriger Look 1) · Magazin (Look 3). Gespeichert in `site.homeLook`
+  (gilt für alle Besucher, in „Sichern & Laden“ enthalten).
+- Looks 2/4/5 und der vorübergehende Schalter unten auf Home sind entfernt.
+
+## Neu in v103: sechs Home-Looks zur Auswahl (historisch, ersetzt durch v104)
 
 - Auf Home unten ein schwarzer Schalter „Look · 1–6“ (nicht im Bearbeiten-Modus).
   Gleiche Inhalte, andere Gestaltung; Wahl im Browser (`localStorage tfb_home_look`).
