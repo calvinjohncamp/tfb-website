@@ -373,3 +373,13 @@ Monatsabschluss.
   Verabreden und Home-Unterseiten). **Unterseite** im Look der Startseite: Foto oben ohne Schrift,
   darunter links Kicker/Überschrift/Unterzeile/Link (Desktop mitlaufend), rechts Text, Zitat –
   alles linksbündig; Bearbeiten/Schließen über dem Foto.
+- **11.10.2026** – **Themen-Editor neu:** Seitenleiste rechts (ab 1100 px, 440 px breit) mit
+  **Live-Vorschau** links – die Seite zeigt bei jeder Eingabe genau den bearbeiteten Bereich
+  (`preview`-Zustand in site.js, `homeBlocks()` setzt den Entwurf ein; Abbrechen stellt den
+  gespeicherten Stand wieder her). Zwei Reiter **„Startseite“** und **„Unterseite „Mehr
+  erfahren““** mit je eigenen Feldern und Hinweis, was woher kommt. Handy/iPad: Blatt mit
+  „Vorschau ansehen“ (schiebt es weg, Kopfzeile antippen holt es zurück). Von der Unterseite aus
+  öffnet der Stift direkt den Reiter „Unterseite“.
+  **Titelbild der Unterseite:** `more.heroSource` (`same` | `own`), `more.heroImages` (1–3),
+  `more.heroMode` (`wide` | `original` | `squares`). Ist das Startseitenbild hoch-/quadratisch
+  und „Breit“ gewählt, steht es links über der Überschrift statt quer zugeschnitten.

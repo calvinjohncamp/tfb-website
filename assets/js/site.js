@@ -10,6 +10,7 @@
   let imagesLoaded = false;
   let editing = null;       // Seite, die gerade bearbeitet wird
   let detailEditing = false; // Thema wird direkt auf seiner Unterseite bearbeitet
+  let preview = null;        // Live-Vorschau beim Bearbeiten eines Themas: { id, draft, tab }
   const ui = () => TFB.ui;
 
   // Seiten-Schlüssel → Adresse im Menü (die Seite „verein“ heißt seit 10.10. „Club“)
@@ -191,16 +192,16 @@
   function renderBlock(b, page) {
     switch (b.type) {
       case 'feature': {
-        const list = site.pages[page] ? site.pages[page].blocks.filter((x) => x.type === 'feature' && !x._new) : [];
+        const list = page === 'home' ? homeBlocks().filter((x) => x.type === 'feature' && (!x._new || (preview && x.id === preview.id))) : [];
         const n = String(Math.max(1, list.findIndex((x) => x.id === b.id) + 1)).padStart(2, '0');
-        const more = hasMore(b) && editing !== page ? `#home/${esc(b.id)}` : '';
+        const more = hasMore(b) && (editing !== page || preview) ? `#home/${esc(b.id)}` : '';
         const wrap = (html) => (more ? `<a class="feature-hit" href="${more}">${html}</a>` : html);
         // Link-Platz (immer linksbündig): „left“ = links unter der Unterzeile, „right-<n>“ = rechts
         // vor Absatz n, „right“ = rechts unter dem Text (Standard). Im Bearbeiten-Modus mit der Maus
         // auf eine der Ablagelinien ziehen, die beim Ziehen erscheinen – oder im Editor unter „Platz“.
         const hasLink = Boolean(b.link && b.link.url);
         const pos = (b.link && b.link.position) || 'right';
-        const isEdit = editing === page;
+        const isEdit = editing === page && !preview;
         const slot = (name, hint) => {
           if (!hasLink) return '';
           if (!isEdit) return pos === name ? `<div class="link-place">${linkMarkup(b.link)}</div>` : '';
@@ -212,7 +213,7 @@
         const parts = String(b.text || '').split(/\n{2,}/).filter((x) => x.trim());
         const textHtml = parts.map((p, i) => slot(`right-${i}`) + paragraphs(p)).join('');
         return `
-          <article class="feature feature-${esc(b.layout || 'wide')} ${more ? 'has-more' : ''}">
+          <article class="feature feature-${esc(b.layout || 'wide')} ${more ? 'has-more' : ''}" data-feature="${esc(b.id)}">
             ${wrap(`<div class="feature-media">${picture(b.image, b.id, b.title)}</div>`)}
             <div class="feature-body">
               <div class="feature-left">
@@ -321,6 +322,60 @@
       </section>`;
   }
 
+  // Home-Blöcke – während der Live-Vorschau mit dem aktuellen Entwurf statt dem gespeicherten Stand
+  const homeBlocks = () => site.pages.home.blocks.map((x) => (preview && x.id === preview.id ? preview.draft : x));
+
+  // ---------- Live-Vorschau beim Bearbeiten (WYSIWYG für den Bereich, der gerade bearbeitet wird) ----------
+  let previewTimer = null;
+  let readDraft = null;
+  let lastTab = null;
+  function startLive(id, draft, read) {
+    readDraft = read;
+    preview = { id, draft, tab: read() };
+    document.getElementById('sheet-root').classList.add('side-mode');
+    document.body.classList.add('side-editing');
+    document.body.classList.remove('no-scroll');
+    refreshPreview(lastTab !== preview.tab || !document.querySelector(`[data-feature="${id}"]`));
+  }
+  function schedulePreview() {
+    clearTimeout(previewTimer);
+    previewTimer = setTimeout(() => refreshPreview(false), 220);
+  }
+  async function refreshPreview(jump) {
+    if (!preview || !readDraft) return;
+    preview.tab = readDraft();
+    const tabChanged = lastTab !== preview.tab;
+    lastTab = preview.tab;
+    const y = window.scrollY;
+    await ui().renderView();
+    if (jump || tabChanged) {
+      const el = preview.tab === 'sub' ? document.querySelector('.story') : document.querySelector(`[data-feature="${preview.id}"]`);
+      if (el) window.scrollTo(0, Math.max(0, el.getBoundingClientRect().top + window.scrollY - 150));
+    } else window.scrollTo(0, y);
+  }
+  function endLive() {
+    if (!preview) return;
+    preview = null; readDraft = null; lastTab = null;
+    clearTimeout(previewTimer);
+    const root = document.getElementById('sheet-root');
+    root.classList.remove('side-mode', 'peek');
+    document.body.classList.remove('side-editing');
+  }
+  // Handy: weggeschobenes Editor-Blatt per Tipp auf die sichtbare Kopfzeile zurückholen
+  document.addEventListener('click', (e) => {
+    const root = document.getElementById('sheet-root');
+    if (!root || !root.classList.contains('peek') || e.target.closest('.sheet-close, [data-ed-peek]') || !e.target.closest('.sheet')) return;
+    e.preventDefault();
+    root.classList.remove('peek');
+    const b = root.querySelector('[data-ed-peek]');
+    if (b) b.textContent = 'Vorschau ansehen';
+  }, true);
+  // Wird das Fenster geschlossen (Kreuz, Abbrechen), endet die Vorschau und der gespeicherte Stand erscheint wieder.
+  new MutationObserver(() => {
+    const root = document.getElementById('sheet-root');
+    if (preview && root && !root.querySelector('[data-editor=block]')) { endLive(); ui().renderView(); }
+  }).observe(document.getElementById('sheet-root') || document.body, { childList: true });
+
   // ---------- Unterseite eines Home-Themas („Mehr erfahren“) ----------
   const hasMore = (b) => Boolean(b.more && ((b.more.text || '').trim() || (b.more.images || []).length || b.more.quote));
   const shownImage = (ref) => ref && (images[ref] || /^assets\//.test(ref) || /^ph:/.test(ref));
@@ -340,23 +395,38 @@
 
   async function featureDetail(id) {
     const { icon, state, partnerSlot } = ui();
-    const b = site.pages.home.blocks.find((x) => x.id === id);
+    const b = homeBlocks().find((x) => x.id === id);
     if (!b) return `${ui().viewHead('Home', 'Diesen Beitrag gibt es nicht mehr.', false)}<p><a class="btn" href="#home">Zur Startseite</a></p>`;
     const more = b.more || {};
     const parts = String(more.text || '').split(/\n{2,}/);
     const cut = Math.min(2, parts.length);
     const admin = state.member && state.member.isAdmin;
-    const n = String(site.pages.home.blocks.filter((x) => x.type === 'feature').indexOf(b) + 1).padStart(2, '0');
+    const n = String(homeBlocks().filter((x) => x.type === 'feature').indexOf(b) + 1).padStart(2, '0');
     const size = b.textSize === 'gross' ? 'text-l' : '';
+    // Titelbild: wie Startseite oder eigene Fotos; breit, im Originalformat oder 2–3 Quadrate nebeneinander
+    const own = more.heroSource === 'own' ? (more.heroImages || []).filter(shownImage) : [];
+    const mode = more.heroMode || 'wide';
+    const heroRefs = own.length ? own : [b.image];
+    const seed = own.length ? own[0] : b.id;
+    const sideImage = !own.length && mode === 'wide' && (b.layout === 'portrait' || b.layout === 'square');
+    let heroHtml = '';
+    if (mode === 'squares' && heroRefs.length >= 2) {
+      heroHtml = `<div class="story-squares n${heroRefs.length}">${heroRefs.map((r, i) => `<button type="button" class="story-square" data-action="hero-open" data-block="${esc(b.id)}" data-index="${i}" aria-label="Foto groß ansehen">${picture(r, r)}</button>`).join('')}</div>`;
+    } else if (mode === 'original') {
+      heroHtml = `<div class="story-photo natural">${picture(heroRefs[0], seed, b.title)}</div>`;
+    } else if (!sideImage) {
+      heroHtml = `<div class="story-photo">${picture(heroRefs[0], seed, b.title)}</div>`;
+    }
     return `
       <article class="story">
         <div class="story-tools">
           ${admin ? `<button type="button" class="view-close" data-action="feature-edit" data-id="${esc(b.id)}" aria-label="Bearbeiten">${icon.pencil}</button>` : ''}
           <a class="view-close" href="#home" aria-label="Zurück zur Startseite">${icon.close}</a>
         </div>
-        <div class="story-photo">${picture(b.image, b.id, b.title)}</div>
-        <div class="story-grid">
+        ${heroHtml}
+        <div class="story-grid ${sideImage ? 'with-side' : ''}">
           <header class="story-head">
+            ${sideImage ? `<div class="story-side-img ${esc(b.layout)}">${picture(b.image, b.id, b.title)}</div>` : ''}
             <p class="feature-kicker"><span>${n}</span>${esc(b.kicker || '')}</p>
             <h1>${esc(b.title)}</h1>
             ${b.subtitle ? `<p class="feature-sub">${esc(b.subtitle)}</p>` : ''}
@@ -379,12 +449,13 @@
   // ---------- Seite ----------
   async function pageView(key) {
     await ensure();
-    if (key === 'home' && location.hash.split('/')[1]) return featureDetail(location.hash.split('/')[1]);
+    if (key === 'home' && preview && preview.tab === 'sub') return featureDetail(preview.id);
+    if (key === 'home' && !preview && location.hash.split('/')[1]) return featureDetail(location.hash.split('/')[1]);
     const { state, icon, partnerSlot } = ui();
     const page = site.pages[key];
-    const edit = editing === key && state.member && state.member.isAdmin;
+    const edit = editing === key && state.member && state.member.isAdmin && !preview;
     const admin = state.member && state.member.isAdmin;
-    const list = page.blocks.filter((b) => !b._new);
+    const list = (key === 'home' ? homeBlocks() : page.blocks).filter((b) => !b._new || (preview && b.id === preview.id));
     const blocks = edit
       ? list.map((b, i) => editWrap(b, i, list.length, renderBlock(b, key))).join('')
       : layoutBlocks(list, key);
@@ -558,11 +629,13 @@
       </div>`;
   }
 
-  function openBlockEditor(id, isNew = false) {
+  function openBlockEditor(id, isNew = false, startTab = 'home') {
     const { openSheet, closeSheet } = ui();
     const original = findBlock(id);
     if (!original) return;
     const draft = JSON.parse(JSON.stringify(original));
+    let edTab = startTab;
+    const live = draft.type === 'feature';   // Themen: Seitenleiste mit Live-Vorschau
     const label = (BLOCK_TYPES.find(([t]) => t === draft.type) || [0, 'Baustein'])[1];
 
     const body = () => {
@@ -570,17 +643,22 @@
         case 'feature': {
           const lk = draft.link || {};
           const ext = /^https?:/i.test(lk.url || '');
-          return `
-            <div class="field"><span>Bild-Anordnung</span>
-              <div class="seg layout-seg">${[['wide', 'Breit oben'], ['portrait', 'Hochformat links'], ['square', 'Quadrat links']].map(([v, l]) =>
-                `<button type="button" class="${(draft.layout || 'wide') === v ? 'on' : ''}" data-layout="${v}">${l}</button>`).join('')}</div>
-            </div>`
+          const more = draft.more || {};
+          const heroSrc = more.heroSource === 'own' ? 'own' : 'same';
+          const heroImgs = (more.heroImages || []).filter(shownImage);
+          const heroMode = more.heroMode || 'wide';
+          const seg = (attr, cur, opts) => `<div class="seg">${opts.map(([v, l, off]) =>
+            `<button type="button" class="${cur === v ? 'on' : ''}" data-${attr}="${v}" ${off ? 'disabled' : ''}>${l}</button>`).join('')}</div>`;
+          const homePanel = `
+            <p class="ed-hint">So erscheint das Thema auf der <b>Startseite</b>. Links siehst du die Vorschau.</p>
+            <h3 class="editor-sub">Bild</h3>
+            <div class="field"><span>Anordnung</span>${seg('layout', draft.layout || 'wide', [['wide', 'Breit oben'], ['portrait', 'Hochformat links'], ['square', 'Quadrat links']])}</div>`
             + imageField(draft.image, draft.id)
+            + `<h3 class="editor-sub">Texte</h3>`
             + field('Kleine Zeile über der Überschrift', 'kicker', draft.kicker, { placeholder: 'z. B. Neu in Bielstein' })
             + field('Überschrift', 'title', draft.title) + field('Unterzeile', 'subtitle', draft.subtitle)
-            + field('Kurzer Text auf der Startseite', 'text', draft.text, { area: true, rich: true, rows: 5, placeholder: 'Zwei, drei Sätze – Wörter markieren und oben gestalten' })
-            + `<div class="field"><span>Textgröße (ganzer Text, Startseite und Unterseite)</span><div class="seg size-seg">${[['normal', 'Normal'], ['gross', 'Groß']].map(([v, l]) =>
-                `<button type="button" class="${(draft.textSize || 'normal') === v ? 'on' : ''}" data-textsize="${v}">${l}</button>`).join('')}</div></div>`
+            + field('Kurzer Text', 'text', draft.text, { area: true, rich: true, rows: 5, placeholder: 'Zwei, drei Sätze – Wörter markieren und oben gestalten' })
+            + `<div class="field"><span>Textgröße (gilt auch auf der Unterseite)</span>${seg('textsize', draft.textSize || 'normal', [['normal', 'Normal'], ['gross', 'Groß']])}</div>`
             + `<h3 class="editor-sub">Link</h3>`
             + linkTargetField(lk.url)
             + field('Link-Text (für Knopf und Vorschau-Karte – der dezente Link zeigt die Adresse)', 'linkLabel', lk.label, { placeholder: 'z. B. Jetzt Platz buchen' })
@@ -588,24 +666,40 @@
               const n = String(draft.text || '').split(/\n{2,}/).filter((x) => x.trim()).length;
               const cur = lk.position || 'right';
               const opts = [['left', 'Links unter der Unterzeile'], ...Array.from({ length: n }, (_, i) => [`right-${i}`, i === 0 ? 'Rechts vor dem Text' : `Rechts nach Absatz ${i}`]), ['right', 'Rechts unter dem Text']];
-              return `<label class="field"><span>Platz (oder im Bearbeiten-Modus mit der Maus ziehen)</span><select name="linkPos">${opts.map(([v, l]) => `<option value="${v}" ${v === cur ? 'selected' : ''}>${l}</option>`).join('')}</select></label>`;
+              return `<label class="field"><span>Platz (oder auf der Seite im Bearbeiten-Modus mit der Maus ziehen)</span><select name="linkPos">${opts.map(([v, l]) => `<option value="${v}" ${v === cur ? 'selected' : ''}>${l}</option>`).join('')}</select></label>`;
             })()
-            + `<div class="field"><span>Darstellung</span><div class="seg link-style-seg">${[['chip', 'Dezent'], ['button', 'Knopf'], ['card', 'Vorschau-Karte']].map(([v, l]) =>
-                `<button type="button" class="${(lk.style || 'chip') === v ? 'on' : ''}" data-linkstyle="${v}">${l}</button>`).join('')}</div></div>`
+            + `<div class="field"><span>Darstellung</span>${seg('linkstyle', lk.style || 'chip', [['chip', 'Dezent'], ['button', 'Knopf'], ['card', 'Vorschau-Karte']])}</div>`
             + (ext ? `<p class="muted small">Für die Vorschau (kleines Bild beim dezenten Link, große Karte): im Echtbetrieb holt die App Bild, Titel und Text automatisch von der Website – bis dahin hier eintragen.</p>`
               + field('Vorschau: Titel', 'linkTitle', lk.title) + field('Vorschau: Text', 'linkText', lk.text, { area: true, rows: 3 })
               + imageField(lk.image, lk.url, 'Vorschau: Bild', 'link')
-              : imageField(lk.image, lk.url || 'intern', 'Rundes Bild im Link (leer = Symbol der Seite)', 'link'))
-            + `<h3 class="editor-sub">Unterseite „Mehr erfahren“</h3><p class="muted small">Erscheint, sobald hier etwas steht. Großes Titelbild oben, der Text wie ein Magazinartikel, dazu ein Zitat und eine Fotokollage.</p>`
-            + field('Ausführlicher Text', 'moreText', (draft.more || {}).text, { area: true, rich: true, rows: 10, placeholder: 'Beliebig lang. Leerzeile = neuer Absatz, ## am Zeilenanfang = Zwischenüberschrift' })
-            + field('Zitat (freiwillig)', 'moreQuote', (draft.more || {}).quote, { placeholder: 'z. B. „Nach zehn Minuten hatte jeder ein Grinsen im Gesicht.“' })
-            + field('Zitat von', 'moreQuoteBy', (draft.more || {}).quoteBy, { placeholder: 'z. B. Jan, Herren 40' })
-            + `<label class="meet-check"><input type="checkbox" name="moreOriginal" ${(draft.more || {}).original ? 'checked' : ''}><span>Fotos im Originalformat zeigen (nicht zuschneiden – 4:3, 1:1, 16:9 …)</span></label>`
-            + `<div class="field"><span>Fotokollage</span>
-                <div class="gallery-edit">
-                  ${((draft.more || {}).images || []).filter(shownImage).map((ref) => `<div class="gallery-thumb">${picture(ref, ref)}<button type="button" data-more-remove="${esc(ref)}" aria-label="Foto entfernen">×</button></div>`).join('')}
+              : imageField(lk.image, lk.url || 'intern', 'Rundes Bild im Link (leer = Symbol der Seite)', 'link'));
+          const subPanel = `
+            <p class="ed-hint">Die <b>Unterseite</b> öffnet sich über „Mehr erfahren“, sobald hier ein Text, ein Zitat oder Fotos stehen. Kleine Zeile, Überschrift, Unterzeile und Link kommen vom Reiter „Startseite“.</p>
+            <h3 class="editor-sub">Titelbild oben</h3>
+            <div class="field"><span>Quelle</span>${seg('herosrc', heroSrc, [['same', 'Wie auf der Startseite'], ['own', 'Eigene Fotos']])}</div>
+            ${heroSrc === 'own' ? `<div class="field"><span>Fotos (1 bis 3)</span>
+              <div class="gallery-edit">
+                ${heroImgs.map((ref) => `<div class="gallery-thumb">${picture(ref, ref)}<button type="button" data-hero-remove="${esc(ref)}" aria-label="Foto entfernen">×</button></div>`).join('')}
+                ${heroImgs.length < 3 ? `<label class="gallery-add">${ui().icon.plus}<span>Foto</span><input type="file" accept="image/*" multiple data-hero-input hidden></label>` : ''}
+              </div></div>` : ''}
+            <div class="field"><span>Darstellung</span>${seg('heromode', heroMode, [['wide', 'Breit'], ['original', 'Originalformat'], ['squares', '2–3 Quadrate nebeneinander', heroSrc !== 'own' || heroImgs.length < 2]])}</div>
+            <h3 class="editor-sub">Texte</h3>`
+            + field('Ausführlicher Text', 'moreText', more.text, { area: true, rich: true, rows: 10, placeholder: 'Beliebig lang – Wörter markieren und oben gestalten' })
+            + field('Zitat (freiwillig)', 'moreQuote', more.quote, { placeholder: 'z. B. „Nach zehn Minuten hatte jeder ein Grinsen im Gesicht.“' })
+            + field('Zitat von', 'moreQuoteBy', more.quoteBy, { placeholder: 'z. B. Jan, Herren 40' })
+            + `<h3 class="editor-sub">Fotokollage unten</h3>
+               <label class="meet-check"><input type="checkbox" name="moreOriginal" ${more.original ? 'checked' : ''}><span>Fotos im Originalformat zeigen (nicht zuschneiden – 4:3, 1:1, 16:9 …)</span></label>
+               <div class="field"><div class="gallery-edit">
+                  ${(more.images || []).filter(shownImage).map((ref) => `<div class="gallery-thumb">${picture(ref, ref)}<button type="button" data-more-remove="${esc(ref)}" aria-label="Foto entfernen">×</button></div>`).join('')}
                   <label class="gallery-add">${ui().icon.plus}<span>Fotos</span><input type="file" accept="image/*" multiple data-more-input hidden></label>
                 </div></div>`;
+          return `
+            <div class="ed-tabs" role="tablist">
+              <button type="button" role="tab" class="${edTab === 'home' ? 'on' : ''}" data-edtab="home">Startseite</button>
+              <button type="button" role="tab" class="${edTab === 'sub' ? 'on' : ''}" data-edtab="sub">Unterseite „Mehr erfahren“</button>
+            </div>
+            <div class="ed-panel" data-panel="home" ${edTab === 'home' ? '' : 'hidden'}>${homePanel}</div>
+            <div class="ed-panel" data-panel="sub" ${edTab === 'sub' ? '' : 'hidden'}>${subPanel}</div>`;
         }
         case 'heading': return field('Überschrift', 'title', draft.title);
         case 'text': return field('Überschrift', 'title', draft.title) + field('Text', 'text', draft.text, { area: true, rich: true, rows: 8, placeholder: 'Text schreiben – Wörter markieren und oben gestalten' });
@@ -631,15 +725,25 @@
     };
 
     const render = () => {
+      const keepScroll = document.querySelector('#sheet-root .sheet') ? document.querySelector('#sheet-root .sheet').scrollTop : 0;
       openSheet(`
-        <form class="editor" data-editor="block" novalidate>
-          <h2>${isNew ? `Neuer Baustein: ${esc(label)}` : `${esc(label)} bearbeiten`}</h2>
+        <form class="editor ${live ? 'editor-live' : ''}" data-editor="block" novalidate>
+          <h2>${isNew ? `Neuer Baustein: ${esc(label)}` : live ? 'Thema bearbeiten' : `${esc(label)} bearbeiten`}</h2>
           ${body()}
           <p class="form-error" role="alert"></p>
-          <button type="submit" class="btn primary block">Speichern</button>
-          <button type="button" class="btn block danger" data-delete>Baustein löschen</button>
+          <div class="ed-actions">
+            <button type="submit" class="btn primary block">Speichern</button>
+            ${live ? '<button type="button" class="btn block ed-peek" data-ed-peek>Vorschau ansehen</button>' : ''}
+          </div>
+          <button type="button" class="btn block danger" data-delete>${live ? 'Thema löschen' : 'Baustein löschen'}</button>
         </form>`);
       const form = document.querySelector('[data-editor=block]');
+      if (live) {
+        startLive(id, draft, () => { collect(form); return edTab; });
+        document.querySelector('#sheet-root .sheet').scrollTop = keepScroll;
+        form.addEventListener('input', () => schedulePreview());
+        form.addEventListener('change', () => schedulePreview());
+      }
       form.addEventListener('submit', (e) => { e.preventDefault(); save(form); });
       form.addEventListener('click', async (e) => {
         const del = e.target.closest('[data-delete]');
@@ -649,6 +753,23 @@
           closeSheet();
           commit('Baustein gelöscht');
         }
+        const tabBtn = e.target.closest('[data-edtab]');
+        if (tabBtn) {
+          collect(form);
+          edTab = tabBtn.dataset.edtab;
+          form.querySelectorAll('[data-edtab]').forEach((x) => x.classList.toggle('on', x === tabBtn));
+          form.querySelectorAll('.ed-panel').forEach((x) => { x.hidden = x.dataset.panel !== edTab; });
+          document.querySelector('#sheet-root .sheet').scrollTop = 0;
+          refreshPreview(true);
+          return;
+        }
+        if (e.target.closest('[data-ed-peek]')) { document.getElementById('sheet-root').classList.toggle('peek'); e.target.closest('[data-ed-peek]').textContent = document.getElementById('sheet-root').classList.contains('peek') ? 'Weiter bearbeiten' : 'Vorschau ansehen'; return; }
+        const hs = e.target.closest('[data-herosrc]');
+        if (hs) { collect(form); draft.more = { ...(draft.more || {}), heroSource: hs.dataset.herosrc }; if (hs.dataset.herosrc !== 'own' && draft.more.heroMode === 'squares') draft.more.heroMode = 'wide'; render(); return; }
+        const hm = e.target.closest('[data-heromode]');
+        if (hm) { collect(form); draft.more = { ...(draft.more || {}), heroMode: hm.dataset.heromode }; render(); return; }
+        const hr = e.target.closest('[data-hero-remove]');
+        if (hr) { collect(form); draft.more.heroImages = (draft.more.heroImages || []).filter((r) => r !== hr.dataset.heroRemove); if (draft.more.heroImages.length < 2 && draft.more.heroMode === 'squares') draft.more.heroMode = 'wide'; render(); return; }
         const lk2 = e.target.closest('[data-linkkind]');
         if (lk2) {
           collect(form);
@@ -682,6 +803,10 @@
             else draft.image = ids[0];
           }
           if (input.matches('[data-gallery-input]')) draft.images = [...(draft.images || []), ...ids];
+          if (input.matches('[data-hero-input]')) {
+            const list = [...((draft.more || {}).heroImages || []), ...ids].slice(0, 3);
+            draft.more = { ...(draft.more || {}), heroImages: list, heroMode: list.length >= 2 ? 'squares' : ((draft.more || {}).heroMode || 'wide') };
+          }
           if (input.matches('[data-more-input]')) draft.more = { ...(draft.more || {}), images: [...((draft.more || {}).images || []).filter((r) => !/^ph:/.test(r)), ...ids] };
           ui().toast(ids.length > 1 ? `${ids.length} Fotos hinzugefügt` : 'Foto hinzugefügt', true);
           render();
@@ -710,6 +835,7 @@
       delete draft._new;
       const list = blocksOf();
       list[list.findIndex((b) => b.id === id)] = draft;
+      endLive();
       closeSheet();
       commit(isNew ? 'Baustein hinzugefügt' : 'Gespeichert');
     };
@@ -919,7 +1045,13 @@
     'team-season': (el) => { teamSeason = el.dataset.season; ui().renderView(); },
     'team-photo': (el) => openTeamPhoto(el.dataset.team),
     'link-move': (el) => moveLink(el.dataset.block, el.dataset.slot),
-    'feature-edit': (el) => { editing = 'home'; detailEditing = true; openBlockEditor(el.dataset.id); },
+    'feature-edit': (el) => { editing = 'home'; detailEditing = true; openBlockEditor(el.dataset.id, false, 'sub'); },
+    'hero-open': (el) => {
+      const b = homeBlocks().find((x) => x.id === el.dataset.block);
+      const ref = ((b.more || {}).heroImages || []).filter(shownImage)[Number(el.dataset.index)];
+      const src = images[ref] || (/^assets\//.test(ref) ? ref : null);
+      if (src) ui().openLightbox(src, b.title);
+    },
     'collage-open': (el) => {
       const b = site.pages.home.blocks.find((x) => x.id === el.dataset.block);
       const list = ((b.more || {}).images || []).filter(shownImage);

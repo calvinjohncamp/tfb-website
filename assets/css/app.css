@@ -1480,3 +1480,48 @@ button.meet-row:hover { background: #FAF8F3; }
 /* Editor: Link-Ziel */
 .link-target .seg { margin-bottom: 8px; }
 .link-target select, .link-target input[type=url] { width: 100%; min-height: 48px; padding: 0 14px; border: 1.5px solid var(--line); border-radius: 12px; background: var(--paper); font-size: 16px; }
+
+/* ===== 11.10.: Themen-Editor als Seitenleiste mit Live-Vorschau ===== */
+.ed-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; background: #EFEBE3; border-radius: 12px; margin: 4px 0 14px; position: sticky; top: -26px; z-index: 2; }
+.ed-tabs button { border: 0; background: transparent; border-radius: 9px; padding: 10px 8px; font-weight: 750; font-size: .86rem; color: var(--muted); }
+.ed-tabs button.on { background: #fff; color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+.ed-hint { font-size: .82rem; color: var(--muted); background: #F6F3EC; border-radius: 10px; padding: 10px 12px; margin: 0 0 6px; line-height: 1.45; }
+.ed-panel .editor-sub { font-size: .72rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--signal); margin: 20px 0 2px; }
+.ed-actions { display: grid; gap: 8px; position: sticky; bottom: -24px; background: var(--paper); padding: 10px 0 6px; z-index: 2; }
+.ed-peek { display: none; }
+.seg button:disabled { opacity: .4; cursor: not-allowed; }
+
+/* Großer Bildschirm: Editor rechts als Leiste, die Seite links bleibt sichtbar und zeigt die Änderungen sofort */
+@media (min-width: 1100px) {
+  body.side-editing { padding-right: 440px; }
+  body.side-editing .topbar { padding-right: 24px; }
+  #sheet-root.side-mode .sheet-backdrop { display: none; }
+  #sheet-root.side-mode .sheet {
+    left: auto; right: 0; top: 0; bottom: 0; width: 440px; max-width: 440px; max-height: none; height: 100vh;
+    border-radius: 0; transform: none; opacity: 1; box-shadow: -12px 0 40px rgba(0,0,0,.12); padding: 26px 22px 24px;
+  }
+}
+/* Handy/iPad: Editor als Blatt; „Vorschau ansehen“ schiebt es nach unten weg */
+@media (max-width: 1099px) {
+  #sheet-root.side-mode .ed-peek { display: block; }
+  #sheet-root.side-mode.peek .sheet-backdrop { opacity: 0; pointer-events: none; }
+  #sheet-root.side-mode.peek .sheet { transform: translate(-50%, calc(100% - 92px)) !important; top: auto; bottom: 0; overflow: hidden; }
+}
+
+/* Unterseite: Titelbild-Varianten */
+.story-photo.natural { aspect-ratio: auto; background: none; }
+.story-photo.natural > img { height: auto; max-height: 85vh; width: auto; max-width: 100%; margin: 0 auto; border-radius: 20px; }
+.story-photo.natural > .ph { aspect-ratio: 16 / 9; height: auto; }
+.story-squares { display: grid; gap: 12px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.story-squares.n3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.story-square { border: 0; padding: 0; aspect-ratio: 1; border-radius: 16px; overflow: hidden; background: #EEE; cursor: zoom-in; }
+.story-square > img, .story-square > .ph { width: 100%; height: 100%; object-fit: cover; display: block; }
+@media (max-width: 639px) { .story-squares.n3 { gap: 6px; } .story-square { border-radius: 10px; } }
+.story-side-img { border-radius: 20px; overflow: hidden; margin-bottom: 24px; background: #EEE; aspect-ratio: 4 / 5; }
+.story-side-img.square { aspect-ratio: 1; }
+.story-side-img > img, .story-side-img > .ph { width: 100%; height: 100%; object-fit: cover; display: block; }
+.story-grid.with-side { margin-top: 0; }
+@media (max-width: 1099px) {
+  #sheet-root.side-mode.peek .sheet { cursor: pointer; }
+  #sheet-root.side-mode.peek .editor > h2::after { content: "  ·  antippen zum Weiterbearbeiten"; font-size: .78rem; font-weight: 600; color: var(--signal); }
+}
