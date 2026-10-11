@@ -104,7 +104,8 @@ test('news collages persist 100 photos, preview five and open full collage befor
   assert.match(home, /news-collage/);
   assert.match(home, /\+95/);
   const html = await context.TFB.views.aktuell();
-  assert.equal((html.match(/data-action="news-gallery"/g) || []).length, 5);
+  assert.equal((html.match(/data-action="news-gallery"/g) || []).length, 4);   // Aktuell-Beitrag: höchstens 4 Fotos, Rest als „+N“
+  assert.match(html, /\+96/);
   const handlers = {};
   const box = {innerHTML:'',classList:{add(){},remove(){}},addEventListener:(name,handler)=>{handlers[name]=handler;},remove(){}};
   context.document.createElement = () => box;
