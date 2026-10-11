@@ -483,3 +483,4 @@ Monatsabschluss.
   Herren 40 1 entfernt, Beiträge mit falscher Mannschaft umgehängt („Ü55“ → Herren 55 1).
   Fehlt rosters.js (z. B. frischer Checkout), läuft die App mit der Demo-Zuordnung.
 - **11.10.2026** – Partner-Logos auf allen Seiten um ein Drittel kleiner (Kacheln, Logos und Breite des Duos × 2/3).
+- **11.10.2026** – Partner-Duo jetzt auch unter **Verabreden** (Übersicht, Einzelansicht, Anmelde-Hinweis), Seitenschlüssel `treffen`, gleiche Rotation.

@@ -193,7 +193,8 @@
       return `
         ${ui().viewHead('Verabreden', 'Ohne Chat-Chaos.', false)}
         <section class="card meet-login"><p>Zum Verabreden bitte einmal anmelden – danach bleibt dein Handy angemeldet.</p>
-        <button type="button" class="btn primary" data-action="login">Anmelden</button></section>`;
+        <button type="button" class="btn primary" data-action="login">Anmelden</button></section>
+        ${ui().partnerSlot('treffen', 'Verabreden wird dir präsentiert von')}`;
     }
     rollWeekly();
     const id = location.hash.split('/')[1];
@@ -220,7 +221,8 @@
         ${myGroups.map((g) => `<button type="button" class="meet-group" data-action="meet-group" data-id="${g.id}"><strong>${esc(g.name)}</strong><small>${g.members.length} Mitglieder${g.weekday != null ? ` · ${WD[g.weekday]} ${esc(g.time)}` : ''}</small></button>`).join('')}
         <button type="button" class="meet-group add" data-action="meet-group">${icon.plus}<strong>Gruppe anlegen</strong></button>
       </div>
-      <p class="fineprint">Vorführung: Die anderen antworten nach ein paar Sekunden von selbst. Mitteilungen erscheinen oben als Vorschau – im Echtbetrieb kommen sie als Push-Mitteilung aufs Handy.</p>`;
+      <p class="fineprint">Vorführung: Die anderen antworten nach ein paar Sekunden von selbst. Mitteilungen erscheinen oben als Vorschau – im Echtbetrieb kommen sie als Push-Mitteilung aufs Handy.</p>
+      ${ui().partnerSlot('treffen', 'Verabreden wird dir präsentiert von')}`;
   }
 
   function kindIcon(k) {
@@ -320,7 +322,8 @@
         ${L.open.length && (isOrg || meIn) ? `<button type="button" class="btn block" data-action="meet-remind" data-id="${m.id}">Erinnerung an ${L.open.length === 1 ? 'den Offenen' : `die ${L.open.length} Offenen`}</button>` : ''}
         <a class="btn whatsapp-soft block" href="${esc(waLink(shareText(m)))}" target="_blank" rel="noopener">Für alle ohne App: per WhatsApp teilen</a>
         ${isOrg ? `<button type="button" class="link center danger-link" data-action="meet-delete" data-id="${m.id}">${m.weekly ? 'Wöchentliches Training beenden' : 'Verabredung absagen'}</button>` : ''}
-      </section>`;
+      </section>
+      ${ui().partnerSlot('treffen', 'Verabreden wird dir präsentiert von')}`;
   }
 
   function myAnswer(m, r, L) {
