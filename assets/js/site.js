@@ -138,7 +138,11 @@
   const SECTION_LABELS = { text: 'Text', h: 'Überschrift', quote: 'Zitat' };
   function sectionsEditor(list) {
     const { icon } = ui();
-    return `<div class="secs">${list.map((x, i) => `
+    const inserter = (at) => `<div class="sec-insert" data-sec-insert>
+        <button type="button" class="sec-insert-btn" data-sec-open aria-label="Hier einen Abschnitt einfügen" title="Hier einfügen">+</button>
+        <span class="sec-insert-menu"><button type="button" data-secadd="text" data-sec-at="${at}">Text</button><button type="button" data-secadd="h" data-sec-at="${at}">Überschrift</button><button type="button" data-secadd="quote" data-sec-at="${at}">Zitat</button></span>
+      </div>`;
+    return `<div class="secs">${list.map((x, i) => `${inserter(i)}
       <div class="sec sec-${x.type}" data-sec="${x.type}">
         <div class="sec-bar"><span>${SECTION_LABELS[x.type]}</span>
           <button type="button" data-secmove="-1" data-sec-i="${i}" ${i === 0 ? 'disabled' : ''} aria-label="Nach oben">${icon.up}</button>
@@ -150,10 +154,11 @@
           : `<textarea class="sec-q-input" name="sec_${i}" rows="2" placeholder="z. B. Eat. Sleep. Padel. Repeat.">${esc(x.text || '')}</textarea>
              <input class="sec-q-by" name="sec_${i}_by" value="${esc(x.by || '')}" placeholder="Zitat von (freiwillig)">`}
       </div>`).join('')}</div>
-      <div class="sec-add"><span>Hinzufügen</span>
-        <button type="button" data-secadd="text">+ Text</button>
+      <div class="sec-add"><b>Abschnitt hinzufügen</b>
+        <span><button type="button" data-secadd="text">+ Text</button>
         <button type="button" data-secadd="h">+ Überschrift</button>
-        <button type="button" data-secadd="quote">+ Zitat</button>
+        <button type="button" data-secadd="quote">+ Zitat</button></span>
+        <small>Zwischen zwei Abschnitten einfügen: auf das rote + dazwischen tippen.</small>
       </div>`;
   }
   function readSections(form, list) {
@@ -174,10 +179,22 @@
       list.splice(i, 1); return true;
     }
     const add = e.target.closest('[data-secadd]');
-    if (add) { list.push(add.dataset.secadd === 'quote' ? { type: 'quote', text: '', by: '' } : { type: add.dataset.secadd, text: '' }); return true; }
+    if (add) {
+      const item = add.dataset.secadd === 'quote' ? { type: 'quote', text: '', by: '' } : { type: add.dataset.secadd, text: '' };
+      const at = add.dataset.secAt == null ? list.length : Number(add.dataset.secAt);
+      list.splice(at, 0, item);
+      return true;
+    }
     return false;
   }
   const isSectionsClick = (e) => Boolean(e.target.closest('[data-secmove],[data-secdel],[data-secadd]'));
+  document.addEventListener('click', (e) => {
+    const open = e.target.closest('[data-sec-open]');
+    if (!open) return;
+    const box = open.closest('[data-sec-insert]');
+    document.querySelectorAll('[data-sec-insert].open').forEach((x) => { if (x !== box) x.classList.remove('open'); });
+    box.classList.toggle('open');
+  });
   const initSections = (holder) => {
     if (!Array.isArray(holder.sections)) holder.sections = legacySections(holder);
     if (!holder.sections.length) holder.sections = [{ type: 'text', text: '' }];

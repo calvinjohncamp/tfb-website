@@ -3,7 +3,7 @@
 **Zuerst lesen.** Ausführlicher Verlauf: [PROJEKTGEDAECHTNIS.md](PROJEKTGEDAECHTNIS.md).
 Diese Zusammenfassung hat Vorrang vor älteren Zwischenständen.
 
-Stand: **11.10.2026 abends, Unterseite aus Abschnitten**. Cache **tfb-kiosk-v109**.
+Stand: **11.10.2026 abends, Abschnitte einfügen**. Cache **tfb-kiosk-v110**.
 Alles committet (Sicherungspunkt v99 `f8e6c90`, danach Stufe 1). Nicht veröffentlicht.
 
 ## Neu: Ordner heißt jetzt „9. TFB-Website“
@@ -54,6 +54,9 @@ Alles committet (Sicherungspunkt v99 `f8e6c90`, danach Stufe 1). Nicht veröffen
 - Editor-Felder sehen aus wie die Seite: Überschrift rot/fett, Zitat mit rotem Strich.
 - Getestet mit Padel-Unterseite: Umwandlung 1:1, Verschieben/Hinzufügen live,
   Speichern + Neuladen.
+- v110: Rotes ⊕ vor jedem Abschnitt öffnet „Text · Überschrift · Zitat“ und fügt genau
+  dort ein (`data-sec-at`); Leiste unten „Abschnitt hinzufügen“ in Signalrot. Fotos
+  oben/unten bleiben unverändert (Nutzer einverstanden).
 
 ## Neu in v108: Home-Editor so einfach wie möglich
 
