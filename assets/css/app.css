@@ -1324,6 +1324,8 @@ button.meet-series { cursor: pointer; }
 .feature-square .feature-media { aspect-ratio: 1; }
 .feature-kicker { display: flex; align-items: baseline; gap: 10px; margin: 0 0 8px; font-size: .74rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
 .feature-kicker span { color: var(--signal); font-family: var(--serif); font-size: 1rem; letter-spacing: 0; }
+.feature-kicker .feature-number { appearance: none; border: 0; padding: 0; margin: 0; background: transparent; color: inherit; font: inherit; line-height: inherit; cursor: pointer; flex: none; }
+.feature-number:focus-visible { outline: 2px solid var(--signal); outline-offset: 4px; }
 .feature-body h2 { font-family: var(--serif); font-size: 2.1rem; line-height: 1.05; margin: 0; }
 .feature-sub { font-size: 1.12rem; font-weight: 600; color: var(--signal); margin: 10px 0 0; line-height: 1.35; }
 .feature-text { margin-top: 14px; font-size: 1rem; line-height: 1.6; }
@@ -2065,7 +2067,7 @@ h1, h2, h3, .event h3, .feature-body h2, .story-head h1, .post-body h3 { -webkit
 /* ===== Strichliste in vier Spalten: Getränke · Kranz · Snacks · Equipment ===== */
 .tally-head, .paper-row.tally-row { grid-template-columns: minmax(0, 1fr) repeat(4, 44px); gap: 4px 8px; }
 .tally-head { display: grid; align-items: end; padding: 4px 16px 8px 66px; border-bottom: 1.5px solid #C9D6E0; }
-.tally-head span { text-align: center; font-size: .6rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.tally-head span { min-width: 0; text-align: center; font-size: .55rem; font-weight: 800; letter-spacing: 0; text-transform: uppercase; color: var(--muted); }
 .tally-head .kranz { color: var(--signal); }
 .tally-head .full { display: none; }
 .tally-cell { display: flex; flex-wrap: wrap; justify-content: center; align-content: center; gap: 3px 5px; min-height: 26px; border-left: 1px dashed #DCE6EE; }
@@ -2118,20 +2120,20 @@ h1, h2, h3, .event h3, .feature-body h2, .story-head h1, .post-body h3 { -webkit
 /* Strichliste optimiert: Getränke-Spalte mit Platz für 15 Striche, schmalerer Rand links */
 .tally-paper { background: linear-gradient(90deg, transparent 0 34px, rgba(196, 85, 58, .35) 34px 35.5px, transparent 35.5px), var(--paper); }
 .tally-paper .paper-row, .tally-paper .tally-head { padding-left: 46px; padding-right: 12px; }
-.tally-head, .paper-row.tally-row { grid-template-columns: minmax(0, 1fr) 112px repeat(3, 40px); gap: 4px 6px; }
+.tally-head, .paper-row.tally-row { grid-template-columns: minmax(0, 1fr) 112px repeat(4, 40px); gap: 4px 6px; }
 .tally-cell.drinks { justify-content: flex-start; padding-left: 6px; }
 @media (max-width: 639px) {
-  .tally-head, .paper-row.tally-row { grid-template-columns: minmax(0, 2.2fr) repeat(3, minmax(0, 1fr)); gap: 2px 0; }
+  .tally-head, .paper-row.tally-row { grid-template-columns: minmax(0, 2.2fr) repeat(4, minmax(0, 1fr)); gap: 2px 0; }
   .tally-paper .paper-empty { padding-left: 46px; }
 }
 @media (min-width: 640px) {
-  .tally-head, .paper-row.tally-row { grid-template-columns: minmax(0, 1fr) 128px repeat(3, 76px); gap: 4px 10px; }
+  .tally-head, .paper-row.tally-row { grid-template-columns: minmax(0, 1fr) 128px repeat(4, 76px); gap: 4px 10px; }
   .tally-paper .paper-row, .tally-paper .tally-head { padding-left: 56px; padding-right: 16px; }
   .tally-paper { background: linear-gradient(90deg, transparent 0 42px, rgba(196, 85, 58, .35) 42px 43.5px, transparent 43.5px), var(--paper); }
 }
 .tally-cell.drinks { flex-wrap: nowrap; gap: 3px 4px; padding-left: 2px; }
 .tally-cell.drinks em { font-size: .68rem; margin-left: 1px; }
-@media (max-width: 639px) { .tally-head, .paper-row.tally-row { grid-template-columns: minmax(0, 2.5fr) repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 639px) { .tally-head, .paper-row.tally-row { grid-template-columns: minmax(0, 2.5fr) repeat(4, minmax(0, 1fr)); } }
 
 /* Partner-Logos um ein Drittel kleiner (Kacheln, Logos und Breite × 2/3) – auf allen Seiten */
 .pbsp-duo { max-width: 67%; gap: 8px; }

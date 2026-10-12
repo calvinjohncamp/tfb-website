@@ -578,9 +578,8 @@
   }
 
   // ---------- Strichliste ----------
-  // Strichliste in vier Spalten – so sieht jeder auf einen Blick, ob Getränke, Kränze, Snacks und
-  // Equipment wirklich angeschrieben wurden. Zuordnung über den Bereich im Sortiment (demo-backend.js).
-  const TALLY_CATS = [['drinks', 'Getränke', 'Getr.'], ['kranz', 'Kranz', 'Kranz'], ['snacks', 'Snacks', 'Snacks'], ['equipment', 'Equipment', 'Equip.']];
+  // Zuordnung der fünf Strichlistenspalten über den Bereich im Sortiment (demo-backend.js).
+  const TALLY_CATS = [['drinks', 'Getränke', 'Getr.'], ['kranz', 'Kränze', 'Kränze'], ['snacks', 'Snacks', 'Snacks'], ['spielbetrieb', 'Spielbetrieb', 'Spiel'], ['equipment', 'Equipment', 'Equip.']];
   async function tallyView() {
     const rows = await api.tally();
     const from = new Date(Date.now() - (cfg.tallyDays - 1) * 864e5);

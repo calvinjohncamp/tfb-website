@@ -25,25 +25,77 @@
   }
 
   // Schlanke 0,5-l-Flasche der Erzquell Brauerei: Flasche, Halsfolie, Oval-Etikett, Ring, zwei Schriftstriche.
-  function erzquell(bottle, foil, label, ring, marks) {
+  function erzquell(bottle, foil, label, ring, marks, word = '') {
     return `
       <path d="M28.5 4h7v13c0 3.5 5.5 6 5.5 13v24a5 5 0 0 1-5 5h-8a5 5 0 0 1-5-5V30c0-7 5.5-9.5 5.5-13z" fill="${bottle}" stroke="${line}" stroke-width="3" stroke-linejoin="round"/>
       <path d="M28.5 4h7v12.5h-7z" fill="${foil}" stroke="${line}" stroke-width="2.4" stroke-linejoin="round"/>
+      ${word ? `<rect x="25" y="27" width="14" height="28" rx="1" fill="${label}" stroke="${line}" stroke-width="2"/>
+        ${[...word].map((letter, i) => `<text x="32" y="${41 - (word.length - 1) * 2.4 + i * 4.8}" dominant-baseline="central" text-anchor="middle" font-family="system-ui" font-size="4.7" font-weight="800" fill="#2A2D2E">${letter}</text>`).join('')}` : `
       <ellipse cx="32" cy="41.5" rx="7.4" ry="11" fill="${label}" stroke="${line}" stroke-width="2.4"/>
       <ellipse cx="32" cy="41.5" rx="5" ry="8" fill="none" stroke="${ring}" stroke-width="1.6"/>
-      <path d="M29.6 39.5h4.8M29.2 43.5h5.6" stroke="${marks}" stroke-width="2" stroke-linecap="round"/>
+      <path d="M29.6 39.5h4.8M29.2 43.5h5.6" stroke="${marks}" stroke-width="2" stroke-linecap="round"/>`}
       <path d="M26 27c-.9 1.5-1.3 3-1.3 5" stroke="rgba(255,255,255,.35)" stroke-width="2.5" stroke-linecap="round" fill="none"/>`;
   }
-
-  const shapes = {
-    // Gerolsteiner Gourmet-Flasche: klares Glas, türkiser Verschluss, weißes Etikett mit rotem Stern und türkiser Welle
-    gerolsteiner: (c) => `
-      <path d="M28 9.5h8v8c0 4 6 5.5 6 11.5v26a4 4 0 0 1-4 4H26a4 4 0 0 1-4-4V29c0-6 6-7.5 6-11.5z" fill="${c}" stroke="${line}" stroke-width="3" stroke-linejoin="round"/>
+  function waterBottle(c, apple = false) {
+    return `<path d="M28 9.5h8v8c0 4 6 5.5 6 11.5v26a4 4 0 0 1-4 4H26a4 4 0 0 1-4-4V29c0-6 6-7.5 6-11.5z" fill="${c}" stroke="${line}" stroke-width="3" stroke-linejoin="round"/>
       <rect x="27" y="7.5" width="10" height="5" rx="1.5" fill="${line}"/>
+      ${apple ? `<rect x="22" y="29" width="20" height="20" rx="1" fill="#FFFFFF" stroke="${line}" stroke-width="2.2"/>
+        <g transform="translate(32 39) scale(.75) translate(-32 -39)">
+        <path d="M32 36c-5-4-9 0-7 5 1 4 4 6 7 4 3 2 6 0 7-4 2-5-2-9-7-5z" fill="${c}" stroke="${line}" stroke-width="1.4" stroke-linejoin="round"/>
+        <path d="M32 36v-3" stroke="${line}" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M33 34c0-3 3-4 5-3-1 3-3 4-5 3z" fill="#63874A"/>
+        <path d="M27 38c-1 1-1 2-.5 3" fill="none" stroke="#FFFFFF" stroke-width="1.2" stroke-linecap="round"/></g>` : `
       <path d="M22 32h20v13.5H22z" fill="#FFFFFF" stroke="${line}" stroke-width="2.2" stroke-linejoin="round"/>
       <path d="M32 34l.9 2 2.2-.5-1.3 1.8 1.3 1.8-2.2-.5-.9 2-.9-2-2.2.5 1.3-1.8-1.3-1.8 2.2.5z" fill="#D2202F"/>
-      <path d="M23.1 42.2c3-1.9 6.2 1.4 8.9-.1 2.9-1.6 6-1.4 8.9.2v2.1H23.1z" fill="#4FBFB0"/>
-      <path d="M25.3 49v6M25.6 22c-1 1.6-1.5 3.4-1.5 5" stroke="rgba(255,255,255,.75)" stroke-width="2.2" stroke-linecap="round" fill="none"/>`,
+      <path d="M23.1 42.2c3-1.9 6.2 1.4 8.9-.1 2.9-1.6 6-1.4 8.9.2v2.1H23.1z" fill="#4FBFB0"/>`}
+      <path d="${apple ? 'M25.3 52v3' : 'M25.3 49v6'}M25.6 22c-1 1.6-1.5 3.4-1.5 5" stroke="rgba(255,255,255,.75)" stroke-width="2.2" stroke-linecap="round" fill="none"/>`;
+  }
+
+  function labeledBottle(c, label, labelColor = '#FFFFFF') {
+    return `<path d="M28 5h8v13c0 5 7 7 7 15v22a5 5 0 0 1-5 5H26a5 5 0 0 1-5-5V33c0-8 7-10 7-15z" fill="${c}" stroke="${line}" stroke-width="3"/>
+      <path d="M27 4h10v5H27z" fill="${line}"/>
+      <rect x="21" y="34" width="22" height="15" rx="2" fill="${labelColor}" stroke="${line}" stroke-width="2"/>
+      <text x="32" y="43.5" text-anchor="middle" font-family="system-ui" font-size="5" font-weight="800" fill="#2A2D2E">${label}</text>
+      <path d="M25 25v6M25 52v4" stroke="${glass}" stroke-width="2" stroke-linecap="round"/>`;
+  }
+  const bread = `<path d="M37 45c-2-8 3-13 10-13s12 5 10 13l-2 10H39z" fill="#E4BD79" stroke="${line}" stroke-width="2.5"/><path d="M43 37l-2 5m9-5-2 5" stroke="#A77C40" stroke-width="2" stroke-linecap="round"/>`;
+  const sausageMeal = (c, grilled = false) => `<ellipse cx="32" cy="50" rx="28" ry="10" fill="#FFFFFF" stroke="${line}" stroke-width="2"/>
+    <path d="M13 48c-6-9-3-22 6-27 6-3 11 4 6 8-6 4-6 10-2 15 4 6-5 10-10 4z" fill="${c}" stroke="${line}" stroke-width="3"/>
+    ${grilled ? '<path d="M19 25l5 3m-9 2 6 2m-7 5 6 1m-5 5 6-1" stroke="#74452C" stroke-width="2" stroke-linecap="round"/>' : ''}${bread}`;
+
+  const shapes = {
+    flutlicht: c => `<path d="M32 27v31M24 59h16" fill="none" stroke="${line}" stroke-width="3" stroke-linecap="round"/>
+      <rect x="13" y="10" width="38" height="18" rx="3" fill="#F4F1EA" stroke="${line}" stroke-width="3"/>
+      <g fill="${c}" stroke="${line}" stroke-width="1.5"><rect x="18" y="14" width="11" height="10" rx="1"/><rect x="35" y="14" width="11" height="10" rx="1"/></g>
+      <path d="M12 33l-5 6M23 34l-2 8M41 34l2 8M52 33l5 6" stroke="${c}" stroke-width="2.5" stroke-linecap="round"/>`,
+    tennisspieler: c => `<circle cx="29" cy="10" r="5" fill="#F0CBA5" stroke="${line}" stroke-width="2.5"/>
+      <path d="M25 20l9-1 4 15-13 3-5-8z" fill="${c}" stroke="${line}" stroke-width="2.5" stroke-linejoin="round"/>
+      <path d="M23 23l-8 8-8-2M35 23l9 6 7-7" fill="none" stroke="${line}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M25 37l-3 10-9 10M35 36l7 10 8 9" fill="none" stroke="${line}" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M9 59h8M47 58h8" stroke="${line}" stroke-width="3" stroke-linecap="round"/>
+      <g transform="rotate(25 53 15)"><ellipse cx="53" cy="12" rx="6" ry="8" fill="#FFFFFF" stroke="${line}" stroke-width="2"/><path d="M50 7v10M53 5v14M56 7v10M48 10h10M48 14h10" stroke="${c}" stroke-width=".8"/><path d="M53 20v8" stroke="${line}" stroke-width="2.5" stroke-linecap="round"/></g>
+      <circle cx="9" cy="17" r="2.5" fill="#E9C857"/>`,
+    'koelsch-flasche': c => erzquell(c, '#E9B949', '#F4F1EA', '#C4553A', '#E9B949'),
+    'weizen-flasche': c => labeledBottle(c, 'WEIZEN', '#EDD39B'),
+    apfelschorle: c => waterBottle(c, true),
+    fassbrause: c => erzquell(c, '#B6C85D', '#EAF1D6', '#2A2D2E', '#2A2D2E', 'FASS'),
+    aperol: c => `<rect x="16" y="4" width="32" height="57" rx="5" fill="${c}" stroke="${line}" stroke-width="3"/>
+      <path d="M17.5 19l29-4v18l-29 4z" fill="#244D87"/>
+      <text x="32" y="29" transform="rotate(-8 32 26)" text-anchor="middle" font-family="system-ui" font-size="7" font-weight="900" fill="#FFD45B">APEROL</text>
+      <text x="32" y="44" transform="rotate(-8 32 41)" text-anchor="middle" font-family="system-ui" font-size="7" font-weight="900" fill="#FFFFFF">SPRITZ</text>
+      <path d="M21 49l22-3" stroke="rgba(255,255,255,.65)" stroke-width="1"/>
+      <ellipse cx="32" cy="5" rx="16" ry="3" fill="#D9DDE0" stroke="${line}" stroke-width="2"/><ellipse cx="32" cy="5" rx="4" ry="1.2" fill="none" stroke="${line}"/>
+      <path d="M22 11v5" stroke="${glass}" stroke-width="2" stroke-linecap="round"/>`,
+    wein: c => `<path d="M28 3h8v22c0 5 7 5 7 13v18a4 4 0 0 1-4 4H25a4 4 0 0 1-4-4V38c0-8 7-8 7-13z" fill="${c}" stroke="${line}" stroke-width="3"/>
+      <path d="M28 3h8v14h-8z" fill="#3F6652" stroke="${line}" stroke-width="2"/><rect x="22" y="39" width="20" height="14" fill="#FAFAF5" stroke="${line}" stroke-width="2"/>
+      <path d="M27 44h10m-8 4h6" stroke="#3F6652" stroke-width="2" stroke-linecap="round"/>`,
+    'wurst-brot': c => sausageMeal(c),
+    'grillwurst-brot': c => sausageMeal(c, true),
+    grillfleisch: c => `<ellipse cx="32" cy="50" rx="28" ry="10" fill="#FFFFFF" stroke="${line}" stroke-width="2"/>
+      <path d="M8 34l-1-4 3-4 4-1 3-3 5 2 4-1 3 4 4 1 1 5 3 3-2 5 1 3-5 4-4-1-4 3-5-2-4 1-4-4 1-4z" fill="${c}" stroke="${line}" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M14 29l13 14m-7-16 11 12m-18-3 8 9" stroke="#67362C" stroke-width="2.5" stroke-linecap="round"/>${bread}`,
+    // Gerolsteiner Gourmet-Flasche: klares Glas, türkiser Verschluss, weißes Etikett mit rotem Stern und türkiser Welle
+    gerolsteiner: c => waterBottle(c),
     // Erzquell-Flasche (Golden Malz, Sportsfreund, Radler): gleiche Form, gleiche Etikettlage, nur andere Farben
     malz: (c) => erzquell(c, '#E8B22B', '#F2C230', '#B5462F', '#6B3E1E'),
     sportsfreund: (c) => erzquell(c, '#1F3A6E', '#F4F1EA', '#1F3A6E', '#C8202F'),
@@ -151,10 +203,10 @@
       </g>`,
     cone: (c) => `
       <path d="M20 28h24L32 60z" fill="#E3B26B" stroke="${line}" stroke-width="3" stroke-linejoin="round"/>
-      <path d="M24 34l14 8M22 30l20 12M40 34l-14 8M42 30L22 42" stroke="#A8732E" stroke-width="2"/>
+      <path d="M24 32l13 13M30 32l9 9M40 32L27 45M34 32l-9 9M28 44l6 6M36 44l-6 6" fill="none" stroke="#B8894C" stroke-width="1.2" stroke-linecap="round"/>
       <path d="M18 29c-2-9 4-17 14-17s16 8 14 17z" fill="#FFF4DD" stroke="${line}" stroke-width="3" stroke-linejoin="round"/>
-      <path d="M20 26c4-2 8 1 12-1s8-2 12 1" fill="none" stroke="${c}" stroke-width="4" stroke-linecap="round"/>
-      <circle cx="28" cy="17" r="1.6" fill="${c}"/><circle cx="35" cy="15" r="1.6" fill="${c}"/><circle cx="38" cy="21" r="1.4" fill="${c}"/>`,
+      <path d="M23 23c0-4 3-7 7-7" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/>
+      <circle cx="29" cy="23" r="1.2" fill="${c}"/><circle cx="36" cy="19" r="1.2" fill="${c}"/><circle cx="39" cy="25" r="1.1" fill="${c}"/>`,
     beer: (c) => `
       <path d="M17 18h24v34a5 5 0 0 1-5 5H22a5 5 0 0 1-5-5z" fill="${c}"/>
       <path d="M41 25h5a6 6 0 0 1 6 6v8a6 6 0 0 1-6 6h-5" fill="none" stroke="${line}" stroke-width="3"/>
@@ -205,6 +257,10 @@
 
   // Auswahl im Admin: Schlüssel und Bezeichnung jedes Symbols.
   TFB.artKinds = [
+    ['flutlicht', 'Flutlicht'], ['tennisspieler', 'Tennisspieler'],
+    ['koelsch-flasche', 'Zunftkölsch-Flasche'], ['weizen-flasche', 'Weizenflasche'], ['apfelschorle', 'Apfelschorle'], ['fassbrause', 'Fassbrause'],
+    ['aperol', 'Aperol-Dose'], ['wein', 'Weinflasche'], ['wurst-brot', 'Wurst mit Brot'], ['grillfleisch', 'Grillfleisch mit Brot'],
+    ['grillwurst-brot', 'Grillwurst mit Brot'],
     ['stange', 'Kölschglas'], ['kranz', 'Kölschkranz'], ['weizen', 'Weizenglas'], ['beer', 'Bierkrug'], ['bottle', 'Bierflasche'], ['malz', 'Malzbier'], ['sportsfreund', 'Sportsfreund'], ['radler', 'Radler'],
     ['cola', 'Cola-Flasche'], ['gerolsteiner', 'Gerolsteiner'], ['water', 'Wasserflasche'], ['can', 'Dose'], ['slimcan', 'Schlanke Dose'],
     ['redbull', 'Red Bull'], ['cup', 'Tasse'], ['bar', 'Riegel'], ['snickers', 'Snickers'], ['mars', 'Mars'],

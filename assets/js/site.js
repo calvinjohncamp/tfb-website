@@ -406,7 +406,7 @@
             ? `<button type="button" data-action="link-move" data-block="${esc(b.id)}" data-slot="${name}">${hint}</button>`
             : '<span class="link-drop" aria-hidden="true">hier ablegen</span>'}</div>`;
         };
-        const colorsOn = page !== 'home' || homeColorMode() === 'bunt' || (preview && preview.id === b.id);
+        const colorsOn = page !== 'home' || homeColorsOn(b.id);
         const bg = colorsOn && hexOk(b.bg) ? b.bg : '';
         const linkBg = colorsOn && hexOk(b.linkBg) ? b.linkBg : '';
         const parts = String(b.text || '').split(/\n{2,}/).filter((x) => x.trim());
@@ -419,7 +419,9 @@
             ${(b.images || []).filter(shownImage).length ? newsCollage(b) : wrap(`<div class="feature-media">${picture(b.image, b.id, b.title)}</div>`)}
             <div class="feature-body">
               <div class="feature-left">
-                <p class="feature-kicker"><span${page === 'home' ? ' data-color-peek' : ''}>${n}</span>${esc(b.kicker || '')}</p>
+                <p class="feature-kicker">${page === 'home' && ui().api.mode === 'demo'
+                  ? `<button type="button" class="feature-number" data-action="home-color-peek" data-id="${esc(b.id)}" aria-label="Standardfarben oder eigene Farben anzeigen" aria-pressed="${Boolean(colorsOn)}"><span>${n}</span></button>`
+                  : `<span>${n}</span>`}${esc(b.kicker || '')}</p>
                 ${wrap(`<h2>${esc(b.title)}</h2>`)}
                 ${b.subtitle ? `<p class="feature-sub">${esc(b.subtitle)}</p>` : ''}
                 ${slot('left', 'Link hierher')}
@@ -894,6 +896,8 @@
   let colorPeek = null;
   const savedColorMode = () => (site?.homeColorMode === 'bunt' ? 'bunt' : 'standard');
   const homeColorMode = () => colorPeek || savedColorMode();
+  const homeColorsOn = (id) => homeColorMode() === 'bunt'
+    || (colorPeek === null && preview?.id === id);
   function colorModeCard() {
     const cur = homeColorMode();
     return `<section class="look-picker color-mode" aria-label="Farben der Startseite">
@@ -914,15 +918,6 @@
   // Nur Demo: Klick auf eine Themennummer (01, 02, 03 …) der Startseite schaltet zwischen Standard und Bunt um –
   // mit und ohne eingeblendete Admin-Werkzeuge (Vorführung, wird nicht gespeichert; nach dem Neuladen gilt
   // wieder die Voreinstellung aus dem Bearbeiten-Modus).
-  document.addEventListener('click', (e) => {
-    if (!e.target.closest('[data-color-peek]')) return;
-    if (ui().api.mode !== 'demo') return;
-    e.preventDefault();
-    e.stopPropagation();
-    colorPeek = homeColorMode() === 'bunt' ? 'standard' : 'bunt';
-    const y = window.scrollY;
-    ui().renderView().then(() => window.scrollTo(0, y));
-  }, true);
   ['home', 'aktuell', 'sport', 'verein', 'impressum', 'satzung'].forEach((key) => { TFB.views[routeOf(key)] = () => pageView(key); });
 
   // Ansicht (nicht Bearbeiten): Bausteine zu Gruppen bündeln, damit sie sich auf
@@ -2534,6 +2529,13 @@
       window.scrollTo(0, 0);
     },
     'nav-edit': () => openNavEditor(),
+    'home-color-peek': async (el) => {
+      if (ui().api.mode !== 'demo') return;
+      colorPeek = homeColorsOn(el.dataset.id) ? 'standard' : 'bunt';
+      const y = window.scrollY;
+      await ui().renderView();
+      window.scrollTo(0, y);
+    },
     'home-colors': async (el) => {
       try {
         colorPeek = null;

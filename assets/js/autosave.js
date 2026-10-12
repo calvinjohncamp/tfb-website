@@ -13,6 +13,8 @@
   let lastSig = '';
   let lastAt = null;
   let paused = false;
+  let inFlight = null;
+  let lastError = '';
 
   // Ordner-Merkzettel in einer eigenen kleinen IndexedDB
   const kv = (mode, fn) => new Promise((resolve, reject) => {
@@ -27,46 +29,65 @@
   });
 
   // Schneller Änderungs-Check: die drei Speicherstände (Fotos ändern sich nie ohne sie).
-  const signature = () => ['tfb_kiosk_demo_v1', 'tfb_kiosk_look_v3', 'tfb_meet_demo_v2'].map((k) => { try { return localStorage.getItem(k) || ''; } catch (_) { return ''; } }).join('\u0000');
+  const signature = () => ['tfb_kiosk_demo_v1', 'tfb_kiosk_look_v3', 'tfb_meet_demo_v2'].map(k => localStorage.getItem(k) || '').concat(TFB.imageRevision || 0).join('\u0000');
   async function snapshot() {
     const data = await ui().api.exportAll();
     data.extra = {};
-    ['tfb_kiosk_look_v3', 'tfb_meet_demo_v2'].forEach((k) => { try { data.extra[k] = localStorage.getItem(k); } catch (_) {} });
+    ['tfb_kiosk_look_v3', 'tfb_meet_demo_v2'].forEach(k => { data.extra[k] = localStorage.getItem(k); });
     return JSON.stringify(data);
   }
-  async function run(force = false) {
-    if (!dir || !ui() || !ui().state.member || !ui().state.member.isAdmin) return;
-    if ((await dir.queryPermission({ mode: 'readwrite' })) !== 'granted') { paused = true; refresh(); return; }
+  async function perform(force) {
+    const target = dir;
+    const member = ui()?.state.member;
+    if (!target || !member || !(member.isAdmin || member.adminHidden)) return;
+    if ((await target.queryPermission({ mode: 'readwrite' })) !== 'granted') { paused = true; lastError = ''; refresh(); return false; }
     paused = false;
     const sig = signature();
     if (!force && sig === lastSig) return;
-    const file = await dir.getFileHandle(FILE, { create: true });
+    // Do not even open the destination until every photo has been read and validated.
+    const contents = await snapshot();
+    const file = await target.getFileHandle(FILE, { create: true });
     const out = await file.createWritable();
-    await out.write(await snapshot());
-    await out.close();
+    try { await out.write(contents); await out.close(); }
+    catch (err) { try { await out.abort(); } catch (_) {} throw err; }
     lastSig = sig;
     lastAt = new Date();
+    lastError = '';
     refresh();
+    return true;
   }
-  const quiet = () => run().catch(() => {});
+  function run(force = false) {
+    if (inFlight) return inFlight;
+    inFlight = perform(force).catch(err => {
+      const message = err.message || 'Sicherung konnte nicht abgeschlossen werden.';
+      if (lastError !== message) ui()?.toast('Automatische Sicherung fehlgeschlagen: ' + message);
+      lastError = message;
+      refresh();
+      throw err;
+    }).finally(() => { inFlight = null; });
+    return inFlight;
+  }
+  const quiet = () => run().catch(() => {}); // Failure remains visible in status().
 
   async function choose() {
     try {
+      if (inFlight) { try { await inFlight; } catch (_) {} }
       dir = await window.showDirectoryPicker({ id: 'tfb-sicherung', mode: 'readwrite' });
+      lastSig = ''; lastAt = null; lastError = '';
       await kv('readwrite', (s) => s.put(dir, 'dir'));
-      await run(true);
-      ui().toast(`Automatische Sicherung an – „${FILE}“ liegt im Ordner „${dir.name}“`, true);
+      if (await run(true)) ui().toast(`Automatische Sicherung an – „${FILE}“ liegt im Ordner „${dir.name}“`, true);
     } catch (err) { if (err && err.name !== 'AbortError') ui().toast(err.message); }
     refresh();
   }
   async function resume() {
     try {
-      if ((await dir.requestPermission({ mode: 'readwrite' })) === 'granted') { await run(true); ui().toast('Automatische Sicherung läuft wieder', true); }
+      if ((await dir.requestPermission({ mode: 'readwrite' })) === 'granted' && await run(true)) ui().toast('Automatische Sicherung läuft wieder', true);
     } catch (err) { ui().toast(err.message); }
     refresh();
   }
   async function stop() {
-    dir = null; lastSig = ''; lastAt = null;
+    if (inFlight) { try { await inFlight; } catch (_) {} }
+    dir = null; lastSig = ''; lastAt = null; lastError = '';
     try { await kv('readwrite', (s) => s.delete('dir')); } catch (_) {}
     ui().toast('Automatische Sicherung ausgeschaltet', true);
     refresh();
@@ -76,6 +97,9 @@
     if (!supported) return '<p class="small muted">Dieser Browser kann nicht automatisch in einen Ordner sichern – bitte Chrome verwenden oder regelmäßig „Inhalte sichern“.</p>';
     if (!dir) return `<p class="small muted">Aus. Einmal einen Ordner wählen (am besten in der Dropbox) – danach sichert die App selbstständig, sobald sich etwas ändert.</p>
       <button type="button" class="btn" data-autosave="choose">Ordner wählen</button>`;
+    if (lastError) return `<p class="small form-error"><b>Sicherung fehlgeschlagen</b> – ${ui().esc(lastError)} Die letzte erfolgreich geschriebene Sicherung wurde nicht ersetzt.</p>
+      <button type="button" class="btn primary" data-autosave="resume">Erneut versuchen</button>
+      <button type="button" class="link" data-autosave="stop">Ausschalten</button>`;
     if (paused) return `<p class="small"><b>Pausiert</b> – Chrome fragt nach dem Neustart einmal nach der Erlaubnis für „${ui().esc(dir.name)}“.</p>
       <button type="button" class="btn primary" data-autosave="resume">Sicherung fortsetzen</button>`;
     return `<p class="small"><b>An</b> · Ordner „${ui().esc(dir.name)}“ · ${lastAt ? `zuletzt ${lastAt.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })} Uhr` : 'wartet auf die erste Änderung'}</p>

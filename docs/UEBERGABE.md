@@ -3,14 +3,205 @@
 **Zuerst lesen.** Ausführlicher Verlauf: [PROJEKTGEDAECHTNIS.md](PROJEKTGEDAECHTNIS.md).
 Diese Zusammenfassung hat Vorrang vor älteren Zwischenständen.
 
-Stand: **12.10.2026 – EINGEFROREN** als Git-Tag **`stand-2026-10-12-v152`** (v152, Cache `tfb-kiosk-v152`;
+## Tagesabschluss 12.10.2026
+
+**EINGEFROREN: v160**, Cache `tfb-kiosk-v160`, Katalogversion 13.
+Lokaler Sicherungstag: **`stand-2026-10-12-v160`**. Nicht veröffentlicht und nicht gepusht.
+Nutzer hat den fertigen Kiosk bestätigt: „Das sieht alles top aus.“ Heute keine weiteren
+Änderungen; Weiterarbeit erst auf ausdrücklichen Auftrag. Ältere Abschnitte unten sind Verlauf.
+
+- Home: Standard `#F5F0E6`, genau eine individuelle bunte Fassung; Umschalten per
+  Themennummer funktioniert auch mit ausgeblendeten Stiften und wurde vom Nutzer bestätigt.
+  Keine erfundenen Ersatzfarben. Roter TFB-Ball bleibt der Vorführschalter für Admin-Werkzeuge.
+- Foto-Sicherung und Wiederherstellung abgesichert; Nutzer bestätigt die praktische Funktion.
+- Kiosk: echtes Vereinsangebot und Listenpreise übernommen, Produktzeichnungen vom Nutzer
+  abgenommen. Endgültige Reihenfolge: Alkoholfreie Getränke, Bier, Aperol & Wein,
+  Spezialitäten, Spielbetrieb, Snacks, Vereinsshop (weiterhin zukünftig).
+- Spezialitäten: nur die drei Speisen. Spielbetrieb: Flutlicht (1 h) 5,00 € und Gastspieler
+  für eine Stunde 8,00 €. Snacks einschließlich Eis unverändert erhalten.
+- Letzter Prüflauf: 46 Node-Tests erfolgreich; Kiosk und erweiterte Strichliste auf
+  1280×900 und 390×844 mit synthetischen Daten geprüft, ohne horizontale Überbreite.
+- Der Git-Sicherungspunkt enthält Software, Dokumentation und Tests, nicht den privaten
+  Browserinhalt. Eigene Fotos, Farben, Mitglieder und Buchungen benötigen weiterhin eine
+  vollständige JSON-Sicherung über die vorhandene Sicherungsfunktion.
+- Bekannte Folgeaufgaben bleiben unten vorgemerkt: Jugendschutz beim Import, bestätigte
+  Buchungsspeicherung, Bereinigung alter Bildbestände, echter Mehrbenutzerbetrieb,
+  Lastschriftabschluss und Wartbarkeit. Keine davon ist durch diesen Tagesabschluss erledigt.
+
+## Spielbetrieb und getrennte Snacks (12.10.2026, Cache v160)
+
+- Reihenfolge jetzt Getränke → Bier → Aperol & Wein → Spezialitäten → Spielbetrieb
+  → Snacks → zukünftiger Vereinsshop. Spezialitäten nur Bockwurst, Grillwurst, Grillfleisch;
+  bestehende Süßigkeiten, Chips und Eis unter Snacks, unveränderte Preise und Symbole.
+- Spielbetrieb: Flutlicht (1 h), Eine Stunde, 5,00 €; Gastspieler, Eine Stunde, 8,00 €.
+  Preise vom Listenfoto, Stundenbezeichnung für Gastspieler ausdrücklich vom Nutzer.
+  Neue Symbole: Flutlichtmast und Tennisspieler mit Schläger.
+- Einmalige Migration 12 → 13: Bereichstrennung und neue Gebühren, bestehende Preise,
+  Produktkennungen, individuelle Artikel und Buchungshistorie bleiben erhalten.
+- Strichliste mit eigener Spielbetrieb-Spalte; Speisen zählen weiterhin unter Snacks.
+- Dies sind buchbare Gebühren im bisherigen Kiosk, keine Platz-/Zeitreservierung.
+  Frühere offene Einordnungsfrage zu Flutlicht/Gastspieler damit vom Nutzer entschieden.
+- Nachweis: 46 Tests erfolgreich; neue Bereiche und Strichliste auf Desktop und Handy
+  im getrennten Testbrowser mit synthetischen Buchungen geprüft.
+
+## Apfel und Cornetto verfeinert (12.10.2026, Cache v159)
+
+Apfelsymbol samt Blatt/Stiel um 25 % verkleinert, um dieselbe Etikettmitte skaliert;
+Flasche und Etikett unverändert. Cornetto ohne breite Welle, mit feinem gleichmäßigem
+Waffelmuster und schlichter Eiskugel. Alle übrigen Produkte, Preise und Daten unverändert.
+
+## Produktname Wein ergänzt (12.10.2026, Cache v158)
+
+„Grauburgunder Wein“ statt „Grauburgunder“. Gezielte Migration 11 → 12 ersetzt nur
+den bisherigen Standardnamen, erhält individuelle Namen und alle übrigen Produktdaten.
+
+## Aperol und Apfelschorle nach Nutzerreferenz (12.10.2026, Cache v157)
+
+- Aperol-Dose bei gleicher Breite höher, ohne TO GO. Orange mit blauem Band,
+  gelbem APEROL und weißem SPRITZ nach dem gelieferten Screenshot; weiterhin stilisiert.
+- Apfelschorle jetzt mit unveränderter eigener Produktfarbe in der Wasserflaschenform;
+  quadratisches weißes Etikett mit mittigem Apfel statt senkrechtem APFEL, Stern oder Welle.
+  Wasser selbst und alle übrigen Produkte unverändert.
+- FASS-Buchstaben senkrecht um die Etikettmitte zentriert, gleicher Abstand oben/unten.
+- Nur Zeichnungen geändert, keine neue Katalogmigration und keine Änderungen an Preisen
+  oder gespeicherten Buchungen. 44 Node-Tests und Desktop-/Handyprüfung erfolgreich.
+
+## Kiosk-Symbole verfeinert (12.10.2026, Cache v156)
+
+- Zunft-Flasche und Fassbrause verwenden jetzt die Sportsfreund-/Malzbier-Flaschenform.
+  Zunft-Flasche goldfarben wie das Glas (`#E9B949`), Fassbrause mit bisherigem hellem
+  Akzent (`#B6C85D`). Fassbrause und Apfelschorle mit senkrechten FASS-/APFEL-Etiketten.
+- Weizen dunkler orange (`#D88A2E`), Radler heller goldfarben (`#E9CD70`), Form unverändert.
+  Aperol-Dose mit größerer APEROL-/SPRITZ-/TO-GO-Beschriftung, weiterhin stilisiert:
+  keine bestätigte Nachbildung der im Verein angebotenen Verpackung.
+- Bockwurst ohne Streifen, Grillwurst mit vier Grillstreifen und eigenem Symbol;
+  Grillfleisch mit unregelmäßiger Kontur. Grauburgunder unverändert.
+- Strichliste: „Kränze“ statt „Kranz“, ausdrücklich vom Nutzer bestätigt.
+- Einmalige Katalogmigration 10 → 11 betrifft nur diese Produktfarben/-symbole;
+  Preise, Buchungshistorie und nachfolgende individuelle Änderungen bleiben erhalten.
+- Herstellerprüfung: Zunft Fassbrause gilt als alkoholfrei, enthält aber <0,5 % vol;
+  normales Zunft Radler enthält 2,4 % vol. Tatsächliche Radler-Variante im Verein noch
+  nicht anhand einer Verpackung bestätigt. Quellen: Erzquell-Sortimentsseiten
+  [Fassbrause](https://www.erzquell.de/zunft-koelsch/zunft-koelsch-sortiment/zunft-fassbrause/),
+  [Radler](https://www.erzquell.de/zunft-koelsch/zunft-koelsch-sortiment/zunft-radler/).
+- Nachweis: 43 Node-Tests erfolgreich; isolierte Browserprüfung auf Desktop und Handy
+  mit synthetischen Daten. Keine Original-Browserdaten verändert, nicht veröffentlicht.
+
+## Erster Kiosk-Vorschlag nach echter Liste (12.10.2026, Cache v155)
+
+Nutzer bestätigt Foto-Sicherung als funktionierend. Anschließend echte Getränkeliste als Foto
+geliefert und erste Anpassung beauftragt. Lokal vorbereitet, nicht veröffentlicht:
+
+- Reihenfolge: Alkoholfreie Getränke → Bier → Aperol & Wein → Spezialitäten → Vereinsshop.
+  Spezialitäten enthält Essen, bestehende Snacks und Eis, ist offen und vorletzter Bereich.
+  Vereinsshop samt bisherigen Artikeln bleibt als zukünftiges Angebot erhalten.
+- Wasser/Apfelschorle/Cola/Fanta jeweils Flasche 0,25 l, 1,50 €;
+  Fassbrause/Sportsfreund/Malzbier/Radler jeweils Flasche 0,33 l, 2,10 €.
+- Zunftkölsch: Flasche 0,33 l 2,20 €, Glas 0,2 l 1,80 €, Kranz mit neun Kölsch 14,50 €.
+  Weizen Flasche 0,5 l 3,50 €; keine unbelegte Kennzeichnung als alkoholfrei.
+- Aperol Büchse 0,25 l 3,50 €; Grauburgunder Flasche 0,75 l 10,00 €.
+- Bockwurst mit Brot 2,50 €, Grillwurst mit Brot 3,00 €, Grillfleisch mit Brot 4,00 €.
+  Bestehende Snacks-/Eispreise bleiben erhalten. Red Bull nicht auf der Liste: im bestehenden
+  Katalog deaktiviert statt gelöscht, bei Neustart nicht mehr als neues Angebot vorbelegt.
+- Neue Illustrationen im vorhandenen SVG-Stil: Kölsch-/Weizenflasche, Apfelschorle,
+  Fassbrause, Aperol-Dose, Weinflasche, Wurst/Brot und Grillfleisch/Brot. Illustrationen sind
+  ein erster Vorschlag, keine fotografisch oder markengetreu bestätigten Verpackungen.
+  Wasser heißt neutral „Wasser“; bisherige Gerolsteiner-Zeichnung vorläufig beibehalten.
+- Einmalige Katalogmigration 9 → 10, bestehende Produktkennungen bleiben erhalten.
+  Alte Striche/Buchungen und ihre Preise werden nicht geändert; individuelle Snacks-/Shopdaten
+  und spätere Admin-Preisänderungen bleiben erhalten. v8 → v9 bleibt ein eigener Zwischenschritt.
+- Flutlicht 5,00 €/Stunde und Gastspieler 8,00 € sind auf dem Foto, aber noch nicht als
+  Kioskartikel übernommen: Entscheidung zur Einordnung/Abwicklung weiterhin offen.
+- Nachweis: zwei Katalogtests zu Liste, Symbolen, Reihenfolge, Migration und Historie;
+  Browserprüfung mit synthetischen Daten auf 1280×900 und 390×844, keine horizontale
+  Überbreite oder leeren Symbole; Screenshots visuell geprüft. Werkzeug: `tools/preview-catalog.mjs`.
+- Nutzer soll neu laden und den Vorschlag im Kiosk prüfen. Kein Reset und keine manuelle
+  Übertragung privater Browserdaten erforderlich. Listenänderung wird beim Laden gespeichert.
+
+## Foto-Sicherung lokal abgesichert (12.10.2026, Cache v154)
+
+Auf ausdrücklichen Auftrag vor den Kiosk-Inhalten bearbeitet. Beim Tagesabschluss in den
+lokalen Sicherungspunkt v160 aufgenommen; nicht gepusht oder veröffentlicht.
+
+- Export wartet auf den vollständigen Bildspeicher-Leseabschluss. Fehler, blockierter Speicher
+  und Zeitüberschreitung brechen die Sicherung ab; keine leere Ersatz-Fotosammlung.
+  Für die reine Seitenanzeige bleibt der bisherige kurze Fallback erhalten.
+- Foto-/PDF-Einträge und verknüpfte Kennungen werden vor Export/Import geprüft. Fehlende oder
+  ungültige Einträge werden nicht stillschweigend übersprungen.
+- Import schreibt sämtliche Fotos in eine neue, getrennte Bilddatenbank. Erst nach erfolgreichem
+  Transaktionsabschluss wird der vollständige Inhaltsstand samt Bilddatenbank-Kennung aktiviert.
+  Bei Abbruch, Timeout oder vollem Gerätespeicher bleibt der bisherige aktive Stand erhalten.
+- Die bisherige Bilddatenbank wird bei erfolgreichem Import bewusst nicht gelöscht. Das erlaubt
+  sichere Aktivierung auch bei Unterbrechung, benötigt aber zusätzlichen Browserspeicher.
+  Bereinigung alter Bilddatenbanken ist ein separater zukünftiger Job; nicht unbesehen löschen,
+  insbesondere wenn andere TFB-Tabs noch geöffnet sind.
+- Automatische Sicherung erstellt zuerst den vollständigen Export und öffnet erst danach die
+  Zieldatei. Schreibfehler führen zum Abbruch der temporären Schreibfassung. Läufe sind serialisiert;
+  Fehlerstatus und Wiederholungsoption sichtbar, Erfolg nur nach abgeschlossenem Schreiben.
+- Automatische Sicherung funktioniert auch mit per Logo ausgeblendeten Admin-Stiften.
+  Fotoänderungen werden zusätzlich über eine Laufzeit-Revisionskennung erkannt.
+- Nachweis: 40 Node-Tests erfolgreich; separater Chrome-Test mit echtem IndexedDB und rein
+  synthetischen Daten erfolgreich. Bestehende JSON-Sicherungen nur lesend geprüft:
+  automatisch 117 Foto-/PDF-Einträge, manuell 51; keine ungültigen Einträge oder fehlenden
+  referenzierten Kennungen. Nutzerbrowser und Originaldateien nicht verändert.
+- Nächster praktischer Schritt: Seite neu laden, automatische Sicherung im Konto auf Status/Erlaubnis
+  prüfen, zusätzlich eine datierte manuelle Sicherung erstellen. Keine alte Datei testweise in den
+  echten aktuellen Browserstand laden. Zusätzliche Browserstände `extra` werden weiterhin vom
+  bisherigen App-Import verarbeitet; keine geräteübergreifende oder tabübergreifende Transaktion.
+
+Testaufrufe: `node --test tools/test-backups.mjs tools/test-board-photos.mjs tools/test-home-features.mjs tools/test-photo-drop.mjs tools/test-photo-viewer.mjs`.
+Optionaler echter Browsercheck: `tools/test-browser-backups.mjs` mit Playwright;
+`TFB_PLAYWRIGHT_MODULE` und `TFB_CHROME_PATH` können lokale Laufzeitpfade vorgeben.
+
+Historischer Stand: **12.10.2026 – EINGEFROREN** als Git-Tag **`stand-2026-10-12-v152`** (v152, Cache `tfb-kiosk-v152`;
 frühere Tags heute: `stand-2026-10-12-v151`, `stand-2026-10-12-v150`, `stand-2026-10-12-v149`, `stand-2026-10-12` = v138, `stand-2026-10-12-abend` = v141). Alles lokal committet,
 4 Node-Tests grün. Nicht veröffentlicht, nicht zu GitHub gepusht – nur auf Wunsch des Nutzers pushen.
 Nutzer: „Ansonsten alles jetzt eins A. Und so einfrieren bitte.“
 
+## Offene Aufgaben aus der Prüfung vom 12.10.2026
+
+Auf Wunsch des Nutzers für spätere Arbeiten vorgemerkt; hier noch nicht umgesetzt:
+
+- **Jugendschutz beim Mitgliederimport:** Geburtsdatum/Altersstatus gehen beim bisherigen Import
+  verloren. Unbekanntes Alter darf keine Erwachsenenfreigabe für Beiträge und öffentliche Fotos bedeuten.
+  Import, bestehende Mitglieder und elterliche Freigaben gemeinsam prüfen.
+- **Kiosk-Buchungen bei Speicherfehlern:** `addToTab` meldet bislang Erfolg, auch wenn `save(db)`
+  scheitert. Erfolg erst nach bestätigter Speicherung; Fehler und Wiederholungen gezielt testen.
+- **Vollständige Sicherung und sichere Wiederherstellung:** Kernkorrektur lokal erledigt (siehe oben).
+  Später: sichere Bereinigung alter Bilddatenbanken und übergreifende Behandlung zusätzlicher
+  Browserstände (`extra`), insbesondere bei mehreren geöffneten Tabs.
+- **Echter Mehrbenutzerbetrieb/Supabase:** Direkte Browser-Speicherung und simulierte Antworten
+  (insbesondere Verabreden) ersetzen; Identitäten, Rollen, Mannschaftszuordnung und Zugriffsrechte
+  serverseitig absichern. Ein bloßer Austausch von `TFB.api` reicht nicht.
+- **Monatliche Lastschriftabrechnung:** Den vollständigen Ablauf samt Mandaten, Abschluss,
+  Fehlerfällen und Verantwortlichkeiten vor echtem Kioskbetrieb fertigstellen und abnehmen.
+- **Wartbarkeit und Dokumentation:** Große Dateien `site.js`/`app.js` schrittweise mit Tests
+  strukturieren; veraltete README-Texte und verbliebene Padel-Dokumentation klar abgrenzen.
+
+**Aktueller Auftrag Home-Farben:** Keine neuen Farben erfinden. Standard bleibt `#F5F0E6`;
+die bunte Fassung verwendet ausschließlich die vom Nutzer per Pipette festgelegten Werte.
+In den beiden gelesenen Sicherungen im Projektwurzelordner
+(`TFB-Sicherung_2026-10-11_15-23.json`, `TFB-Sicherung-automatisch.json`) enthalten die drei
+Home-Themen keine `bg`-/`linkBg`-Werte. Neuere Sicherung bzw. aktueller Browserstand noch
+zu prüfen; daraus folgt ausdrücklich nicht, dass die Farben überall verloren sind.
+Die anschließend gelieferten Screenshots belegen vorhandene Farben im laufenden Editor
+(unter anderem Hintergrund `#99C6FD`, Link-Knöpfe `#C4E3FF`). Keine Neuanlage erforderlich.
+
+**Lokale Korrektur nach v152 (Cache v153, noch nicht committet/veröffentlicht):**
+Die Home-Nummern sind echte Schaltflächen über die gemeinsame Aktionssteuerung,
+mit Handzeiger und Tastaturbedienung, bei unveränderter Zahlengestaltung.
+Ein nachgewiesener Konflikt wurde behoben: Die offene Themenvorschau erzwingt nicht mehr
+bunte Farben gegen einen ausdrücklichen Nummernklick; bereits der erste Klick zeigt Standard.
+34 Node-Tests bestehen, einschließlich beider Admin-Ansichten, aller drei Nummern,
+Neuladen und unveränderter Speicherung beim Vorführen.
+Der Klick in der bereits geöffneten lokalen Chrome-Seite konnte wegen der Browser-Zugriffsgrenze
+nicht direkt geprüft werden. Nutzer soll nach Neuladen prüfen; Ursache des zuvor gemeldeten
+Verhaltens bei geschlossenem Editor ist damit nicht abschließend nachgewiesen.
+
 ## Wie es weitergeht
 
-- **Nächster Job (Nutzer):** Der Nutzer besorgt die **Getränkeliste der Tennisfreunde** (heutiges Kiosk-Angebot
+- **Nächster Job (Nutzer):** Der Nutzer hat die echte **Getränkeliste der Tennisfreunde** fotografiert und
+  reicht das Foto als nächsten Schritt ein (heutiges Kiosk-Angebot
   mit Preisen). Damit den Kiosk rund machen: exakt die heutigen Artikel, Bereiche, Preise und Symbole
   übernehmen (Sortiment liegt in `demo-backend.js` → `DEFAULT_CATALOG`, Änderungen bestehender Daten über
   `catalogVersion`-Migration wie bisher; Admin kann auch direkt am Kiosk über den Stift pflegen).

@@ -12,32 +12,43 @@
 
   // ---------- Startsortiment (wie im bisherigen Kiosk, im Admin frei änderbar) ----------
   // Bereiche erscheinen in dieser Reihenfolge. status 'soon' = nur Vorschau ("bald").
-  const CATALOG_VERSION = 9;
+  const CATALOG_VERSION = 13;
   const DEFAULT_CATALOG = {
     sections: [
-      { id: 'alkoholfrei', title: 'Alkoholfrei', note: 'Für die Seitenwechsel', status: 'open' },
-      { id: 'bier', title: 'Bier', note: 'Frisch gezapft und kalt', status: 'open' },
-      { id: 'snacks', title: 'Snacks & Eis', note: '', status: 'open' },
+      { id: 'alkoholfrei', title: 'Alkoholfreie Getränke', note: '', status: 'open' },
+      { id: 'bier', title: 'Bier', note: '', status: 'open' },
+      { id: 'aperitif', title: 'Aperol & Wein', note: '', status: 'open' },
+      { id: 'spezialitaeten', title: 'Spezialitäten', note: '', status: 'open' },
+      { id: 'spielbetrieb', title: 'Spielbetrieb', note: '', status: 'open' },
+      { id: 'snacks', title: 'Snacks', note: '', status: 'open' },
       { id: 'shop', title: 'Vereinsshop', note: 'Bälle, Griffbänder und Vereinskleidung – bald direkt hier.', status: 'soon' },
     ],
     products: [
-      { id: 'koelsch', section: 'bier', name: 'Kölsch', detail: 'Ein frisches Kölsch aus Bielstein.', price: 200, art: 'stange', color: '#E9B949' },
-      { id: 'koelsch-kranz', section: 'bier', name: 'Kölsch-Kranz', detail: '10 Gläser für die ganze Runde.', price: 2000, art: 'kranz', color: '#E9B949' },
-      { id: 'radler', section: 'bier', name: 'Radler', detail: 'Erfrischend und fruchtig.', price: 200, art: 'radler', color: '#7A4A1E' },
-      { id: 'weissbier', section: 'bier', name: 'Weißbier', detail: 'Alkoholfrei, bayrisch herb.', price: 200, art: 'weizen', color: '#E3A33B' },
-      { id: 'gerolsteiner', section: 'alkoholfrei', name: 'Gerolsteiner', detail: 'Mineralwasser Medium.', price: 200, art: 'gerolsteiner', color: '#CFE6E0' },
-      { id: 'coca-cola', section: 'alkoholfrei', name: 'Coca-Cola', detail: 'Eiskalt genießen.', price: 280, art: 'cola', color: '#B7282E' },
-      { id: 'fanta', section: 'alkoholfrei', name: 'Fanta Orange', detail: 'Fruchtig frisch.', price: 200, art: 'cola', color: '#F08A24' },
-      { id: 'sportsfreund', section: 'alkoholfrei', name: 'Sportsfreund', detail: 'Isotonisch und alkoholfrei.', price: 200, art: 'sportsfreund', color: '#5A2A1A' },
-      { id: 'malzbier', section: 'alkoholfrei', name: 'Malzbier', detail: 'Golden Malz aus Bielstein.', price: 200, art: 'malz', color: '#3B2314' },
-      { id: 'red-bull', section: 'alkoholfrei', name: 'Red Bull', detail: 'Verleiht Flügel.', price: 200, art: 'redbull', color: '#1E3A8A' },
+      { id: 'gerolsteiner', section: 'alkoholfrei', name: 'Wasser', detail: 'Flasche · 0,25 l', price: 150, art: 'gerolsteiner', color: '#CFE6E0' },
+      { id: 'apfelschorle', section: 'alkoholfrei', name: 'Apfelschorle', detail: 'Flasche · 0,25 l', price: 150, art: 'apfelschorle', color: '#DDBB54' },
+      { id: 'coca-cola', section: 'alkoholfrei', name: 'Cola', detail: 'Flasche · 0,25 l', price: 150, art: 'cola', color: '#B7282E' },
+      { id: 'fanta', section: 'alkoholfrei', name: 'Fanta', detail: 'Flasche · 0,25 l', price: 150, art: 'cola', color: '#F08A24' },
+      { id: 'fassbrause', section: 'alkoholfrei', name: 'Fassbrause', detail: 'Flasche · 0,33 l', price: 210, art: 'fassbrause', color: '#B6C85D' },
+      { id: 'sportsfreund', section: 'alkoholfrei', name: 'Sportsfreund', detail: 'Flasche · 0,33 l', price: 210, art: 'sportsfreund', color: '#5A2A1A' },
+      { id: 'malzbier', section: 'alkoholfrei', name: 'Malzbier', detail: 'Flasche · 0,33 l', price: 210, art: 'malz', color: '#3B2314' },
+      { id: 'koelsch-flasche', section: 'bier', name: 'Zunftkölsch · Flasche', detail: '0,33 l', price: 220, art: 'koelsch-flasche', color: '#E9B949' },
+      { id: 'koelsch', section: 'bier', name: 'Zunftkölsch · Glas', detail: '0,2 l', price: 180, art: 'stange', color: '#E9B949' },
+      { id: 'koelsch-kranz', section: 'bier', name: 'Zunftkölsch · Kranz', detail: '9 Kölsch · je 0,2 l', price: 1450, art: 'kranz', color: '#E9B949' },
+      { id: 'weissbier', section: 'bier', name: 'Weizen', detail: 'Flasche · 0,5 l', price: 350, art: 'weizen-flasche', color: '#D88A2E' },
+      { id: 'radler', section: 'bier', name: 'Radler', detail: 'Flasche · 0,33 l', price: 210, art: 'radler', color: '#E9CD70' },
+      { id: 'aperol', section: 'aperitif', name: 'Aperol', detail: 'Büchse · 0,25 l', price: 350, art: 'aperol', color: '#F27736' },
+      { id: 'grauburgunder', section: 'aperitif', name: 'Grauburgunder Wein', detail: 'Flasche · 0,75 l', price: 1000, art: 'wein', color: '#8FA86D' },
+      { id: 'bockwurst', section: 'spezialitaeten', name: 'Bockwurst mit Brot', detail: 'Eine Portion', price: 250, art: 'wurst-brot', color: '#B5462F' },
+      { id: 'grillwurst', section: 'spezialitaeten', name: 'Grillwurst mit Brot', detail: 'Eine Portion', price: 300, art: 'grillwurst-brot', color: '#C68C50' },
+      { id: 'grillfleisch', section: 'spezialitaeten', name: 'Grillfleisch mit Brot', detail: 'Eine Portion', price: 400, art: 'grillfleisch', color: '#A75A49' },
+      { id: 'flutlicht', section: 'spielbetrieb', name: 'Flutlicht (1 h)', detail: 'Eine Stunde', price: 500, art: 'flutlicht', color: '#E9C857' },
+      { id: 'gastspieler', section: 'spielbetrieb', name: 'Gastspieler', detail: 'Eine Stunde', price: 800, art: 'tennisspieler', color: '#558D83' },
       { id: 'snickers', section: 'snacks', name: 'Snickers', detail: 'Und der Hunger ist gegessen.', price: 100, art: 'snickers', color: '#5A3825' },
       { id: 'mars', section: 'snacks', name: 'Mars', detail: '… macht mobil.', price: 100, art: 'mars', color: '#C8202F' },
       { id: 'hanuta', section: 'snacks', name: 'Hanuta', detail: 'Quadratisch, praktisch, für dich gebacken.', price: 100, art: 'wafer', color: '#1E4FA0' },
       { id: 'pringles', section: 'snacks', name: 'Pringles', detail: 'Heute schon gepoppt?', price: 300, art: 'tube', color: '#C8202F' },
       { id: 'chipsfrisch', section: 'snacks', name: 'Chipsfrisch', detail: 'Ungarisch. Oft kopiert, nie erreicht.', price: 250, art: 'bag', color: '#E07A2F' },
       { id: 'haribo', section: 'snacks', name: 'Haribo Colorado', detail: 'Süße Evergreens.', price: 250, art: 'bear', color: '#E8B22B' },
-      { id: 'bockwurst', section: 'snacks', name: 'Bockwurst', detail: 'Dicke Sauerländer · Dose mit 5 Stück.', price: 1000, art: 'hotdog', color: '#B5462F' },
       { id: 'cornetto', section: 'snacks', name: 'Cornetto', detail: 'Vanille-Nuss. So schmeckt der Sommer.', price: 300, art: 'cone', color: '#D9A066' },
       { id: 'baelle', section: 'shop', name: 'Tennisbälle', detail: '4er-Dose', price: 1200, art: 'ball', color: '#F2D21B' },
       { id: 'padelbaelle', section: 'shop', name: 'Padelbälle', detail: '3er-Dose', price: 900, art: 'ball', color: '#F08A24' },
@@ -196,8 +207,64 @@
   if (db.catalog && db.catalogVersion === 8) {
     const p = db.catalog.products.find((x) => x.id === 'gerolsteiner');
     if (p) Object.assign(p, { art: 'gerolsteiner', color: '#CFE6E0' });
-    db.catalogVersion = CATALOG_VERSION;
+    db.catalogVersion = 9;
     save(db);
+  }
+  // Real club price list: update current offers once, retaining snacks, shop and booking history.
+  if (db.catalog && db.catalogVersion === 9) {
+    const before = clone(db.catalog);
+    const cat = db.catalog;
+    const managed = new Set(DEFAULT_CATALOG.products.filter(p => ['alkoholfrei', 'bier', 'aperitif'].includes(p.section)
+      || ['bockwurst', 'grillwurst', 'grillfleisch'].includes(p.id)).map(p => p.id));
+    const existing = new Map(cat.products.map(p => [p.id, p]));
+    cat.products = DEFAULT_CATALOG.products.map(fresh => {
+      const old = existing.get(fresh.id);
+      return old ? (managed.has(fresh.id) ? { ...old, ...clone(fresh) } : old) : clone(fresh);
+    });
+    cat.products.push(...[...existing.values()].filter(p => !cat.products.some(x => x.id === p.id))
+      .map(p => ['alkoholfrei', 'bier', 'aperitif'].includes(p.section) ? { ...p, active: false } : p));
+    const sections = new Map(cat.sections.map(s => [s.id, s]));
+    cat.sections = DEFAULT_CATALOG.sections.map(s => s.id === 'shop' && sections.has(s.id)
+      ? sections.get(s.id) : { ...sections.get(s.id), ...clone(s) });
+    cat.sections.splice(3, 0, ...[...sections.values()].filter(s => !cat.sections.some(x => x.id === s.id)));
+    db.catalogVersion = 10;
+    if (!save(db)) { db.catalog = before; db.catalogVersion = 9; throw new Error('Die neue Getränkeliste konnte nicht gespeichert werden. Bitte Gerätespeicher prüfen.'); }
+  }
+  if (db.catalog && db.catalogVersion === 10) {
+    const before = clone(db.catalog);
+    for (const id of ['koelsch-flasche', 'weissbier', 'radler', 'grillwurst']) {
+      const product = db.catalog.products.find(p => p.id === id);
+      const fresh = DEFAULT_CATALOG.products.find(p => p.id === id);
+      if (product) Object.assign(product, { art: fresh.art, color: fresh.color });
+    }
+    db.catalogVersion = 11;
+    if (!save(db)) { db.catalog = before; db.catalogVersion = 10; throw new Error('Die neuen Produktsymbole konnten nicht gespeichert werden.'); }
+  }
+  if (db.catalog && db.catalogVersion === 11) {
+    const before = clone(db.catalog);
+    const wine = db.catalog.products.find(p => p.id === 'grauburgunder');
+    if (wine && wine.name === 'Grauburgunder') wine.name = 'Grauburgunder Wein';
+    db.catalogVersion = 12;
+    if (!save(db)) { db.catalog = before; db.catalogVersion = 11; throw new Error('Der Produktname konnte nicht gespeichert werden.'); }
+  }
+  if (db.catalog && db.catalogVersion === 12) {
+    const before = clone(db.catalog);
+    const cat = db.catalog;
+    for (const id of ['bockwurst', 'grillwurst', 'grillfleisch']) {
+      const product = cat.products.find(p => p.id === id);
+      if (product) product.section = 'spezialitaeten';
+    }
+    for (const id of ['flutlicht', 'gastspieler']) {
+      if (!cat.products.some(p => p.id === id)) cat.products.push(clone(DEFAULT_CATALOG.products.find(p => p.id === id)));
+    }
+    const existing = new Map(cat.sections.map(s => [s.id, s]));
+    cat.sections = DEFAULT_CATALOG.sections.map(fresh => {
+      const old = existing.get(fresh.id);
+      return old ? { ...old, ...(fresh.id === 'snacks' ? { title: 'Snacks' } : {}) } : clone(fresh);
+    });
+    cat.sections.push(...before.sections.filter(s => !cat.sections.some(x => x.id === s.id)));
+    db.catalogVersion = 13;
+    if (!save(db)) { db.catalog = before; db.catalogVersion = 12; throw new Error('Die neuen Kioskbereiche konnten nicht gespeichert werden.'); }
   }
   // Website-Inhalte (Home, Aktuell, Sport, Club) einmalig aus den Startinhalten anlegen.
   if (!db.site && TFB.siteSeed) {
@@ -459,14 +526,76 @@
 
   // ---------- Bildspeicher für hochgeladene Fotos (IndexedDB) ----------
   const IMG_DB = 'tfb_kiosk_images';
-  function imgStore(mode) {
+  const imageDatabase = () => db.imageDatabase || IMG_DB;
+  function openImages(name) {
     return new Promise((resolve, reject) => {
       if (!window.indexedDB) return reject(new Error('Dieser Browser kann keine Fotos speichern.'));
-      const req = indexedDB.open(IMG_DB, 1);
+      let settled = false;
+      const finish = (err, connection) => {
+        if (settled) { if (connection) connection.close(); return; }
+        settled = true; clearTimeout(timer);
+        if (err) reject(err); else resolve(connection);
+      };
+      const timer = setTimeout(() => finish(new Error('Der Bildspeicher antwortet nicht. Sicherung nicht abgeschlossen.')), 10000);
+      let req;
+      try { req = indexedDB.open(name, 1); } catch (err) { finish(err); return; }
       req.onupgradeneeded = () => req.result.createObjectStore('images');
-      req.onerror = () => reject(new Error('Der Bildspeicher ist nicht erreichbar.'));
-      req.onsuccess = () => resolve(req.result.transaction('images', mode).objectStore('images'));
+      req.onerror = () => finish(new Error('Der Bildspeicher ist nicht erreichbar.'));
+      req.onblocked = () => finish(new Error('Der Bildspeicher ist blockiert. Bitte andere TFB-Fenster schließen.'));
+      req.onsuccess = () => finish(null, req.result);
     });
+  }
+  function imgStore(mode) {
+    return openImages(imageDatabase()).then(connection => {
+      const tx = connection.transaction('images', mode);
+      tx.addEventListener('complete', () => {
+        connection.close();
+        if (mode === 'readwrite') TFB.imageRevision = (TFB.imageRevision || 0) + 1;
+      });
+      tx.addEventListener('abort', () => connection.close());
+      return tx.objectStore('images');
+    });
+  }
+  // A request can succeed before its transaction fails; backups wait for the commit.
+  async function imageTask(name, mode, run) {
+    const connection = await openImages(name);
+    return new Promise((resolve, reject) => {
+      let tx, result, settled = false;
+      const timer = setTimeout(() => {
+        finish(new Error('Der Bildspeicher antwortet nicht. Vorgang nicht abgeschlossen.'));
+        if (tx) { try { tx.abort(); } catch (_) {} }
+      }, 10000);
+      const finish = (err) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer); connection.close();
+        if (err) reject(err);
+        else { try { resolve(result()); } catch (ex) { reject(ex); } }
+      };
+      try {
+        tx = connection.transaction('images', mode);
+        tx.oncomplete = () => finish();
+        tx.onabort = () => finish(new Error('Fotos konnten nicht vollständig verarbeitet werden. Der bisherige Stand bleibt erhalten.'));
+        tx.onerror = () => {}; // Abort reports the final transaction failure.
+        result = run(tx.objectStore('images'));
+      } catch (err) { if (tx) { try { tx.abort(); } catch (_) {} } finish(err); }
+    });
+  }
+  function validatePhotos(data) {
+    if (!data.images || typeof data.images !== 'object' || Array.isArray(data.images)) throw new Error('Die Sicherung enthält keine vollständige Fotosammlung.');
+    for (const [id, url] of Object.entries(data.images)) {
+      if (typeof url !== 'string' || !((/^img:.+/.test(id) && /^data:image\/[a-z0-9.+-]+;base64,[a-z0-9+/]+={0,2}$/i.test(url))
+        || (/^doc:.+/.test(id) && /^data:application\/pdf;base64,[a-z0-9+/]+={0,2}$/i.test(url)))) {
+        throw new Error('Die Sicherung enthält ein ungültiges Foto oder Dokument.');
+      }
+    }
+    const visit = (value) => {
+      if (typeof value === 'string' && /^(img:|doc:)/.test(value) && !Object.prototype.hasOwnProperty.call(data.images, value)) {
+        throw new Error('In der Sicherung fehlen verknüpfte Fotos oder Dokumente. Der bisherige Stand bleibt erhalten.');
+      }
+      if (value && typeof value === 'object') Object.values(value).forEach(visit);
+    };
+    visit(data.db);
   }
   const done = (req) => new Promise((resolve, reject) => {
     req.onsuccess = () => resolve(req.result);
@@ -801,22 +930,34 @@
     async exportAll() {
       const member = requireMember();
       if (!member.isAdmin) throw new Error('Nur Admins dürfen sichern.');
-      const images = await this.images();
-      return { format: 'tfb-sicherung', version: 1, createdAt: new Date().toISOString(), db: clone(db), images };
+      const snapshot = clone(db);
+      const images = await this.images({ strict: true, database: snapshot.imageDatabase || IMG_DB });
+      const data = { format: 'tfb-sicherung', version: 1, createdAt: new Date().toISOString(), db: snapshot, images };
+      validatePhotos(data);
+      return data;
     },
     async importAll(data) {
       const member = requireMember();
       if (!member.isAdmin) throw new Error('Nur Admins dürfen Sicherungen laden.');
-      if (!data || data.format !== 'tfb-sicherung' || !data.db || !data.db.members) throw new Error('Das ist keine TFB-Sicherung.');
-      const before = db;
-      db = clone(data.db);
-      if (!save(db)) { db = before; throw new Error('Laden nicht möglich – der Gerätespeicher ist voll.'); }
-      const store = await imgStore('readwrite');
-      await done(store.clear());
-      const write = await imgStore('readwrite');
-      await Promise.all(Object.entries(data.images || {})
-        .filter(([id, url]) => (/^img:/.test(id) && /^data:image\//.test(url)) || (/^doc:/.test(id) && /^data:application\/pdf/.test(url)))
-        .map(([id, url]) => done(write.put(url, id))));
+      if (!data || data.format !== 'tfb-sicherung' || data.version !== 1 || !data.db || !Array.isArray(data.db.members)
+        || !Array.isArray(data.db.accounts) || !data.db.site?.pages || !data.db.catalog) throw new Error('Das ist keine vollständige TFB-Sicherung.');
+      validatePhotos(data);
+      const next = clone(data.db);
+      // Stage in a new database. The single localStorage write is the activation point;
+      // interrupted or failed imports cannot erase the previously active image database.
+      next.imageDatabase = IMG_DB + '-restore-' + uid();
+      try {
+        await imageTask(next.imageDatabase, 'readwrite', store => {
+          Object.entries(data.images).forEach(([id, url]) => store.put(url, id));
+          return () => null;
+        });
+        if (!save(next)) throw new Error('Laden nicht möglich – der Gerätespeicher ist voll. Der bisherige Stand bleibt erhalten.');
+      } catch (err) {
+        try { indexedDB.deleteDatabase(next.imageDatabase); } catch (_) {}
+        throw err;
+      }
+      db = next;
+      TFB.imageRevision = (TFB.imageRevision || 0) + 1;
       return { photos: Object.keys(data.images || {}).length };
     },
 
@@ -1032,16 +1173,18 @@
     },
 
     // Alle abgelegten Fotos als { "img:<id>": dataUrl } (für die Anzeige)
-    async images() {
+    async images({ strict = false, database = imageDatabase() } = {}) {
       // Manche Browser beantworten den Bildspeicher bei lokal geöffneten Dateien nie –
       // dann nach kurzer Zeit ohne Fotos weitermachen statt hängen zu bleiben.
-      const read = (async () => {
-        const store = await imgStore('readonly');
-        const [keys, values] = await Promise.all([done(store.getAllKeys()), done(store.getAll())]);
-        return Object.fromEntries(keys.map((k, i) => [k, values[i]]));
-      })();
-      const timeout = new Promise((resolve) => setTimeout(() => resolve(null), 1500));
-      try { return (await Promise.race([read, timeout])) || {}; } catch (_) { return {}; }
+      const read = imageTask(database, 'readonly', store => {
+        const keys = store.getAllKeys(), values = store.getAll();
+        return () => Object.fromEntries(keys.result.map((k, i) => [k, values.result[i]]));
+      });
+      if (strict) return read;
+      let timer;
+      const timeout = new Promise(resolve => { timer = setTimeout(() => resolve({}), 1500); });
+      try { return await Promise.race([read, timeout]); } catch (_) { return {}; }
+      finally { clearTimeout(timer); }
     },
 
     async catalog() {
@@ -1137,7 +1280,8 @@
       const catOf = (item) => {
         const p = db.catalog.products.find((x) => x.id === item.productId) || {};
         if (p.art === 'kranz' || /kranz/i.test(item.productName || '')) return 'kranz';
-        if (p.section === 'snacks') return 'snacks';
+        if (p.section === 'snacks' || p.section === 'spezialitaeten') return 'snacks';
+        if (p.section === 'spielbetrieb') return 'spielbetrieb';
         if (p.section === 'shop') return 'equipment';
         return 'drinks';
       };
@@ -1161,8 +1305,10 @@
     },
 
     async resetDemo() {
+      const activeImages = imageDatabase();
       try { localStorage.removeItem(STORE_KEY); } catch (_) {}
       try { indexedDB.deleteDatabase(IMG_DB); } catch (_) {}
+      if (activeImages !== IMG_DB) { try { indexedDB.deleteDatabase(activeImages); } catch (_) {} }
       setSession(null);
       db = load();
     },

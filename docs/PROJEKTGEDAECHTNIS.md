@@ -4,6 +4,88 @@ Für den schnellen Einstieg zuerst die kurze **[UEBERGABE.md](UEBERGABE.md)** le
 Diese Datei enthält alle Entscheidungen, Konzepte, offenen Punkte und den Verlauf.
 Neues bitte unten bei „Verlauf“ ergänzen.
 
+## Verbindlicher Tagesabschluss 12.10.2026
+
+Aktueller freigegebener Stand **v160**, Katalogversion 13, lokaler Sicherungstag
+**`stand-2026-10-12-v160`**. Nutzer: „Das sieht alles top aus“ und ausdrücklich für heute
+Schluss sowie einfrieren. Keine weiteren Änderungen ohne neuen Auftrag; kein Push und
+keine Veröffentlichung. Details zum aktuellen Stand stehen oben in `UEBERGABE.md`.
+Die älteren Zwischenstände und damaligen offenen Bestätigungen unten sind historisch.
+
+Home-Farbumschaltung und Foto-Sicherung vom Nutzer praktisch bestätigt. Kiosk mit echten
+Listenpreisen und verfeinerten Symbolen abgenommen. Reihenfolge: alkoholfrei, Bier,
+Aperol/Wein, Spezialitäten (drei Speisen), Spielbetrieb (Flutlicht/Gastspieler), Snacks
+einschließlich Eis, zukünftiger Vereinsshop. 46 Tests erfolgreich, Desktop und Handy
+mit isolierten Testdaten geprüft. Private Browserdaten werden nicht durch Git gesichert;
+dafür bleibt die vollständige JSON-Sicherung erforderlich. Bekannte technische Folgejobs
+bleiben erhalten und werden nicht als erledigt angesehen.
+
+## Ergänzung 12.10.2026 – Folgeaufgaben und verbindliche Farbentscheidung
+
+**Spielbetrieb ergänzt (Cache v160):** Nutzer ordnet Flutlicht (1 h), 5,00 €, und
+Gastspieler, Eine Stunde, 8,00 €, zwischen Spezialitäten und Snacks ein. Spezialitäten
+nur die drei Speisen, Süßigkeiten/Chips/Eis wieder eigener Snacks-Bereich. Neue Symbole
+für Flutlicht und Tennisspieler. Gezielte Migration 12 → 13 ohne alte Preis-/Historienänderung;
+eigene Spielbetrieb-Spalte in der Strichliste. Gebührenbuchung, keine Platzreservierung.
+
+**Illustrationen nach Nutzerreferenz (Cache v157):** Aperol höher bei gleicher Breite,
+blaues Band und gelbe/weiße Beschriftung nach Screenshot, ohne TO GO. Apfelschorle in
+Wasserflaschenform mit quadratischem Apfeletikett, eigene Farbe beibehalten. FASS vertikal
+zentriert. Alle übrigen Produkte unverändert; reine Zeichenänderung ohne Datenmigration.
+44 Tests und Desktop-/Handyansicht geprüft.
+
+**Kiosk-Verfeinerung (Cache v156):** Einheitliche Flaschenform für Zunft, Fassbrause und
+Apfelschorle, senkrechte FASS-/APFEL-Etiketten; Zunft-Flasche wie Glas goldfarben,
+Weizen orange, Radler heller goldfarben. Aperol besser lesbar, weiterhin stilisiert und
+nicht als exakte Vereinsverpackung bestätigt. Bockwurst ohne Streifen, Grillwurst mit
+vier Grillstreifen, Grillfleisch unregelmäßiger. Strichliste „Kränze“ vom Nutzer bestätigt.
+Gezielte einmalige Migration 10 → 11 ohne Preis-/Historienänderungen. 43 Tests grün,
+Desktop-/Handyansicht mit synthetischen Daten geprüft. Herstellerangaben zu Alkohol
+und verbleibende Verpackungsfrage stehen im aktuellen Abschnitt der `UEBERGABE.md`.
+
+**Erster Kiosk-Vorschlag nach dem Listenfoto (Cache v155):** Nutzer bestätigt Sicherungsfix;
+Getränke und Preise aus Vereinsliste übernommen. Reihenfolge alkoholfrei, Bier, Aperol/Wein,
+Spezialitäten (Essen, bestehende Snacks und Eis), zuletzt bisheriger zukünftiger Vereinsshop.
+Neue Zeichnungen ergänzen den vorhandenen Illustrationsstil. Einmalige Katalogmigration 9 → 10
+erhält alte Buchungen und individuelle Snacks-/Shopdaten. Red Bull als nicht gelistetes Getränk
+deaktiviert. Flutlicht/Gastspieler noch nicht übernommen, Entscheidung offen. Mengen/Preise,
+Prüfnachweise und Abgrenzungen stehen im neuesten Abschnitt der `UEBERGABE.md`.
+
+**Folgeauftrag Foto-Sicherung umgesetzt (lokal, Cache v154):** Strikter Fotoexport mit
+Transaktionsabschluss und Zeitbegrenzung; fehlende verknüpfte Fotos/PDFs oder ungültige
+Einträge verhindern Export/Import. Wiederherstellung baut einen getrennten Bildbestand
+auf und aktiviert ihn erst nach vollständiger Speicherung. Alter aktiver Bestand bleibt
+bei Fehlern erhalten. Automatische Sicherung exportiert vor dem Öffnen der Datei,
+bricht fehlerhafte Schreibfassungen ab, zeigt Fehler an und verhindert parallele Läufe.
+Sie funktioniert jetzt auch bei ausgeblendeten Admin-Stiften und erkennt reine Bildänderungen.
+40 Node-Tests und isolierter echter Chrome-/IndexedDB-Test erfolgreich. Keine Originaldaten
+oder Sicherungsdateien verändert; nicht veröffentlicht. Details, Speicherbedarf durch
+beibehaltene alte Bildbestände und verbliebene Abgrenzungen stehen oben in `UEBERGABE.md`.
+
+Die technische Prüfung wurde auf Wunsch des Nutzers als offene Aufgaben in
+`UEBERGABE.md` unter „Offene Aufgaben aus der Prüfung vom 12.10.2026“ festgehalten:
+Altersstatus/Jugendschutz, bestätigte Buchungsspeicherung, vollständige Bildsicherungen,
+Mehrbenutzerbetrieb mit serverseitigen Rechten, Lastschriftabschluss und Wartbarkeit.
+Dies sind zukünftige Jobs, keine bereits umgesetzten Korrekturen.
+
+Für Home ausdrücklich bestätigt: Standard-Hintergrund `#F5F0E6` unverändert lassen.
+Die individuellen bunten Farben hat der Nutzer bereits selbst per Pipette festgelegt
+und gesichert. Keine erfundenen Ersatzfarben oder neuen Vorgabepaletten einsetzen.
+Klick auf 01/02/03 soll nur zwischen Standard und dieser bestehenden bunten Fassung
+wechseln, unabhängig von den sichtbaren Admin-Stiften. Prüfung noch offen; die beiden
+gelesenen JSON-Sicherungen im Projektwurzelordner enthalten diese Farbwerte nicht.
+Eine neuere Sicherung bzw. der aktuelle Browserstand muss dafür geprüft werden.
+Nachfolgende Screenshots zeigen die bestehenden individuellen Farben im Editor;
+die Aussage über fehlende Werte gilt nur für die gelesenen Sicherungsdateien.
+Lokal korrigiert (Cache v153): Nummern als echte Schaltflächen über die gemeinsame
+Aktionssteuerung, Handzeiger und Tastaturbedienung. Die Editor-Vorschau darf einen
+ausdrücklichen Farbwechsel nicht mehr übergehen; erster Klick im farbigen Editor
+zeigt Standard. Vorhandene Farbwerte bleiben unangetastet. 34 Node-Tests bestanden,
+einschließlich Vorschau, beider Admin-Ansichten und Neuladen. Der echte lokale Chrome-Tab
+ist über den Browserzugriff nicht prüfbar; Bestätigung durch Nutzer nach Neuladen offen.
+Die echte Getränkeliste liegt dem Nutzer inzwischen als Foto vor; Inhalt erst nach
+Erhalt des Fotos übernehmen.
+
 ## Nachtrag 11.10.2026 abends – Review mit echten Daten, Aufräumen Stufe 1 (v100)
 
 - Claude hat ChatGPTs Stand v99 mit der echten Sicherung des Nutzers geprüft.
@@ -890,3 +972,9 @@ Monatsabschluss.
   Eingefroren als Tag `stand-2026-10-12-v151`.
 - **12.10.2026** – v152: Vorführ-Umschalter Standard ↔ Bunt auf **jeder** Themennummer der Startseite (01, 02, 03 …)
   und in der Demo **für alle Ansichten** (Admin ein- oder ausgeblendet, auch abgemeldet). Tag `stand-2026-10-12-v152`.
+- **12.10.2026 – Tagesabschluss v160:** Farbumschalter im Editor korrigiert (v153),
+  vollständige Foto-Sicherung abgesichert und bestätigt (v154), Vereinsliste samt Preisen
+  übernommen (v155), Symbole nach Nutzerfeedback verfeinert (v156–v159), Spielbetrieb mit
+  Flutlicht/Gastspieler ergänzt und Spezialitäten/Snacks getrennt (v160). Nutzer bestätigt
+  alles und beendet den Arbeitstag. Eingefroren als `stand-2026-10-12-v160`, nur lokal.
+  46 Tests erfolgreich; nächste Arbeiten nur auf neuen Auftrag, offene Risiken siehe Übergabe.
