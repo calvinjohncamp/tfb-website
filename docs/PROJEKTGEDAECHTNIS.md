@@ -854,3 +854,7 @@ Monatsabschluss.
 - **12.10.2026 abends** – **Eingefroren als Tag `stand-2026-10-12-abend` (v141).** Nutzer: „Perfekt. Aktuell
   keine Wünsche mehr offen.“ Nächster Schritt liegt beim Nutzer: Gespräch mit dem Vorstand, ob und wie es
   mit der neuen Website weitergeht. Bis dahin keine Änderungen an der App ohne ausdrückliche Bitte.
+- **12.10.2026** – v142: Anmelde-Symbol (abgemeldet) mit demselben Ring wie das Profilbild. v143: Passwortfelder
+  (Anmelden, Passwort festlegen + Wiederholung) mit Auge rechts zum Anzeigen/Verbergen (beide Felder zusammen).
+  Hinweis: Demo-Kennwort zurücksetzen per Konsole (passwordHash des eigenen Kontos auf null) → beim nächsten
+  Anmelden neues Passwort festlegen; „Passwort vergessen“ per Mail kommt erst mit Supabase.

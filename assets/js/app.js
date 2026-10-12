@@ -112,6 +112,27 @@
   }
 
   // ---------- Anmeldung ----------
+  // Passwortfeld mit Auge zum Anzeigen/Verbergen
+  const EYE = '<svg viewBox="0 0 24 24"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/></svg>';
+  const EYE_OFF = '<svg viewBox="0 0 24 24"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/><path d="M4 20L20 4"/></svg>';
+  const pwInput = (attrs) => `<span class="pw-wrap"><input type="password" ${attrs}><button type="button" class="pw-eye" data-pw-toggle aria-label="Passwort anzeigen" aria-pressed="false" title="Passwort anzeigen">${EYE}</button></span>`;
+  document.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-pw-toggle]');
+    if (!b) return;
+    const input = b.parentElement.querySelector('input');
+    const show = input.type === 'password';
+    // Beide Felder (Passwort + Wiederholung) gemeinsam umschalten
+    (b.closest('form') || document).querySelectorAll('.pw-wrap').forEach((w) => {
+      w.querySelector('input').type = show ? 'text' : 'password';
+      const t = w.querySelector('[data-pw-toggle]');
+      t.innerHTML = show ? EYE_OFF : EYE;
+      t.setAttribute('aria-pressed', String(show));
+      t.setAttribute('aria-label', show ? 'Passwort verbergen' : 'Passwort anzeigen');
+      t.title = t.getAttribute('aria-label');
+    });
+    input.focus();
+  });
+
   function showAuth(error = '') {
     const s = state.authStep;
     let body = '';
@@ -128,7 +149,7 @@
         <h2>Hallo ${esc(state.authFirstName)}!</h2>
         <p class="muted">${esc(state.authEmail)}</p>
         <label class="field"><span>Passwort</span>
-          <input name="password" type="password" autocomplete="current-password" required autofocus>
+          ${pwInput('name="password" autocomplete="current-password" required autofocus')}
         </label>
         <button class="btn primary block" type="submit">Anmelden</button>
         <div class="auth-links">
@@ -140,10 +161,10 @@
         <h2>Willkommen, ${esc(state.authFirstName)}!</h2>
         <p class="muted">Du stehst in der Mitgliederliste der ${esc(cfg.clubName)}. Leg einmalig ein Passwort fest – danach bleibst du auf diesem Handy angemeldet.</p>
         <label class="field"><span>Neues Passwort</span>
-          <input name="password" type="password" autocomplete="new-password" minlength="8" required autofocus placeholder="mindestens 8 Zeichen">
+          ${pwInput('name="password" autocomplete="new-password" minlength="8" required autofocus placeholder="mindestens 8 Zeichen"')}
         </label>
         <label class="field"><span>Passwort wiederholen</span>
-          <input name="password2" type="password" autocomplete="new-password" minlength="8" required>
+          ${pwInput('name="password2" autocomplete="new-password" minlength="8" required')}
         </label>
         <button class="btn primary block" type="submit">Passwort festlegen</button>
         <div class="auth-links"><button type="button" class="link" data-action="auth-back">Andere E-Mail</button></div>`;
