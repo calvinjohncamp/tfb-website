@@ -858,6 +858,7 @@ Monatsabschluss.
   (Anmelden, Passwort festlegen + Wiederholung) mit Auge rechts zum Anzeigen/Verbergen (beide Felder zusammen).
   Hinweis: Demo-Kennwort zurücksetzen per Konsole (passwordHash des eigenen Kontos auf null) → beim nächsten
   Anmelden neues Passwort festlegen; „Passwort vergessen“ per Mail kommt erst mit Supabase.
-- **12.10.2026** – v144: Profilbild/Anmelde-Symbol und Glocke sitzen mit ihrem Ring exakt auf der Grundlinie von
-  Menü und „TENNISFREUNDE BIELSTEIN“ (vorher 6–8 px darunter; gemessen 88,5 vs. 88,7 px). Demo-Kasten
-  „Zum Ausprobieren: max@tfb-demo.de“ auf der Anmeldeseite entfernt.
+- **12.10.2026** – v144: Demo-Kasten „Zum Ausprobieren: max@tfb-demo.de“ auf der Anmeldeseite entfernt.
+  v145: Profilbild/Anmelde-Symbol und Glocke werden ab 1024 px per Messung (`alignHeader()` in app.js) mit ihrer
+  Unterkante exakt auf die Grundlinie der Menüschrift gesetzt (fester px-Versatz aus v144 war falsch – die
+  Schriftmaße unterscheiden sich zwischen Browsern/Breiten; im Chrome des Nutzers rutschten sie zu hoch).

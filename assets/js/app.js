@@ -273,8 +273,30 @@
         <nav aria-label="Vereinsinformationen"><a href="#impressum">Impressum</a><a href="#satzung">Satzung</a></nav>
         <p>© ${new Date().getFullYear()} Tennisfreunde Bielstein e.V. · Inhalte, Gestaltung &amp; App-Konzept. Alle Rechte vorbehalten.</p>
       </footer>`;
+    alignHeader();
     return renderView(view);
   }
+
+  // Profilbild (bzw. Anmelde-Symbol) und Glocke unten exakt auf die Grundlinie der Menüschrift setzen.
+  // Gemessen statt fest eingestellt – Schriftmaße unterscheiden sich je nach Browser, Breite und Zoom.
+  // Nur wenn das Menü in derselben Zeile steht (ab 1024 px); auf dem Handy bleibt alles wie gestaltet.
+  function alignHeader() {
+    const act = document.querySelector('.topbar .top-actions') || document.querySelector('.topbar-row > .avatar');
+    const tab = document.querySelector('.topnav .tab');
+    if (!act || !tab) return;
+    act.style.transform = '';
+    if (window.innerWidth < 1024) return;
+    const probe = document.createElement('span');
+    probe.style.cssText = 'display:inline-block;width:0;height:0;vertical-align:baseline';
+    tab.appendChild(probe);
+    const baseline = probe.getBoundingClientRect().top;
+    probe.remove();
+    const pic = act.matches('.avatar') ? act : act.querySelector('.avatar');
+    const shift = baseline - pic.getBoundingClientRect().bottom;
+    if (Math.abs(shift) > 0.4 && Math.abs(shift) < 30) act.style.transform = `translateY(${shift.toFixed(1)}px)`;
+  }
+  window.addEventListener('resize', () => requestAnimationFrame(alignHeader));
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => alignHeader());
 
   // Menü oben: Standard oder – sobald geladen – die im Admin gepflegten Punkte (Name + Ziel: Seite der App oder Website)
   let navArea = '';
