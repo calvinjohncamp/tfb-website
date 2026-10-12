@@ -12,7 +12,8 @@ noch nicht zu GitHub gepusht – nur auf Wunsch des Nutzers pushen.
 - **Pause für Änderungen.** Der Nutzer spricht zuerst mit dem Vorstand, ob und wie es mit der
   neuen Website weitergeht. Bis dahin **nichts an der App ändern**, außer der Nutzer bittet ausdrücklich.
 - Nutzer findet den Stand präsentationsreif („Das gefällt mir alles. Sehr gut.“).
-- Offene Frage des Nutzers: Test auf iPhone/iPad (siehe unten „Auf iPhone/iPad testen“).
+- iPhone/iPad-Test vorerst verworfen: Nutzer präsentiert am Mac (Chrome, Hochformat per Fensterbreite
+  bzw. Geräte-Ansicht der Entwicklertools); echte Geräte erst mit der späteren echten App.
 
 ## Was am 12.10.2026 dazukam (Details im Projektgedächtnis)
 
