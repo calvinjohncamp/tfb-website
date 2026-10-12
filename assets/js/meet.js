@@ -18,6 +18,8 @@
 //   - Abschalten: in config.js  features: { treffen: false }
 //   - Entfernen:  diese Datei + <script> in index.html + Abschnitt „Treffen“ in app.css
 // Daten liegen im Demo-Modus in einem eigenen Speicher (localStorage: tfb_meet_demo_v2).
+// Keine Historie: Vorbei ist vorbei. Termine verschwinden nach ihrem Tag, beendete Serien sofort,
+// Postfach-Einträge mit ihrem Termin, beantwortete Einladungen sofort, gelesene Gruppen-Infos sofort.
 (function () {
   if (!(TFB.config.features && TFB.config.features.treffen)) return;
   TFB.views = TFB.views || {};
@@ -41,7 +43,7 @@
 
   // ---------- Speicher ----------
   const load = () => { try { return JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (_) { return null; } };
-  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(data)); } catch (_) {} };
+  const save = () => { prune(); try { localStorage.setItem(KEY, JSON.stringify(data)); } catch (_) {} };
   try { localStorage.removeItem('tfb_meet_demo_v1'); } catch (_) {}
   const isoDay = (d) => new Date(d.getTime() - d.getTimezoneOffset() * 6e4).toISOString().slice(0, 10);
   const today = () => isoDay(new Date());
@@ -74,7 +76,7 @@
       ],
       series: [
         { id: 'sr-h40', kind: 'training', groupId: 'g-h40', title: 'Training Herren 40', time: '19:00', place: 'Platz 1–2', note: '',
-          createdBy: 'm2', invitees: H40, slots: null, from: nextWeekday(2), until: addDays(nextWeekday(2), 7 * 20), leadDays: 5, skipped: [], active: true },
+          createdBy: 'm2', invitees: H40, slots: null, from: nextWeekday(2), until: addDays(nextWeekday(2), 7 * 20), leadDays: 5, skipped: [] },
       ],
       inbox: [],
     };
@@ -87,7 +89,7 @@
     data.meets.forEach((m) => {
       if (m.weekly) {
         const s = { id: uid('sr-'), kind: m.kind, groupId: m.groupId || null, title: m.title, time: m.time, place: m.place, note: m.note || '',
-          createdBy: m.createdBy, invitees: m.invitees.slice(), slots: m.slots, from: m.date, until: addDays(m.date, 7 * 12), leadDays: 3, skipped: [], active: true };
+          createdBy: m.createdBy, invitees: m.invitees.slice(), slots: m.slots, from: m.date, until: addDays(m.date, 7 * 12), leadDays: 3, skipped: [] };
         data.series.push(s);
         m.seriesId = s.id;
         delete m.weekly;
@@ -129,12 +131,33 @@
   }
   TFB.inbox = { button: bellButton, refresh: refreshBell };
 
+  // ---------- Aufräumen: nichts aufheben, was erledigt ist ----------
+  function prune() {
+    const now = today();
+    data.meets = data.meets.filter((m) => m.date >= now);
+    data.series = (data.series || []).filter((s) => s.until >= now);
+    data.series.forEach((s) => { s.skipped = (s.skipped || []).filter((d) => d >= now); });
+    data.inbox = (data.inbox || []).filter((n) => {
+      if (n.groupId) {
+        const g = data.groups.find((x) => x.id === n.groupId);
+        if (!g) return false;
+        return n.type === 'group-invite' ? (g.pending || []).includes(n.to) : !n.read;
+      }
+      if (n.snap.date < now) return false;
+      if (n.type === 'invite' || n.type === 'remind') {
+        const m = data.meets.find((x) => x.id === n.meetId);
+        return Boolean(m && !m.responses[n.to]);          // beantwortet → weg
+      }
+      return true;
+    });
+  }
+
   // ---------- Regelmäßige Einladungen: Termine anlegen, sobald der Vorlauf erreicht ist ----------
   // Gibt die neu angelegten Termine zurück (Einladungen gehen dabei ins Postfach der Eingeladenen).
   function materialize() {
     const created = [];
     const now = today();
-    (data.series || []).filter((s) => s.active).forEach((s) => {
+    (data.series || []).forEach((s) => {
       for (let d = s.from, i = 0; d <= s.until && i < 200; d = addDays(d, 7), i += 1) {
         if (d < now) continue;
         if (addDays(d, -s.leadDays) > now) break;            // noch nicht dran
@@ -149,10 +172,7 @@
         created.push(m);
       }
     });
-    // Vergangene Termine aufräumen (Serien behalten ihre Regel)
-    const before = data.meets.length;
-    data.meets = data.meets.filter((m) => m.date >= addDays(now, -1));
-    if (created.length || before !== data.meets.length) save();
+    save();
     return created;
   }
   // Wann geht die nächste Einladung einer Serie raus – und für welchen Termin?
@@ -221,8 +241,6 @@
     if (a) m.responses[id] = { a, at: Date.now(), note: noteText || '', ...(by ? { by } : {}) };
     else delete m.responses[id];
     const after = lineup(m);
-    // Einladung ist beantwortet → als gelesen markieren
-    data.inbox.filter((n) => n.to === id && n.meetId === m.id && n.type === 'invite').forEach((n) => { n.read = true; });
     // Nachrücker: war Ersatz, spielt jetzt
     after.players.filter((p) => !before.players.includes(p) && before.ersatz.includes(p)).forEach((p) => note(p, 'moved', m, null));
     // Der Einladende erfährt jede Zu- und Absage
@@ -270,7 +288,7 @@
       .sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
     const waiting = mine.filter((m) => m.invitees.includes(me().id) && !m.responses[me().id]);
     const rest = mine.filter((m) => !waiting.includes(m));
-    const mySeries = (data.series || []).filter((s) => s.active && (s.createdBy === me().id || s.invitees.includes(me().id)));
+    const mySeries = (data.series || []).filter((s) => (s.createdBy === me().id || s.invitees.includes(me().id)));
     const allIds = [...new Set(mine.flatMap((m) => m.invitees).concat(mySeries.map((s) => s.createdBy)))];
     const names = await ui().api.memberNames(allIds);
     const myGroups = data.groups.filter((g) => g.members.includes(me().id));
@@ -584,7 +602,7 @@
           createdBy: me().id, invitees: draft.invitees, slots: draft.slots };
         let target;
         if (draft.weekly) {
-          const s = { id: uid('sr-'), ...base, from: draft.date, until: draft.until, leadDays: draft.leadDays, skipped: [], active: true, createdAt: new Date().toISOString() };
+          const s = { id: uid('sr-'), ...base, from: draft.date, until: draft.until, leadDays: draft.leadDays, skipped: [], createdAt: new Date().toISOString() };
           data.series.push(s);
           const made = materialize();
           made.forEach((m) => simulateReplies(m));
@@ -643,7 +661,7 @@
     form.querySelector('[data-end]').addEventListener('click', (e) => {
       const b = e.currentTarget;
       if (!b.dataset.armed) { b.dataset.armed = '1'; b.textContent = 'Wirklich beenden? Kommende Termine werden abgesagt – nochmal tippen'; return; }
-      s.active = false;
+      data.series = data.series.filter((x) => x.id !== s.id);
       data.meets.filter((m) => m.seriesId === s.id && m.date >= today()).forEach((m) => {
         m.invitees.filter((p) => p !== m.createdBy).forEach((p) => note(p, 'cancel', m, m.createdBy));
       });
@@ -858,7 +876,6 @@
   function answerGroup(g, id, yes) {
     g.pending = (g.pending || []).filter((i) => i !== id);
     if (yes && !g.members.includes(id)) g.members.push(id);
-    data.inbox.filter((n) => n.to === id && n.groupId === g.id && n.type === 'group-invite').forEach((n) => { n.read = true; });
     groupNote(g.createdBy, yes ? 'group-yes' : 'group-no', g, id);
     if (yes && !g.pending.length) groupNote(g.createdBy, 'group-complete', g, null);
     save();

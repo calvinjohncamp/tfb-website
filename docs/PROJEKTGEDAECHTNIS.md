@@ -800,3 +800,8 @@ Monatsabschluss.
   die aktuell bestätigten Mitglieder ein. Nur der Ersteller bearbeitet die Gruppe, andere können sie
   verlassen. „Anderes“ heißt jetzt **„Mannschafts-Spiel“**; beim Anlegen optional „Treffen um“ und
   „Abfahrt um“ (in Karte und Einladung sichtbar).
+- **12.10.2026** – **Verabreden ohne Historie (v125).** Grundsatz des Nutzers: keine Spuren, so schlank
+  wie möglich. Termine verschwinden nach ihrem Tag, Serien nach ihrem Enddatum bzw. sofort beim
+  Beenden, Postfach-Einträge mit ihrem Termin; beantwortete Einladungen und gelesene Gruppen-Infos
+  sofort. Aufräumen läuft bei jedem Speichern (`prune()` in meet.js). Kopf: Glocke 34 px, unten bündig
+  mit dem Profilbild, 22 px Abstand; Desktop-Menü gleichmäßig zwischen Logo und Glocke verteilt.
