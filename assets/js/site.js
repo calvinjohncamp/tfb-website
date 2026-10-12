@@ -419,7 +419,7 @@
             ${(b.images || []).filter(shownImage).length ? newsCollage(b) : wrap(`<div class="feature-media">${picture(b.image, b.id, b.title)}</div>`)}
             <div class="feature-body">
               <div class="feature-left">
-                <p class="feature-kicker"><span${n === '01' && page === 'home' ? ' data-color-peek' : ''}>${n}</span>${esc(b.kicker || '')}</p>
+                <p class="feature-kicker"><span${page === 'home' ? ' data-color-peek' : ''}>${n}</span>${esc(b.kicker || '')}</p>
                 ${wrap(`<h2>${esc(b.title)}</h2>`)}
                 ${b.subtitle ? `<p class="feature-sub">${esc(b.subtitle)}</p>` : ''}
                 ${slot('left', 'Link hierher')}
@@ -911,12 +911,12 @@
       <p class="muted small">Gilt für alle Besucher. Die Seite darunter zeigt sofort den gewählten Look – so bearbeitest du genau, was die Besucher sehen.</p>
     </section>`;
   }
-  // Nur Demo: Klick auf die „01“ des ersten Themas schaltet die Startseite zwischen Standard und Bunt um
-  // (Vorführung, wird nicht gespeichert; nach dem Neuladen gilt wieder die Einstellung aus dem Bearbeiten-Modus).
+  // Nur Demo: Klick auf eine Themennummer (01, 02, 03 …) der Startseite schaltet zwischen Standard und Bunt um –
+  // mit und ohne eingeblendete Admin-Werkzeuge (Vorführung, wird nicht gespeichert; nach dem Neuladen gilt
+  // wieder die Voreinstellung aus dem Bearbeiten-Modus).
   document.addEventListener('click', (e) => {
     if (!e.target.closest('[data-color-peek]')) return;
-    const m = ui().state.member;
-    if (ui().api.mode !== 'demo' || !m || !(m.isAdmin || m.adminHidden)) return;
+    if (ui().api.mode !== 'demo') return;
     e.preventDefault();
     e.stopPropagation();
     colorPeek = homeColorMode() === 'bunt' ? 'standard' : 'bunt';

@@ -888,3 +888,5 @@ Monatsabschluss.
   Voreinstellung jetzt `site.homeColorMode` (Standard, falls nicht „Bunt“ gewählt), Klick auf „01“ zeigt Bunt.
   Farbänderung im Thema zeigt bis zum Neuladen „Bunt“, ändert aber nicht die Voreinstellung.
   Eingefroren als Tag `stand-2026-10-12-v151`.
+- **12.10.2026** – v152: Vorführ-Umschalter Standard ↔ Bunt auf **jeder** Themennummer der Startseite (01, 02, 03 …)
+  und in der Demo **für alle Ansichten** (Admin ein- oder ausgeblendet, auch abgemeldet). Tag `stand-2026-10-12-v152`.
