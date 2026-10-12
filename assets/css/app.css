@@ -2428,3 +2428,16 @@ h1, h2, h3, .event h3, .feature-body h2, .story-head h1, .post-body h3 { -webkit
 .acct-adminbox .admin-card .muted { font-size: .8rem; line-height: 1.45; margin: 0 0 10px; }
 .acct-adminbox .admin-card .small { font-size: .8rem; }
 .acct-adminbox .admin-card .btn { font-size: .88rem; }
+/* Foto-Freigaben (Admin) */
+.photo-admin .photo-list { display: grid; gap: 10px; margin-top: 14px; }
+.photo-admin .photo-request { border-top: 0; background: #fff; border-radius: 14px; padding: 14px 16px; box-shadow: 0 0 0 1px #E6E1D6; display: grid; gap: 10px; }
+.photo-request-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.photo-request-head strong { font-size: 1rem; }
+.photo-state { font-size: .72rem; font-weight: 800; padding: 4px 9px; border-radius: 99px; white-space: nowrap; }
+.photo-state.ok { background: var(--meet-yes-soft); color: var(--signal); }
+.photo-state.wait { background: var(--signal); color: #fff; }
+.photo-state.none { background: #EFEDE7; color: var(--muted); }
+.photo-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.photo-tags span { font-size: .78rem; font-weight: 600; padding: 4px 10px; border-radius: 99px; border: 1px solid #DDD7CB; color: var(--ink); }
+.photo-actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
+.photo-admin .photo-request p { margin: 0; }

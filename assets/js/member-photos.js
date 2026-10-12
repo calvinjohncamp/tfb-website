@@ -39,17 +39,23 @@
   async function admin() {
     try {
       const requests = await ui().api.photoRequests();
-      ui().openSheet(`<div class="editor"><h2>Foto-Freigaben</h2>
-        <p class="membership-notice">Lokale Vorführversion: Hier wird eine bereits vorliegende Elternzustimmung dokumentiert. Es werden keine Bestätigungs-E-Mails verschickt.</p>
-        ${requests.length ? requests.map((m) => {
+      const short = { members: 'Profilbild für Mitglieder', public: 'Profilbild öffentlich', events: 'Vereinsfotos öffentlich' };
+      ui().openSheet(`<div class="editor photo-admin"><h2>Foto-Freigaben</h2>
+        <p class="small muted">Wer hat welchen Veröffentlichungen zugestimmt? Bei Minderjährigen dokumentierst du hier eine vorliegende Elternzustimmung. In der Vorführversion werden keine E-Mails verschickt.</p>
+        ${requests.length ? `<div class="photo-list">${requests.map((m) => {
           const p = m.pending || m.approval || { scopes: [...(m.publicAvatar ? ['public'] : []), ...(m.events ? ['events'] : [])] };
-          return `<section class="photo-request"><h3>${esc(m.firstName)} ${esc(m.lastName)}</h3>
-            ${p.parentName ? `<p>${esc(p.parentName)} · ${esc(p.parentEmail)}</p>` : ''}<ul>${p.scopes.map((s) => `<li>${esc(labels[s])}</li>`).join('')}</ul>
-            ${m.pending ? `<label class="meet-check"><input type="checkbox" data-proof="${esc(m.id)}"><span>Die Zustimmung der vertretungsberechtigten Sorgeberechtigten für die aufgeführten Zwecke liegt dem Club vor und wurde geprüft. Erforderliche weitere Zustimmungen liegen ebenfalls vor.</span></label>
-            <button type="button" class="btn primary" data-approve="${esc(m.id)}">Zustimmung dokumentieren</button>` : m.approval ? '<p>Elternzustimmung dokumentiert.</p>' : `<p>${m.photoMinor ? 'Keine Elternzustimmung dokumentiert.' : 'Eigene Foto-Freigaben des Mitglieds.'}</p>`}
-            <button type="button" class="btn" data-revoke="${esc(m.id)}">${m.pending ? 'Anfrage ablehnen' : 'Freigabe zurücknehmen'}</button>
+          const state = m.pending ? ['wait', 'Wartet auf Bestätigung'] : m.approval ? ['ok', 'Elternzustimmung dokumentiert'] : m.photoMinor ? ['none', 'Keine Elternzustimmung'] : ['ok', 'Eigene Freigabe'];
+          return `<section class="photo-request">
+            <div class="photo-request-head"><strong>${esc(m.firstName)} ${esc(m.lastName)}</strong><span class="photo-state ${state[0]}">${state[1]}</span></div>
+            ${p.scopes.length ? `<div class="photo-tags">${p.scopes.map((x) => `<span>${esc(short[x] || labels[x])}</span>`).join('')}</div>` : ''}
+            ${p.parentName ? `<p class="small muted">Sorgeberechtigt: ${esc(p.parentName)} · ${esc(p.parentEmail)}</p>` : ''}
+            ${m.pending ? `<label class="meet-check"><input type="checkbox" data-proof="${esc(m.id)}"><span>Die Zustimmung der Sorgeberechtigten für diese Zwecke liegt dem Club vor und wurde geprüft.</span></label>` : ''}
+            <div class="photo-actions">
+              ${m.pending ? `<button type="button" class="btn small primary" data-approve="${esc(m.id)}">Zustimmung dokumentieren</button>` : ''}
+              <button type="button" class="btn small ghost-danger" data-revoke="${esc(m.id)}">${m.pending ? 'Anfrage ablehnen' : 'Freigabe zurücknehmen'}</button>
+            </div>
           </section>`;
-        }).join('') : '<p>Noch keine Fotos oder Foto-Freigaben vorhanden.</p>'}
+        }).join('')}</div>` : '<p class="muted">Noch keine Fotos oder Foto-Freigaben vorhanden.</p>'}
         <p class="form-error" role="alert"></p>
       </div>`);
       const root = document.querySelector('#sheet-root .editor');
