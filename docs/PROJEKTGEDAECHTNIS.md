@@ -819,3 +819,6 @@ Monatsabschluss.
   „Unbestätigt“ heißt nur: Gruppe erscheint bei ihm noch nicht unter „Meine Gruppen“. Karte zeigt
   „N Mitglieder · X unbestätigt“. Namen in Gruppen und Einladungen alphabetisch nach Nachname.
   Vorführung bestätigt Gruppen-Einladungen immer (keine zufälligen Absagen mehr).
+- **12.10.2026** – **Postfach aufräumen (v134).** Jeder Hinweis hat ein ×; „Alle Hinweise entfernen“ lässt
+  nur offene Einladungen stehen (die haben kein ×, sie gehen mit der Antwort). Hinweise verschwinden
+  sonst nach 7 Tagen bzw. mit ihrem Termin. Neu: „Du bist jetzt Mitglied der Gruppe …“ für den, der bestätigt.

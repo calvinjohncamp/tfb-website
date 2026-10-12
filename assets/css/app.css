@@ -1208,9 +1208,13 @@ button.meet-row:hover { background: #FAF8F3; }
 .inbox-btn:hover { box-shadow: 0 0 0 1.5px var(--signal); }
 .inbox-badge { position: absolute; top: -7px; right: -9px; min-width: 16px; height: 16px; padding: 0 4px; font-size: .58rem !important; border-radius: 99px; background: var(--signal); color: #fff; font-size: .68rem; font-weight: 800; display: grid; place-items: center; box-shadow: 0 0 0 2px var(--bg); }
 .inbox-list { display: grid; margin: 12px 0; border-radius: 14px; overflow: hidden; box-shadow: 0 0 0 1px #E6E1D6; background: #fff; }
-.inbox-item { display: grid; grid-template-columns: 10px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 12px 14px; border: 0; border-top: 1px solid #EFEBE3; background: none; text-align: left; font: inherit; color: inherit; cursor: pointer; }
+.inbox-item { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; border-top: 1px solid #EFEBE3; }
+.inbox-open { display: grid; grid-template-columns: 10px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 12px 14px; border: 0; background: none; text-align: left; font: inherit; color: inherit; cursor: pointer; }
+.inbox-del { width: 30px; height: 30px; margin-right: 10px; border: 0; border-radius: 50%; background: transparent; display: grid; place-items: center; cursor: pointer; color: var(--muted); }
+.inbox-del:hover { background: #EFEBE3; color: var(--ink); }
+.inbox-del svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; }
 .inbox-item:first-child { border-top: 0; }
-.inbox-item:hover { background: #FAF8F3; }
+.inbox-open:hover { background: #FAF8F3; }
 .inbox-dot { width: 8px; height: 8px; border-radius: 50%; }
 .inbox-item.unread .inbox-dot { background: var(--signal); }
 .inbox-item.unread { background: var(--meet-yes-soft); }

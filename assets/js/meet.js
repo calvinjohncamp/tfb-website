@@ -19,7 +19,8 @@
 //   - Entfernen:  diese Datei + <script> in index.html + Abschnitt „Treffen“ in app.css
 // Daten liegen im Demo-Modus in einem eigenen Speicher (localStorage: tfb_meet_demo_v2).
 // Keine Historie: Vorbei ist vorbei. Termine verschwinden nach ihrem Tag, beendete Serien sofort,
-// Postfach-Einträge mit ihrem Termin, beantwortete Einladungen sofort, gelesene Gruppen-Infos sofort.
+// beantwortete Einladungen sofort. Infos im Postfach entfernt man mit ×, sonst gehen sie nach 7 Tagen
+// (oder mit ihrem Termin) von selbst.
 (function () {
   if (!(TFB.config.features && TFB.config.features.treffen)) return;
   TFB.views = TFB.views || {};
@@ -139,13 +140,15 @@
     data.meets = data.meets.filter((m) => m.date >= now);
     data.series = (data.series || []).filter((s) => s.until >= now);
     data.series.forEach((s) => { s.skipped = (s.skipped || []).filter((d) => d >= now); });
+    const week = Date.now() - 7 * 864e5;
     data.inbox = (data.inbox || []).filter((n) => {
       if (n.groupId) {
         const g = data.groups.find((x) => x.id === n.groupId);
-        if (!g) return false;
-        return n.type === 'group-invite' ? (g.pending || []).includes(n.to) : !n.read;
+        if (n.type === 'group-invite') return Boolean(g && (g.pending || []).includes(n.to));   // bis beantwortet
+        return n.at >= week;                                                  // Info: bis entfernt, höchstens 7 Tage
       }
       if (n.snap.date < now) return false;
+      if (n.type !== 'invite' && n.type !== 'remind' && n.at < week) return false;
       if (n.type === 'cancel') return true;                // Absage bleibt bis zum Tag stehen
       const m = data.meets.find((x) => x.id === n.meetId);
       if (!m) return false;
@@ -718,6 +721,7 @@
       'group-no': `<b>${esc(who(n))}</b> möchte nicht in „${esc(n.snap.title)}“`,
       'group-left': `<b>${esc(who(n))}</b> hat „${esc(n.snap.title)}“ verlassen`,
       'group-complete': `<b>Alle haben bestätigt:</b> „${esc(n.snap.title)}“ ist komplett`,
+      'group-joined': `<b>Du bist jetzt Mitglied</b> der Gruppe „${esc(n.snap.title)}“`,
     }[n.type] || esc(n.snap.title));
     const pending = (n) => {
       if (n.type === 'group-invite') { const g = group(n.groupId); return Boolean(g && (g.pending || []).includes(me().id)); }
@@ -733,18 +737,23 @@
           const isGroup = n.type.startsWith('group-');
           const gone = isGroup ? !group(n.groupId) : !meetById(n.meetId);
           const tag = pending(n) ? `<span class="meet-mine open">${isGroup ? 'Bestätigen' : 'Antworten'}</span>` : '';
-          return `<button type="button" class="inbox-item ${n.read ? '' : 'unread'} ${gone ? 'gone' : ''}" data-open="${esc(n.id)}">
-            <span class="inbox-dot" aria-hidden="true"></span>
-            <span class="inbox-text"><span>${text(n)}</span><small>${esc(isGroup ? 'Gruppe' : n.type === 'invite' || n.type === 'remind' || n.type === 'cancel' ? when(n) : `${n.snap.title} · ${when(n)}`)}${n.extra && n.extra.note ? ` · „${esc(n.extra.note)}“` : ''} · ${esc(ago(n.at))}</small></span>
-            ${tag}
-          </button>`;
+          return `<div class="inbox-item ${n.read ? '' : 'unread'} ${gone ? 'gone' : ''}">
+            <button type="button" class="inbox-open" data-open="${esc(n.id)}">
+              <span class="inbox-dot" aria-hidden="true"></span>
+              <span class="inbox-text"><span>${text(n)}</span><small>${esc(isGroup ? 'Gruppe' : n.type === 'invite' || n.type === 'remind' || n.type === 'cancel' ? when(n) : `${n.snap.title} · ${when(n)}`)}${n.extra && n.extra.note ? ` · „${esc(n.extra.note)}“` : ''} · ${esc(ago(n.at))}</small></span>
+              ${tag}
+            </button>
+            ${tag ? '' : `<button type="button" class="inbox-del" data-del="${esc(n.id)}" aria-label="Aus dem Postfach entfernen">${ui().icon.close}</button>`}
+          </div>`;
         }).join('')}</div>` : '<p class="muted">Noch nichts da. Sobald dich jemand einlädt oder auf deine Einladung antwortet, steht es hier.</p>'}
-        ${unread() ? '<button type="button" class="link center" data-allread>Alle als gelesen markieren</button>' : ''}
+        ${items.some((n) => !pending(n)) ? '<button type="button" class="link center" data-clear>Alle Hinweise entfernen</button><p class="small muted center">Offene Einladungen bleiben, bis du geantwortet hast. Hinweise verschwinden sonst nach 7 Tagen von selbst.</p>' : ''}
       </div>`);
     const root = document.querySelector('.inbox-sheet');
     root.addEventListener('click', (e) => {
-      if (e.target.closest('[data-allread]')) {
-        myInbox().forEach((n) => { n.read = true; });
+      const del = e.target.closest('[data-del]');
+      if (del || e.target.closest('[data-clear]')) {
+        const drop = del ? [del.dataset.del] : myInbox().filter((n) => !pending(n)).map((n) => n.id);
+        data.inbox = data.inbox.filter((n) => !drop.includes(n.id));
         save(); refreshBell(); openInbox(); return;
       }
       const it = e.target.closest('[data-open]');
@@ -903,6 +912,7 @@
     g.pending = (g.pending || []).filter((i) => i !== id);
     if (yes && !g.members.includes(id)) g.members.push(id);
     groupNote(g.createdBy, yes ? 'group-yes' : 'group-no', g, id);
+    if (yes) groupNote(id, 'group-joined', g, g.createdBy);
     if (yes && !g.pending.length) groupNote(g.createdBy, 'group-complete', g, null);
     save();
   }
