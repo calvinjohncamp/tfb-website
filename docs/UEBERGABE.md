@@ -3,8 +3,8 @@
 **Zuerst lesen.** Ausführlicher Verlauf: [PROJEKTGEDAECHTNIS.md](PROJEKTGEDAECHTNIS.md).
 Diese Zusammenfassung hat Vorrang vor älteren Zwischenständen.
 
-Stand: **12.10.2026 – EINGEFROREN** als Git-Tag **`stand-2026-10-12-v149`** (v149, Cache `tfb-kiosk-v149`;
-frühere Tags heute: `stand-2026-10-12` = v138, `stand-2026-10-12-abend` = v141). Alles lokal committet,
+Stand: **12.10.2026 – EINGEFROREN** als Git-Tag **`stand-2026-10-12-v150`** (v150, Cache `tfb-kiosk-v150`;
+frühere Tags heute: `stand-2026-10-12-v149`, `stand-2026-10-12` = v138, `stand-2026-10-12-abend` = v141). Alles lokal committet,
 4 Node-Tests grün. Nicht veröffentlicht, nicht zu GitHub gepusht – nur auf Wunsch des Nutzers pushen.
 Nutzer: „Ansonsten alles jetzt eins A. Und so einfrieren bitte.“
 
@@ -52,6 +52,8 @@ Nutzer: „Ansonsten alles jetzt eins A. Und so einfrieren bitte.“
 - **Foto-Freigaben (Admin)** als Karten mit Status und Pillen (v138).
 - **Vorführ-Schalter (v148, nur Demo):** Klick auf den roten Ball im Logo blendet Admin-Stifte aus/ein.
 - Menü: Padel (externer Link) reagiert beim Überfahren wie die anderen Punkte (v149).
+- **Farben Home: Standard | Bunt (v150):** genau eine bunte Fassung (Farben je Thema), Umschalter im
+  Home-Bearbeiten-Modus; versteckter Vorführ-Schalter: Klick auf die große „01“ (nur Demo/Admin, nicht gespeichert).
 - Kopf: Profilbild/Glocke per Messung 4 px unter der Menü-Grundlinie (optischer Ausgleich, v147 – abgenommen).
 - Anmeldung: Auge im Passwortfeld (v143), Demo-Kasten entfernt (v144).
 - **v139–v141 (nachmittags ergänzt):** Farben je Home-Thema (Textseite + Link-Knöpfe), Link-Abstände (Standard 26/14 px, je Thema ▲/▼) –

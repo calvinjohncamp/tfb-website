@@ -99,6 +99,11 @@
       row.querySelector('[data-gap-reset]').addEventListener('click', () => set(def));
     });
   }
+  // Wer im Thema Farben ändert, arbeitet an der bunten Fassung → danach gilt „Bunt“
+  function markColors(before, after) {
+    if (!after || after.type !== 'feature') return;
+    if ((before?.bg || '') !== (after.bg || '') || (before?.linkBg || '') !== (after.linkBg || '')) { site.homeColors = 'bunt'; colorPeek = null; }
+  }
   function wireColorFields(form, changed) {
     form.querySelectorAll('[data-color-field]').forEach((row) => {
       const def = row.dataset.default;
@@ -401,17 +406,20 @@
             ? `<button type="button" data-action="link-move" data-block="${esc(b.id)}" data-slot="${name}">${hint}</button>`
             : '<span class="link-drop" aria-hidden="true">hier ablegen</span>'}</div>`;
         };
+        const colorsOn = page !== 'home' || homeColorMode() === 'bunt' || (preview && preview.id === b.id);
+        const bg = colorsOn && hexOk(b.bg) ? b.bg : '';
+        const linkBg = colorsOn && hexOk(b.linkBg) ? b.linkBg : '';
         const parts = String(b.text || '').split(/\n{2,}/).filter((x) => x.trim());
         const textHtml = parts.map((p, i) => slot(`right-${i}`) + paragraphs(p)).join('');
         return `
-          <article class="feature feature-${esc(String(b.layout || 'wide').replace('-right', ''))} ${/-right$/.test(b.layout || '') ? 'img-right' : ''} ${more ? 'has-more' : ''} ${n === '01' ? 'feature-first' : ''} ${Number(n) % 2 === 0 ? 'feature-even' : ''} ${hexOk(b.bg) && isDarkBg(b.bg) ? 'feature-dark' : ''} ${hexOk(b.linkBg) ? (isDarkBg(b.linkBg) ? 'links-dark' : 'links-light') : ''}" data-feature="${esc(b.id)}"${(() => {
-            const v = [hexOk(b.bg) ? `--feature-bg:${b.bg}` : '', hexOk(b.linkBg) ? `--link-bg:${b.linkBg}` : '', gapOk(b.linkTop) ? `--link-top:${b.linkTop}px` : '', gapOk(b.linkGap) ? `--link-gap:${b.linkGap}px` : ''].filter(Boolean).join(';');
+          <article class="feature feature-${esc(String(b.layout || 'wide').replace('-right', ''))} ${/-right$/.test(b.layout || '') ? 'img-right' : ''} ${more ? 'has-more' : ''} ${n === '01' ? 'feature-first' : ''} ${Number(n) % 2 === 0 ? 'feature-even' : ''} ${bg && isDarkBg(bg) ? 'feature-dark' : ''} ${linkBg ? (isDarkBg(linkBg) ? 'links-dark' : 'links-light') : ''}" data-feature="${esc(b.id)}"${(() => {
+            const v = [bg ? `--feature-bg:${bg}` : '', linkBg ? `--link-bg:${linkBg}` : '', gapOk(b.linkTop) ? `--link-top:${b.linkTop}px` : '', gapOk(b.linkGap) ? `--link-gap:${b.linkGap}px` : ''].filter(Boolean).join(';');
             return v ? ` style="${v}"` : '';
           })()}>
             ${(b.images || []).filter(shownImage).length ? newsCollage(b) : wrap(`<div class="feature-media">${picture(b.image, b.id, b.title)}</div>`)}
             <div class="feature-body">
               <div class="feature-left">
-                <p class="feature-kicker"><span>${n}</span>${esc(b.kicker || '')}</p>
+                <p class="feature-kicker"><span${n === '01' && page === 'home' ? ' data-color-peek' : ''}>${n}</span>${esc(b.kicker || '')}</p>
                 ${wrap(`<h2>${esc(b.title)}</h2>`)}
                 ${b.subtitle ? `<p class="feature-sub">${esc(b.subtitle)}</p>` : ''}
                 ${slot('left', 'Link hierher')}
@@ -774,7 +782,7 @@
           <a class="${training ? 'on' : ''}" href="#sport/training" ${training ? 'aria-current="page"' : ''}>Training</a>
         </nav>` : ''}
         ${key === 'home' ? `<div class="home-masthead"><span>Neu im Club</span><span>${esc(new Date().toLocaleDateString('de-DE', { month: 'long', year: 'numeric' }))}</span></div>` : ''}
-        ${key === 'home' && edit ? lookPicker() + navCard() : ''}
+        ${key === 'home' && edit ? lookPicker() + colorModeCard() + navCard() : ''}
         ${blocks}
         ${edit && key === 'home' ? homeAddButton(list) : ''}
         ${edit && key !== 'home' && (key !== 'sport' || training) ? `<button type="button" class="btn block add-section" data-action="block-new">${icon.plus} Baustein hinzufügen</button>` : ''}
@@ -880,6 +888,18 @@
       : `<button type="button" class="btn block add-section add-feature" data-action="block-add" data-type="feature">${ui().icon.plus} Neues Thema <small>${n} von ${MAX_HOME_FEATURES}</small></button>`;
   }
   const homeLook = () => (HOME_LOOKS.some(([k]) => k === site?.homeLook) ? site.homeLook : '6');
+  // Farben der Home-Themen: genau eine bunte Fassung (Farben je Thema) oder „Standard“ (Creme/Weiß).
+  // Gespeichert in site.homeColors; colorPeek = versteckter Vorführ-Schalter (Klick auf „01“), nicht gespeichert.
+  let colorPeek = null;
+  const homeColorMode = () => colorPeek || (site?.homeColors === 'standard' ? 'standard' : 'bunt');
+  function colorModeCard() {
+    const cur = site?.homeColors === 'standard' ? 'standard' : 'bunt';
+    return `<section class="look-picker color-mode" aria-label="Farben der Startseite">
+      <h2>Farben der Themen</h2>
+      <div class="seg">${[['standard', 'Standard'], ['bunt', 'Bunt']].map(([k, l]) => `<button type="button" class="${k === cur ? 'on' : ''}" data-action="home-colors" data-mode="${k}" aria-pressed="${k === cur}">${l}</button>`).join('')}</div>
+      <p class="muted small">„Bunt“ zeigt die Farben, die du je Thema eingestellt hast; „Standard“ zeigt alle in Creme mit weißen Knöpfen – deine Farben bleiben gespeichert. Änderst du Farben im Thema, gilt danach „Bunt“. Gilt für alle Besucher.</p>
+    </section>`;
+  }
   function lookPicker() {
     const cur = homeLook();
     return `<section class="look-picker" aria-label="Look der Startseite">
@@ -889,6 +909,18 @@
       <p class="muted small">Gilt für alle Besucher. Die Seite darunter zeigt sofort den gewählten Look – so bearbeitest du genau, was die Besucher sehen.</p>
     </section>`;
   }
+  // Nur Demo: Klick auf die „01“ des ersten Themas schaltet die Startseite zwischen Standard und Bunt um
+  // (Vorführung, wird nicht gespeichert; nach dem Neuladen gilt wieder die Einstellung aus dem Bearbeiten-Modus).
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('[data-color-peek]')) return;
+    const m = ui().state.member;
+    if (ui().api.mode !== 'demo' || !m || !(m.isAdmin || m.adminHidden)) return;
+    e.preventDefault();
+    e.stopPropagation();
+    colorPeek = homeColorMode() === 'bunt' ? 'standard' : 'bunt';
+    const y = window.scrollY;
+    ui().renderView().then(() => window.scrollTo(0, y));
+  }, true);
   ['home', 'aktuell', 'sport', 'verein', 'impressum', 'satzung'].forEach((key) => { TFB.views[routeOf(key)] = () => pageView(key); });
 
   // Ansicht (nicht Bearbeiten): Bausteine zu Gruppen bündeln, damit sie sich auf
@@ -1778,6 +1810,7 @@
           if (!draft.title) { form.querySelector('.form-error').textContent = 'Bitte zuerst eine Überschrift eingeben – dann wird gespeichert und gewechselt.'; form.querySelector('[name=title]')?.focus(); return; }
           delete draft._new;
           const list = blocksOf();
+          markColors(list.find((b) => b.id === id), draft);
           list[list.findIndex((b) => b.id === id)] = draft;
           dropUnsaved();
           try { site = await ui().api.saveSite(site); } catch (err) { ui().toast(err.message); return; }
@@ -1979,6 +2012,7 @@
       if (['event', 'post', 'feature'].includes(draft.type) && !draft.title) { form.querySelector('.form-error').textContent = 'Bitte einen Titel eingeben.'; return; }
       delete draft._new;
       const list = blocksOf();
+      markColors(list.find((b) => b.id === id), draft);
       list[list.findIndex((b) => b.id === id)] = draft;
       endLive();
       closeSheet();
@@ -2498,6 +2532,14 @@
       window.scrollTo(0, 0);
     },
     'nav-edit': () => openNavEditor(),
+    'home-colors': async (el) => {
+      try {
+        colorPeek = null;
+        site = await ui().api.saveSite({ ...JSON.parse(JSON.stringify(site)), homeColors: el.dataset.mode });
+        ui().toast(el.dataset.mode === 'bunt' ? 'Farben: Bunt' : 'Farben: Standard', true);
+        const y = window.scrollY; await ui().renderView(); window.scrollTo(0, y);
+      } catch (err) { ui().toast(err.message); }
+    },
     'home-look': async (el) => {
       try {
         site = await ui().api.saveSite({ ...JSON.parse(JSON.stringify(site)), homeLook: el.dataset.look });

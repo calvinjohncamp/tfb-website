@@ -875,3 +875,10 @@ Monatsabschluss.
 - **12.10.2026** – v149: Menüpunkt Padel (externer Link) wird beim Überfahren dunkel wie die anderen.
   **Eingefroren als Tag `stand-2026-10-12-v149`.** Nutzer: „alles jetzt eins A“. Nächster Job: Getränkeliste der
   Tennisfreunde (heutiges Angebot) besorgt der Nutzer → Kiosk-Sortiment exakt darauf umstellen.
+- **12.10.2026** – **Farbfassungen Home: Standard | Bunt (v150).** Genau **eine** bunte Fassung = die Farben je
+  Thema (`block.bg`, `block.linkBg`); „Standard“ zeigt alle in Creme/Weiß, ohne die Farben zu löschen.
+  Umschalter „Farben der Themen“ im Home-Bearbeiten-Modus (unter dem Look), gespeichert in `site.homeColors`.
+  Farbänderung im Thema → automatisch „Bunt“; beim Bearbeiten zeigt die Vorschau das Thema immer farbig.
+  **Versteckter Vorführ-Schalter (nur Demo, Admin – auch bei ausgeblendeten Stiften):** Klick auf die große
+  „01“ des ersten Themas wechselt Standard ↔ Bunt, nicht gespeichert (`colorPeek`); nach Neuladen gilt die
+  gespeicherte Einstellung. Mehrere bunte Fassungen bewusst verworfen (Nutzer).

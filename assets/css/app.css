@@ -2488,3 +2488,5 @@ body.admin-hidden [data-action="post-hide"] { display: none !important; }
 
 /* Menü: auch der externe Link (Padel) reagiert beim Überfahren wie die anderen Punkte */
 .topnav .tab.external:hover { color: var(--ink); }
+/* Farben der Themen (Home-Bearbeiten) */
+.look-picker.color-mode .seg { margin-bottom: 10px; }
