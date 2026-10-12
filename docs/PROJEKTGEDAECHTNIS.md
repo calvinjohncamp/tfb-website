@@ -828,3 +828,6 @@ Monatsabschluss.
   Foto-Freigaben prüfen. Schrift fest **Avenir Next**, Markenfarbe fest **Anthrazit #2A2D2E** – keine
   Umschalter mehr. Konto: „E-Mail-Benachrichtigungen vom Club“ (Standard an); „Einladungen von allen“
   (Standard an) ist verknüpft: ausgeschaltet findet man die Person beim Verabreden nur über gemeinsame Gruppen.
+- **12.10.2026** – **Entscheidung Kiosk-Freigabe:** Kein Zurücknehmen in der App. Die Freigabe „Kiosk &
+  Lastschrift“ bleibt bestehen, sonst entstehen Lücken (Konsum ohne Buchung). Wer aussteigen will,
+  schreibt dem Vorstand eine E-Mail; der Vorstand nimmt die Freigabe dann zurück.
