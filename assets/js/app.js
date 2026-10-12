@@ -187,12 +187,6 @@
           ${body}
           <p class="form-error" role="alert">${esc(error)}</p>
         </form>
-        ${api.mode === 'demo' ? `
-          <aside class="demo-hint">
-            <span class="pill">Demo</span>
-            <p>Alle Daten bleiben auf diesem Gerät. Zum Ausprobieren:</p>
-            <button type="button" class="link" data-action="demo-fill">${esc(api.demoLogin.email)}</button>
-          </aside>` : ''}
       </section>`;
     const input = $view.querySelector('input');
     if (input && s !== 'email') input.focus();
