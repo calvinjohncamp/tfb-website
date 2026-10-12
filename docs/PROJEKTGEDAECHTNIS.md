@@ -781,3 +781,15 @@ Monatsabschluss.
   Zwischenstände erhalten. Kein Code geändert, keine erneuten Tests, kein Commit,
   kein Versand und keine Veröffentlichung; offene Produktions-/Rechts-/Bankfreigaben
   bleiben bestehen. Padel-Projekt nicht verändert.
+- **12.10.2026** – **Verabreden rund (v123).** Reihenfolge Einzel · Doppel · Training · Anderes.
+  Beim Anlegen „Einmalig“ (Einladung sofort) oder „Jede Woche“ (regelmäßige Einladung: erster Termin,
+  bis einschließlich, Einladung 1–7 Tage vorher; jeder Termin wird neu zu-/abgesagt; Serie in der
+  Übersicht unter „Regelmäßig“, ändern/beenden nur durch den Einladenden, einzelne Termine absagbar).
+  **Postfach** (Glocke neben dem Profilbild, Zahl = ungelesen): Einladungen, Zu-/Absagen an den
+  Einladenden, „Runde steht“, Nachrücken, Absagen, Erinnerungen. Keine E-Mails, keine Banner mehr.
+  Chat/Insider News bewusst ohne Postfach. Übersicht: „Wartet auf deine Antwort“ oben.
+  Echtbetrieb: Serverdienst legt die Wochentermine an; optional später Web-Push für die Glocke.
+  Außerdem 12.10.: wöchentlicher nuLiga-Abgleich per GitHub Actions (montags), Sport-Knopf färbt
+  „Mannschaftsporträt“/„News“ einzeln rot (v121), Clubgeflüster-Beitrag nur aus Mannschaft
+  entfernen (v122). Supabase-Plan: ein Vereins-Account, zwei Projekte (padel, tfb); ein
+  gemeinsamer Lastschrift-Kiosk ist Wunsch des Nutzers, Vorstand entscheidet.
