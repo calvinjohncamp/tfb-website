@@ -862,3 +862,5 @@ Monatsabschluss.
   v145: Profilbild/Anmelde-Symbol und Glocke werden ab 1024 px per Messung (`alignHeader()` in app.js) mit ihrer
   Unterkante exakt auf die Grundlinie der Menüschrift gesetzt (fester px-Versatz aus v144 war falsch – die
   Schriftmaße unterscheiden sich zwischen Browsern/Breiten; im Chrome des Nutzers rutschten sie zu hoch).
+  v146: Messung korrigiert – die Menüpunkte sind Flex-Boxen, die Sonde lag 3,6 px zu hoch. Grundlinie jetzt
+  über Textzeile (Range) + Oberlänge der Schrift (Canvas). Foto- und Glocken-Unterkante = Grundlinie der Menüschrift.

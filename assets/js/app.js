@@ -286,11 +286,14 @@
     if (!act || !tab) return;
     act.style.transform = '';
     if (window.innerWidth < 1024) return;
-    const probe = document.createElement('span');
-    probe.style.cssText = 'display:inline-block;width:0;height:0;vertical-align:baseline';
-    tab.appendChild(probe);
-    const baseline = probe.getBoundingClientRect().top;
-    probe.remove();
+    // Grundlinie direkt an der Schrift: Oberkante der Textzeile + Oberlänge der Schrift
+    const range = document.createRange();
+    range.selectNodeContents(tab);
+    const line = range.getBoundingClientRect();
+    const cs = getComputedStyle(tab);
+    const ctx = document.createElement('canvas').getContext('2d');
+    ctx.font = `${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+    const baseline = line.top + ctx.measureText(tab.textContent).fontBoundingBoxAscent;
     const pic = act.matches('.avatar') ? act : act.querySelector('.avatar');
     const shift = baseline - pic.getBoundingClientRect().bottom;
     if (Math.abs(shift) > 0.4 && Math.abs(shift) < 30) act.style.transform = `translateY(${shift.toFixed(1)}px)`;
