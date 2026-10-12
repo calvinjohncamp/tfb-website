@@ -649,7 +649,7 @@ button.shop-card { border: 0; text-align: left; font: inherit; }
 .auth-intro h1 { font-size: 1.5rem; }
 .auth-intro p { margin-top: 2px; }
 .auth-ball { width: 44px; flex: none; color: var(--logo); }
-.avatar.guest { background: #fff; color: var(--ink); box-shadow: 0 0 0 1.5px #E2DACB; }
+.avatar.guest { background: #fff; color: var(--ink); box-shadow: 0 0 0 2px var(--bg), 0 0 0 3.5px rgba(196, 85, 58, .35); }   /* gleicher Ring wie das Profilbild – sitzt optisch an derselben Stelle */
 .avatar.guest svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
 .admin-links { display: flex; flex-wrap: wrap; gap: 8px; }
 .admin-links .btn { flex: 1; min-width: 96px; }
