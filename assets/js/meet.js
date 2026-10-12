@@ -60,12 +60,8 @@
 
   let data = load();
   if (!data) {
-    const H40 = ['m-demo', 'm2', 'm4', 'm6', 'm8', 'm10', 'm12', 'm14', 'm16'];
     data = {
-      groups: [
-        { id: 'g-h40', name: 'Herren 40', members: H40, weekday: 2, time: '19:00', place: 'Platz 1–2' },
-        { id: 'g-so', name: 'Sonntags-Doppel', members: ['m-demo', 'm4', 'm9', 'm18', 'm12'], weekday: 0, time: '10:00', place: 'Platz 3' },
-      ],
+      groups: [],
       meets: [
         { id: uid() + 'd', kind: 'doppel', title: 'Doppel', date: nextWeekday(4), time: '18:00', place: 'Platz 3', note: 'Wer hat Lust?',
           createdBy: 'm4', invitees: ['m4', 'm-demo', 'm9', 'm12', 'm14', 'm18', 'm8'], slots: 4,
@@ -74,10 +70,7 @@
           createdBy: 'm6', invitees: ['m6', 'm-demo', 'm8', 'm16'], slots: 2,
           responses: { m6: ans('yes', 20) } },
       ],
-      series: [
-        { id: 'sr-h40', kind: 'training', groupId: 'g-h40', title: 'Training Herren 40', time: '19:00', place: 'Platz 1–2', note: '',
-          createdBy: 'm2', invitees: H40, slots: null, from: nextWeekday(2), until: addDays(nextWeekday(2), 7 * 20), leadDays: 5, skipped: [] },
-      ],
+      series: [],
       inbox: [],
     };
     data.meets.forEach((m) => notifyInvite(m, 90));
@@ -96,6 +89,14 @@
       }
       notifyInvite(m, 60);
     });
+  }
+  // 12.10.: Beispielgruppen entfernt (Nutzer legt eigene an) – samt ihren Trainings
+  if (!data.noSampleGroups) {
+    const sample = ['g-h40', 'g-so'];
+    data.groups = data.groups.filter((g) => !sample.includes(g.id));
+    data.series = data.series.filter((s) => !sample.includes(s.groupId));
+    data.meets = data.meets.filter((m) => !sample.includes(m.groupId));
+    data.noSampleGroups = true;
   }
   data.groups.forEach((g) => { if (!g.createdBy) g.createdBy = g.members[0]; if (!g.pending) g.pending = []; });
   materialize();
@@ -144,10 +145,10 @@
         return n.type === 'group-invite' ? (g.pending || []).includes(n.to) : !n.read;
       }
       if (n.snap.date < now) return false;
-      if (n.type === 'invite' || n.type === 'remind') {
-        const m = data.meets.find((x) => x.id === n.meetId);
-        return Boolean(m && !m.responses[n.to]);          // beantwortet → weg
-      }
+      if (n.type === 'cancel') return true;                // Absage bleibt bis zum Tag stehen
+      const m = data.meets.find((x) => x.id === n.meetId);
+      if (!m) return false;
+      if (n.type === 'invite' || n.type === 'remind') return !m.responses[n.to];   // beantwortet → weg
       return true;
     });
   }
