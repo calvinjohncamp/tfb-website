@@ -793,3 +793,10 @@ Monatsabschluss.
   „Mannschaftsporträt“/„News“ einzeln rot (v121), Clubgeflüster-Beitrag nur aus Mannschaft
   entfernen (v122). Supabase-Plan: ein Vereins-Account, zwei Projekte (padel, tfb); ein
   gemeinsamer Lastschrift-Kiosk ist Wunsch des Nutzers, Vorstand entscheidet.
+- **12.10.2026** – **Gruppen mit Bestätigung (v124).** Wer zu einer Gruppe hinzugefügt wird, steht dort
+  als „unbestätigt“ und bekommt eine Einladung ins Postfach (Bestätigen / Nein danke). Erst nach
+  Bestätigung erscheint die Gruppe bei ihm unter „Meine Gruppen“; Hinweise verschwinden, sobald alle
+  bestätigt haben (Ersteller bekommt „Alle haben bestätigt“). Wöchentliche Gruppentrainings laden immer
+  die aktuell bestätigten Mitglieder ein. Nur der Ersteller bearbeitet die Gruppe, andere können sie
+  verlassen. „Anderes“ heißt jetzt **„Mannschafts-Spiel“**; beim Anlegen optional „Treffen um“ und
+  „Abfahrt um“ (in Karte und Einladung sichtbar).

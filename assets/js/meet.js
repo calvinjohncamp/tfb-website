@@ -1,6 +1,7 @@
 // TFB – „Verabreden“ (intern: treffen): Verabreden in der App (Vorführung).
 //
-// Arten (Reihenfolge wie oben auf der Seite): Einzel (2 Plätze), Doppel (4 Plätze), Training (Gruppe), Anderes.
+// Arten (Reihenfolge wie oben auf der Seite): Einzel (2 Plätze), Doppel (4 Plätze), Training (Gruppe), Mannschafts-Spiel.
+// Gruppen: Wer hinzugefügt wird, bestätigt die Teilnahme im Postfach; erst dann erscheint die Gruppe bei ihm.
 // Zwei Wege einzuladen:
 //   - Einmalig: Die Einladung geht sofort an alle Eingeladenen.
 //   - Jede Woche: Eine regelmäßige Einladung (Serie) von–bis. Zu jedem Termin geht die Einladung
@@ -33,7 +34,7 @@
     einzel: { label: 'Einzel', hint: '2 Spieler', slots: 2 },
     doppel: { label: 'Doppel', hint: '4 Spieler', slots: 4 },
     training: { label: 'Training', hint: 'Gruppe', slots: null },
-    frei: { label: 'Anderes', hint: 'frei', slots: null },
+    frei: { label: 'Mannschafts-Spiel', hint: 'Heim · Auswärts', slots: null },
   };
   const LEADS = [1, 2, 3, 4, 5, 6, 7];
   const NOTES = ['komme 10 Min. später', 'bringe neue Bälle mit', '', '', '', 'danach Kölsch?', ''];
@@ -94,6 +95,7 @@
       notifyInvite(m, 60);
     });
   }
+  data.groups.forEach((g) => { if (!g.createdBy) g.createdBy = g.members[0]; if (!g.pending) g.pending = []; });
   materialize();
   save();
 
@@ -102,6 +104,10 @@
   function note(to, type, m, from, extra = {}, minsAgo = 0) {
     data.inbox.push({ id: uid('ib-'), to, type, from: from || null, meetId: m.id, snap: { title: m.title, date: m.date, time: m.time },
       at: Date.now() - minsAgo * 6e4, read: false, extra });
+  }
+  // Gruppen-Einladung bzw. Antwort darauf
+  function groupNote(to, type, g, from) {
+    data.inbox.push({ id: uid('ib-'), to, type, from: from || null, groupId: g.id, snap: { title: g.name }, at: Date.now(), read: false, extra: {} });
   }
   function notifyInvite(m, minsAgo = 0) {
     m.invitees.filter((p) => p !== m.createdBy).forEach((p) => {
@@ -134,8 +140,10 @@
         if (addDays(d, -s.leadDays) > now) break;            // noch nicht dran
         if ((s.skipped || []).includes(d)) continue;
         if (data.meets.some((m) => m.seriesId === s.id && m.date === d)) continue;
+        const g = s.groupId && data.groups.find((x) => x.id === s.groupId);
+        const invitees = g ? [...new Set([s.createdBy, ...g.members])] : s.invitees.slice();
         const m = { id: uid(), seriesId: s.id, kind: s.kind, groupId: s.groupId, title: s.title, date: d, time: s.time, place: s.place, note: s.note,
-          createdBy: s.createdBy, invitees: s.invitees.slice(), slots: s.slots, responses: { [s.createdBy]: ans('yes', 0) }, createdAt: new Date().toISOString() };
+          meetAt: s.meetAt || '', departAt: s.departAt || '', createdBy: s.createdBy, invitees, slots: s.slots, responses: { [s.createdBy]: ans('yes', 0) }, createdAt: new Date().toISOString() };
         data.meets.push(m);
         notifyInvite(m);
         created.push(m);
@@ -181,6 +189,7 @@
   const group = (id) => data.groups.find((g) => g.id === id);
   const meetById = (id) => data.meets.find((x) => x.id === id);
   const seriesById = (id) => (data.series || []).find((x) => x.id === id);
+  const extraTimes = (m) => [m.meetAt ? `Treffen ${m.meetAt}` : '', m.departAt ? `Abfahrt ${m.departAt}` : ''].filter(Boolean).join(' · ');
   const rhythm = (s) => `jede Woche ${WD_LONG[weekdayOf(s.from)]} · bis ${longDate(s.until)}`;
 
   // Wer spielt, wer ist Ersatz, wer ist offen, wer hat abgesagt?
@@ -265,6 +274,8 @@
     const allIds = [...new Set(mine.flatMap((m) => m.invitees).concat(mySeries.map((s) => s.createdBy)))];
     const names = await ui().api.memberNames(allIds);
     const myGroups = data.groups.filter((g) => g.members.includes(me().id));
+    const groupAsks = data.groups.filter((g) => (g.pending || []).includes(me().id));
+    const gNames = await ui().api.memberNames(groupAsks.map((g) => g.createdBy));
     return `
       ${ui().viewHead('Verabreden', 'Einzel, Doppel, Training – wer ist dabei?', false)}
       <section class="meet-new-row">
@@ -273,9 +284,14 @@
             <span class="meet-kind-icon">${kindIcon(k)}</span><strong>${v.label}</strong><small>${v.hint}</small>
           </button>`).join('')}
       </section>
-      ${waiting.length ? `
+      ${waiting.length || groupAsks.length ? `
         <h2 class="block-heading">Wartet auf deine Antwort</h2>
-        <div class="meet-list">${waiting.map((m) => card(m, names)).join('')}</div>` : ''}
+        <div class="meet-list">${groupAsks.map((g) => `
+          <button type="button" class="card meet-card meet-series" data-action="group-answer" data-id="${g.id}">
+            <span class="meet-series-icon">${kindIcon('training')}</span>
+            <span class="meet-card-text"><strong>Gruppe ${esc(g.name)}</strong><small>${esc(firstName(gNames[g.createdBy]))} hat dich hinzugefügt · ${g.members.length} bestätigt</small></span>
+            <span class="meet-mine open">Bestätigen</span>
+          </button>`).join('')}${waiting.map((m) => card(m, names)).join('')}</div>` : ''}
       <h2 class="block-heading">Anstehend</h2>
       ${rest.length ? `<div class="meet-list">${rest.map((m) => card(m, names)).join('')}</div>` : '<p class="muted">Gerade keine weiteren Verabredungen.</p>'}
       ${mySeries.length ? `
@@ -283,7 +299,7 @@
         <div class="meet-series-list">${mySeries.map((s) => seriesCard(s, names)).join('')}</div>` : ''}
       <h2 class="block-heading">Meine Gruppen</h2>
       <div class="meet-groups">
-        ${myGroups.map((g) => `<button type="button" class="meet-group" data-action="meet-group" data-id="${g.id}"><strong>${esc(g.name)}</strong><small>${g.members.length} Mitglieder${g.weekday != null ? ` · ${WD[g.weekday]} ${esc(g.time)}` : ''}</small></button>`).join('')}
+        ${myGroups.map((g) => `<button type="button" class="meet-group" data-action="meet-group" data-id="${g.id}"><strong>${esc(g.name)}</strong><small>${g.members.length} ${g.members.length === 1 ? 'Mitglied' : 'Mitglieder'}${g.weekday != null ? ` · ${WD[g.weekday]} ${esc(g.time)}` : ''}</small>${(g.pending || []).length ? `<small class="meet-unconfirmed">${g.pending.length} unbestätigt</small>` : ''}</button>`).join('')}
         <button type="button" class="meet-group add" data-action="meet-group">${icon.plus}<strong>Gruppe anlegen</strong></button>
       </div>
       <p class="fineprint">Vorführung: Die anderen antworten nach ein paar Sekunden von selbst. Neues landet im Postfach (Glocke oben) – ohne E-Mail und ohne Aufploppen.</p>
@@ -325,7 +341,7 @@
         <span class="date-badge"><small>${esc(fmtDate(m.date, { weekday: 'short' }))}</small><b>${esc(fmtDate(m.date, { day: 'numeric' }))}</b><small>${esc(fmtDate(m.date, { month: 'short' }).replace('.', ''))}</small></span>
         <span class="meet-card-text">
           <strong>${esc(m.title)}</strong>
-          <small>${esc(m.time)} Uhr · ${esc(m.place)}${m.seriesId ? ' · wöchentlich' : ''}${esc(from)}</small>
+          <small>${esc(m.time)} Uhr · ${esc(m.place)}${extraTimes(m) ? ` · ${esc(extraTimes(m))}` : ''}${m.seriesId ? ' · wöchentlich' : ''}${esc(from)}</small>
           <span class="meet-card-status"><b class="${L.full ? 'ok' : ''}">${esc(statusText(m, L))}</b>${slotDots(m, L, names)}</span>
         </span>
         ${label ? `<span class="meet-mine ${s}">${esc(label)}</span>` : ''}
@@ -378,6 +394,7 @@
         <div>${kicker ? `<p class="meet-kicker">${esc(kicker)}</p>` : ''}
           <h1>${esc(m.title)}</h1>
           <p class="muted">${esc(fmtDate(m.date, { weekday: 'long', day: 'numeric', month: 'long' }))} · ${esc(m.time)} Uhr · ${esc(m.place)}</p>
+          ${extraTimes(m) ? `<p class="meet-times">${esc(extraTimes(m))}</p>` : ''}
           <p class="small muted">Eingeladen von ${isOrg ? 'dir' : esc(names[m.createdBy] || 'Mitglied')}</p></div>
         <a class="view-close" href="#treffen" aria-label="Zurück zur Übersicht">${ui().icon.close}</a>
       </header>
@@ -449,6 +466,8 @@
       time: isTraining ? g0.time : preset.time || '18:00',
       place: isTraining ? g0.place : preset.place || 'Tennisanlage',
       note: preset.note || '',
+      meetAt: preset.meetAt || '',
+      departAt: preset.departAt || '',
       weekly: preset.weekly != null ? preset.weekly : kind === 'training',
       until: preset.until || '',
       leadDays: preset.leadDays || 3,
@@ -471,7 +490,7 @@
             <div class="field"><span>Gruppe</span>
               <div class="seg">${myGroups.map((g) => `<button type="button" class="${g.id === draft.groupId ? 'on' : ''}" data-group="${g.id}">${esc(g.name)}</button>`).join('')}</div>
             </div>` : ''}
-          ${draft.kind === 'frei' || draft.kind === 'training' ? `<label class="field"><span>Was</span><input name="title" value="${esc(draft.title)}" placeholder="z. B. Spiel gegen Hennef"></label>` : ''}
+          ${draft.kind === 'frei' || draft.kind === 'training' ? `<label class="field"><span>Was</span><input name="title" value="${esc(draft.title)}" placeholder="z. B. Auswärts in Hennef"></label>` : ''}
           <div class="field"><span>Wie oft?</span>
             <div class="seg meet-often">
               <button type="button" class="${draft.weekly ? '' : 'on'}" data-weekly="0">Einmalig</button>
@@ -491,19 +510,24 @@
           <label class="field"><span>Wo</span><input name="place" value="${esc(draft.place)}"></label>
           ${draft.kind === 'frei' ? `<label class="field"><span>Plätze (leer = unbegrenzt)</span><input name="slots" type="number" min="2" max="40" inputmode="numeric" value="${draft.slots || ''}"></label>` : ''}
           <div class="field"><span>${draft.kind === 'einzel' || draft.kind === 'doppel' ? 'Wen fragen?' : 'Wer?'} · ${draft.invitees.length} eingeladen</span>
+            ${draft.kind === 'training' && g0 && (group(draft.groupId) || {}).pending && group(draft.groupId).pending.length ? `<p class="small muted meet-rule">${group(draft.groupId).pending.length} noch unbestätigt – sie bekommen die wöchentlichen Einladungen, sobald sie die Gruppe bestätigt haben.</p>` : ''}
             ${rule ? `<p class="small muted meet-rule">${rule} Wer später zusagt, steht auf der Ersatzbank und rückt automatisch nach.</p>` : ''}
             <div class="meet-chips">${draft.invitees.map((id) => `<span class="chip">${esc(names[id] || 'Mitglied')}${id === me().id ? ' (du)' : `<button type="button" data-remove="${id}" aria-label="Entfernen">×</button>`}</span>`).join('')}</div>
             ${draft.kind !== 'training' ? `<div class="meet-quick">${myGroups.filter((g) => g.members.some((i) => !draft.invitees.includes(i))).map((g) => `<button type="button" data-addgroup="${g.id}">${icon.plus}<span>ganze Gruppe ${esc(g.name)}</span></button>`).join('')}</div>` : ''}
             <input name="search" autocomplete="off" placeholder="Name tippen, z. B. Klein oder anna.b">
             <div class="meet-suggest" data-suggest></div>
           </div>
-          <label class="field"><span>Notiz (freiwillig)</span><input name="note" value="${esc(draft.note)}" placeholder="z. B. Wer hat Lust?"></label>
+          <div class="field-row">
+            <label class="field"><span>Treffen um (freiwillig)</span><input name="meetAt" type="time" value="${esc(draft.meetAt)}"></label>
+            <label class="field"><span>Abfahrt um (freiwillig)</span><input name="departAt" type="time" value="${esc(draft.departAt)}"></label>
+          </div>
+          <label class="field"><span>Notiz (freiwillig)</span><input name="note" value="${esc(draft.note)}" placeholder="${draft.kind === 'frei' ? 'z. B. Treffpunkt Parkplatz, Fahrgemeinschaften' : 'z. B. Wer hat Lust?'}"></label>
           <p class="form-error" role="alert"></p>
           <button type="submit" class="btn primary block big">${draft.weekly ? 'Regelmäßige Einladung einrichten' : 'Einladung verschicken'}</button>
         </form>`);
       const form = document.querySelector('[data-meet-form]');
       const collect = () => {
-        ['title', 'date', 'time', 'place', 'note', 'until'].forEach((k) => { if (form.elements[k]) draft[k] = form.elements[k].value.trim(); });
+        ['title', 'date', 'time', 'place', 'note', 'until', 'meetAt', 'departAt'].forEach((k) => { if (form.elements[k]) draft[k] = form.elements[k].value.trim(); });
         if (form.elements.leadDays) draft.leadDays = Number(form.elements.leadDays.value) || 3;
         if (form.elements.slots) draft.slots = parseInt(form.elements.slots.value, 10) || null;
       };
@@ -514,7 +538,7 @@
         const k = e.target.closest('[data-kind]');
         if (k) {
           collect();
-          const keep = draft.kind !== 'training' ? { date: draft.date, time: draft.time, place: draft.place, note: draft.note, invitees: draft.invitees, until: draft.until, leadDays: draft.leadDays } : { date: draft.date, note: draft.note };
+          const keep = draft.kind !== 'training' ? { date: draft.date, time: draft.time, place: draft.place, note: draft.note, invitees: draft.invitees, until: draft.until, leadDays: draft.leadDays, meetAt: draft.meetAt, departAt: draft.departAt } : { date: draft.date, note: draft.note, meetAt: draft.meetAt, departAt: draft.departAt };
           openCreate(k.dataset.kind, keep);
           return;
         }
@@ -556,7 +580,7 @@
         if (draft.invitees.length < 2) { err.textContent = 'Bitte mindestens eine Person einladen.'; return; }
         if (draft.slots && draft.invitees.length < draft.slots) { err.textContent = `Bitte mindestens ${draft.slots} Personen einladen (inkl. dir).`; return; }
         if (draft.weekly && (!draft.until || draft.until < draft.date)) { err.textContent = 'Das Ende muss nach dem ersten Termin liegen.'; return; }
-        const base = { kind: draft.kind, groupId: draft.groupId, title: draft.title, time: draft.time, place: draft.place, note: draft.note,
+        const base = { kind: draft.kind, groupId: draft.groupId, title: draft.title, time: draft.time, place: draft.place, note: draft.note, meetAt: draft.meetAt, departAt: draft.departAt,
           createdBy: me().id, invitees: draft.invitees, slots: draft.slots };
         let target;
         if (draft.weekly) {
@@ -645,8 +669,14 @@
       moved: '<b>Du bist nachgerückt</b> – du spielst',
       cancel: `<b>${esc(who(n))}</b> hat abgesagt: ${esc(n.snap.title)}`,
       remind: `<b>Erinnerung von ${esc(who(n))}:</b> bitte zu- oder absagen`,
+      'group-invite': `<b>${esc(who(n))}</b> hat dich zur Gruppe „${esc(n.snap.title)}“ hinzugefügt`,
+      'group-yes': `<b>${esc(who(n))}</b> ist jetzt in „${esc(n.snap.title)}“`,
+      'group-no': `<b>${esc(who(n))}</b> möchte nicht in „${esc(n.snap.title)}“`,
+      'group-left': `<b>${esc(who(n))}</b> hat „${esc(n.snap.title)}“ verlassen`,
+      'group-complete': `<b>Alle haben bestätigt:</b> „${esc(n.snap.title)}“ ist komplett`,
     }[n.type] || esc(n.snap.title));
     const pending = (n) => {
+      if (n.type === 'group-invite') { const g = group(n.groupId); return Boolean(g && (g.pending || []).includes(me().id)); }
       if (n.type !== 'invite' && n.type !== 'remind') return false;
       const m = meetById(n.meetId);
       return Boolean(m && !m.responses[me().id]);
@@ -656,11 +686,12 @@
         <h2>Postfach</h2>
         <p class="small muted">Einladungen und Antworten zu deinen Verabredungen. Chat und Insider News stehen bewusst nicht hier – dort schaut jeder selbst rein.</p>
         ${items.length ? `<div class="inbox-list">${items.map((n) => {
-          const gone = !meetById(n.meetId);
-          const tag = pending(n) ? '<span class="meet-mine open">Antworten</span>' : '';
+          const isGroup = n.type.startsWith('group-');
+          const gone = isGroup ? !group(n.groupId) : !meetById(n.meetId);
+          const tag = pending(n) ? `<span class="meet-mine open">${isGroup ? 'Bestätigen' : 'Antworten'}</span>` : '';
           return `<button type="button" class="inbox-item ${n.read ? '' : 'unread'} ${gone ? 'gone' : ''}" data-open="${esc(n.id)}">
             <span class="inbox-dot" aria-hidden="true"></span>
-            <span class="inbox-text"><span>${text(n)}</span><small>${esc(n.type === 'invite' || n.type === 'remind' || n.type === 'cancel' ? when(n) : `${n.snap.title} · ${when(n)}`)}${n.extra && n.extra.note ? ` · „${esc(n.extra.note)}“` : ''} · ${esc(ago(n.at))}</small></span>
+            <span class="inbox-text"><span>${text(n)}</span><small>${esc(isGroup ? 'Gruppe' : n.type === 'invite' || n.type === 'remind' || n.type === 'cancel' ? when(n) : `${n.snap.title} · ${when(n)}`)}${n.extra && n.extra.note ? ` · „${esc(n.extra.note)}“` : ''} · ${esc(ago(n.at))}</small></span>
             ${tag}
           </button>`;
         }).join('')}</div>` : '<p class="muted">Noch nichts da. Sobald dich jemand einlädt oder auf deine Einladung antwortet, steht es hier.</p>'}
@@ -676,36 +707,44 @@
       if (!it) return;
       const n = data.inbox.find((x) => x.id === it.dataset.open);
       if (!n) return;
-      if (n.type !== 'invite' || !pending(n)) n.read = true;
+      if (!(n.type === 'invite' || n.type === 'group-invite') || !pending(n)) n.read = true;
       save(); refreshBell(); closeSheet();
+      if (n.type === 'group-invite' && pending(n)) { if (!location.hash.startsWith('#treffen')) location.hash = '#treffen'; setTimeout(() => openGroupAnswer(n.groupId), 50); return; }
+      if (n.type.startsWith('group-')) { location.hash = '#treffen'; return; }
       if (meetById(n.meetId)) location.hash = '#treffen/' + n.meetId;
       else ui().toast('Diese Verabredung gibt es nicht mehr.');
     });
   }
 
   // ---------- Gruppen ----------
+  // Ersteller legt an und fügt Leute hinzu → sie stehen als „unbestätigt“ in der Gruppe und bekommen
+  // eine Einladung ins Postfach. Erst nach „Bestätigen“ erscheint die Gruppe bei ihnen unter „Meine Gruppen“.
   async function openGroup(groupId) {
     const { openSheet, closeSheet, icon } = ui();
     const g = groupId ? group(groupId) : null;
-    const draft = g ? { ...g, members: g.members.slice() } : { id: 'g-' + Date.now().toString(36), name: '', members: [me().id], weekday: 2, time: '19:00', place: 'Tennisanlage' };
-    let names = await ui().api.memberNames(draft.members);
+    if (g && g.createdBy !== me().id) return openGroupInfo(g);
+    const draft = g ? { ...g, members: g.members.slice(), pending: (g.pending || []).slice() }
+      : { id: 'g-' + Date.now().toString(36), name: '', members: [me().id], pending: [], createdBy: me().id, weekday: 2, time: '19:00', place: 'Tennisanlage' };
+    const everyone = () => [...draft.members, ...draft.pending];
+    let names = await ui().api.memberNames(everyone());
     const render = () => {
       openSheet(`
         <form class="editor meet-editor" data-group-form novalidate>
           <h2>${g ? 'Gruppe' : 'Neue Gruppe'}</h2>
-          <label class="field"><span>Name</span><input name="name" value="${esc(draft.name)}" placeholder="z. B. Herren 40"></label>
+          <label class="field"><span>Name</span><input name="name" value="${esc(draft.name)}" placeholder="z. B. Herren 40 oder Damen 30 Mannschaft"></label>
           <div class="field-row">
             <label class="field"><span>Trainingstag</span><select name="weekday">${WD.map((w, i) => `<option value="${i}" ${i === draft.weekday ? 'selected' : ''}>${w}</option>`).join('')}</select></label>
             <label class="field"><span>Uhrzeit</span><input name="time" type="time" value="${esc(draft.time)}"></label>
           </div>
           <label class="field"><span>Wo</span><input name="place" value="${esc(draft.place)}"></label>
-          <div class="field"><span>Mitglieder · ${draft.members.length}</span>
-            <div class="meet-chips">${draft.members.map((id) => `<span class="chip">${esc(names[id] || 'Mitglied')}${id === me().id ? ' (du)' : `<button type="button" data-remove="${id}" aria-label="Entfernen">×</button>`}</span>`).join('')}</div>
+          <div class="field"><span>Mitglieder · ${draft.members.length} bestätigt${draft.pending.length ? ` · ${draft.pending.length} unbestätigt` : ''}</span>
+            <div class="meet-chips">${everyone().map((id) => `<span class="chip ${draft.pending.includes(id) ? 'pending' : ''}">${esc(names[id] || 'Mitglied')}${id === me().id ? ' (du)' : `${draft.pending.includes(id) ? ' <em>unbestätigt</em>' : ''}<button type="button" data-remove="${id}" aria-label="Entfernen">×</button>`}</span>`).join('')}</div>
             <input name="search" autocomplete="off" placeholder="Name tippen">
             <div class="meet-suggest" data-suggest></div>
+            <p class="small muted meet-rule">Neu Hinzugefügte bekommen beim Speichern eine Einladung ins Postfach und bestätigen dort. Erst dann erscheint die Gruppe bei ihnen.</p>
           </div>
           <p class="form-error" role="alert"></p>
-          <button type="submit" class="btn primary block big">Speichern</button>
+          <button type="submit" class="btn primary block big">${g ? 'Speichern' : 'Gruppe anlegen und einladen'}</button>
           ${g ? `<button type="button" class="btn block meet-gap" data-start>Training für diese Gruppe anlegen</button>
                  <button type="button" class="link center danger-link" data-del>Gruppe löschen</button>` : ''}
         </form>`);
@@ -725,12 +764,17 @@
           save(); closeSheet(); ui().renderView(); return;
         }
         const rm = e.target.closest('[data-remove]');
-        if (rm) { collect(); draft.members = draft.members.filter((i) => i !== rm.dataset.remove); render(); return; }
+        if (rm) {
+          collect();
+          draft.members = draft.members.filter((i) => i !== rm.dataset.remove);
+          draft.pending = draft.pending.filter((i) => i !== rm.dataset.remove);
+          render(); return;
+        }
         const add = e.target.closest('[data-add]');
         if (add) {
           collect();
-          if (!draft.members.includes(add.dataset.add)) draft.members.push(add.dataset.add);
-          names = await ui().api.memberNames(draft.members);
+          if (!everyone().includes(add.dataset.add)) draft.pending.push(add.dataset.add);
+          names = await ui().api.memberNames(everyone());
           render();
           document.querySelector('[data-group-form] [name=search]').focus();
         }
@@ -744,18 +788,91 @@
       form.elements.search.addEventListener('input', async (e) => {
         const hits = await ui().api.searchMembers(e.target.value);
         form.querySelector('[data-suggest]').innerHTML = hits
-          .filter((h) => !draft.members.includes(h.id))
+          .filter((h) => !everyone().includes(h.id))
           .map((h) => `<button type="button" data-add="${h.id}">${icon.plus}<span>${esc(h.firstName)} ${esc(h.lastName)}</span></button>`).join('');
       });
       form.addEventListener('submit', (e) => {
         e.preventDefault();
         collect();
         if (!draft.name) { form.querySelector('.form-error').textContent = 'Bitte einen Namen eingeben.'; return; }
-        if (g) Object.assign(g, draft); else data.groups.push(draft);
-        save(); closeSheet(); ui().toast('Gruppe gespeichert', true); ui().renderView();
+        const before = g ? [...g.members, ...(g.pending || [])] : [];
+        const fresh = draft.pending.filter((id) => !before.includes(id));
+        let target = g;
+        if (g) Object.assign(g, draft); else { data.groups.push(draft); target = draft; }
+        fresh.forEach((id) => groupNote(id, 'group-invite', target, me().id));
+        save(); closeSheet();
+        ui().toast(fresh.length ? `Gespeichert – ${fresh.length} ${fresh.length === 1 ? 'Einladung' : 'Einladungen'} im Postfach verschickt` : 'Gruppe gespeichert', true);
+        simulateGroupReplies(target, fresh);
+        ui().renderView();
       });
     };
     render();
+  }
+
+  // Gruppe ansehen (Mitglied, nicht Ersteller) – mit „Gruppe verlassen“
+  async function openGroupInfo(g) {
+    const { openSheet, closeSheet } = ui();
+    const names = await ui().api.memberNames([...g.members, ...(g.pending || []), g.createdBy]);
+    openSheet(`
+      <div class="editor meet-editor" data-group-info>
+        <h2>${esc(g.name)}</h2>
+        <p class="small muted">Angelegt von ${esc(names[g.createdBy] || 'Mitglied')}${g.weekday != null ? ` · Training ${WD_LONG[g.weekday]} ${esc(g.time)} Uhr` : ''} · ${esc(g.place || '')}</p>
+        <div class="meet-chips">${[...g.members, ...(g.pending || [])].map((id) => `<span class="chip ${(g.pending || []).includes(id) ? 'pending' : ''}">${esc(names[id] || 'Mitglied')}${id === me().id ? ' (du)' : ''}${(g.pending || []).includes(id) ? ' <em>unbestätigt</em>' : ''}</span>`).join('')}</div>
+        ${g.members.includes(me().id) ? '<button type="button" class="link center danger-link" data-leave>Gruppe verlassen</button>' : ''}
+      </div>`);
+    const leave = document.querySelector('[data-group-info] [data-leave]');
+    if (leave) leave.addEventListener('click', () => {
+      if (!leave.dataset.armed) { leave.dataset.armed = '1'; leave.textContent = 'Wirklich verlassen? Nochmal tippen'; return; }
+      g.members = g.members.filter((i) => i !== me().id);
+      groupNote(g.createdBy, 'group-left', g, me().id);
+      save(); closeSheet(); ui().toast('Du hast die Gruppe verlassen', true); ui().renderView();
+    });
+  }
+
+  // Einladung in eine Gruppe beantworten
+  async function openGroupAnswer(groupId) {
+    const { openSheet, closeSheet } = ui();
+    const g = group(groupId);
+    if (!g || !(g.pending || []).includes(me().id)) { ui().toast('Diese Gruppen-Einladung ist erledigt.'); return; }
+    const names = await ui().api.memberNames([...g.members, g.createdBy]);
+    openSheet(`
+      <div class="editor meet-editor" data-group-answer>
+        <p class="meet-kicker">Einladung in eine Gruppe</p>
+        <h2>${esc(g.name)}</h2>
+        <p class="small muted">${esc(names[g.createdBy] || 'Jemand')} hat dich hinzugefügt${g.weekday != null ? ` · Training ${WD_LONG[g.weekday]} ${esc(g.time)} Uhr` : ''}.<br>Schon dabei: ${esc(g.members.map((i) => firstName(names[i])).join(', '))}</p>
+        <p class="small">Mit „Bestätigen“ erscheint die Gruppe unter „Meine Gruppen“, und du bekommst ihre Trainings-Einladungen.</p>
+        <div class="meet-answer">
+          <button type="button" data-g="yes">Bestätigen</button>
+          <button type="button" data-g="no">Nein danke</button>
+        </div>
+      </div>`);
+    document.querySelector('[data-group-answer]').addEventListener('click', (e) => {
+      const b = e.target.closest('[data-g]');
+      if (!b) return;
+      answerGroup(g, me().id, b.dataset.g === 'yes');
+      closeSheet(); refreshBell();
+      ui().toast(b.dataset.g === 'yes' ? `Willkommen in „${g.name}“` : 'Abgelehnt – der Ersteller weiß Bescheid', true);
+      ui().renderView();
+    });
+  }
+  function answerGroup(g, id, yes) {
+    g.pending = (g.pending || []).filter((i) => i !== id);
+    if (yes && !g.members.includes(id)) g.members.push(id);
+    data.inbox.filter((n) => n.to === id && n.groupId === g.id && n.type === 'group-invite').forEach((n) => { n.read = true; });
+    groupNote(g.createdBy, yes ? 'group-yes' : 'group-no', g, id);
+    if (yes && !g.pending.length) groupNote(g.createdBy, 'group-complete', g, null);
+    save();
+  }
+  // Vorführung: Hinzugefügte bestätigen nach ein paar Sekunden von selbst (meist ja).
+  function simulateGroupReplies(g, ids) {
+    ids.filter((id) => id !== me().id).forEach((id, i) => {
+      setTimeout(() => {
+        const cur = group(g.id);
+        if (!cur || !(cur.pending || []).includes(id)) return;
+        answerGroup(cur, id, Math.random() < 0.85);
+        rerender();
+      }, 3000 + i * 2500 + Math.random() * 1500);
+    });
   }
 
   // Für jemanden eintragen (nur der Einladende)
@@ -787,6 +904,7 @@
     inbox: () => openInbox(),
     'meet-new': (el) => openCreate(el.dataset.kind || 'einzel'),
     'meet-group': (el) => openGroup(el.dataset.id),
+    'group-answer': (el) => openGroupAnswer(el.dataset.id),
     'meet-series': (el) => openSeries(el.dataset.id),
     'meet-proxy': (el) => openProxy(meetById(el.dataset.id), el.dataset.member),
     'meet-answer': (el) => {

@@ -2379,3 +2379,9 @@ h1, h2, h3, .event h3, .feature-body h2, .story-head h1, .post-body h3 { -webkit
 .story-teaser h2 a { color: inherit; text-decoration: none; transition: color .15s; }
 .story-teaser h2 a:hover, .story-teaser h2 a:focus-visible { color: var(--signal); }
 .story-teaser .feature-more { margin: 10px 0 0; }
+
+/* Verabreden: unbestätigte Gruppenmitglieder, Treffen/Abfahrt */
+.meet-chips .chip.pending { background: transparent; border: 1.5px dashed #C9C3B6; color: var(--muted); }
+.meet-chips .chip em { font-style: normal; font-size: .66rem; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; color: var(--meet-open); margin-left: 4px; }
+.meet-unconfirmed { color: var(--signal) !important; font-weight: 700; }
+.meet-times { margin: 4px 0 0; font-weight: 700; color: var(--signal); font-size: .9rem; }
