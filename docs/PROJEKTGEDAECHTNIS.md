@@ -831,3 +831,8 @@ Monatsabschluss.
 - **12.10.2026** – **Entscheidung Kiosk-Freigabe:** Kein Zurücknehmen in der App. Die Freigabe „Kiosk &
   Lastschrift“ bleibt bestehen, sonst entstehen Lücken (Konsum ohne Buchung). Wer aussteigen will,
   schreibt dem Vorstand eine E-Mail; der Vorstand nimmt die Freigabe dann zurück.
+- **12.10.2026** – **Stand eingefroren als Tag `stand-2026-10-12` (v138).** Nutzer will vor weiteren
+  Änderungen mit dem Vorstand sprechen, ob und wie es mit der neuen Website weitergeht. Bis dahin
+  keine Änderungen an der App. Zusammenfassung des Tages: siehe UEBERGABE.md oben.
+  iPhone/iPad-Test: nur über WLAN-Server des Macs möglich; Demo-Passwort-Prüfsumme unterscheidet
+  sich zwischen `file://` (SHA-256) und `http://` im WLAN (Ersatz-Prüfsumme) – siehe Übergabe.

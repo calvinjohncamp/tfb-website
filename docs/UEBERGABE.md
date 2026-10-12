@@ -3,8 +3,65 @@
 **Zuerst lesen.** Ausführlicher Verlauf: [PROJEKTGEDAECHTNIS.md](PROJEKTGEDAECHTNIS.md).
 Diese Zusammenfassung hat Vorrang vor älteren Zwischenständen.
 
-Stand: **11.10.2026 spät – EINGEFROREN** als Git-Tag **`stand-2026-10-11-spaet`** (inkl. Nachträge v117–v120; vorheriger Tag `stand-2026-10-11-abend`).
-Cache **tfb-kiosk-v120** (Nachträge v117–v120 siehe unten). Alles committet, 32 Tests grün. Nicht veröffentlicht.
+Stand: **12.10.2026 – EINGEFROREN** als Git-Tag **`stand-2026-10-12`** (v138, Cache `tfb-kiosk-v138`).
+Alles lokal committet, 4 Node-Tests grün. Nicht veröffentlicht. Lokale Commits sind (Stand Tag)
+noch nicht zu GitHub gepusht – nur auf Wunsch des Nutzers pushen.
+
+## Wie es weitergeht
+
+- **Pause für Änderungen.** Der Nutzer spricht zuerst mit dem Vorstand, ob und wie es mit der
+  neuen Website weitergeht. Bis dahin **nichts an der App ändern**, außer der Nutzer bittet ausdrücklich.
+- Nutzer findet den Stand präsentationsreif („Das gefällt mir alles. Sehr gut.“).
+- Offene Frage des Nutzers: Test auf iPhone/iPad (siehe unten „Auf iPhone/iPad testen“).
+
+## Was am 12.10.2026 dazukam (Details im Projektgedächtnis)
+
+- **nuLiga-Abgleich wöchentlich automatisch:** GitHub Actions `.github/workflows/update-teams.yml`,
+  montags 04:00 UTC, schreibt `assets/data/teams.js` und committet („Stand“-Datum). Kosten: im
+  Freikontingent (Billed 0 $). Spielerlisten (`rosters.js`, Namen) bleiben bewusst lokal.
+- **Sport:** „Mannschaftsporträt“ bzw. „News“ einzeln rot, sobald Porträt gespeichert / News da (v121).
+- **Insider News:** Clubgeflüster-Beitrag nur aus einer Mannschaft entfernen, ohne ihn im Chat zu
+  löschen („Aus dieser Mannschaft entfernen“, v122).
+- **Verabreden rund (v123–v135):** Kacheln Einzel · Doppel · Training · Mannschafts-Spiel;
+  „Einmalig“ oder „Jede Woche“ (bis-Datum, Einladung 1–7 Tage vorher); Treffen-/Abfahrtszeit;
+  „Wartet auf deine Antwort“; Gruppen mit Bestätigung im Postfach (Gruppe = alle Hinzugefügten,
+  unbestätigt heißt nur „noch nicht in deren Meine Gruppen“); Gruppen als Pillen beim Einladen
+  (Häkchen); Namen alphabetisch nach Nachname; „Wo“ = Tennisanlage Bielstein vorbelegt.
+  **Keine Historie** – Vergangenes verschwindet spurlos. Beispielgruppen entfernt.
+- **Postfach (Glocke neben dem Profilbild):** nur Einladungen und Gruppen, keine E-Mails, kein
+  Aufploppen; Hinweise mit × oder „Alle Hinweise entfernen“, sonst nach 7 Tagen weg; offene
+  Einladungen bleiben bis zur Antwort. Chat/Insider News bewusst ohne Postfach.
+- **Kopf:** Glocke 27 px, 31 px Abstand zum Profilbild, unten bündig; Desktop-Menü 15 % enger, mittig.
+- **Fenster ruhiger:** `openSheet` tauscht bei offenem Fenster nur den Inhalt (kein Neu-Einblenden).
+- **Mitgliederliste aus Excel/CSV** (Konto → Admin): nur Nr., Vorname, Name, E-Mail(s); Vorschau
+  neu/geändert/weg; Beispielmitglieder werden beim ersten Import ausgeblendet. Echte Liste liegt
+  unter `90 Archiv/Altbestand/Mitgliederliste TFB_2026.xlsx` (307 Personen) – nie ins Repo.
+- **Automatisch sichern** (Konto → Admin): Ordner wählen → `TFB-Sicherung-automatisch.json`
+  (max. 1×/Min. bei Änderung). Empfehlung: Ordner außerhalb von Git-Repos, z. B. `Dropbox/TFB-Sicherungen`.
+- **Admin aufgeräumt (v137):** Seite „Verwaltung“ entfällt; Stift auf allen Seiten (neu auch Kiosk);
+  Admin-Teil im Konto-Fenster (Mitgliederliste, Sichern & Laden, Foto-Freigaben). Schrift fest
+  **Avenir Next**, Farbe fest **Anthrazit #2A2D2E**. „E-Mail-Benachrichtigungen vom Club“ (an);
+  „Einladungen von allen“ (an) ist mit der Namenssuche beim Verabreden verknüpft.
+- **Foto-Freigaben (Admin)** als Karten mit Status und Pillen (v138).
+- **Entscheidung:** Kiosk-Freigabe wird **nicht** in der App zurückgenommen; Ausstieg per E-Mail an den Vorstand.
+- **Supabase-Plan:** Verein bekommt einen bezahlten Supabase-Account; darin zwei Projekte `padel`
+  und `tfb` (strikt getrennt). Nutzer plädiert für **einen** gemeinsamen Lastschrift-Kiosk für
+  Tennis und Padel (dann im TFB-Projekt, Padel verlinkt) – Vorstand entscheidet. Mitgliederliste
+  wird außerhalb als Excel gepflegt und in beide Apps hochgeladen.
+
+## Auf iPhone/iPad testen (Stand 12.10.)
+
+- Doppelklick-Datei aus der Dropbox läuft auf iOS nicht (Dropbox zeigt nur eine Vorschau ohne JavaScript).
+- Möglich: Mac als kleiner Webserver im WLAN (`python3 -m http.server 5180` im Ordner `tfb-kiosk`),
+  auf iPhone/iPad `http://<IP des Macs>:5180` öffnen. Jedes Gerät hat **eigene** Demo-Daten.
+- Haken: Über `http://` im WLAN fehlt `crypto.subtle`; das Demo-Passwort wird dann anders
+  verschlüsselt als auf dem Mac (`file://`). Eine Sicherung vom Mac lässt sich laden, die Anmeldung
+  mit dem Mac-Passwort klappt dann aber nicht. Lösung bräuchte eine kleine Änderung (einheitliche
+  Prüfsumme) oder eine Veröffentlichung unter HTTPS – erst nach Freigabe durch den Nutzer.
+
+---
+
+## Ältere Stände (11.10.2026 und früher)
 
 ## Eingefrorener Stand (vom Nutzer abgenommen: „das gefällt mir sehr gut alles jetzt“)
 
