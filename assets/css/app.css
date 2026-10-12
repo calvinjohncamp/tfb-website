@@ -1238,6 +1238,9 @@ button.meet-series { cursor: pointer; }
 .meet-chips .chip button { width: 20px; height: 20px; border-radius: 50%; border: 0; background: rgba(0,0,0,.12); padding: 0; line-height: 1; }
 .meet-quick { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
 .meet-quick button { display: inline-flex; align-items: center; gap: 4px; border: 1.5px dashed #CFC8BA; background: transparent; border-radius: 99px; padding: 5px 12px 5px 8px; font-size: .8rem; font-weight: 600; color: var(--ink); }
+.meet-quick { align-items: center; }
+.meet-quick-label { font-size: .8rem; font-weight: 700; color: var(--muted); margin-right: 2px; }
+.meet-quick button.on { border-style: solid; border-color: var(--signal); background: var(--meet-yes-soft); color: var(--signal); }
 .meet-quick svg, .meet-suggest svg { width: 15px; height: 15px; fill: none; stroke: var(--signal); stroke-width: 2.4; stroke-linecap: round; }
 .meet-editor [name=search] { width: 100%; min-height: 48px; padding: 0 14px; border: 1.5px solid var(--line); border-radius: 12px; font-size: 16px; background: var(--paper); }
 .meet-suggest { display: grid; gap: 4px; margin-top: 6px; }

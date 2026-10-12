@@ -531,8 +531,13 @@
           <div class="field"><span>${draft.kind === 'einzel' || draft.kind === 'doppel' ? 'Wen fragen?' : 'Wer?'} · ${draft.invitees.length} eingeladen</span>
             ${draft.kind === 'training' && g0 && (group(draft.groupId) || {}).pending && group(draft.groupId).pending.length ? `<p class="small muted meet-rule">${group(draft.groupId).pending.length} noch unbestätigt – sie bekommen die wöchentlichen Einladungen, sobald sie die Gruppe bestätigt haben.</p>` : ''}
             ${rule ? `<p class="small muted meet-rule">${rule} Wer später zusagt, steht auf der Ersatzbank und rückt automatisch nach.</p>` : ''}
+            ${draft.kind !== 'training' ? (myGroups.length
+              ? `<div class="meet-quick"><span class="meet-quick-label">Gruppe fragen:</span>${myGroups.map((g) => {
+                  const on = g.members.every((i) => draft.invitees.includes(i));
+                  return `<button type="button" class="${on ? 'on' : ''}" data-togglegroup="${g.id}" aria-pressed="${on}">${on ? icon.check : icon.plus}<span>${esc(g.name)} · ${g.members.length}</span></button>`;
+                }).join('')}</div>`
+              : '<p class="small muted meet-rule">Tipp: Lege unten unter „Meine Gruppen“ eine Gruppe an – dann fragst du sie hier mit einem Tipp.</p>') : ''}
             <div class="meet-chips">${draft.invitees.map((id) => `<span class="chip">${esc(names[id] || 'Mitglied')}${id === me().id ? ' (du)' : `<button type="button" data-remove="${id}" aria-label="Entfernen">×</button>`}</span>`).join('')}</div>
-            ${draft.kind !== 'training' ? `<div class="meet-quick">${myGroups.filter((g) => g.members.some((i) => !draft.invitees.includes(i))).map((g) => `<button type="button" data-addgroup="${g.id}">${icon.plus}<span>ganze Gruppe ${esc(g.name)}</span></button>`).join('')}</div>` : ''}
             <input name="search" autocomplete="off" placeholder="Name tippen, z. B. Klein oder anna.b">
             <div class="meet-suggest" data-suggest></div>
           </div>
@@ -567,15 +572,23 @@
         if (gb) { openCreate('training', { groupId: gb.dataset.group }); return; }
         const rm = e.target.closest('[data-remove]');
         if (rm) { collect(); draft.invitees = draft.invitees.filter((i) => i !== rm.dataset.remove); render(); return; }
-        const ag = e.target.closest('[data-addgroup]');
-        const add = e.target.closest('[data-add]');
-        if (ag || add) {
+        const tg = e.target.closest('[data-togglegroup]');
+        if (tg) {
           collect();
-          const ids = ag ? group(ag.dataset.addgroup).members : [add.dataset.add];
+          const members = group(tg.dataset.togglegroup).members;
+          if (tg.classList.contains('on')) draft.invitees = draft.invitees.filter((i) => i === me().id || !members.includes(i));
+          else members.forEach((i) => { if (!draft.invitees.includes(i)) draft.invitees.push(i); });
+          names = await ui().api.memberNames(draft.invitees);
+          render(); return;
+        }
+        const add = e.target.closest('[data-add]');
+        if (add) {
+          collect();
+          const ids = [add.dataset.add];
           ids.forEach((i) => { if (!draft.invitees.includes(i)) draft.invitees.push(i); });
           names = await ui().api.memberNames(draft.invitees);
           render();
-          if (add) document.querySelector('[data-meet-form] [name=search]').focus();
+          document.querySelector('[data-meet-form] [name=search]').focus();
         }
       });
       form.elements.search.addEventListener('keydown', (e) => {
