@@ -822,3 +822,9 @@ Monatsabschluss.
 - **12.10.2026** – **Postfach aufräumen (v134).** Jeder Hinweis hat ein ×; „Alle Hinweise entfernen“ lässt
   nur offene Einladungen stehen (die haben kein ×, sie gehen mit der Antwort). Hinweise verschwinden
   sonst nach 7 Tagen bzw. mit ihrem Termin. Neu: „Du bist jetzt Mitglied der Gruppe …“ für den, der bestätigt.
+- **12.10.2026** – **Admin aufgeräumt (v137).** Seite „Verwaltung“ entfällt (#verwaltung → Home). Seiten und
+  Kiosk bearbeitet der Admin über den Stift oben rechts (neu auch auf der Kiosk-Seite). Im Konto-Fenster
+  (nur Admins) Bereich „Admin“: Mitgliederliste laden, Sichern & Laden + Automatisch sichern,
+  Foto-Freigaben prüfen. Schrift fest **Avenir Next**, Markenfarbe fest **Anthrazit #2A2D2E** – keine
+  Umschalter mehr. Konto: „E-Mail-Benachrichtigungen vom Club“ (Standard an); „Einladungen von allen“
+  (Standard an) ist verknüpft: ausgeschaltet findet man die Person beim Verabreden nur über gemeinsame Gruppen.

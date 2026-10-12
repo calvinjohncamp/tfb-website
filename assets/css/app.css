@@ -2414,3 +2414,17 @@ h1, h2, h3, .event h3, .feature-body h2, .story-head h1, .post-body h3 { -webkit
 .import-plan summary { font-size: .78rem; color: var(--muted); cursor: pointer; }
 .autosave-box { display: grid; gap: 8px; justify-items: start; }
 .autosave-box p { margin: 0; }
+
+/* Konto-Fenster: Foto-Freigaben in der Spalte neben dem Profilbild, Admin-Bereich im Konto */
+.acct-photo .acct-photo-rights { grid-column: 2; justify-self: start; margin-top: 6px; }
+.acct-adminbox { margin: 18px 0 12px; display: grid; gap: 12px; }
+.acct-adminbox .acct-section { margin-bottom: 0; }
+.acct-adminbox .acct-hint { margin: -4px 0 0; }
+.acct-adminbox .admin-card { margin: 0; box-shadow: 0 0 0 1px #E6E1D6; }
+.acct-adminbox .admin-card h2 { font-size: 1.05rem; margin: 0 0 6px; }
+/* Kiosk: Stift für Admins oben rechts */
+.kiosk-tools { display: flex; justify-content: flex-end; margin-bottom: 8px; }
+.acct-adminbox .admin-card { padding: 14px 16px; }
+.acct-adminbox .admin-card .muted { font-size: .8rem; line-height: 1.45; margin: 0 0 10px; }
+.acct-adminbox .admin-card .small { font-size: .8rem; }
+.acct-adminbox .admin-card .btn { font-size: .88rem; }

@@ -49,64 +49,16 @@
   const initials = (m) => ((m.firstName || '')[0] || '') + ((m.lastName || '')[0] || '');
   const avatarFace = (m) => (m.avatar ? `<img src="${esc(m.avatar)}" alt="">` : esc(initials(m)));
 
-  // ---------- Markenfarbe (Verwaltung) ----------
-  // Im Demo-Modus nur auf diesem Gerät gemerkt; mit Supabase gilt sie für alle.
-  const LOOK_KEY = 'tfb_kiosk_look_v3';
-  const BRAND_COLORS = [['#000000', 'Schwarz'], ['#2A2D2E', 'Anthrazit'], ['#C4553A', 'Sandplatz-Rot']];
-  const FREE_SLOTS = 4;
-  const isHex = (v) => /^#[0-9a-f]{6}$/i.test(String(v || ''));
-  const look = { brand: '#2A2D2E', custom: [] };
-  try { Object.assign(look, JSON.parse(localStorage.getItem(LOOK_KEY) || '{}')); } catch (_) {}
-  if (!isHex(look.brand)) look.brand = '#2A2D2E';
-  look.custom = Array.from({ length: FREE_SLOTS }, (_, i) => (isHex(look.custom[i]) ? look.custom[i] : null));
-  function saveLook() { try { localStorage.setItem(LOOK_KEY, JSON.stringify(look)); } catch (_) {} }
-  // Schrift für Überschriften, Zahlen und Beträge (Test-Umschalter in der Verwaltung).
-  // System/Avenir sind auf Apple-Geräten eingebaut; Inter Tight/Manrope kommen aus Google Fonts
-  // (nur zum Testen – im Echtbetrieb würden wir die gewählte Schrift selbst ausliefern).
-  const SANS = '-apple-system, "Segoe UI", sans-serif';
-  const FONTS = [
-    // Auf Mac/iPhone eingebaut – funktionieren auch offline
-    ['system', 'Modern (System)', '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif'],
-    ['avenir', 'Avenir Next', `"Avenir Next", Avenir, ${SANS}`],
-    ['futura', 'Futura', `Futura, "Trebuchet MS", ${SANS}`],
-    ['din', 'DIN', `"DIN Alternate", "DIN Condensed", "Bahnschrift", ${SANS}`],
-    // Aus Google Fonts – nur zum Testen (brauchen Internet)
-    ['inter', 'Inter Tight', `"Inter Tight", ${SANS}`, 'Inter+Tight:wght@500;600;700;800'],
-    ['manrope', 'Manrope', `Manrope, ${SANS}`, 'Manrope:wght@500;600;700;800'],
-    ['outfit', 'Outfit', `Outfit, ${SANS}`, 'Outfit:wght@500;600;700;800'],
-    ['jakarta', 'Plus Jakarta Sans', `"Plus Jakarta Sans", ${SANS}`, 'Plus+Jakarta+Sans:wght@500;600;700;800'],
-    ['dmsans', 'DM Sans', `"DM Sans", ${SANS}`, 'DM+Sans:opsz,wght@9..40,500..800'],
-    ['sora', 'Sora', `Sora, ${SANS}`, 'Sora:wght@500;600;700;800'],
-    ['space', 'Space Grotesk', `"Space Grotesk", ${SANS}`, 'Space+Grotesk:wght@500;600;700'],
-    ['bricolage', 'Bricolage Grotesque', `"Bricolage Grotesque", ${SANS}`, 'Bricolage+Grotesque:opsz,wght@12..96,500..800'],
-    ['syne', 'Syne', `Syne, ${SANS}`, 'Syne:wght@600;700;800'],
-    ['unbounded', 'Unbounded', `Unbounded, ${SANS}`, 'Unbounded:wght@500;600;700;800'],
-    ['barlow', 'Barlow Condensed', `"Barlow Condensed", ${SANS}`, 'Barlow+Condensed:wght@500;600;700;800'],
-    ['classic', 'Klassisch (Serife)', '"Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif'],
-  ];
-  function loadFont(id) {
-    const f = FONTS.find(([x]) => x === id);
-    if (!f || !f[3] || document.getElementById('font-' + id)) return;
-    const link = document.createElement('link');
-    link.id = 'font-' + id;
-    link.rel = 'stylesheet';
-    link.href = `https://fonts.googleapis.com/css2?family=${f[3]}&display=swap`;
-    document.head.appendChild(link);
-  }
-  if (!FONTS.some(([id]) => id === look.font)) look.font = 'system';
-  function applyLook() {
-    const root = document.documentElement;
-    root.style.setProperty('--brand', look.brand);
-    const [id, , stack] = FONTS.find(([f]) => f === look.font);
-    root.style.setProperty('--serif', stack);
-    root.dataset.font = id === 'classic' ? 'serif' : 'sans';
-    loadFont(id);
-  }
-  applyLook();
+  // ---------- Erscheinungsbild (fest) ----------
+  // Markenfarbe Anthrazit und Schrift Avenir Next sind gesetzt – keine Umschalter mehr in der App.
+  const BRAND = '#2A2D2E';
+  const FONT = '"Avenir Next", Avenir, -apple-system, "Segoe UI", sans-serif';
+  document.documentElement.style.setProperty('--brand', BRAND);
+  document.documentElement.style.setProperty('--serif', FONT);
+  document.documentElement.dataset.font = 'sans';
 
-  const visual = (p) => TFB.art(p.art, p.color);
   const same = (a, b) => String(a).toLowerCase() === String(b).toLowerCase();
-  const colorName = (hex) => (BRAND_COLORS.find(([h]) => same(h, hex)) || [0, `Eigene Farbe ${hex.toUpperCase()}`])[1];
+  const visual = (p) => TFB.art(p.art, p.color);
   const strokesWord = (n) => (n === 1 ? '1 Strich' : `${n} Striche`);
 
   // ---------- Icons ----------
@@ -150,7 +102,7 @@
   function currentView() {
     let v = location.hash.replace('#', '').split('/')[0];   // z. B. #treffen/<id>
     if (v === 'verein') v = 'club';                           // alte Adresse
-    if (v === 'verwaltung' && !(state.member && state.member.isAdmin)) return 'home';
+    if (v === 'verwaltung') return 'home';   // früher eigene Seite – jetzt im Konto-Fenster
     return VIEWS.includes(v) ? v : 'home';
   }
 
@@ -367,8 +319,7 @@
         if (!state.member.hasConsent) { $view.innerHTML = consentMarkup(); return; }
         const body = view === 'kiosk' ? await kioskView() : view === 'strichliste' ? await tallyView() : await statementsView();
         $view.innerHTML = body;
-      } else if (view === 'verwaltung') $view.innerHTML = adminView();
-      else if (TFB.views && TFB.views[view]) $view.innerHTML = await TFB.views[view]();
+      } else if (TFB.views && TFB.views[view]) $view.innerHTML = await TFB.views[view]();
     } catch (err) {
       $view.innerHTML = `<div class="card error-card"><h2>Das hat nicht geklappt</h2><p>${esc(err.message)}</p></div>`;
     }
@@ -428,6 +379,7 @@
             </div>`}
         </aside>
         <div class="kiosk-main">
+          ${!edit && state.member.isAdmin ? `<div class="kiosk-tools"><button type="button" class="view-close" data-action="edit-start" aria-label="Kiosk bearbeiten" title="Kiosk bearbeiten">${icon.pencil}</button></div>` : ''}
           ${cat.sections.map((section, index) => sectionMarkup(section, index, cat, edit)).join('')}
           ${edit ? `<button type="button" class="btn block add-section" data-action="section-new">${icon.plus} Neuer Bereich</button>` : ''}
         </div>
@@ -643,78 +595,6 @@
       ${partnerSlot('abrechnungen', 'Deine Abrechnung wird dir präsentiert von')}`;
   }
 
-  // ---------- Verwaltung (nur Admins) ----------
-  function brandSwatches() {
-    return `
-      <div class="swatches" role="group" aria-label="Markenfarbe">
-        ${BRAND_COLORS.map(([hex, name]) => `<button type="button" class="swatch ${same(look.brand, hex) ? 'on' : ''}" style="--c:${hex}" data-action="brand" data-value="${hex}" title="${name}" aria-label="${name}"></button>`).join('')}
-        <span class="swatch-gap" aria-hidden="true"></span>
-        ${look.custom.map((hex, i) => hex
-          ? `<span class="swatch-slot">
-               <button type="button" class="swatch ${same(look.brand, hex) ? 'on' : ''}" style="--c:${hex}" data-action="brand" data-value="${hex}" aria-label="Eigene Farbe ${hex}"></button>
-               <button type="button" class="swatch-clear" data-action="slot-clear" data-slot="${i}" aria-label="Farbe entfernen">${icon.close}</button>
-             </span>`
-          : `<label class="swatch empty" title="Freies Feld: Farbe wählen oder mit Pipette aufnehmen">
-               ${icon.plus}
-               <input type="color" value="${esc(look.brand)}" data-slot-picker="${i}" aria-label="Freies Farbfeld belegen">
-             </label>`).join('')}
-      </div>
-      <small class="muted">${esc(colorName(look.brand))}</small>`;
-  }
-
-  function adminView() {
-    FONTS.forEach(([id]) => loadFont(id));   // Vorschau der Testschriften
-    const cat = state.catalog;
-    const active = cat.products.filter((p) => p.active).length;
-    return `
-      ${viewHead('Verwaltung', 'Nur für Admins sichtbar')}
-      <section class="card admin-card">
-        <h2>Website</h2>
-        <p class="muted">Seiten direkt bearbeiten: Bausteine anlegen, Fotos hochladen, Texte und Termine pflegen.</p>
-        <div class="admin-links">
-          ${[['home', 'Home'], ['aktuell', 'Aktuell'], ['sport', 'Sport'], ['verein', 'Club'], ['impressum', 'Impressum'], ['satzung', 'Satzung']].map(([p, l]) => `<button type="button" class="btn" data-action="site-edit" data-page="${p}">${icon.pencil} ${l}</button>`).join('')}
-          <button type="button" class="btn" data-action="board-edit">${icon.user} Vorstand</button>
-          <button type="button" class="btn" data-action="photo-admin">${icon.camera} Foto-Freigaben</button>
-        </div>
-      </section>
-      <section class="card admin-card">
-        <h2>Sortiment</h2>
-        <p class="muted">${active} Artikel in ${cat.sections.length} Bereichen. Artikel, Preise, Symbole und Reihenfolge änderst du direkt am Kiosk – so, wie die Mitglieder ihn sehen.</p>
-        <button type="button" class="btn primary block" data-action="edit-start">${icon.pencil} Kiosk bearbeiten</button>
-      </section>
-      <section class="card admin-card">
-        <h2>Schrift (Test)</h2>
-        <p class="muted">Für Überschriften, Zahlen und Beträge. Antippen und auf den Seiten ansehen – gilt im Demo-Modus nur auf diesem Gerät.</p>
-        ${[['Auf dem Gerät – auch offline', (f) => !f[3]], ['Aus dem Internet – nur zum Testen', (f) => f[3]]].map(([title, test]) => `
-          <h3 class="font-group">${title}</h3>
-          <div class="font-list">${FONTS.filter(test).map(([id, name, stack]) => `
-            <button type="button" class="font-option ${look.font === id ? 'on' : ''}" data-action="font" data-value="${id}" style="font-family:${esc(stack)}">
-              <b>Padel ist da. 12,50 €</b><span>${esc(name)}</span></button>`).join('')}</div>`).join('')}
-      </section>
-      ${TFB.memberImport ? TFB.memberImport.card() : ''}
-      <section class="card admin-card">
-        <h2>Sichern &amp; Laden</h2>
-        <p class="muted">Alle Inhalte – Seiten, Fotos, Teams, Sortiment, Striche, Verabredungen, Farbe und Schrift – in einer einzigen Datei. Am besten in die Dropbox legen. So bist du vor Datenverlust geschützt und kannst alles auf einen anderen Rechner oder später in die veröffentlichte App übertragen.</p>
-        <div class="admin-links">
-          <button type="button" class="btn primary" data-action="backup-save">Inhalte sichern</button>
-          <label class="btn">Sicherung laden<input type="file" accept=".json,application/json" data-backup-input hidden></label>
-        </div>
-        ${TFB.autosave ? `<h3 class="font-group">Automatisch sichern</h3>${TFB.autosave.box()}` : ''}
-      </section>
-      <section class="card admin-card">
-        <h2>Markenfarbe</h2>
-        <p class="muted">Färbt Logo, Bierdeckel und Akzente. Freie Felder mit Farbwähler oder Pipette belegen, mit × wieder leeren.</p>
-        ${brandSwatches()}
-      </section>
-      <section class="card admin-card later">
-        <h2>Kommt später</h2>
-        <ul>
-          <li>Monatsabschluss und Lastschrift-Export für den Kassenwart</li>
-          <li>Rollen für Kassenwart und Vorstand</li>
-        </ul>
-      </section>`;
-  }
-
   async function commitCatalog(next, message) {
     try {
       state.catalog = await api.saveCatalog(next);
@@ -901,7 +781,7 @@
 
   // ---------- Profil ----------
   // Account-Karte – Aufbau nach dem Vorbild der Padel-App: Profilbild, Name, Mitgliedschaft,
-  // eigene Angaben und Einstellungen; Verwaltung (nur Admins) und „Als App aufs Handy“ ganz unten.
+  // eigene Angaben und Einstellungen; Admin-Bereich (Mitgliederliste, Sichern, Foto-Freigaben) und „Als App aufs Handy“ ganz unten.
   async function openProfile() {
     const m = state.member;
     let open = null;
@@ -955,10 +835,10 @@
           <label class="field"><span>Handynummer <em>freiwillig</em></span><input name="phone" type="tel" inputmode="tel" value="${esc(m.phone)}" placeholder="z. B. 0170 1234567"></label>
 
           <h3 class="acct-section">Benachrichtigungen</h3>
-          <label class="acct-pref"><input type="checkbox" name="infoMails" ${m.infoMails ? 'checked' : ''}>
-            <span><strong>Neuigkeiten vom Club</strong><em>Termine, Turniere, Platzsperrungen. Abrechnungen bekommst du unabhängig davon.</em></span></label>
-          <label class="acct-pref"><input type="checkbox" name="openInvites" ${m.openInvites ? 'checked' : ''}>
-            <span><strong>Einladungen von allen</strong><em>Ausgeschaltet siehst du nur Einladungen deiner Gruppen beim Verabreden.</em></span></label>
+          <label class="acct-pref"><input type="checkbox" name="infoMails" ${m.infoMails !== false ? 'checked' : ''}>
+            <span><strong>E-Mail-Benachrichtigungen vom Club</strong><em>Termine, Turniere, Platzsperrungen zusätzlich per E-Mail. In der App stehen sie ohnehin unter Aktuell und im Chat. Abrechnungen bekommst du unabhängig davon.</em></span></label>
+          <label class="acct-pref"><input type="checkbox" name="openInvites" ${m.openInvites !== false ? 'checked' : ''}>
+            <span><strong>Einladungen von allen</strong><em>Alle Mitglieder finden dich beim Verabreden über deinen Namen oder deine E-Mail. Ausgeschaltet laden dich nur deine Gruppen ein.</em></span></label>
 
           <h3 class="acct-section">Profilbild</h3>
           <div class="acct-photo">
@@ -968,17 +848,31 @@
               ${m.avatar ? '<button type="button" class="btn small" data-action="avatar-crop">Ausschnitt anpassen</button><button type="button" class="btn small ghost-danger" data-action="avatar-remove">Entfernen</button>' : ''}
             </div>
             <p class="acct-hint">Freiwillig. ${m.photoMinor ? 'Für die Anzeige bei anderen Mitgliedern ist eine Elternfreigabe erforderlich.' : 'Sichtbar für angemeldete Mitglieder. Öffentlich nur mit deiner zusätzlichen Freigabe.'}</p>
-            <button type="button" class="btn small" data-action="photo-settings">Foto-Freigaben</button>
+            <button type="button" class="btn small acct-photo-rights" data-action="photo-settings">Foto-Freigaben</button>
           </div>
           <button type="submit" class="btn primary block">Speichern</button>
         </form>
 
         ${m.isAdmin ? `
-        <a class="acct-admin" href="#verwaltung" data-action="close-sheet">
-          <span class="acct-admin-icon">${icon.admin}</span>
-          <span><strong>Verwaltung</strong><small>Website, Kiosk, Schrift, Farben, Sichern</small></span>
-          <span class="acct-admin-go">${icon.chevron}</span>
-        </a>` : ''}
+        <section class="acct-adminbox">
+          <h3 class="acct-section">Admin</h3>
+          <p class="acct-hint">Seiten und Kiosk bearbeitest du direkt dort über den Stift oben rechts.</p>
+          ${TFB.memberImport ? TFB.memberImport.card() : ''}
+          <section class="card admin-card">
+            <h2>Sichern &amp; Laden</h2>
+            <p class="muted">Alle Inhalte – Seiten, Fotos, Mitglieder, Sortiment, Striche, Verabredungen – in einer Datei. So bist du vor Datenverlust geschützt und kannst alles auf einen anderen Rechner übertragen.</p>
+            <div class="admin-links">
+              <button type="button" class="btn primary" data-action="backup-save">Inhalte sichern</button>
+              <label class="btn">Sicherung laden<input type="file" accept=".json,application/json" data-backup-input hidden></label>
+            </div>
+            ${TFB.autosave ? `<h3 class="font-group">Automatisch sichern</h3>${TFB.autosave.box()}` : ''}
+          </section>
+          <section class="card admin-card">
+            <h2>Foto-Freigaben</h2>
+            <p class="muted">Öffentliche Profilfotos und Elternfreigaben prüfen.</p>
+            <button type="button" class="btn" data-action="photo-admin">${icon.camera} Freigaben prüfen</button>
+          </section>
+        </section>` : ''}
 
         <button type="button" class="btn block acct-logout" data-action="logout">Abmelden</button>
 
@@ -1214,21 +1108,7 @@
     img.src = src;
   }
 
-  // Freies Farbfeld: live ausprobieren beim Ziehen, belegen beim Bestätigen.
-  document.addEventListener('input', (e) => {
-    if (!e.target.matches('[data-slot-picker]')) return;
-    document.documentElement.style.setProperty('--brand', e.target.value);
-  });
-
   document.addEventListener('change', async (e) => {
-    if (e.target.matches('[data-slot-picker]')) {
-      look.custom[Number(e.target.dataset.slotPicker)] = e.target.value;
-      look.brand = e.target.value;
-      saveLook();
-      applyLook();
-      renderView();
-      return;
-    }
     if (e.target.matches('[data-backup-input]') && e.target.files[0]) {
       const file = e.target.files[0];
       e.target.value = '';
@@ -1311,23 +1191,6 @@
         setTimeout(() => URL.revokeObjectURL(a.href), 4000);
         toast(`Gesichert: ${Object.keys(data.images).length} Fotos – Datei liegt in „Downloads“`, true);
       } catch (err) { toast(err.message); } finally { el.disabled = false; }
-    } else if (action === 'font') {
-      look.font = el.dataset.value;
-      saveLook();
-      applyLook();
-      renderView();
-    } else if (action === 'brand') {
-      look.brand = el.dataset.value;
-      saveLook();
-      applyLook();
-      renderView();
-    } else if (action === 'slot-clear') {
-      const removed = look.custom[Number(el.dataset.slot)];
-      look.custom[Number(el.dataset.slot)] = null;
-      if (removed && same(removed, look.brand)) look.brand = '#2A2D2E';
-      saveLook();
-      applyLook();
-      renderView();
     } else if (action === 'edit-start') {
       state.editMode = true;
       if (currentView() === 'kiosk') renderView(); else location.hash = '#kiosk';

@@ -946,7 +946,7 @@
           return name.includes(q) || local.includes(q) || norm(m.lastName).startsWith(q);
         })
         .slice(0, 8)
-        .map((m) => ({ id: m.id, firstName: m.firstName, lastName: m.lastName }));
+        .map((m) => { const acc = accountOf(m.id); return { id: m.id, firstName: m.firstName, lastName: m.lastName, openInvites: !(acc && acc.openInvites === false) }; });
     },
     async memberNames(ids) {
       requireMember();

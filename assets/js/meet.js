@@ -614,8 +614,10 @@
       });
       form.elements.search.addEventListener('input', async (e) => {
         const hits = await ui().api.searchMembers(e.target.value);
+        // „Einladungen von allen“ ausgeschaltet → nur über gemeinsame Gruppen einladbar
+        const mates = new Set(myGroups.flatMap((g) => everyone(g)));
         form.querySelector('[data-suggest]').innerHTML = hits
-          .filter((h) => !draft.invitees.includes(h.id))
+          .filter((h) => !draft.invitees.includes(h.id) && (h.openInvites !== false || mates.has(h.id)))
           .map((h) => `<button type="button" data-add="${h.id}">${icon.plus}<span>${esc(h.firstName)} ${esc(h.lastName)}</span></button>`).join('');
       });
       form.addEventListener('submit', (e) => {
