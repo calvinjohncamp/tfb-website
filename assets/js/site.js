@@ -939,7 +939,8 @@
         ${p.text ? `<div class="fpost-text">${postText(p.text)}</div>` : ''}
         ${imgs.length ? `<div class="message-collage n${imgs.length}">${imgs.map((ref, index) => `<button type="button" class="message-photo" data-action="post-gallery" data-id="${esc(p.id)}" data-index="${index}" aria-label="Foto ${index + 1} von ${imgs.length} ansehen">${picture(ref, ref, '')}</button>`).join('')}</div>` : ''}
         ${loggedIn ? `<footer class="fpost-tools">
-          ${p.mine ? `<button type="button" data-action="post-edit" data-id="${esc(p.id)}">Bearbeiten</button><button type="button" data-action="post-delete" data-id="${esc(p.id)}">Löschen</button>` : ''}
+          ${p.mine ? `<button type="button" data-action="post-edit" data-id="${esc(p.id)}">Bearbeiten</button>${p.fromClub ? '' : `<button type="button" data-action="post-delete" data-id="${esc(p.id)}">Löschen</button>`}` : ''}
+          ${p.fromClub && (p.mine || p.canModerate) ? `<button type="button" data-action="post-unteam" data-id="${esc(p.id)}" data-team="${esc(p.shownIn)}">Aus dieser Mannschaft entfernen</button>` : ''}
           ${p.canModerate && !p.mine ? `<button type="button" data-action="post-hide" data-id="${esc(p.id)}" data-hidden="${p.hidden ? '0' : '1'}">${p.hidden ? 'Wieder zeigen' : 'Ausblenden (Admin)'}</button>` : ''}
           ${!p.mine && !p.canModerate ? `<button type="button" data-action="post-report" data-id="${esc(p.id)}">Melden</button>` : ''}
         </footer>` : ''}
@@ -2445,6 +2446,10 @@
     'post-delete': async (el) => {
       if (!el.dataset.armed) { el.dataset.armed = '1'; el.textContent = 'Wirklich löschen?'; return; }
       try { await ui().api.deletePost(el.dataset.id); ui().toast('Beitrag gelöscht', true); ui().renderView(); } catch (err) { ui().toast(err.message); }
+    },
+    'post-unteam': async (el) => {
+      if (!el.dataset.armed) { el.dataset.armed = '1'; el.textContent = 'Wirklich entfernen? (bleibt im Clubgeflüster)'; return; }
+      try { await ui().api.removePostFromTeam(el.dataset.id, el.dataset.team); ui().toast('Aus der Mannschaft entfernt – im Clubgeflüster bleibt der Beitrag', true); ui().renderView(); } catch (err) { ui().toast(err.message); }
     },
     'post-hide': async (el) => { await ui().api.hidePost(el.dataset.id, el.dataset.hidden === '1'); ui().toast(el.dataset.hidden === '1' ? 'Ausgeblendet' : 'Wieder sichtbar', true); ui().renderView(); },
     'post-report': async (el) => { await ui().api.reportPost(el.dataset.id); ui().toast('Danke – der Vorstand schaut sich das an.', true); },

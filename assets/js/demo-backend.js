@@ -639,7 +639,7 @@
           || (teamOf(scope) && (p.alsoTeams || []).includes(teamOf(scope))))
         .filter((p) => !p.hidden || (me && (me.isAdmin || p.authorId === me.id)))
         .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
-        .map((p) => ({ ...publicPost(p), teaser: withTeams && p.scope !== scope, fromClub: Boolean(teamOf(scope)) && p.scope === 'club' }));
+        .map((p) => ({ ...publicPost(p), teaser: withTeams && p.scope !== scope, fromClub: Boolean(teamOf(scope)) && p.scope === 'club', shownIn: teamOf(scope) || null }));
     },
     async teamPostCounts() {
       const out = {};
@@ -726,6 +726,16 @@
       const p = db.community.posts.find((x) => x.id === id);
       if (!p || (p.authorId !== member.id && !member.isAdmin)) throw new Error('Diesen Beitrag kannst du nicht löschen.');
       db.community.posts = db.community.posts.filter((x) => x.id !== id);
+      save(db);
+    },
+    // Clubgeflüster-Beitrag nur aus einer Mannschaft nehmen – im Clubgeflüster bleibt er stehen
+    async removePostFromTeam(id, team) {
+      const member = requireMember();
+      const p = db.community.posts.find((x) => x.id === id);
+      if (!p || (p.authorId !== member.id && !member.isAdmin)) throw new Error('Diesen Beitrag kannst du nicht ändern.');
+      if (p.scope !== 'club') throw new Error('Nur Beiträge aus dem Clubgeflüster lassen sich aus einer Mannschaft entfernen.');
+      p.alsoTeams = (p.alsoTeams || []).filter((k) => k !== team);
+      if (!p.alsoTeams.length) delete p.alsoTeams;
       save(db);
     },
     async hidePost(id, hidden = true) {
