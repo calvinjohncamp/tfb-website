@@ -1201,7 +1201,7 @@ button.meet-row:hover { background: #FAF8F3; }
 .danger-link { color: var(--clay); }
 
 /* Postfach (Glocke neben dem Profilbild) und regelmäßige Einladungen */
-.top-actions { display: flex; align-items: flex-end; gap: 26px; flex: none; }   /* Glocke unten bündig mit dem Profilbild */
+.top-actions { display: flex; align-items: flex-end; gap: 31px; flex: none; }   /* Glocke unten bündig mit dem Profilbild */
 .inbox-btn { position: relative; width: 27px; height: 27px; border-radius: 50%; border: 0; background: #fff; box-shadow: 0 0 0 1.5px #E2DACB; display: grid; place-items: center; color: var(--ink); cursor: pointer; }
 .inbox-btn svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .inbox-btn.has { box-shadow: 0 0 0 1.5px var(--signal); color: var(--signal); }
