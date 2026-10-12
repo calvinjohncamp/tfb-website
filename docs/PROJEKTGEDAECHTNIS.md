@@ -836,3 +836,9 @@ Monatsabschluss.
   keine Änderungen an der App. Zusammenfassung des Tages: siehe UEBERGABE.md oben.
   iPhone/iPad-Test: nur über WLAN-Server des Macs möglich; Demo-Passwort-Prüfsumme unterscheidet
   sich zwischen `file://` (SHA-256) und `http://` im WLAN (Ersatz-Prüfsumme) – siehe Übergabe.
+- **12.10.2026 (nach dem Einfrieren)** – **Hintergrundfarbe je Home-Thema (v139).** Im Home-Editor (Stift)
+  neuer Schritt „4 · Hintergrund der Textseite“ (Links jetzt Schritt 5): Farbfeld, **Pipette**
+  (Chrome-EyeDropper, nimmt Farben vom ganzen Bildschirm, auch aus anderen Fenstern), Farbcode,
+  „Standard“ = Creme **#F5F0E6**. Gilt im Look „Wechselspiel“, je Thema separat (`block.bg`), Live-Vorschau.
+  Auf dunklem Grund automatisch helle Schrift (`feature-dark`, Entscheidung nach WCAG-Kontrast).
+  Rückfallpunkt bleibt Tag `stand-2026-10-12`.

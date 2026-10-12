@@ -2441,3 +2441,17 @@ h1, h2, h3, .event h3, .feature-body h2, .story-head h1, .post-body h3 { -webkit
 .photo-tags span { font-size: .78rem; font-weight: 600; padding: 4px 10px; border-radius: 99px; border: 1px solid #DDD7CB; color: var(--ink); }
 .photo-actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
 .photo-admin .photo-request p { margin: 0; }
+
+/* Home „Wechselspiel“: eigene Hintergrundfarbe der Textseite je Thema; auf dunklem Grund helle Schrift */
+.home-look-6 .feature { background: var(--feature-bg, var(--cream)); }
+.feature-dark .feature-body { --ink: #FFFFFF; --muted: rgba(255, 255, 255, .78); --signal: #F4B09E; color: #fff; }
+.feature-dark .feature-body h2, .feature-dark .feature-text, .feature-dark .feature-text p { color: #fff; }
+.feature-dark .feature-body .link-chip { --ink: #1C2520; }
+.feature-dark .feature-body .btn.signal { --signal: #C4553A; }
+/* Editor: Farbzeile */
+.bg-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.bg-swatch { position: relative; width: 38px; height: 38px; border-radius: 10px; background: var(--c); box-shadow: inset 0 0 0 1px rgba(0,0,0,.12); cursor: pointer; flex: none; }
+.bg-swatch input { position: absolute; inset: 0; opacity: 0; width: 100%; height: 100%; cursor: pointer; border: 0; padding: 0; }
+.bg-row .bg-hex { width: 110px; min-height: 38px; padding: 0 10px; border: 1.5px solid var(--line); border-radius: 10px; font: inherit; font-family: ui-monospace, Menlo, monospace; font-size: .9rem; text-transform: uppercase; background: #fff; }
+.bg-row .bg-hex.invalid { border-color: var(--clay); }
+.bg-row .btn.small { min-height: 38px; }

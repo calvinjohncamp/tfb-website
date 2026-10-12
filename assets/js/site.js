@@ -45,6 +45,18 @@
 
   // ---------- Formatierung ----------
   const esc = (s) => ui().esc(s);
+  // Hintergrund der Textseite eines Home-Themas (Look „Wechselspiel“): Standard Creme, frei wählbar.
+  const FEATURE_BG = '#F5F0E6';
+  const hexOk = (v) => /^#[0-9a-f]{6}$/i.test(String(v || ''));
+  const toHex = (v) => {
+    const t = String(v || '').trim();
+    if (/^#?[0-9a-f]{6}$/i.test(t)) return ('#' + t.replace('#', '')).toUpperCase();
+    const m = t.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)/i);
+    return m ? '#' + m.slice(1, 4).map((x) => Number(x).toString(16).padStart(2, '0')).join('').toUpperCase() : '';
+  };
+  // Dunkler Grund → helle Schrift (je nachdem, was mehr Kontrast hat)
+  const lum = (hex) => { const c = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255).map((v) => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4)); return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]; };
+  const isDarkBg = (hex) => { const l = lum(hex); return (1.05 / (l + 0.05)) > ((l + 0.05) / (lum('#1C2520') + 0.05)); };
   // Fließtext mit Auszeichnungen. Im Editor gestaltet man direkt (WYSIWYG); gespeichert wird als
   // schlichter Text mit Zeichen – so bleibt alles klein, sicher und übertragbar:
   //   [Text](https://… | #seite)  Link       **Text** fett     *Text* kursiv    __Text__ unterstrichen
@@ -319,7 +331,7 @@
         const parts = String(b.text || '').split(/\n{2,}/).filter((x) => x.trim());
         const textHtml = parts.map((p, i) => slot(`right-${i}`) + paragraphs(p)).join('');
         return `
-          <article class="feature feature-${esc(String(b.layout || 'wide').replace('-right', ''))} ${/-right$/.test(b.layout || '') ? 'img-right' : ''} ${more ? 'has-more' : ''} ${n === '01' ? 'feature-first' : ''} ${Number(n) % 2 === 0 ? 'feature-even' : ''}" data-feature="${esc(b.id)}">
+          <article class="feature feature-${esc(String(b.layout || 'wide').replace('-right', ''))} ${/-right$/.test(b.layout || '') ? 'img-right' : ''} ${more ? 'has-more' : ''} ${n === '01' ? 'feature-first' : ''} ${Number(n) % 2 === 0 ? 'feature-even' : ''} ${hexOk(b.bg) && isDarkBg(b.bg) ? 'feature-dark' : ''}" data-feature="${esc(b.id)}"${hexOk(b.bg) ? ` style="--feature-bg:${b.bg}"` : ''}>
             ${(b.images || []).filter(shownImage).length ? newsCollage(b) : wrap(`<div class="feature-media">${picture(b.image, b.id, b.title)}</div>`)}
             <div class="feature-body">
               <div class="feature-left">
@@ -1505,7 +1517,20 @@
             + field('Unterzeile darunter', 'subtitle', draft.subtitle, { placeholder: 'z. B. Zwei Outdoor-Courts, 365 Tage geöffnet' })
             + `<h3 class="editor-sub">3 · Kurzer Text</h3>`
             + field('', 'text', draft.text, { area: true, rich: true, simple: true, rows: 5, placeholder: 'Zwei, drei Sätze – Wort markieren, dann Fett, Kursiv oder Rot' })
-            + `<h3 class="editor-sub">4 · Links (freiwillig)</h3>
+            + (() => {
+                const bg = hexOk(draft.bg) ? draft.bg : FEATURE_BG;
+                return `<h3 class="editor-sub">4 · Hintergrund der Textseite</h3>
+                <div class="field bg-field">
+                  <div class="bg-row">
+                    <label class="bg-swatch" style="--c:${bg}" title="Farbe wählen"><input type="color" name="bgPick" value="${bg}" aria-label="Farbe wählen"></label>
+                    ${'EyeDropper' in window ? `<button type="button" class="btn small" data-bg-eyedrop title="Farbe irgendwo auf dem Bildschirm aufnehmen">Pipette</button>` : ''}
+                    <input name="bg" class="bg-hex" value="${bg}" maxlength="7" spellcheck="false" autocomplete="off" aria-label="Farbcode">
+                    <button type="button" class="link" data-bg-reset ${bg === FEATURE_BG ? 'hidden' : ''}>Standard</button>
+                  </div>
+                  <p class="muted small ed-note">Im Look „Wechselspiel“. ${'EyeDropper' in window ? 'Mit der Pipette nimmst du eine Farbe von überall auf dem Bildschirm auf – auch aus dem Foto oder einem anderen Fenster. ' : ''}Auf dunklem Grund wird die Schrift automatisch hell.</p>
+                </div>`;
+              })()
+            + `<h3 class="editor-sub">5 · Links (freiwillig)</h3>
                <p class="muted small ed-note">„Mehr erfahren“ zur Unterseite erscheint von selbst, sobald die Unterseite Inhalt hat.</p>`
             + linkTargetField(lk.url, 'link', 'Link 1')
             + field('Link-Text (steht auf dem Link – leer = Adresse)', 'linkLabel', lk.label, { placeholder: 'z. B. Jetzt Platz buchen' })
@@ -1660,6 +1685,25 @@
         dragThumb = null;
         form.querySelectorAll('.drop-target').forEach((x) => x.classList.remove('drop-target'));
       });
+      // Hintergrundfarbe: Farbfeld, Pipette, Farbcode, Standard – alles mit Live-Vorschau
+      if (form.elements.bg) {
+        const setBg = (hex) => {
+          if (!hex) return;
+          form.elements.bg.value = hex;
+          form.elements.bgPick.value = hex.toLowerCase();
+          form.querySelector('.bg-swatch').style.setProperty('--c', hex);
+          const reset = form.querySelector('[data-bg-reset]');
+          if (reset) reset.hidden = hex === FEATURE_BG;
+          form.elements.bg.classList.remove('invalid');
+          if (live) schedulePreview();
+        };
+        form.elements.bgPick.addEventListener('input', (e) => setBg(toHex(e.target.value)));
+        form.elements.bg.addEventListener('input', (e) => { const hex = toHex(e.target.value); if (hex) setBg(hex); else e.target.classList.add('invalid'); });
+        form.querySelector('[data-bg-reset]')?.addEventListener('click', () => setBg(FEATURE_BG));
+        form.querySelector('[data-bg-eyedrop]')?.addEventListener('click', async () => {
+          try { const r = await new window.EyeDropper().open(); setBg(toHex(r.sRGBHex)); } catch (_) { /* abgebrochen */ }
+        });
+      }
       if (live) {
         startLive(id, draft, () => { collect(form); return edTab; });
         document.querySelector('#sheet-root .sheet').scrollTop = keepScroll;
@@ -1847,6 +1891,7 @@
       const f = form.elements;
       ['title', 'text', 'date', 'time', 'place', 'caption', 'label', 'url', 'kicker', 'subtitle', 'note', 'phone', 'email'].forEach((k) => { if (f[k]) draft[k] = f[k].value.trim(); });
       if (f.imgOriginal) draft.original = f.imgOriginal.checked;
+      if (f.bg) { const hex = toHex(f.bg.value); if (hex && hex !== FEATURE_BG) draft.bg = hex; else if (hex === FEATURE_BG) delete draft.bg; }
       if (f.navigation) { draft.navigation = f.navigation.value; draft.showMore = f.showMore.checked; }
       if (f.albumEnabled) draft.album = { ...(draft.album || {}), enabled: f.albumEnabled.checked, title: f.albumTitle.value.trim(), label: f.albumLabel.value.trim() || 'Fotos der Veranstaltung', position: f.albumPos.value, icon: f.albumIcon.value, original: f.albumOriginal.checked };
       if (form.querySelector('[data-panel=sub]') && draft.more) {

@@ -3,7 +3,7 @@
 **Zuerst lesen.** Ausführlicher Verlauf: [PROJEKTGEDAECHTNIS.md](PROJEKTGEDAECHTNIS.md).
 Diese Zusammenfassung hat Vorrang vor älteren Zwischenständen.
 
-Stand: **12.10.2026 – EINGEFROREN** als Git-Tag **`stand-2026-10-12`** (v138, Cache `tfb-kiosk-v138`).
+Stand: **12.10.2026 – EINGEFROREN** als Git-Tag **`stand-2026-10-12`** (v138, Cache `tfb-kiosk-v138`; danach Nachtrag v139).
 Alles lokal committet, 4 Node-Tests grün. Nicht veröffentlicht. Lokale Commits sind (Stand Tag)
 noch nicht zu GitHub gepusht – nur auf Wunsch des Nutzers pushen.
 
@@ -44,6 +44,8 @@ noch nicht zu GitHub gepusht – nur auf Wunsch des Nutzers pushen.
   **Avenir Next**, Farbe fest **Anthrazit #2A2D2E**. „E-Mail-Benachrichtigungen vom Club“ (an);
   „Einladungen von allen“ (an) ist mit der Namenssuche beim Verabreden verknüpft.
 - **Foto-Freigaben (Admin)** als Karten mit Status und Pillen (v138).
+- **Nachtrag v139 (auf Wunsch nach dem Einfrieren):** Hintergrundfarbe der Textseite je Home-Thema –
+  Farbfeld, Pipette, Farbcode, „Standard“ (#F5F0E6); dunkler Grund → helle Schrift. Rückfallpunkt: Tag `stand-2026-10-12`.
 - **Entscheidung:** Kiosk-Freigabe wird **nicht** in der App zurückgenommen; Ausstieg per E-Mail an den Vorstand.
 - **Supabase-Plan:** Verein bekommt einen bezahlten Supabase-Account; darin zwei Projekte `padel`
   und `tfb` (strikt getrennt). Nutzer plädiert für **einen** gemeinsamen Lastschrift-Kiosk für
