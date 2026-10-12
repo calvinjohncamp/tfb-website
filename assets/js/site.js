@@ -422,11 +422,12 @@
             const extra = teamContent(teamKey(t.name));
             const photo = extra.photo && (images[extra.photo] || /^assets\//.test(extra.photo)) ? picture(extra.photo, t.name, `Teamfoto ${t.name}`) : '';
             const count = teamCounts[teamKey(t.name)] || 0;
+            const hasPortrait = portraitFilled(extra.portrait);
             return `
             <a class="team team-row" href="#team/${esc(teamKey(t.name))}">
               <span class="team-thumb ${photo ? '' : 'empty'}">${photo || ui().icon.camera}${count ? `<span class="team-dot">${count}</span>` : ''}</span>
               <span class="team-name"><strong>${esc(t.name.replace(/\s*\(.*?\)/g, ''))}${/\((.*?)\)/.test(t.name) ? ` <i>${esc(t.name.match(/\((.*?)\)/)[1])}</i>` : ''}</strong><small>${esc(t.group)}</small></span>
-              <span class="team-news-btn ${count ? 'has' : ''}">Mannschaftsporträt + News${count ? `<b>${count}</b>` : ''}<span aria-hidden="true">→</span></span>
+              <span class="team-news-btn ${count ? 'has' : ''}"><em class="${hasPortrait ? 'on' : ''}">Mannschaftsporträt</em> + <em class="${count ? 'on' : ''}">News</em>${count ? `<b>${count}</b>` : ''}<span aria-hidden="true">→</span></span>
               <span class="team-stand"><b class="${t.rank === '1' ? 'top' : ''}">${esc(t.rank || '–')}.</b><small>Platz · ${esc(t.points)}</small></span>
             </a>`;
           }).join('')}

@@ -1930,6 +1930,8 @@ h1, h2, h3, .event h3, .feature-body h2, .story-head h1, .post-body h3 { overflo
 .team-news-btn { display: none; align-items: center; gap: 8px; padding: 8px 14px; border-radius: 99px; border: 1.5px solid #E2DCCF; font-size: .8rem; font-weight: 750; color: var(--ink); white-space: nowrap; transition: border-color .15s, background .15s; }
 .team-news-btn b { background: var(--signal); color: #fff; border-radius: 99px; min-width: 20px; height: 20px; display: grid; place-items: center; font-size: .68rem; padding: 0 5px; }
 .team-news-btn span { color: var(--signal); transition: transform .15s; }
+.team-news-btn em { font-style: normal; }
+.team-news-btn em.on { color: var(--signal); }  /* Porträt gespeichert bzw. News vorhanden – das „+“ bleibt dunkel */
 .team-news-btn.has { border-color: color-mix(in srgb, var(--signal) 45%, #fff); }
 .team-row:hover .team-news-btn { border-color: var(--signal); background: color-mix(in srgb, var(--signal) 6%, #fff); }
 .team-row:hover .team-news-btn span { transform: translateX(3px); }
