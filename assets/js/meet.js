@@ -39,6 +39,7 @@
     frei: { label: 'Mannschafts-Spiel', hint: 'Heim · Auswärts', slots: null },
   };
   const LEADS = [1, 2, 3, 4, 5, 6, 7];
+  const PLACE = 'Tennisanlage Bielstein';   // Vorbelegung „Wo“, frei änderbar (z. B. Halle)
   const NOTES = ['komme 10 Min. später', 'bringe neue Bälle mit', '', '', '', 'danach Kölsch?', ''];
 
   // ---------- Speicher ----------
@@ -483,7 +484,7 @@
       title: kind === 'training' ? (g0 ? `Training ${g0.name}` : 'Training') : kind === 'frei' ? (preset.title || '') : KINDS[kind].label,
       date: isTraining ? nextWeekday(g0.weekday) : preset.date || nextWeekday(null),
       time: isTraining ? g0.time : preset.time || '18:00',
-      place: isTraining ? g0.place : preset.place || 'Tennisanlage',
+      place: isTraining ? g0.place : preset.place || PLACE,
       note: preset.note || '',
       meetAt: preset.meetAt || '',
       departAt: preset.departAt || '',
@@ -492,6 +493,7 @@
       leadDays: preset.leadDays || 3,
       slots: KINDS[kind].slots,
       invitees: isTraining ? g0.members.slice() : (preset.invitees || [me().id]).slice(),
+      picked: (preset.picked || []).slice(),   // angetippte Gruppen (Häkchen)
     };
     if (!draft.invitees.includes(me().id)) draft.invitees.unshift(me().id);
     let names = await ui().api.memberNames(draft.invitees);
@@ -531,15 +533,13 @@
           <div class="field"><span>${draft.kind === 'einzel' || draft.kind === 'doppel' ? 'Wen fragen?' : 'Wer?'} · ${draft.invitees.length} eingeladen</span>
             ${draft.kind === 'training' && g0 && (group(draft.groupId) || {}).pending && group(draft.groupId).pending.length ? `<p class="small muted meet-rule">${group(draft.groupId).pending.length} noch unbestätigt – sie bekommen die wöchentlichen Einladungen, sobald sie die Gruppe bestätigt haben.</p>` : ''}
             ${rule ? `<p class="small muted meet-rule">${rule} Wer später zusagt, steht auf der Ersatzbank und rückt automatisch nach.</p>` : ''}
-            ${draft.kind !== 'training' ? (myGroups.length
-              ? `<div class="meet-quick"><span class="meet-quick-label">Gruppe fragen:</span>${myGroups.map((g) => {
-                  const on = g.members.every((i) => draft.invitees.includes(i));
-                  return `<button type="button" class="${on ? 'on' : ''}" data-togglegroup="${g.id}" aria-pressed="${on}">${on ? icon.check : icon.plus}<span>${esc(g.name)} · ${g.members.length}</span></button>`;
-                }).join('')}</div>`
-              : '<p class="small muted meet-rule">Tipp: Lege unten unter „Meine Gruppen“ eine Gruppe an – dann fragst du sie hier mit einem Tipp.</p>') : ''}
-            <div class="meet-chips">${draft.invitees.map((id) => `<span class="chip">${esc(names[id] || 'Mitglied')}${id === me().id ? ' (du)' : `<button type="button" data-remove="${id}" aria-label="Entfernen">×</button>`}</span>`).join('')}</div>
-            <input name="search" autocomplete="off" placeholder="Name tippen, z. B. Klein oder anna.b">
+            <input name="search" autocomplete="off" placeholder="Namen eintippen, z. B. Klein oder anna.b">
             <div class="meet-suggest" data-suggest></div>
+            ${draft.kind !== 'training' && myGroups.length ? `<div class="meet-groups-pick">${myGroups.map((g) => {
+              const on = draft.picked.includes(g.id);
+              return `<button type="button" class="${on ? 'on' : ''}" data-togglegroup="${g.id}" aria-pressed="${on}">${on ? icon.check : ''}<span>${esc(g.name)}</span></button>`;
+            }).join('')}</div>` : ''}
+            <div class="meet-chips">${draft.invitees.map((id) => `<span class="chip">${esc(names[id] || 'Mitglied')}${id === me().id ? ' (du)' : `<button type="button" data-remove="${id}" aria-label="Entfernen">×</button>`}</span>`).join('')}</div>
           </div>
           <div class="field-row">
             <label class="field"><span>Treffen um (freiwillig)</span><input name="meetAt" type="time" value="${esc(draft.meetAt)}"></label>
@@ -562,7 +562,7 @@
         const k = e.target.closest('[data-kind]');
         if (k) {
           collect();
-          const keep = draft.kind !== 'training' ? { date: draft.date, time: draft.time, place: draft.place, note: draft.note, invitees: draft.invitees, until: draft.until, leadDays: draft.leadDays, meetAt: draft.meetAt, departAt: draft.departAt } : { date: draft.date, note: draft.note, meetAt: draft.meetAt, departAt: draft.departAt };
+          const keep = draft.kind !== 'training' ? { date: draft.date, time: draft.time, place: draft.place, note: draft.note, invitees: draft.invitees, picked: draft.picked, until: draft.until, leadDays: draft.leadDays, meetAt: draft.meetAt, departAt: draft.departAt } : { date: draft.date, note: draft.note, meetAt: draft.meetAt, departAt: draft.departAt };
           openCreate(k.dataset.kind, keep);
           return;
         }
@@ -575,9 +575,16 @@
         const tg = e.target.closest('[data-togglegroup]');
         if (tg) {
           collect();
-          const members = group(tg.dataset.togglegroup).members;
-          if (tg.classList.contains('on')) draft.invitees = draft.invitees.filter((i) => i === me().id || !members.includes(i));
-          else members.forEach((i) => { if (!draft.invitees.includes(i)) draft.invitees.push(i); });
+          const gid = tg.dataset.togglegroup;
+          const members = group(gid).members;
+          if (draft.picked.includes(gid)) {
+            draft.picked = draft.picked.filter((x) => x !== gid);
+            const stillPicked = draft.picked.flatMap((x) => group(x).members);
+            draft.invitees = draft.invitees.filter((i) => i === me().id || !members.includes(i) || stillPicked.includes(i));
+          } else {
+            draft.picked.push(gid);
+            members.forEach((i) => { if (!draft.invitees.includes(i)) draft.invitees.push(i); });
+          }
           names = await ui().api.memberNames(draft.invitees);
           render(); return;
         }
@@ -756,7 +763,7 @@
     const g = groupId ? group(groupId) : null;
     if (g && g.createdBy !== me().id) return openGroupInfo(g);
     const draft = g ? { ...g, members: g.members.slice(), pending: (g.pending || []).slice() }
-      : { id: 'g-' + Date.now().toString(36), name: '', members: [me().id], pending: [], createdBy: me().id, weekday: 2, time: '19:00', place: 'Tennisanlage' };
+      : { id: 'g-' + Date.now().toString(36), name: '', members: [me().id], pending: [], createdBy: me().id, weekday: 2, time: '19:00', place: PLACE };
     const everyone = () => [...draft.members, ...draft.pending];
     let names = await ui().api.memberNames(everyone());
     const render = () => {
@@ -771,7 +778,7 @@
           <label class="field"><span>Wo</span><input name="place" value="${esc(draft.place)}"></label>
           <div class="field"><span>Mitglieder · ${draft.members.length} bestätigt${draft.pending.length ? ` · ${draft.pending.length} unbestätigt` : ''}</span>
             <div class="meet-chips">${everyone().map((id) => `<span class="chip ${draft.pending.includes(id) ? 'pending' : ''}">${esc(names[id] || 'Mitglied')}${id === me().id ? ' (du)' : `${draft.pending.includes(id) ? ' <em>unbestätigt</em>' : ''}<button type="button" data-remove="${id}" aria-label="Entfernen">×</button>`}</span>`).join('')}</div>
-            <input name="search" autocomplete="off" placeholder="Name tippen">
+            <input name="search" autocomplete="off" placeholder="Namen eintippen">
             <div class="meet-suggest" data-suggest></div>
             <p class="small muted meet-rule">Neu Hinzugefügte bekommen beim Speichern eine Einladung ins Postfach und bestätigen dort. Erst dann erscheint die Gruppe bei ihnen.</p>
           </div>

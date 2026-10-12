@@ -1038,6 +1038,15 @@
 
   // ---------- Sheet & Toasts ----------
   function openSheet(html) {
+    // Schon offen (z. B. Neuaufbau nach einem Tipp im Formular): nur den Inhalt tauschen –
+    // ohne neues Einblenden und an derselben Scroll-Position.
+    const open = $sheet.classList.contains('open') && $sheet.querySelector('.sheet');
+    if (open) {
+      const top = open.scrollTop;
+      open.innerHTML = `<button type="button" class="sheet-close" data-action="close-sheet" aria-label="Schließen">${icon.close}</button>${html}`;
+      open.scrollTop = top;
+      return;
+    }
     $sheet.innerHTML = `
       <div class="sheet-backdrop" data-action="close-sheet"></div>
       <div class="sheet" role="dialog" aria-modal="true">
