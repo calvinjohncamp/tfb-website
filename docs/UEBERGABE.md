@@ -3,12 +3,17 @@
 **Zuerst lesen.** Ausführlicher Verlauf: [PROJEKTGEDAECHTNIS.md](PROJEKTGEDAECHTNIS.md).
 Diese Zusammenfassung hat Vorrang vor älteren Zwischenständen.
 
-Stand: **12.10.2026 abends – EINGEFROREN** als Git-Tag **`stand-2026-10-12-abend`** (v141, Cache `tfb-kiosk-v141`;
-vorheriger Tag `stand-2026-10-12` = v138 ohne Farben/Abstände). Alles lokal committet, 4 Node-Tests grün.
-Nicht veröffentlicht. Lokale Commits sind noch nicht zu GitHub gepusht – nur auf Wunsch des Nutzers pushen.
-Nutzer: „Perfekt. Aktuell keine Wünsche mehr offen.“
+Stand: **12.10.2026 – EINGEFROREN** als Git-Tag **`stand-2026-10-12-v149`** (v149, Cache `tfb-kiosk-v149`;
+frühere Tags heute: `stand-2026-10-12` = v138, `stand-2026-10-12-abend` = v141). Alles lokal committet,
+4 Node-Tests grün. Nicht veröffentlicht, nicht zu GitHub gepusht – nur auf Wunsch des Nutzers pushen.
+Nutzer: „Ansonsten alles jetzt eins A. Und so einfrieren bitte.“
 
 ## Wie es weitergeht
+
+- **Nächster Job (Nutzer):** Der Nutzer besorgt die **Getränkeliste der Tennisfreunde** (heutiges Kiosk-Angebot
+  mit Preisen). Damit den Kiosk rund machen: exakt die heutigen Artikel, Bereiche, Preise und Symbole
+  übernehmen (Sortiment liegt in `demo-backend.js` → `DEFAULT_CATALOG`, Änderungen bestehender Daten über
+  `catalogVersion`-Migration wie bisher; Admin kann auch direkt am Kiosk über den Stift pflegen).
 
 - **Pause für Änderungen.** Der Nutzer spricht zuerst mit dem Vorstand, ob und wie es mit der
   neuen Website weitergeht. Bis dahin **nichts an der App ändern**, außer der Nutzer bittet ausdrücklich.
@@ -46,6 +51,7 @@ Nutzer: „Perfekt. Aktuell keine Wünsche mehr offen.“
   „Einladungen von allen“ (an) ist mit der Namenssuche beim Verabreden verknüpft.
 - **Foto-Freigaben (Admin)** als Karten mit Status und Pillen (v138).
 - **Vorführ-Schalter (v148, nur Demo):** Klick auf den roten Ball im Logo blendet Admin-Stifte aus/ein.
+- Menü: Padel (externer Link) reagiert beim Überfahren wie die anderen Punkte (v149).
 - Kopf: Profilbild/Glocke per Messung 4 px unter der Menü-Grundlinie (optischer Ausgleich, v147 – abgenommen).
 - Anmeldung: Auge im Passwortfeld (v143), Demo-Kasten entfernt (v144).
 - **v139–v141 (nachmittags ergänzt):** Farben je Home-Thema (Textseite + Link-Knöpfe), Link-Abstände (Standard 26/14 px, je Thema ▲/▼) –

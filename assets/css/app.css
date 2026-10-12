@@ -2485,3 +2485,6 @@ h1, h2, h3, .event h3, .feature-body h2, .story-head h1, .post-body h3 { -webkit
 
 /* Demo: Mitglieder-Ansicht für Admins (roter Ball im Logo) – auch serverseitige Admin-Knöpfe ausblenden */
 body.admin-hidden [data-action="post-hide"] { display: none !important; }
+
+/* Menü: auch der externe Link (Padel) reagiert beim Überfahren wie die anderen Punkte */
+.topnav .tab.external:hover { color: var(--ink); }

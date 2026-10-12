@@ -872,3 +872,6 @@ Monatsabschluss.
   – Mitglieder-Ansicht ohne Abmelden; erneuter Klick blendet sie wieder ein. Nach dem Neuladen immer sichtbar.
   Rest des Logos führt weiter zu Home. Umsetzung: `state.member.isAdmin` vorübergehend false (`adminHidden`),
   Klasse `admin-hidden` am body; nur wenn `api.mode === 'demo'`. Im Echtbetrieb entfernen oder bewusst entscheiden.
+- **12.10.2026** – v149: Menüpunkt Padel (externer Link) wird beim Überfahren dunkel wie die anderen.
+  **Eingefroren als Tag `stand-2026-10-12-v149`.** Nutzer: „alles jetzt eins A“. Nächster Job: Getränkeliste der
+  Tennisfreunde (heutiges Angebot) besorgt der Nutzer → Kiosk-Sortiment exakt darauf umstellen.
