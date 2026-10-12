@@ -2455,3 +2455,8 @@ h1, h2, h3, .event h3, .feature-body h2, .story-head h1, .post-body h3 { -webkit
 .bg-row .bg-hex { width: 110px; min-height: 38px; padding: 0 10px; border: 1.5px solid var(--line); border-radius: 10px; font: inherit; font-family: ui-monospace, Menlo, monospace; font-size: .9rem; text-transform: uppercase; background: #fff; }
 .bg-row .bg-hex.invalid { border-color: var(--clay); }
 .bg-row .btn.small { min-height: 38px; }
+/* Link-Knöpfe im Home-Thema: eigene Hintergrundfarbe, Schrift passt sich an */
+.feature .link-chip { background: var(--link-bg, #fff); }
+.feature .feature-link .btn.signal { background: var(--link-bg, var(--signal)); border-color: var(--link-bg, var(--signal)); }
+.feature.links-dark .feature-body .link-chip, .feature.links-dark .feature-body .btn.signal { --ink: #FFFFFF; --muted: rgba(255, 255, 255, .75); color: #fff; }
+.feature.links-light .feature-body .link-chip, .feature.links-light .feature-body .btn.signal { --ink: #1C2520; --muted: #6A7069; color: #1C2520; }

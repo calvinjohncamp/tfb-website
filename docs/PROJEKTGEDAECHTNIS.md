@@ -842,3 +842,8 @@ Monatsabschluss.
   „Standard“ = Creme **#F5F0E6**. Gilt im Look „Wechselspiel“, je Thema separat (`block.bg`), Live-Vorschau.
   Auf dunklem Grund automatisch helle Schrift (`feature-dark`, Entscheidung nach WCAG-Kontrast).
   Rückfallpunkt bleibt Tag `stand-2026-10-12`.
+- **12.10.2026** – **Farbe der Link-Knöpfe je Home-Thema (v140).** Schritt „4 · Farben“ im Home-Editor:
+  „Hintergrund der Textseite“ (Standard #F5F0E6) und „Hintergrund der Link-Knöpfe“ (Standard #FFFFFF),
+  beide mit Farbfeld, Pipette, Farbcode, „Standard“ (gemeinsamer Baustein `colorField`/`wireColorFields`
+  in site.js). Gilt für Pillen und Knopf-Links des Themas (`block.linkBg`); Schrift passt sich an
+  (`links-dark`/`links-light`).

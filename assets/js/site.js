@@ -47,6 +47,38 @@
   const esc = (s) => ui().esc(s);
   // Hintergrund der Textseite eines Home-Themas (Look „Wechselspiel“): Standard Creme, frei wählbar.
   const FEATURE_BG = '#F5F0E6';
+  const LINK_BG = '#FFFFFF';   // Link-Knöpfe (Pillen) im Thema
+  // Farbzeile im Editor: Farbfeld · Pipette · Farbcode · Standard (Bedienung siehe wireColorFields)
+  const colorField = (key, value, def) => {
+    const v = hexOk(value) ? value : def;
+    return `<div class="bg-row" data-color-field="${key}" data-default="${def}">
+      <label class="bg-swatch" style="--c:${v}" title="Farbe wählen"><input type="color" value="${v.toLowerCase()}" aria-label="Farbe wählen"></label>
+      ${'EyeDropper' in window ? '<button type="button" class="btn small" data-eyedrop title="Farbe irgendwo auf dem Bildschirm aufnehmen">Pipette</button>' : ''}
+      <input name="${key}" class="bg-hex" value="${v}" maxlength="7" spellcheck="false" autocomplete="off" aria-label="Farbcode">
+      <button type="button" class="link" data-color-reset ${v === def ? 'hidden' : ''}>Standard</button>
+    </div>`;
+  };
+  function wireColorFields(form, changed) {
+    form.querySelectorAll('[data-color-field]').forEach((row) => {
+      const def = row.dataset.default;
+      const hexIn = row.querySelector('.bg-hex');
+      const set = (hex) => {
+        if (!hex) return;
+        hexIn.value = hex;
+        row.querySelector('input[type=color]').value = hex.toLowerCase();
+        row.querySelector('.bg-swatch').style.setProperty('--c', hex);
+        row.querySelector('[data-color-reset]').hidden = hex === def;
+        hexIn.classList.remove('invalid');
+        changed();
+      };
+      row.querySelector('input[type=color]').addEventListener('input', (e) => set(toHex(e.target.value)));
+      hexIn.addEventListener('input', (e) => { const hex = toHex(e.target.value); if (hex) set(hex); else e.target.classList.add('invalid'); });
+      row.querySelector('[data-color-reset]').addEventListener('click', () => set(def));
+      row.querySelector('[data-eyedrop]')?.addEventListener('click', async () => {
+        try { const r = await new window.EyeDropper().open(); set(toHex(r.sRGBHex)); } catch (_) { /* abgebrochen */ }
+      });
+    });
+  }
   const hexOk = (v) => /^#[0-9a-f]{6}$/i.test(String(v || ''));
   const toHex = (v) => {
     const t = String(v || '').trim();
@@ -331,7 +363,7 @@
         const parts = String(b.text || '').split(/\n{2,}/).filter((x) => x.trim());
         const textHtml = parts.map((p, i) => slot(`right-${i}`) + paragraphs(p)).join('');
         return `
-          <article class="feature feature-${esc(String(b.layout || 'wide').replace('-right', ''))} ${/-right$/.test(b.layout || '') ? 'img-right' : ''} ${more ? 'has-more' : ''} ${n === '01' ? 'feature-first' : ''} ${Number(n) % 2 === 0 ? 'feature-even' : ''} ${hexOk(b.bg) && isDarkBg(b.bg) ? 'feature-dark' : ''}" data-feature="${esc(b.id)}"${hexOk(b.bg) ? ` style="--feature-bg:${b.bg}"` : ''}>
+          <article class="feature feature-${esc(String(b.layout || 'wide').replace('-right', ''))} ${/-right$/.test(b.layout || '') ? 'img-right' : ''} ${more ? 'has-more' : ''} ${n === '01' ? 'feature-first' : ''} ${Number(n) % 2 === 0 ? 'feature-even' : ''} ${hexOk(b.bg) && isDarkBg(b.bg) ? 'feature-dark' : ''} ${hexOk(b.linkBg) ? (isDarkBg(b.linkBg) ? 'links-dark' : 'links-light') : ''}" data-feature="${esc(b.id)}"${hexOk(b.bg) || hexOk(b.linkBg) ? ` style="${hexOk(b.bg) ? `--feature-bg:${b.bg};` : ''}${hexOk(b.linkBg) ? `--link-bg:${b.linkBg};` : ''}"` : ''}>
             ${(b.images || []).filter(shownImage).length ? newsCollage(b) : wrap(`<div class="feature-media">${picture(b.image, b.id, b.title)}</div>`)}
             <div class="feature-body">
               <div class="feature-left">
@@ -1517,19 +1549,10 @@
             + field('Unterzeile darunter', 'subtitle', draft.subtitle, { placeholder: 'z. B. Zwei Outdoor-Courts, 365 Tage geöffnet' })
             + `<h3 class="editor-sub">3 · Kurzer Text</h3>`
             + field('', 'text', draft.text, { area: true, rich: true, simple: true, rows: 5, placeholder: 'Zwei, drei Sätze – Wort markieren, dann Fett, Kursiv oder Rot' })
-            + (() => {
-                const bg = hexOk(draft.bg) ? draft.bg : FEATURE_BG;
-                return `<h3 class="editor-sub">4 · Hintergrund der Textseite</h3>
-                <div class="field bg-field">
-                  <div class="bg-row">
-                    <label class="bg-swatch" style="--c:${bg}" title="Farbe wählen"><input type="color" name="bgPick" value="${bg}" aria-label="Farbe wählen"></label>
-                    ${'EyeDropper' in window ? `<button type="button" class="btn small" data-bg-eyedrop title="Farbe irgendwo auf dem Bildschirm aufnehmen">Pipette</button>` : ''}
-                    <input name="bg" class="bg-hex" value="${bg}" maxlength="7" spellcheck="false" autocomplete="off" aria-label="Farbcode">
-                    <button type="button" class="link" data-bg-reset ${bg === FEATURE_BG ? 'hidden' : ''}>Standard</button>
-                  </div>
-                  <p class="muted small ed-note">Im Look „Wechselspiel“. ${'EyeDropper' in window ? 'Mit der Pipette nimmst du eine Farbe von überall auf dem Bildschirm auf – auch aus dem Foto oder einem anderen Fenster. ' : ''}Auf dunklem Grund wird die Schrift automatisch hell.</p>
-                </div>`;
-              })()
+            + `<h3 class="editor-sub">4 · Farben</h3>
+               <div class="field bg-field"><span>Hintergrund der Textseite</span>${colorField('bg', draft.bg, FEATURE_BG)}</div>
+               <div class="field bg-field"><span>Hintergrund der Link-Knöpfe</span>${colorField('linkBg', draft.linkBg, LINK_BG)}</div>
+               <p class="muted small ed-note">Im Look „Wechselspiel“, je Thema. ${'EyeDropper' in window ? 'Mit der Pipette nimmst du eine Farbe von überall auf dem Bildschirm auf – auch aus dem Foto oder einem anderen Fenster. ' : ''}Auf dunklem Grund wird die Schrift automatisch hell. „Standard“ setzt zurück.</p>`
             + `<h3 class="editor-sub">5 · Links (freiwillig)</h3>
                <p class="muted small ed-note">„Mehr erfahren“ zur Unterseite erscheint von selbst, sobald die Unterseite Inhalt hat.</p>`
             + linkTargetField(lk.url, 'link', 'Link 1')
@@ -1685,25 +1708,8 @@
         dragThumb = null;
         form.querySelectorAll('.drop-target').forEach((x) => x.classList.remove('drop-target'));
       });
-      // Hintergrundfarbe: Farbfeld, Pipette, Farbcode, Standard – alles mit Live-Vorschau
-      if (form.elements.bg) {
-        const setBg = (hex) => {
-          if (!hex) return;
-          form.elements.bg.value = hex;
-          form.elements.bgPick.value = hex.toLowerCase();
-          form.querySelector('.bg-swatch').style.setProperty('--c', hex);
-          const reset = form.querySelector('[data-bg-reset]');
-          if (reset) reset.hidden = hex === FEATURE_BG;
-          form.elements.bg.classList.remove('invalid');
-          if (live) schedulePreview();
-        };
-        form.elements.bgPick.addEventListener('input', (e) => setBg(toHex(e.target.value)));
-        form.elements.bg.addEventListener('input', (e) => { const hex = toHex(e.target.value); if (hex) setBg(hex); else e.target.classList.add('invalid'); });
-        form.querySelector('[data-bg-reset]')?.addEventListener('click', () => setBg(FEATURE_BG));
-        form.querySelector('[data-bg-eyedrop]')?.addEventListener('click', async () => {
-          try { const r = await new window.EyeDropper().open(); setBg(toHex(r.sRGBHex)); } catch (_) { /* abgebrochen */ }
-        });
-      }
+      // Farben: Farbfeld, Pipette, Farbcode, Standard – alles mit Live-Vorschau
+      wireColorFields(form, () => { if (live) schedulePreview(); });
       if (live) {
         startLive(id, draft, () => { collect(form); return edTab; });
         document.querySelector('#sheet-root .sheet').scrollTop = keepScroll;
@@ -1891,7 +1897,11 @@
       const f = form.elements;
       ['title', 'text', 'date', 'time', 'place', 'caption', 'label', 'url', 'kicker', 'subtitle', 'note', 'phone', 'email'].forEach((k) => { if (f[k]) draft[k] = f[k].value.trim(); });
       if (f.imgOriginal) draft.original = f.imgOriginal.checked;
-      if (f.bg) { const hex = toHex(f.bg.value); if (hex && hex !== FEATURE_BG) draft.bg = hex; else if (hex === FEATURE_BG) delete draft.bg; }
+      [['bg', FEATURE_BG], ['linkBg', LINK_BG]].forEach(([k, def]) => {
+        if (!f[k]) return;
+        const hex = toHex(f[k].value);
+        if (hex && hex !== def) draft[k] = hex; else if (hex === def) delete draft[k];
+      });
       if (f.navigation) { draft.navigation = f.navigation.value; draft.showMore = f.showMore.checked; }
       if (f.albumEnabled) draft.album = { ...(draft.album || {}), enabled: f.albumEnabled.checked, title: f.albumTitle.value.trim(), label: f.albumLabel.value.trim() || 'Fotos der Veranstaltung', position: f.albumPos.value, icon: f.albumIcon.value, original: f.albumOriginal.checked };
       if (form.querySelector('[data-panel=sub]') && draft.more) {
