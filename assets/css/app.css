@@ -2385,8 +2385,9 @@ h1, h2, h3, .event h3, .feature-body h2, .story-head h1, .post-body h3 { -webkit
 .meet-chips .chip em { font-style: normal; font-size: .66rem; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; color: var(--meet-open); margin-left: 4px; }
 .meet-unconfirmed { color: var(--signal) !important; font-weight: 700; }
 .meet-times { margin: 4px 0 0; font-weight: 700; color: var(--signal); font-size: .9rem; }
-/* Kopf mit Glocke: Menü gleichmäßig zwischen Logo und Glocke/Profilbild verteilen */
+/* Kopf mit Glocke: Menü mittig, Abstände 15 % enger als gleichmäßig verteilt – mehr Luft zu Logo und Glocke
+   (Abstand wächst mit der Breite: 1300 px → 42 px, darunter enger, mindestens 14 px) */
 @media (min-width: 1024px) {
-  .topnav { justify-content: space-between; gap: 24px; }
+  .topnav { justify-content: center; gap: clamp(14px, calc(9.78vw - 85px), 43px); }
   .topbar { column-gap: 64px; }
 }
