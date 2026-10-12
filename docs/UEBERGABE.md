@@ -44,7 +44,7 @@ noch nicht zu GitHub gepusht – nur auf Wunsch des Nutzers pushen.
   **Avenir Next**, Farbe fest **Anthrazit #2A2D2E**. „E-Mail-Benachrichtigungen vom Club“ (an);
   „Einladungen von allen“ (an) ist mit der Namenssuche beim Verabreden verknüpft.
 - **Foto-Freigaben (Admin)** als Karten mit Status und Pillen (v138).
-- **Nachtrag v139–v140 (auf Wunsch nach dem Einfrieren):** Farben je Home-Thema (Textseite + Link-Knöpfe) –
+- **Nachtrag v139–v141 (auf Wunsch nach dem Einfrieren):** Farben je Home-Thema (Textseite + Link-Knöpfe), Link-Abstände (Standard 26/14 px, je Thema ▲/▼) –
   Farbfeld, Pipette, Farbcode, „Standard“ (#F5F0E6); dunkler Grund → helle Schrift. Rückfallpunkt: Tag `stand-2026-10-12`.
 - **Entscheidung:** Kiosk-Freigabe wird **nicht** in der App zurückgenommen; Ausstieg per E-Mail an den Vorstand.
 - **Supabase-Plan:** Verein bekommt einen bezahlten Supabase-Account; darin zwei Projekte `padel`

@@ -2460,3 +2460,18 @@ h1, h2, h3, .event h3, .feature-body h2, .story-head h1, .post-body h3 { -webkit
 .feature .feature-link .btn.signal { background: var(--link-bg, var(--signal)); border-color: var(--link-bg, var(--signal)); }
 .feature.links-dark .feature-body .link-chip, .feature.links-dark .feature-body .btn.signal { --ink: #FFFFFF; --muted: rgba(255, 255, 255, .75); color: #fff; }
 .feature.links-light .feature-body .link-chip, .feature.links-light .feature-body .btn.signal { --ink: #1C2520; --muted: #6A7069; color: #1C2520; }
+
+/* Home-Themen: Abstände der Links (Standard 26 px über den Links, 14 px dazwischen; je Thema einstellbar) */
+.feature { --link-top: 26px; --link-gap: 14px; }
+.feature-right:has(> .link-place) .feature-text > p:last-child { margin-bottom: 0; }
+.feature .feature-right > .link-place { margin-top: var(--link-top); }
+.feature .feature-right > .link-place + .link-place { margin-top: var(--link-gap); }
+.feature .feature-text > .link-place:not(:first-child) { margin-top: var(--link-top); }
+.feature .feature-text > .link-place + .link-place { margin-top: var(--link-gap); }
+.feature .feature-left > .link-place + .link-place { margin-top: var(--link-gap); }
+/* Editor: Regler ▲/▼ */
+.gap-fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 4px 16px; }
+.gap-row { display: flex; align-items: center; gap: 6px; }
+.gap-btn { width: 34px; height: 34px; border-radius: 10px; border: 1.5px solid var(--line); background: #fff; font-size: .8rem; color: var(--ink); cursor: pointer; touch-action: manipulation; user-select: none; }
+.gap-btn:hover { border-color: var(--ink); }
+.gap-row output { min-width: 52px; text-align: center; font-family: ui-monospace, Menlo, monospace; font-size: .88rem; }

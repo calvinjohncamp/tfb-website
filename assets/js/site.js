@@ -58,6 +58,47 @@
       <button type="button" class="link" data-color-reset ${v === def ? 'hidden' : ''}>Standard</button>
     </div>`;
   };
+  // Abstände der Links je Thema (px): über den Links und zwischen zwei Links – Regler ▲/▼ in 2-px-Schritten
+  const LINK_TOP = 26;
+  const LINK_GAP = 14;
+  const gapOk = (v) => Number.isFinite(v) && v >= 0 && v <= 120;
+  const gapField = (key, value, def, label) => {
+    const v = gapOk(value) ? value : def;
+    return `<div class="field gap-field"><span>${label}</span>
+      <div class="gap-row" data-gap-field="${key}" data-default="${def}">
+        <button type="button" class="gap-btn" data-gap-step="-2" aria-label="Weniger Abstand" title="Weniger Abstand (gedrückt halten für mehr)">▲</button>
+        <output>${v} px</output>
+        <button type="button" class="gap-btn" data-gap-step="2" aria-label="Mehr Abstand" title="Mehr Abstand (gedrückt halten für mehr)">▼</button>
+        <input type="hidden" name="${key}" value="${v}">
+        <button type="button" class="link" data-gap-reset ${v === def ? 'hidden' : ''}>Standard</button>
+      </div></div>`;
+  };
+  function wireGapFields(form, changed) {
+    form.querySelectorAll('[data-gap-field]').forEach((row) => {
+      const def = Number(row.dataset.default);
+      const input = row.querySelector('input');
+      const set = (v) => {
+        v = Math.max(0, Math.min(120, v));
+        input.value = v;
+        row.querySelector('output').textContent = `${v} px`;
+        row.querySelector('[data-gap-reset]').hidden = v === def;
+        changed();
+      };
+      let timer = null;
+      const stop = () => { clearTimeout(timer); clearInterval(timer); timer = null; };
+      row.querySelectorAll('[data-gap-step]').forEach((b) => {
+        const step = Number(b.dataset.gapStep);
+        b.addEventListener('pointerdown', (e) => {
+          e.preventDefault();
+          set(Number(input.value) + step);
+          timer = setTimeout(() => { timer = setInterval(() => set(Number(input.value) + step), 70); }, 380);
+        });
+        ['pointerup', 'pointerleave', 'pointercancel'].forEach((ev) => b.addEventListener(ev, stop));
+        b.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); set(Number(input.value) + step); } });
+      });
+      row.querySelector('[data-gap-reset]').addEventListener('click', () => set(def));
+    });
+  }
   function wireColorFields(form, changed) {
     form.querySelectorAll('[data-color-field]').forEach((row) => {
       const def = row.dataset.default;
@@ -363,7 +404,10 @@
         const parts = String(b.text || '').split(/\n{2,}/).filter((x) => x.trim());
         const textHtml = parts.map((p, i) => slot(`right-${i}`) + paragraphs(p)).join('');
         return `
-          <article class="feature feature-${esc(String(b.layout || 'wide').replace('-right', ''))} ${/-right$/.test(b.layout || '') ? 'img-right' : ''} ${more ? 'has-more' : ''} ${n === '01' ? 'feature-first' : ''} ${Number(n) % 2 === 0 ? 'feature-even' : ''} ${hexOk(b.bg) && isDarkBg(b.bg) ? 'feature-dark' : ''} ${hexOk(b.linkBg) ? (isDarkBg(b.linkBg) ? 'links-dark' : 'links-light') : ''}" data-feature="${esc(b.id)}"${hexOk(b.bg) || hexOk(b.linkBg) ? ` style="${hexOk(b.bg) ? `--feature-bg:${b.bg};` : ''}${hexOk(b.linkBg) ? `--link-bg:${b.linkBg};` : ''}"` : ''}>
+          <article class="feature feature-${esc(String(b.layout || 'wide').replace('-right', ''))} ${/-right$/.test(b.layout || '') ? 'img-right' : ''} ${more ? 'has-more' : ''} ${n === '01' ? 'feature-first' : ''} ${Number(n) % 2 === 0 ? 'feature-even' : ''} ${hexOk(b.bg) && isDarkBg(b.bg) ? 'feature-dark' : ''} ${hexOk(b.linkBg) ? (isDarkBg(b.linkBg) ? 'links-dark' : 'links-light') : ''}" data-feature="${esc(b.id)}"${(() => {
+            const v = [hexOk(b.bg) ? `--feature-bg:${b.bg}` : '', hexOk(b.linkBg) ? `--link-bg:${b.linkBg}` : '', gapOk(b.linkTop) ? `--link-top:${b.linkTop}px` : '', gapOk(b.linkGap) ? `--link-gap:${b.linkGap}px` : ''].filter(Boolean).join(';');
+            return v ? ` style="${v}"` : '';
+          })()}>
             ${(b.images || []).filter(shownImage).length ? newsCollage(b) : wrap(`<div class="feature-media">${picture(b.image, b.id, b.title)}</div>`)}
             <div class="feature-body">
               <div class="feature-left">
@@ -1554,7 +1598,8 @@
                <div class="field bg-field"><span>Hintergrund der Link-Knöpfe</span>${colorField('linkBg', draft.linkBg, LINK_BG)}</div>
                <p class="muted small ed-note">Im Look „Wechselspiel“, je Thema. ${'EyeDropper' in window ? 'Mit der Pipette nimmst du eine Farbe von überall auf dem Bildschirm auf – auch aus dem Foto oder einem anderen Fenster. ' : ''}Auf dunklem Grund wird die Schrift automatisch hell. „Standard“ setzt zurück.</p>`
             + `<h3 class="editor-sub">5 · Links (freiwillig)</h3>
-               <p class="muted small ed-note">„Mehr erfahren“ zur Unterseite erscheint von selbst, sobald die Unterseite Inhalt hat.</p>`
+               <p class="muted small ed-note">„Mehr erfahren“ zur Unterseite erscheint von selbst, sobald die Unterseite Inhalt hat.</p>
+               <div class="gap-fields">${gapField('linkTop', draft.linkTop, LINK_TOP, 'Abstand über den Links')}${gapField('linkGap', draft.linkGap, LINK_GAP, 'Abstand zwischen den Links')}</div>`
             + linkTargetField(lk.url, 'link', 'Link 1')
             + field('Link-Text (steht auf dem Link – leer = Adresse)', 'linkLabel', lk.label, { placeholder: 'z. B. Jetzt Platz buchen' })
             + linkTargetField((draft.link2 || {}).url, 'link2', 'Link 2 – z. B. zu einer Unterseite der App')
@@ -1710,6 +1755,7 @@
       });
       // Farben: Farbfeld, Pipette, Farbcode, Standard – alles mit Live-Vorschau
       wireColorFields(form, () => { if (live) schedulePreview(); });
+      wireGapFields(form, () => { if (live) schedulePreview(); });
       if (live) {
         startLive(id, draft, () => { collect(form); return edTab; });
         document.querySelector('#sheet-root .sheet').scrollTop = keepScroll;
@@ -1897,6 +1943,11 @@
       const f = form.elements;
       ['title', 'text', 'date', 'time', 'place', 'caption', 'label', 'url', 'kicker', 'subtitle', 'note', 'phone', 'email'].forEach((k) => { if (f[k]) draft[k] = f[k].value.trim(); });
       if (f.imgOriginal) draft.original = f.imgOriginal.checked;
+      [['linkTop', LINK_TOP], ['linkGap', LINK_GAP]].forEach(([k, def]) => {
+        if (!f[k]) return;
+        const v = Number(f[k].value);
+        if (gapOk(v) && v !== def) draft[k] = v; else delete draft[k];
+      });
       [['bg', FEATURE_BG], ['linkBg', LINK_BG]].forEach(([k, def]) => {
         if (!f[k]) return;
         const hex = toHex(f[k].value);

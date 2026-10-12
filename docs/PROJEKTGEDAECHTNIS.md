@@ -847,3 +847,7 @@ Monatsabschluss.
   beide mit Farbfeld, Pipette, Farbcode, „Standard“ (gemeinsamer Baustein `colorField`/`wireColorFields`
   in site.js). Gilt für Pillen und Knopf-Links des Themas (`block.linkBg`); Schrift passt sich an
   (`links-dark`/`links-light`).
+- **12.10.2026** – **Abstände der Links auf Home (v141).** Standard jetzt 26 px zwischen Text und erstem
+  Link (vorher 13) und 14 px zwischen zwei Links (vorher 10). Im Home-Editor unter „5 · Links“ je Thema
+  einstellbar: „Abstand über den Links“ und „Abstand zwischen den Links“ mit ▲/▼ (2 px, gedrückt halten
+  wiederholt), „Standard“; Live-Vorschau. Daten `block.linkTop`/`block.linkGap`, CSS-Variablen `--link-top`/`--link-gap`.
