@@ -814,3 +814,8 @@ Monatsabschluss.
   Admin → „Sichern & Laden“ → „Automatisch sichern“: einmal Ordner wählen (File System Access API),
   dann schreibt die App `TFB-Sicherung-automatisch.json` (höchstens 1×/Min. bei Änderung, beim
   Verlassen). Ordner sollte außerhalb von Git-Repos liegen. `navigator.storage.persist()` beim Start.
+- **12.10.2026** – **Gruppen: alle Hinzugefügten zählen (v133).** Eine Gruppe lädt immer alle ein, die der
+  Ersteller hinzugefügt hat (bestätigt + unbestätigt); raus ist nur, wer ablehnt oder austritt.
+  „Unbestätigt“ heißt nur: Gruppe erscheint bei ihm noch nicht unter „Meine Gruppen“. Karte zeigt
+  „N Mitglieder · X unbestätigt“. Namen in Gruppen und Einladungen alphabetisch nach Nachname.
+  Vorführung bestätigt Gruppen-Einladungen immer (keine zufälligen Absagen mehr).

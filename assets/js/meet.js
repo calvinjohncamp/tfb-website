@@ -166,7 +166,7 @@
         if ((s.skipped || []).includes(d)) continue;
         if (data.meets.some((m) => m.seriesId === s.id && m.date === d)) continue;
         const g = s.groupId && data.groups.find((x) => x.id === s.groupId);
-        const invitees = g ? [...new Set([s.createdBy, ...g.members])] : s.invitees.slice();
+        const invitees = g ? [...new Set([s.createdBy, ...everyone(g)])] : s.invitees.slice();
         const m = { id: uid(), seriesId: s.id, kind: s.kind, groupId: s.groupId, title: s.title, date: d, time: s.time, place: s.place, note: s.note,
           meetAt: s.meetAt || '', departAt: s.departAt || '', createdBy: s.createdBy, invitees, slots: s.slots, responses: { [s.createdBy]: ans('yes', 0) }, createdAt: new Date().toISOString() };
         data.meets.push(m);
@@ -212,6 +212,11 @@
   const meetById = (id) => data.meets.find((x) => x.id === id);
   const seriesById = (id) => (data.series || []).find((x) => x.id === id);
   const extraTimes = (m) => [m.meetAt ? `Treffen ${m.meetAt}` : '', m.departAt ? `Abfahrt ${m.departAt}` : ''].filter(Boolean).join(' · ');
+  // Gruppe = alle Hinzugefügten (bestätigt + unbestätigt); wer ablehnt oder austritt, ist raus.
+  const everyone = (g) => [...g.members, ...(g.pending || []).filter((i) => !g.members.includes(i))];
+  // Alphabetisch nach Nachname, dann Vorname („Jörn Kämper“ → „Kämper Jörn“)
+  const sortKey = (full) => { const p = String(full || '').trim().split(/\s+/); return `${p.slice(-1)[0] || ''} ${p.slice(0, -1).join(' ')}`; };
+  const byName = (ids, names) => ids.slice().sort((a, b) => sortKey(names[a]).localeCompare(sortKey(names[b]), 'de'));
   const rhythm = (s) => `jede Woche ${WD_LONG[weekdayOf(s.from)]} · bis ${longDate(s.until)}`;
 
   // Wer spielt, wer ist Ersatz, wer ist offen, wer hat abgesagt?
@@ -319,7 +324,7 @@
         <div class="meet-series-list">${mySeries.map((s) => seriesCard(s, names)).join('')}</div>` : ''}
       <h2 class="block-heading">Meine Gruppen</h2>
       <div class="meet-groups">
-        ${myGroups.map((g) => `<button type="button" class="meet-group" data-action="meet-group" data-id="${g.id}"><strong>${esc(g.name)}</strong><small>${g.members.length} ${g.members.length === 1 ? 'Mitglied' : 'Mitglieder'}${g.weekday != null ? ` · ${WD[g.weekday]} ${esc(g.time)}` : ''}</small>${(g.pending || []).length ? `<small class="meet-unconfirmed">${g.pending.length} unbestätigt</small>` : ''}</button>`).join('')}
+        ${myGroups.map((g) => `<button type="button" class="meet-group" data-action="meet-group" data-id="${g.id}"><strong>${esc(g.name)}</strong><small>${everyone(g).length} ${everyone(g).length === 1 ? 'Mitglied' : 'Mitglieder'}${g.weekday != null ? ` · ${WD[g.weekday]} ${esc(g.time)}` : ''}</small>${(g.pending || []).length ? `<small class="meet-unconfirmed">${g.pending.length} unbestätigt</small>` : ''}</button>`).join('')}
         <button type="button" class="meet-group add" data-action="meet-group">${icon.plus}<strong>Gruppe anlegen</strong></button>
       </div>
       <p class="fineprint">Vorführung: Die anderen antworten nach ein paar Sekunden von selbst. Neues landet im Postfach (Glocke oben) – ohne E-Mail und ohne Aufploppen.</p>
@@ -492,7 +497,7 @@
       until: preset.until || '',
       leadDays: preset.leadDays || 3,
       slots: KINDS[kind].slots,
-      invitees: isTraining ? g0.members.slice() : (preset.invitees || [me().id]).slice(),
+      invitees: isTraining ? everyone(g0) : (preset.invitees || [me().id]).slice(),
       picked: (preset.picked || []).slice(),   // angetippte Gruppen (Häkchen)
     };
     if (!draft.invitees.includes(me().id)) draft.invitees.unshift(me().id);
@@ -531,7 +536,7 @@
           <label class="field"><span>Wo</span><input name="place" value="${esc(draft.place)}"></label>
           ${draft.kind === 'frei' ? `<label class="field"><span>Plätze (leer = unbegrenzt)</span><input name="slots" type="number" min="2" max="40" inputmode="numeric" value="${draft.slots || ''}"></label>` : ''}
           <div class="field"><span>${draft.kind === 'einzel' || draft.kind === 'doppel' ? 'Wen fragen?' : 'Wer?'} · ${draft.invitees.length} eingeladen</span>
-            ${draft.kind === 'training' && g0 && (group(draft.groupId) || {}).pending && group(draft.groupId).pending.length ? `<p class="small muted meet-rule">${group(draft.groupId).pending.length} noch unbestätigt – sie bekommen die wöchentlichen Einladungen, sobald sie die Gruppe bestätigt haben.</p>` : ''}
+            ${draft.kind === 'training' && g0 && (group(draft.groupId) || {}).pending && group(draft.groupId).pending.length ? `<p class="small muted meet-rule">${group(draft.groupId).pending.length} noch unbestätigt – sie werden trotzdem eingeladen.</p>` : ''}
             ${rule ? `<p class="small muted meet-rule">${rule} Wer später zusagt, steht auf der Ersatzbank und rückt automatisch nach.</p>` : ''}
             <input name="search" autocomplete="off" placeholder="Namen eintippen, z. B. Klein oder anna.b">
             <div class="meet-suggest" data-suggest></div>
@@ -539,7 +544,7 @@
               const on = draft.picked.includes(g.id);
               return `<button type="button" class="${on ? 'on' : ''}" data-togglegroup="${g.id}" aria-pressed="${on}">${on ? icon.check : ''}<span>${esc(g.name)}</span></button>`;
             }).join('')}</div>` : ''}
-            <div class="meet-chips">${draft.invitees.map((id) => `<span class="chip">${esc(names[id] || 'Mitglied')}${id === me().id ? ' (du)' : `<button type="button" data-remove="${id}" aria-label="Entfernen">×</button>`}</span>`).join('')}</div>
+            <div class="meet-chips">${byName(draft.invitees, names).map((id) => `<span class="chip">${esc(names[id] || 'Mitglied')}${id === me().id ? ' (du)' : `<button type="button" data-remove="${id}" aria-label="Entfernen">×</button>`}</span>`).join('')}</div>
           </div>
           <div class="field-row">
             <label class="field"><span>Treffen um (freiwillig)</span><input name="meetAt" type="time" value="${esc(draft.meetAt)}"></label>
@@ -576,10 +581,10 @@
         if (tg) {
           collect();
           const gid = tg.dataset.togglegroup;
-          const members = group(gid).members;
+          const members = everyone(group(gid));
           if (draft.picked.includes(gid)) {
             draft.picked = draft.picked.filter((x) => x !== gid);
-            const stillPicked = draft.picked.flatMap((x) => group(x).members);
+            const stillPicked = draft.picked.flatMap((x) => everyone(group(x)));
             draft.invitees = draft.invitees.filter((i) => i === me().id || !members.includes(i) || stillPicked.includes(i));
           } else {
             draft.picked.push(gid);
@@ -776,8 +781,8 @@
             <label class="field"><span>Uhrzeit</span><input name="time" type="time" value="${esc(draft.time)}"></label>
           </div>
           <label class="field"><span>Wo</span><input name="place" value="${esc(draft.place)}"></label>
-          <div class="field"><span>Mitglieder · ${draft.members.length} bestätigt${draft.pending.length ? ` · ${draft.pending.length} unbestätigt` : ''}</span>
-            <div class="meet-chips">${everyone().map((id) => `<span class="chip ${draft.pending.includes(id) ? 'pending' : ''}">${esc(names[id] || 'Mitglied')}${id === me().id ? ' (du)' : `${draft.pending.includes(id) ? ' <em>unbestätigt</em>' : ''}<button type="button" data-remove="${id}" aria-label="Entfernen">×</button>`}</span>`).join('')}</div>
+          <div class="field"><span>Mitglieder · ${everyone().length}${draft.pending.length ? ` · davon ${draft.pending.length} unbestätigt` : ''}</span>
+            <div class="meet-chips">${byName(everyone(), names).map((id) => `<span class="chip ${draft.pending.includes(id) ? 'pending' : ''}">${esc(names[id] || 'Mitglied')}${id === me().id ? ' (du)' : `${draft.pending.includes(id) ? ' <em>unbestätigt</em>' : ''}<button type="button" data-remove="${id}" aria-label="Entfernen">×</button>`}</span>`).join('')}</div>
             <input name="search" autocomplete="off" placeholder="Namen eintippen">
             <div class="meet-suggest" data-suggest></div>
             <p class="small muted meet-rule">Neu Hinzugefügte bekommen beim Speichern eine Einladung ins Postfach und bestätigen dort. Erst dann erscheint die Gruppe bei ihnen.</p>
@@ -856,7 +861,7 @@
       <div class="editor meet-editor" data-group-info>
         <h2>${esc(g.name)}</h2>
         <p class="small muted">Angelegt von ${esc(names[g.createdBy] || 'Mitglied')}${g.weekday != null ? ` · Training ${WD_LONG[g.weekday]} ${esc(g.time)} Uhr` : ''} · ${esc(g.place || '')}</p>
-        <div class="meet-chips">${[...g.members, ...(g.pending || [])].map((id) => `<span class="chip ${(g.pending || []).includes(id) ? 'pending' : ''}">${esc(names[id] || 'Mitglied')}${id === me().id ? ' (du)' : ''}${(g.pending || []).includes(id) ? ' <em>unbestätigt</em>' : ''}</span>`).join('')}</div>
+        <div class="meet-chips">${byName(everyone(g), names).map((id) => `<span class="chip ${(g.pending || []).includes(id) ? 'pending' : ''}">${esc(names[id] || 'Mitglied')}${id === me().id ? ' (du)' : ''}${(g.pending || []).includes(id) ? ' <em>unbestätigt</em>' : ''}</span>`).join('')}</div>
         ${g.members.includes(me().id) ? '<button type="button" class="link center danger-link" data-leave>Gruppe verlassen</button>' : ''}
       </div>`);
     const leave = document.querySelector('[data-group-info] [data-leave]');
@@ -878,7 +883,7 @@
       <div class="editor meet-editor" data-group-answer>
         <p class="meet-kicker">Einladung in eine Gruppe</p>
         <h2>${esc(g.name)}</h2>
-        <p class="small muted">${esc(names[g.createdBy] || 'Jemand')} hat dich hinzugefügt${g.weekday != null ? ` · Training ${WD_LONG[g.weekday]} ${esc(g.time)} Uhr` : ''}.<br>Schon dabei: ${esc(g.members.map((i) => firstName(names[i])).join(', '))}</p>
+        <p class="small muted">${esc(names[g.createdBy] || 'Jemand')} hat dich hinzugefügt${g.weekday != null ? ` · Training ${WD_LONG[g.weekday]} ${esc(g.time)} Uhr` : ''}.<br>Schon dabei: ${esc(byName(g.members, names).map((i) => names[i]).join(', '))}</p>
         <p class="small">Mit „Bestätigen“ erscheint die Gruppe unter „Meine Gruppen“, und du bekommst ihre Trainings-Einladungen.</p>
         <div class="meet-answer">
           <button type="button" data-g="yes">Bestätigen</button>
@@ -901,13 +906,13 @@
     if (yes && !g.pending.length) groupNote(g.createdBy, 'group-complete', g, null);
     save();
   }
-  // Vorführung: Hinzugefügte bestätigen nach ein paar Sekunden von selbst (meist ja).
+  // Vorführung: Hinzugefügte bestätigen nach ein paar Sekunden von selbst.
   function simulateGroupReplies(g, ids) {
     ids.filter((id) => id !== me().id).forEach((id, i) => {
       setTimeout(() => {
         const cur = group(g.id);
         if (!cur || !(cur.pending || []).includes(id)) return;
-        answerGroup(cur, id, Math.random() < 0.85);
+        answerGroup(cur, id, true);
         rerender();
       }, 3000 + i * 2500 + Math.random() * 1500);
     });
