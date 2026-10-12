@@ -1051,7 +1051,8 @@ button.shop-card { border: 0; text-align: left; font: inherit; }
   .topbar { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: end; column-gap: 56px; padding-bottom: 18px; }
   .topbar-row { display: contents; }
   .topbar .brand { grid-column: 1; }
-  .topbar .avatar { grid-column: 3; }
+  .topbar .avatar, .topbar .top-actions { grid-column: 3; }
+  .topbar .top-actions .avatar { grid-column: auto; }
   .topnav { grid-column: 2; grid-row: 1; justify-content: flex-start; gap: 40px; margin: 0; padding: 0 0 2px; align-self: end; }
   .topnav .tab, .topnav .tab:first-child, .topnav .tab:last-child { margin: 0; padding: 0; font-size: .8rem; letter-spacing: .18em; }
   .editbar { top: 124px; }
@@ -1198,6 +1199,33 @@ button.meet-row:hover { background: #FAF8F3; }
 .btn.whatsapp-soft { background: transparent; border: 1.5px solid #25D366; color: #128C4A; }
 .btn.whatsapp-soft:hover { background: #F0FBF4; }
 .danger-link { color: var(--clay); }
+
+/* Postfach (Glocke neben dem Profilbild) und regelmäßige Einladungen */
+.top-actions { display: flex; align-items: center; gap: 12px; flex: none; }
+.inbox-btn { position: relative; width: 44px; height: 44px; border-radius: 50%; border: 0; background: #fff; box-shadow: 0 0 0 1.5px #E2DACB; display: grid; place-items: center; color: var(--ink); cursor: pointer; }
+.inbox-btn svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.inbox-btn.has { box-shadow: 0 0 0 1.5px var(--signal); color: var(--signal); }
+.inbox-btn:hover { box-shadow: 0 0 0 1.5px var(--signal); }
+.inbox-badge { position: absolute; top: -4px; right: -4px; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 99px; background: var(--signal); color: #fff; font-size: .68rem; font-weight: 800; display: grid; place-items: center; box-shadow: 0 0 0 2px var(--bg); }
+.inbox-list { display: grid; margin: 12px 0; border-radius: 14px; overflow: hidden; box-shadow: 0 0 0 1px #E6E1D6; background: #fff; }
+.inbox-item { display: grid; grid-template-columns: 10px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 12px 14px; border: 0; border-top: 1px solid #EFEBE3; background: none; text-align: left; font: inherit; color: inherit; cursor: pointer; }
+.inbox-item:first-child { border-top: 0; }
+.inbox-item:hover { background: #FAF8F3; }
+.inbox-dot { width: 8px; height: 8px; border-radius: 50%; }
+.inbox-item.unread .inbox-dot { background: var(--signal); }
+.inbox-item.unread { background: var(--meet-yes-soft); }
+.inbox-item.gone { opacity: .6; }
+.inbox-text { display: grid; gap: 2px; min-width: 0; font-size: .92rem; }
+.inbox-text small { font-size: .76rem; color: var(--muted); }
+.meet-series-list { display: grid; gap: 10px; }
+.meet-series { width: 100%; text-align: left; border: 0; font: inherit; color: inherit; }
+button.meet-series { cursor: pointer; }
+.meet-series-icon svg { width: 34px; height: 26px; fill: none; stroke: var(--signal); stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+.meet-mine.edit { background: transparent; color: var(--ink); box-shadow: inset 0 0 0 1.5px #D8D2C5; }
+.meet-my.is-open { box-shadow: 0 0 0 1.5px var(--signal); }
+.meet-ask { margin: 0; font-size: .9rem; }
+.meet-my .small { margin: 0; }
+.meet-often { margin-top: 4px; }
 .meet-login { display: grid; gap: 12px; justify-items: start; }
 
 /* Anlegen */

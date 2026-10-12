@@ -296,7 +296,7 @@
             <span class="tfb-logo-split header-logo" role="img" aria-label="${esc(cfg.clubName)}"><span class="tfb-logo-noball"></span><span class="tfb-logo-ball"></span></span>
           </a>
           ${state.member
-            ? `<button class="avatar" type="button" data-action="profile" aria-label="Profil">${avatarFace(state.member)}</button>`
+            ? `<div class="top-actions">${TFB.inbox ? TFB.inbox.button() : ''}<button class="avatar" type="button" data-action="profile" aria-label="Profil">${avatarFace(state.member)}</button></div>`
             : `<button class="avatar guest" type="button" data-action="login" aria-label="Anmelden">${icon.user}</button>`}
         </div>
         <nav class="topnav" aria-label="Bereiche">${navLinks(area)}</nav>
