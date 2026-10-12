@@ -805,3 +805,12 @@ Monatsabschluss.
   Beenden, Postfach-Einträge mit ihrem Termin; beantwortete Einladungen und gelesene Gruppen-Infos
   sofort. Aufräumen läuft bei jedem Speichern (`prune()` in meet.js). Kopf: Glocke 34 px, unten bündig
   mit dem Profilbild, 22 px Abstand; Desktop-Menü gleichmäßig zwischen Logo und Glocke verteilt.
+- **12.10.2026** – **Mitgliederliste und automatische Sicherung (v132).** Admin → „Mitgliederliste“:
+  Excel (.xlsx, ohne Zusatzbibliothek per DecompressionStream entpackt) oder CSV. Spalten der
+  Vereinsliste: Nr., Name, Vorname, m, w, Handy, E-Mail, E-Mail – übernommen werden nur Nr., Vorname,
+  Name, E-Mail(s). Vorschau neu/geändert/unverändert/nicht mehr dabei; Ausgeschiedene nur deaktiviert;
+  beim ersten Import werden die erfundenen Beispielmitglieder ausgeblendet, das Admin-Konto per
+  Name/E-Mail zugeordnet (Anmelde-E-Mail bleibt). Echte Mitgliederdaten nie ins Repo.
+  Admin → „Sichern & Laden“ → „Automatisch sichern“: einmal Ordner wählen (File System Access API),
+  dann schreibt die App `TFB-Sicherung-automatisch.json` (höchstens 1×/Min. bei Änderung, beim
+  Verlassen). Ordner sollte außerhalb von Git-Repos liegen. `navigator.storage.persist()` beim Start.

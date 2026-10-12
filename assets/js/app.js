@@ -691,6 +691,7 @@
             <button type="button" class="font-option ${look.font === id ? 'on' : ''}" data-action="font" data-value="${id}" style="font-family:${esc(stack)}">
               <b>Padel ist da. 12,50 €</b><span>${esc(name)}</span></button>`).join('')}</div>`).join('')}
       </section>
+      ${TFB.memberImport ? TFB.memberImport.card() : ''}
       <section class="card admin-card">
         <h2>Sichern &amp; Laden</h2>
         <p class="muted">Alle Inhalte – Seiten, Fotos, Teams, Sortiment, Striche, Verabredungen, Farbe und Schrift – in einer einzigen Datei. Am besten in die Dropbox legen. So bist du vor Datenverlust geschützt und kannst alles auf einen anderen Rechner oder später in die veröffentlichte App übertragen.</p>
@@ -698,6 +699,7 @@
           <button type="button" class="btn primary" data-action="backup-save">Inhalte sichern</button>
           <label class="btn">Sicherung laden<input type="file" accept=".json,application/json" data-backup-input hidden></label>
         </div>
+        ${TFB.autosave ? `<h3 class="font-group">Automatisch sichern</h3>${TFB.autosave.box()}` : ''}
       </section>
       <section class="card admin-card">
         <h2>Markenfarbe</h2>
@@ -707,7 +709,6 @@
       <section class="card admin-card later">
         <h2>Kommt später</h2>
         <ul>
-          <li>Mitgliederliste aus Excel übernehmen</li>
           <li>Monatsabschluss und Lastschrift-Export für den Kassenwart</li>
           <li>Rollen für Kassenwart und Vorstand</li>
         </ul>

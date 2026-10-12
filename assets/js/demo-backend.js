@@ -749,6 +749,54 @@
       if (p) { p.reports = (p.reports || 0) + 1; save(db); }
     },
 
+    // ---------- Mitgliederliste aus Excel (Vorschau, dann übernehmen) ----------
+    // Übernommen werden nur Nr., Vorname, Name und E-Mail(s) – Handy und Geschlecht bewusst nicht.
+    // Abgleich: Mitgliedsnummer, sonst E-Mail, sonst Name. Wer nicht mehr in der Liste steht, wird nur
+    // deaktiviert (Striche und Beiträge bleiben). Beim ersten Import werden die erfundenen
+    // Beispielmitglieder ausgeblendet; das eigene Admin-Konto wird zugeordnet, die Anmelde-E-Mail bleibt.
+    async importMembers(rows, { apply = false } = {}) {
+      const admin = requireMember();
+      if (!admin.isAdmin) throw new Error('Nur Admins dürfen die Mitgliederliste laden.');
+      const clean = (v) => String(v == null ? '' : v).replace(/\s+/g, ' ').trim();
+      const nameKey = (f, l) => norm(`${f} ${l}`).normalize('NFC');
+      const list = (rows || []).map((r) => ({ memberNo: clean(r.memberNo), firstName: clean(r.firstName), lastName: clean(r.lastName),
+        email: norm(r.email), email2: norm(r.email2) })).filter((r) => r.firstName || r.lastName);
+      if (!list.length) throw new Error('In der Datei wurden keine Mitglieder gefunden.');
+      const pool = db.members.filter((m) => m.source === 'import' || m.id === admin.id);
+      const used = new Set();
+      const plan = { neu: [], geaendert: [], gleich: 0, weg: [], ohneMail: 0, zeilen: list.length };
+      const matches = list.map((r) => {
+        const hit = pool.find((m) => !used.has(m.id) && r.memberNo && m.memberNo === r.memberNo && m.source === 'import')
+          || pool.find((m) => !used.has(m.id) && r.email && [norm(m.email), norm(m.email2)].includes(r.email))
+          || pool.find((m) => !used.has(m.id) && nameKey(m.firstName, m.lastName) === nameKey(r.firstName, r.lastName));
+        if (hit) used.add(hit.id);
+        if (!r.email) plan.ohneMail += 1;
+        const name = `${r.firstName} ${r.lastName}`.trim();
+        if (!hit) plan.neu.push(name);
+        else if (hit.id !== admin.id && (hit.firstName !== r.firstName || hit.lastName !== r.lastName || norm(hit.email) !== r.email || norm(hit.email2) !== r.email2 || !hit.active)) plan.geaendert.push(name);
+        else plan.gleich += 1;
+        return [r, hit];
+      });
+      const leaving = pool.filter((m) => m.source === 'import' && m.active && !used.has(m.id));
+      plan.weg = leaving.map((m) => `${m.firstName} ${m.lastName}`);
+      const samples = db.members.filter((m) => /^m\d+$/.test(m.id) && m.active);
+      plan.beispiele = samples.length;
+      if (!apply) return plan;
+      matches.forEach(([r, hit]) => {
+        if (hit && hit.id === admin.id) { if (r.memberNo) hit.memberNo = r.memberNo; hit.listed = true; return; }   // eigenes Konto: Anmeldung bleibt
+        if (hit) { Object.assign(hit, { memberNo: r.memberNo || hit.memberNo, firstName: r.firstName, lastName: r.lastName, email: r.email, email2: r.email2, active: true }); return; }
+        db.members.push({ id: 'mi-' + uid(), memberNo: r.memberNo, firstName: r.firstName, lastName: r.lastName, email: r.email, email2: r.email2, active: true, source: 'import' });
+      });
+      leaving.forEach((m) => { m.active = false; });
+      samples.forEach((m) => { m.active = false; });
+      db.membersImportedAt = new Date().toISOString();
+      if (!save(db)) throw new Error('Speichern nicht möglich – der Gerätespeicher ist voll.');
+      return plan;
+    },
+    async memberListInfo() {
+      return { imported: db.membersImportedAt ? db.members.filter((m) => m.active && (m.source === 'import' || m.listed)).length : 0, at: db.membersImportedAt || null };
+    },
+
     // ---------- Sichern und Laden (alle Demo-Inhalte inkl. Fotos in einer Datei) ----------
     async exportAll() {
       const member = requireMember();
