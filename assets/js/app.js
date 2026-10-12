@@ -295,7 +295,9 @@
     ctx.font = `${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
     const baseline = line.top + ctx.measureText(tab.textContent).fontBoundingBoxAscent;
     const pic = act.matches('.avatar') ? act : act.querySelector('.avatar');
-    const shift = baseline - pic.getBoundingClientRect().bottom;
+    // Optischer Ausgleich: Kreise wirken höher als sie sind – wie das „O“ einer Schrift ragen sie leicht unter die Linie.
+    const OVERSHOOT = 4;
+    const shift = baseline + OVERSHOOT - pic.getBoundingClientRect().bottom;
     if (Math.abs(shift) > 0.4 && Math.abs(shift) < 30) act.style.transform = `translateY(${shift.toFixed(1)}px)`;
   }
   window.addEventListener('resize', () => requestAnimationFrame(alignHeader));

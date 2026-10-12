@@ -864,3 +864,5 @@ Monatsabschluss.
   Schriftmaße unterscheiden sich zwischen Browsern/Breiten; im Chrome des Nutzers rutschten sie zu hoch).
   v146: Messung korrigiert – die Menüpunkte sind Flex-Boxen, die Sonde lag 3,6 px zu hoch. Grundlinie jetzt
   über Textzeile (Range) + Oberlänge der Schrift (Canvas). Foto- und Glocken-Unterkante = Grundlinie der Menüschrift.
+  v147: optischer Ausgleich – Kreise (Profilbild, Glocke) ragen 4 px unter die Grundlinie (`OVERSHOOT` in
+  `alignHeader()`), da sie sonst zu hoch wirken. Wert bei Bedarf dort anpassen. Menüschrift unverändert 11,84 px.
