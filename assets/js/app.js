@@ -14,7 +14,6 @@
   // Team-Seiten gehören zu „Sport“
   const areaOf = (view) => (KIOSK_AREA.includes(view) ? 'kiosk' : view === 'team' ? 'sport' : view === 'gefluester' ? 'chat' : view);
   const state = {
-    member: null,
     catalog: null,
     authStep: 'email',      // email | password | create | unknown
     authEmail: '',
@@ -23,6 +22,24 @@
     editMode: false,        // Admin bearbeitet den Kiosk direkt
     lastAdd: null,          // { ids, until, text } – Storno-Stempel auf dem Deckel
   };
+  // Nur Demo: Admin-Werkzeuge sind beim Laden ausgeblendet (Mitglieder-Ansicht für die Vorführung);
+  // der rote Ball im Logo blendet sie ein und aus. state.member liefert dann isAdmin = false, adminHidden = true –
+  // egal, wo das Mitglied neu geladen oder gespeichert wird.
+  let hideAdmin = true;
+  let rawMember = null;
+  let viewMember = null;
+  Object.defineProperty(state, 'member', {
+    enumerable: true,
+    get() {
+      if (!rawMember || !rawMember.isAdmin || !hideAdmin || api.mode !== 'demo') return rawMember;
+      if (!viewMember || viewMember._raw !== rawMember) {
+        viewMember = { ...rawMember, isAdmin: false, adminHidden: true };
+        Object.defineProperty(viewMember, '_raw', { value: rawMember });
+      }
+      return viewMember;
+    },
+    set(m) { rawMember = m && m._raw ? m._raw : m; viewMember = null; },
+  });
 
   // ---------- Formatierung ----------
   const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -254,6 +271,7 @@
   // ---------- App-Rahmen ----------
   function renderShell() {
     const view = currentView();
+    document.body.classList.toggle('admin-hidden', Boolean(state.member && state.member.adminHidden));
     const area = areaOf(view);
     navArea = area;
     $app.innerHTML = `
@@ -304,14 +322,15 @@
 
   // Nur Demo: Klick auf den roten Ball im Logo oben links blendet die Admin-Werkzeuge (Stifte usw.) aus und
   // wieder ein – so lässt sich die Seite vorführen, wie ein Mitglied sie sieht, ohne sich abzumelden.
-  // Der Rest des Logos führt weiter zu Home. Nach dem Neuladen sind die Werkzeuge wieder sichtbar.
+  // Der Rest des Logos führt weiter zu Home. Nach dem Neuladen sind die Werkzeuge wieder ausgeblendet.
   document.addEventListener('click', (e) => {
     const ball = e.target.closest('.topbar .header-logo .tfb-logo-ball');
     if (!ball || api.mode !== 'demo' || !state.member || !(state.member.isAdmin || state.member.adminHidden)) return;
     e.preventDefault();
     e.stopPropagation();
-    const hide = !state.member.adminHidden;
-    state.member = { ...state.member, isAdmin: !hide, adminHidden: hide };
+    hideAdmin = !hideAdmin;
+    viewMember = null;
+    const hide = hideAdmin;
     state.editMode = false;
     document.body.classList.toggle('admin-hidden', hide);
     toast(hide ? 'Mitglieder-Ansicht – Admin-Werkzeuge ausgeblendet' : 'Admin-Werkzeuge wieder sichtbar', true);

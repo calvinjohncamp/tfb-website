@@ -882,3 +882,9 @@ Monatsabschluss.
   **Versteckter Vorführ-Schalter (nur Demo, Admin – auch bei ausgeblendeten Stiften):** Klick auf die große
   „01“ des ersten Themas wechselt Standard ↔ Bunt, nicht gespeichert (`colorPeek`); nach Neuladen gilt die
   gespeicherte Einstellung. Mehrere bunte Fassungen bewusst verworfen (Nutzer).
+- **12.10.2026** – **Vorführ-Voreinstellungen (v151, nur Demo):** Beim Laden sind die Admin-Werkzeuge
+  **ausgeblendet** (Getter auf `state.member` in app.js liefert isAdmin=false/adminHidden=true, bleibt auch nach
+  Profil-/Foto-Speichern bestehen); roter Ball blendet sie ein/aus. Home-Farben laden **Standard** (beige);
+  Voreinstellung jetzt `site.homeColorMode` (Standard, falls nicht „Bunt“ gewählt), Klick auf „01“ zeigt Bunt.
+  Farbänderung im Thema zeigt bis zum Neuladen „Bunt“, ändert aber nicht die Voreinstellung.
+  Eingefroren als Tag `stand-2026-10-12-v151`.

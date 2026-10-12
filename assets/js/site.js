@@ -102,7 +102,7 @@
   // Wer im Thema Farben ändert, arbeitet an der bunten Fassung → danach gilt „Bunt“
   function markColors(before, after) {
     if (!after || after.type !== 'feature') return;
-    if ((before?.bg || '') !== (after.bg || '') || (before?.linkBg || '') !== (after.linkBg || '')) { site.homeColors = 'bunt'; colorPeek = null; }
+    if ((before?.bg || '') !== (after.bg || '') || (before?.linkBg || '') !== (after.linkBg || '')) colorPeek = 'bunt';   // Ergebnis zeigen, nicht als Voreinstellung speichern
   }
   function wireColorFields(form, changed) {
     form.querySelectorAll('[data-color-field]').forEach((row) => {
@@ -889,15 +889,17 @@
   }
   const homeLook = () => (HOME_LOOKS.some(([k]) => k === site?.homeLook) ? site.homeLook : '6');
   // Farben der Home-Themen: genau eine bunte Fassung (Farben je Thema) oder „Standard“ (Creme/Weiß).
-  // Gespeichert in site.homeColors; colorPeek = versteckter Vorführ-Schalter (Klick auf „01“), nicht gespeichert.
+  // Gespeichert in site.homeColorMode (Standard ist voreingestellt); colorPeek = Vorführ-Schalter (Klick auf „01“)
+  // bzw. Anzeige nach dem Bearbeiten von Farben – beides nur bis zum Neuladen.
   let colorPeek = null;
-  const homeColorMode = () => colorPeek || (site?.homeColors === 'standard' ? 'standard' : 'bunt');
+  const savedColorMode = () => (site?.homeColorMode === 'bunt' ? 'bunt' : 'standard');
+  const homeColorMode = () => colorPeek || savedColorMode();
   function colorModeCard() {
-    const cur = site?.homeColors === 'standard' ? 'standard' : 'bunt';
+    const cur = homeColorMode();
     return `<section class="look-picker color-mode" aria-label="Farben der Startseite">
       <h2>Farben der Themen</h2>
       <div class="seg">${[['standard', 'Standard'], ['bunt', 'Bunt']].map(([k, l]) => `<button type="button" class="${k === cur ? 'on' : ''}" data-action="home-colors" data-mode="${k}" aria-pressed="${k === cur}">${l}</button>`).join('')}</div>
-      <p class="muted small">„Bunt“ zeigt die Farben, die du je Thema eingestellt hast; „Standard“ zeigt alle in Creme mit weißen Knöpfen – deine Farben bleiben gespeichert. Änderst du Farben im Thema, gilt danach „Bunt“. Gilt für alle Besucher.</p>
+      <p class="muted small">„Bunt“ zeigt die Farben, die du je Thema eingestellt hast; „Standard“ zeigt alle in Creme mit weißen Knöpfen – deine Farben bleiben gespeichert. Die Auswahl hier gilt für alle Besucher; voreingestellt ist „Standard“.</p>
     </section>`;
   }
   function lookPicker() {
@@ -2535,7 +2537,7 @@
     'home-colors': async (el) => {
       try {
         colorPeek = null;
-        site = await ui().api.saveSite({ ...JSON.parse(JSON.stringify(site)), homeColors: el.dataset.mode });
+        site = await ui().api.saveSite({ ...JSON.parse(JSON.stringify(site)), homeColorMode: el.dataset.mode });
         ui().toast(el.dataset.mode === 'bunt' ? 'Farben: Bunt' : 'Farben: Standard', true);
         const y = window.scrollY; await ui().renderView(); window.scrollTo(0, y);
       } catch (err) { ui().toast(err.message); }
