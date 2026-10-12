@@ -301,6 +301,22 @@
     if (Math.abs(shift) > 0.4 && Math.abs(shift) < 30) act.style.transform = `translateY(${shift.toFixed(1)}px)`;
   }
   window.addEventListener('resize', () => requestAnimationFrame(alignHeader));
+
+  // Nur Demo: Klick auf den roten Ball im Logo oben links blendet die Admin-Werkzeuge (Stifte usw.) aus und
+  // wieder ein – so lässt sich die Seite vorführen, wie ein Mitglied sie sieht, ohne sich abzumelden.
+  // Der Rest des Logos führt weiter zu Home. Nach dem Neuladen sind die Werkzeuge wieder sichtbar.
+  document.addEventListener('click', (e) => {
+    const ball = e.target.closest('.topbar .header-logo .tfb-logo-ball');
+    if (!ball || api.mode !== 'demo' || !state.member || !(state.member.isAdmin || state.member.adminHidden)) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const hide = !state.member.adminHidden;
+    state.member = { ...state.member, isAdmin: !hide, adminHidden: hide };
+    state.editMode = false;
+    document.body.classList.toggle('admin-hidden', hide);
+    toast(hide ? 'Mitglieder-Ansicht – Admin-Werkzeuge ausgeblendet' : 'Admin-Werkzeuge wieder sichtbar', true);
+    renderView();
+  }, true);
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => alignHeader());
 
   // Menü oben: Standard oder – sobald geladen – die im Admin gepflegten Punkte (Name + Ziel: Seite der App oder Website)

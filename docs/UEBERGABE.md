@@ -45,6 +45,9 @@ Nutzer: „Perfekt. Aktuell keine Wünsche mehr offen.“
   **Avenir Next**, Farbe fest **Anthrazit #2A2D2E**. „E-Mail-Benachrichtigungen vom Club“ (an);
   „Einladungen von allen“ (an) ist mit der Namenssuche beim Verabreden verknüpft.
 - **Foto-Freigaben (Admin)** als Karten mit Status und Pillen (v138).
+- **Vorführ-Schalter (v148, nur Demo):** Klick auf den roten Ball im Logo blendet Admin-Stifte aus/ein.
+- Kopf: Profilbild/Glocke per Messung 4 px unter der Menü-Grundlinie (optischer Ausgleich, v147 – abgenommen).
+- Anmeldung: Auge im Passwortfeld (v143), Demo-Kasten entfernt (v144).
 - **v139–v141 (nachmittags ergänzt):** Farben je Home-Thema (Textseite + Link-Knöpfe), Link-Abstände (Standard 26/14 px, je Thema ▲/▼) –
   Farbfeld, Pipette, Farbcode, „Standard“ (#F5F0E6); dunkler Grund → helle Schrift. Rückfallpunkt: Tag `stand-2026-10-12`.
 - **Entscheidung:** Kiosk-Freigabe wird **nicht** in der App zurückgenommen; Ausstieg per E-Mail an den Vorstand.

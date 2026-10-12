@@ -866,3 +866,9 @@ Monatsabschluss.
   über Textzeile (Range) + Oberlänge der Schrift (Canvas). Foto- und Glocken-Unterkante = Grundlinie der Menüschrift.
   v147: optischer Ausgleich – Kreise (Profilbild, Glocke) ragen 4 px unter die Grundlinie (`OVERSHOOT` in
   `alignHeader()`), da sie sonst zu hoch wirken. Wert bei Bedarf dort anpassen. Menüschrift unverändert 11,84 px.
+  Nutzer hat mit Lineal geprüft: v147 (4 px optischer Ausgleich) „sieht schick aus – genau so lassen“.
+- **12.10.2026** – **Versteckter Vorführ-Schalter (v148, nur Demo):** Klick auf den **roten Ball** im TFB-Logo
+  oben links blendet für Admins alle Admin-Werkzeuge aus (Stifte, Admin-Bereich im Konto, „Ausblenden (Admin)“)
+  – Mitglieder-Ansicht ohne Abmelden; erneuter Klick blendet sie wieder ein. Nach dem Neuladen immer sichtbar.
+  Rest des Logos führt weiter zu Home. Umsetzung: `state.member.isAdmin` vorübergehend false (`adminHidden`),
+  Klasse `admin-hidden` am body; nur wenn `api.mode === 'demo'`. Im Echtbetrieb entfernen oder bewusst entscheiden.
