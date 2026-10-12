@@ -3,9 +3,10 @@
 **Zuerst lesen.** Ausführlicher Verlauf: [PROJEKTGEDAECHTNIS.md](PROJEKTGEDAECHTNIS.md).
 Diese Zusammenfassung hat Vorrang vor älteren Zwischenständen.
 
-Stand: **12.10.2026 – EINGEFROREN** als Git-Tag **`stand-2026-10-12`** (v138, Cache `tfb-kiosk-v138`; danach Nachtrag v139).
-Alles lokal committet, 4 Node-Tests grün. Nicht veröffentlicht. Lokale Commits sind (Stand Tag)
-noch nicht zu GitHub gepusht – nur auf Wunsch des Nutzers pushen.
+Stand: **12.10.2026 abends – EINGEFROREN** als Git-Tag **`stand-2026-10-12-abend`** (v141, Cache `tfb-kiosk-v141`;
+vorheriger Tag `stand-2026-10-12` = v138 ohne Farben/Abstände). Alles lokal committet, 4 Node-Tests grün.
+Nicht veröffentlicht. Lokale Commits sind noch nicht zu GitHub gepusht – nur auf Wunsch des Nutzers pushen.
+Nutzer: „Perfekt. Aktuell keine Wünsche mehr offen.“
 
 ## Wie es weitergeht
 
@@ -44,7 +45,7 @@ noch nicht zu GitHub gepusht – nur auf Wunsch des Nutzers pushen.
   **Avenir Next**, Farbe fest **Anthrazit #2A2D2E**. „E-Mail-Benachrichtigungen vom Club“ (an);
   „Einladungen von allen“ (an) ist mit der Namenssuche beim Verabreden verknüpft.
 - **Foto-Freigaben (Admin)** als Karten mit Status und Pillen (v138).
-- **Nachtrag v139–v141 (auf Wunsch nach dem Einfrieren):** Farben je Home-Thema (Textseite + Link-Knöpfe), Link-Abstände (Standard 26/14 px, je Thema ▲/▼) –
+- **v139–v141 (nachmittags ergänzt):** Farben je Home-Thema (Textseite + Link-Knöpfe), Link-Abstände (Standard 26/14 px, je Thema ▲/▼) –
   Farbfeld, Pipette, Farbcode, „Standard“ (#F5F0E6); dunkler Grund → helle Schrift. Rückfallpunkt: Tag `stand-2026-10-12`.
 - **Entscheidung:** Kiosk-Freigabe wird **nicht** in der App zurückgenommen; Ausstieg per E-Mail an den Vorstand.
 - **Supabase-Plan:** Verein bekommt einen bezahlten Supabase-Account; darin zwei Projekte `padel`

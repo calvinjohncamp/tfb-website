@@ -851,3 +851,6 @@ Monatsabschluss.
   Link (vorher 13) und 14 px zwischen zwei Links (vorher 10). Im Home-Editor unter „5 · Links“ je Thema
   einstellbar: „Abstand über den Links“ und „Abstand zwischen den Links“ mit ▲/▼ (2 px, gedrückt halten
   wiederholt), „Standard“; Live-Vorschau. Daten `block.linkTop`/`block.linkGap`, CSS-Variablen `--link-top`/`--link-gap`.
+- **12.10.2026 abends** – **Eingefroren als Tag `stand-2026-10-12-abend` (v141).** Nutzer: „Perfekt. Aktuell
+  keine Wünsche mehr offen.“ Nächster Schritt liegt beim Nutzer: Gespräch mit dem Vorstand, ob und wie es
+  mit der neuen Website weitergeht. Bis dahin keine Änderungen an der App ohne ausdrückliche Bitte.
