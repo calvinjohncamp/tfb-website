@@ -1,0 +1,18 @@
+{
+  "name": "tfb-website",
+  "private": true,
+  "scripts": {
+    "test:browser": "npm run test:browser:overview && npm run test:browser:gallery && npm run test:browser:backups",
+    "test:browser:focus": "node tools/test-browser-focus.mjs",
+    "test:browser:meet-weekdays": "node tools/test-browser-meet-weekdays.mjs",
+    "test:browser:next-match": "node tools/test-browser-next-match.mjs",
+    "test:browser:chat-notices": "node tools/test-browser-chat-notices.mjs",
+    "test:browser:design-preview": "node tools/test-browser-design-preview.mjs",
+    "test:browser:overview": "node tools/test-browser-overview.mjs",
+    "test:browser:gallery": "node tools/test-browser-gallery.mjs",
+    "test:browser:backups": "node tools/test-browser-backups.mjs"
+  },
+  "devDependencies": {
+    "playwright": "^1.64.0"
+  }
+}

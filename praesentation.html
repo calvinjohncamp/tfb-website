@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TF Bielstein · Fokus</title>
+  <link rel="icon" href="assets/icons/favicon-64.png">
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; background: #1c1a17; }
+    body { font: 14px system-ui, sans-serif; color: #fff; }
+    main { height: 100%; display: flex; justify-content: center; }
+    .viewport { position: relative; height: 100%; width: min(var(--width, 1440px), 100%); flex: none; }
+    iframe { display: block; border: 0; width: 100%; height: 100%; background: #1c1a17; }
+    .grip { position: absolute; top: 0; bottom: 0; width: 14px; cursor: ew-resize; touch-action: none; z-index: 2; }
+    .grip.left { left: -14px; } .grip.right { right: -14px; }
+    .grip::after { content: ''; position: absolute; top: calc(50% - 24px); left: 5px; width: 4px; height: 48px; background: #a49b8e; border-radius: 2px; opacity: 0; transition: opacity .15s; }
+    .grip:hover::after, .grip:focus-visible::after { opacity: 1; }
+    .reveal { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: min(360px, 100%); height: 12px; z-index: 5; }
+    nav { position: fixed; bottom: 20px; left: 50%; transform: translate(-50%, 12px); display: flex; align-items: center; gap: 4px; padding: 6px; background: #252521; border: 1px solid #55544e; border-radius: 8px; box-shadow: 0 4px 20px #0005; opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; z-index: 6; }
+    body.controls nav, nav:focus-within { opacity: 1; pointer-events: auto; transform: translate(-50%, 0); }
+    button { width: 40px; height: 40px; padding: 8px; display: grid; place-items: center; border: 0; border-radius: 4px; background: transparent; color: #f5f1e8; cursor: pointer; }
+    button:hover { background: #45453d; }
+    button[aria-pressed="true"] { background: #f5f1e8; color: #252521; }
+    button:focus-visible { outline: 2px solid #df7557; outline-offset: 2px; }
+    button svg { width: 22px; height: 22px; }
+    .separator { height: 24px; border-left: 1px solid #55544e; margin: 0 4px; }
+    .tooltip { position: absolute; bottom: 64px; left: 50%; transform: translateX(-50%); white-space: nowrap; background: #252521; border: 1px solid #55544e; padding: 6px 10px; border-radius: 4px; display: none; }
+    nav:has(button:hover) .tooltip, nav:has(button:focus-visible) .tooltip { display: block; }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="viewport" id="viewport">
+      <iframe id="site" title="Tennisfreunde Bielstein" src="index.html?tfbPresentation=1#home" allow="fullscreen; clipboard-write" allowfullscreen></iframe>
+      <div class="grip left" role="separator" aria-label="Ansichtsbreite" aria-orientation="vertical" tabindex="0"></div>
+      <div class="grip right" role="separator" aria-label="Ansichtsbreite" aria-orientation="vertical" tabindex="0"></div>
+    </div>
+  </main>
+  <div class="reveal" id="reveal"></div>
+  <nav aria-label="Fokus">
+    <button data-mode="desktop" title="Desktop (Alt + 1)" aria-label="Desktop" aria-pressed="true"><i data-lucide="monitor"></i></button>
+    <button data-mode="tablet" title="iPad (Alt + 2)" aria-label="iPad" aria-pressed="false"><i data-lucide="tablet"></i></button>
+    <button data-mode="phone" title="iPhone (Alt + 3)" aria-label="iPhone" aria-pressed="false"><i data-lucide="smartphone"></i></button>
+    <span class="separator"></span>
+    <button id="fullscreen" title="Vollbild" aria-label="Vollbild"><i data-lucide="maximize"></i></button>
+    <button id="close" title="Fokus beenden" aria-label="Fokus beenden"><i data-lucide="x"></i></button>
+    <span class="tooltip" aria-hidden="true"></span>
+  </nav>
+  <script src="assets/js/presentation-icons.js"></script>
+  <script src="assets/js/presentation.js"></script>
+</body>
+</html>

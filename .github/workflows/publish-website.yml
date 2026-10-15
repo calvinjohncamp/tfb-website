@@ -1,0 +1,35 @@
+name: TFB-Website veröffentlichen
+
+# Bewusste Veröffentlichung per Knopf, nachdem Pages eingerichtet ist.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/configure-pages@v5
+      - name: Nur öffentliche Webdateien zusammenstellen
+        run: python3 tools/prepare-pages.py
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: _site
+      - name: Website veröffentlichen
+        id: deployment
+        uses: actions/deploy-pages@v4

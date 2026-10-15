@@ -668,6 +668,7 @@
       phone: (account && account.phone) || '',
       infoMails: !(account && account.infoMails === false),
       openInvites: !(account && account.openInvites === false),
+      groupChatNotices: Boolean(account && account.groupChatNotices),
       isMinor: isMinor(member),
       parentConsent: (account && account.parentConsent) || null,
       photoMinor: photoMinor(member),
@@ -729,7 +730,7 @@
     // Eigene Daten ändern. Name und E-Mail sind die Daten der Mitgliederliste des Clubs: eine geänderte
     // E-Mail wird zugleich die beim Club hinterlegte Adresse (Anmeldung, Clubgeflüster, Mannschaftsrechte
     // hängen daran). Jede Änderung landet im Protokoll für den Vorstand (db.changeLog).
-    async updateProfile({ firstName, lastName, email, phone, infoMails, openInvites }) {
+    async updateProfile({ firstName, lastName, email, phone, infoMails, openInvites, groupChatNotices }) {
       const member = requireMember();
       const account = accountOf(member.id);
       const tel = String(phone || '').trim();
@@ -755,11 +756,48 @@
         changes.forEach((c) => db.changeLog.push({ memberId: member.id, memberNo: member.memberNo, ...c, at: new Date().toISOString() }));
       }
       Object.assign(account, { phone: tel, infoMails: Boolean(infoMails), openInvites: Boolean(openInvites) });
+      if (groupChatNotices != null) {
+        if (groupChatNotices && !account.groupChatNotices) {
+          account.chatNoticesSince = new Date().toISOString();
+          account.chatNoticeRead = db.community.posts.map(p => p.id);
+        }
+        account.groupChatNotices = Boolean(groupChatNotices);
+      }
       if (!save(db)) throw new Error('Speichern nicht möglich.');
       return publicMember(member);
     },
 
     // ---------- Clubgeflüster & Insider News ----------
+    chatNotices() {
+      const member = db.members.find(m => m.id === sessionMemberId() && m.active);
+      const acc = member && accountOf(member.id);
+      if (!acc?.groupChatNotices) return [];
+      const peers = new Set(teamsOfMember(member.id).flatMap(rosterOf));
+      (TFB.meet?.chatPeers(member.id) || []).forEach(id => peers.add(id));
+      const seen = new Set(acc.chatNoticeRead || []);
+      const since = acc.chatNoticesSince || new Date().toISOString();
+      const week = Date.now() - 7 * 864e5;
+      const grouped = new Map();
+      db.community.posts.filter(p => !p.hidden && p.authorId !== member.id && peers.has(p.authorId)
+        && (p.scope === 'club' || String(p.scope).startsWith('team:'))
+        && p.createdAt >= since && Date.parse(p.createdAt) >= week && !seen.has(p.id))
+        .sort((a, b) => b.createdAt.localeCompare(a.createdAt)).forEach(p => {
+          if (!grouped.has(p.authorId)) grouped.set(p.authorId, []);
+          grouped.get(p.authorId).push(p);
+        });
+      return [...grouped.values()].map(posts => ({
+        id: 'chat-' + posts[0].authorId, type: 'chat', from: posts[0].authorId,
+        postId: posts[0].id, postIds: posts.map(p => p.id), count: posts.length,
+        snap: { title: posts[0].title || 'Chat-Beitrag' }, extra: {}, at: Date.parse(posts[0].createdAt), read: false,
+      }));
+    },
+    readChatPosts(ids) {
+      const member = requireMember();
+      const acc = accountOf(member.id);
+      const existing = new Set(db.community.posts.map(p => p.id));
+      acc.chatNoticeRead = [...new Set([...(acc.chatNoticeRead || []), ...ids])].filter(id => existing.has(id));
+      if (!save(db)) throw new Error('Speichern nicht möglich.');
+    },
     // Lesen: öffentlich. Schreiben: nur angemeldete Mitglieder (Insider News: gemeldete Spieler).
     async posts(scope, { withTeams = false } = {}) {
       const me = db.members.find((m) => m.id === sessionMemberId());
@@ -837,6 +875,7 @@
       const post = { id: 'p-' + uid(), scope, authorId: member.id, createdAt: new Date().toISOString(), ...(String(title || '').trim() ? { title: String(title).trim().slice(0, 90) } : {}), text: t.slice(0, 2000), images: images.slice(0, 6), ...(scope === 'club' && mine.length ? { alsoTeams: mine } : {}) };
       db.community.posts.push(post);
       if (!save(db)) throw new Error('Speichern nicht möglich.');
+      document.dispatchEvent(new Event('tfb-chat-updated'));
       return publicPost(post);
     },
     async editPost(id, { title = '', text, images, alsoTeams }) {
@@ -856,6 +895,7 @@
       if (!p || (p.authorId !== member.id && !member.isAdmin)) throw new Error('Diesen Beitrag kannst du nicht löschen.');
       db.community.posts = db.community.posts.filter((x) => x.id !== id);
       save(db);
+      document.dispatchEvent(new Event('tfb-chat-updated'));
     },
     // Clubgeflüster-Beitrag nur aus einer Mannschaft nehmen – im Clubgeflüster bleibt er stehen
     async removePostFromTeam(id, team) {
@@ -871,7 +911,7 @@
       const member = requireMember();
       if (!member.isAdmin) throw new Error('Nur Admins dürfen Beiträge ausblenden.');
       const p = db.community.posts.find((x) => x.id === id);
-      if (p) { p.hidden = hidden; save(db); }
+      if (p) { p.hidden = hidden; save(db); document.dispatchEvent(new Event('tfb-chat-updated')); }
     },
     async reportPost(id) {
       const p = db.community.posts.find((x) => x.id === id);
@@ -1123,7 +1163,7 @@
       if (!site || !site.pages) throw new Error('Ungültige Seiteninhalte.');
       for (const page of Object.values(site.pages)) {
         for (const block of page.blocks || []) {
-          if (['post', 'feature'].includes(block.type) && block.images != null
+          if (['post', 'feature', 'gallery', 'collage'].includes(block.type) && block.images != null
             && (!Array.isArray(block.images) || block.images.length > 100)) throw new Error('Eine Fotokollage kann höchstens 100 Bilder enthalten.');
         }
       }
@@ -1302,6 +1342,10 @@
         })
         .filter(Boolean)
         .sort((a, b) => a.lastName.localeCompare(b.lastName, 'de') || a.firstName.localeCompare(b.firstName, 'de'));
+    },
+
+    async reloadLocalState() {
+      db = load();
     },
 
     async resetDemo() {

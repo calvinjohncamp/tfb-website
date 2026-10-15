@@ -42,7 +42,8 @@ test('published board import includes seven local portraits and runs only once',
 function setup() {
   const storage = new Map();
   function boot() {
-    const context = { console, crypto: webcrypto, TextEncoder, setTimeout, clearTimeout,
+    const context = { console, crypto: webcrypto, TextEncoder, setTimeout, clearTimeout, Event,
+      document: { dispatchEvent() {} },
       localStorage: { getItem: (key) => storage.get(key) || null, setItem: (key, value) => storage.set(key, value), removeItem: (key) => storage.delete(key) } };
     context.window = context;
     vm.createContext(context);

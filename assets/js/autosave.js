@@ -37,6 +37,8 @@
     return JSON.stringify(data);
   }
   async function perform(force) {
+    // While Fokus owns the active data, its embedded app performs the backup.
+    if (document.body?.classList?.contains('tfb-focus-active')) return;
     const target = dir;
     const member = ui()?.state.member;
     if (!target || !member || !(member.isAdmin || member.adminHidden)) return;

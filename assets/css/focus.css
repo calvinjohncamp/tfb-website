@@ -1,0 +1,69 @@
+.focus-strip { position: relative; width: 100%; min-height: var(--focus-height, 240px); display: flex; flex-direction: column; justify-content: center; gap: 24px; padding: 32px 36px; background: #1c1a17; color: #f5f0e6; letter-spacing: 0; }
+.focus-strip-main { display: flex; align-items: center; gap: 24px; }
+.signature-app-icon { width: 96px; height: 96px; flex: none; object-fit: contain; }
+.focus-copy { flex: 1; min-width: 0; }
+.focus-copy h2 { margin: 0 0 6px; font-size: 28px; line-height: 1.15; letter-spacing: 0; color: inherit; }
+.focus-copy p { margin: 0; color: #d0cbc2; font-size: 15px; }
+.focus-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.focus-actions .btn { min-height: 44px; border-radius: 6px; gap: 8px; white-space: normal; text-align: center; font-size: 14px; }
+.focus-actions svg, .focus-downloads svg, .focus-strip-edit svg { width: 20px; height: 20px; flex: none; }
+.focus-enter { background: #c4553a; border-color: #c4553a; color: #fff; }
+.focus-install { background: transparent; border: 1px solid #716b61; color: #f5f0e6; }
+.focus-platforms { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 28px; margin: 0; font-size: 12px; line-height: 1.6; }
+.focus-platforms div { display: flex; gap: 10px; }
+.focus-platforms div:last-child { grid-column: 1 / -1; }
+.focus-platforms dt { font-weight: 700; color: #f5f0e6; flex: none; }
+.focus-platforms dd { margin: 0; color: #d0cbc2; }
+.focus-strip-edit { position: absolute; right: 8px; top: 8px; padding: 6px; background: transparent; color: #f5f0e6; border: 0; border-radius: 4px; width: 32px; height: 32px; }
+.signature-install { display: flex; gap: 16px; padding: 24px; background: #1c1a17; color: #f5f0e6; border-radius: 6px; }
+.signature-install .signature-app-icon { width: 64px; height: 64px; }
+.signature-install > div { min-width: 0; }
+.signature-install strong { color: #f5f0e6; font-size: 18px; }
+.signature-install p { margin: 6px 0 16px; color: #d0cbc2; }
+.signature-install .focus-platforms { display: block; margin-top: 18px; }
+.signature-install .focus-platforms div { margin-top: 8px; }
+.focus-install-heading { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
+.focus-install-heading h2 { margin: 0 0 8px; }
+.focus-install-heading p { margin: 0; color: var(--muted); }
+.focus-install-steps { margin: 24px 0 0; display: grid; gap: 16px; }
+.focus-install-steps dt { font-weight: 700; }
+.focus-install-steps dd { margin: 6px 0 0; font-size: 14px; line-height: 1.65; }
+.focus-downloads { display: flex; flex-wrap: wrap; gap: 10px; }
+.focus-downloads .btn { gap: 8px; border-radius: 6px; white-space: normal; }
+.focus-local-note { font-size: 14px; line-height: 1.65; }
+.tfb-focus-overlay { position: fixed; inset: 0; z-index: 10000; background: #1c1a17; }
+.tfb-focus-overlay > iframe { width: 100%; height: 100%; display: block; border: 0; }
+html.tfb-presentation-page { background: #1c1a17; scrollbar-width: none; }
+html.tfb-presentation-page::-webkit-scrollbar { display: none; }
+html.tfb-presentation-page:has(body.no-scroll) { overflow: hidden; }
+.header-tools { display: flex; flex-direction: row; align-items: flex-end; gap: 15.4px; flex: none; }
+.header-tools:empty { display: none; }
+.header-focus { display: none; position: relative; flex: none; width: 21.6px; height: 21.6px; padding: 0; border: 1.15px solid #1c1a17; border-radius: 50%; background: #fff; color: #1c1a17; font-family: var(--font); font-weight: 700; font-size: .8rem; line-height: 1; letter-spacing: 0; cursor: pointer; }
+.header-focus::after { content: ''; position: absolute; inset: -4px; border-radius: 50%; }
+.header-focus:hover { background: #f3f3f0; }
+.header-focus:focus-visible { outline: 2px solid var(--signal); outline-offset: 3px; }
+.header-focus-tooltip { display: none; position: absolute; top: calc(100% + 6px); right: 0; z-index: 10; width: max-content; padding: 5px 8px; border-radius: 4px; background: #1c1a17; color: #fff; font-size: 12px; font-weight: 500; line-height: 1.4; pointer-events: none; }
+.header-focus:hover .header-focus-tooltip, .header-focus:focus-visible .header-focus-tooltip { display: block; }
+@media (hover: hover) and (pointer: fine) {
+  .header-focus { display: inline-flex; align-items: center; justify-content: center; }
+}
+body.tfb-focus-active { overflow: hidden; }
+body.tfb-focus-active > :not(.tfb-focus-overlay) { visibility: hidden; }
+.focus-strip-settings .field { margin: 20px 0; }
+.focus-strip-settings input[type="range"] { width: 100%; accent-color: var(--signal); }
+.focus-strip-settings .focus-size-output { display: flex; justify-content: space-between; }
+@media (max-width: 900px) {
+  .focus-strip-main { flex-wrap: wrap; }
+  .focus-actions { width: 100%; }
+  .focus-copy h2 { font-size: 24px; }
+}
+@media (max-width: 560px) {
+  .focus-strip { padding: 24px 20px; gap: 20px; }
+  .focus-strip-main { gap: 16px; }
+  .signature-app-icon { width: 72px; height: 72px; }
+  .focus-copy h2 { font-size: 22px; }
+  .focus-platforms { grid-template-columns: minmax(0, 1fr); }
+  .signature-install { padding: 20px 16px; flex-wrap: wrap; }
+  .signature-install > div { width: 100%; }
+  .focus-install-heading .signature-app-icon { width: 64px; height: 64px; }
+}

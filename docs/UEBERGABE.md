@@ -3,6 +3,425 @@
 **Zuerst lesen.** Ausführlicher Verlauf: [PROJEKTGEDAECHTNIS.md](PROJEKTGEDAECHTNIS.md).
 Diese Zusammenfassung hat Vorrang vor älteren Zwischenständen.
 
+## Kühle Welt als Standard, zwei Admin-Optionen (v183)
+
+Nutzer bevorzugt neue Typografie/Menü und aufgeräumten Kiosk; kühle Welt mit neuen
+Schriften ist jetzt Standard. Warme ursprüngliche Welt bleibt Nummer zwei.
+Zwischenvariante kühl/alte Schriften aus UI und CSS entfernt. Neuer lokaler Key
+`tfb_design_world_v2` ignoriert ältere Testpräferenzen, fehlender Wert = cool.
+Auf Home links in der Bleistift-Zeile „Kühle Welt“/„Warme Welt“, aktiv markiert,
+nur sichtbar wenn derselbe Admin-Zustand auch den Bleistift zeigt. Keine Anzeige
+für Gäste/Mitglieder; Demo-Admin blendet über roten Ball ein. Logo-Schriftzug bleibt
+auf allen Seiten als Zweierwechsel verfügbar, auch in Fokus/Präsentation.
+Auswahl lokal je Browser gespeichert, nicht als zusätzliche globale Site-Einstellung.
+Tests erfolgreich: Default/Legacy-Auswahl/Reload, Admin-Sichtbarkeit/Ausrichtung,
+alle Routen und Desktop/Mobilbreiten, unveränderte Daten, Offline-Datei, Fokus-Wechsel.
+Keine Veröffentlichung; Dokumentation der aktuellen Entscheidung in DESIGNVERGLEICH.md.
+v182 und früher unten historisch.
+
+## Drei Welten und Dating-Texte (v182)
+
+Aktueller lokaler Cache v182. Klick auf Logo-Schriftzug überall:
+warm (Original/Standard) → kühle Flächen mit EXAKT bisherigen Schriften und
+Schriftfarben → vollständige kühle Welt mit Bricolage/DM Sans → warm.
+Mittlere Variante eigene CSS-Klasse `editorial-colors-only`, nur Flächen/Farben
+für Hintergründe/Linien, keine Font-/Textfarb-Overrides. Auswahl `colors` zusätzlich
+zum bisherigen `cool` unter gleichem Preference-Key. Logo-Home und Ball unverändert.
+Menüpunkt weiterhin „Verabreden“; darin H1 „Dating 2.0“, Abschnitte
+„Einladungen für mich“ und „Meine kommenden Matches“. Logik/Inhalte sonst identisch.
+Erweiterter Design-Test prüft alte Font-/Farbwerte auf allen Routen/Breiten,
+Dreierzyklus, Reload, neue Texte und Rückkehr. Details: DESIGNVERGLEICH.md.
+Keine Veröffentlichung/Designentscheidung; zentrale Admin-Auswahl weiterhin später.
+
+## Designvergleich erweitert: alle Seiten (v181)
+
+Aktuell v181, weiterhin Experiment ohne Entscheidung zwischen warm/kühl.
+Nutzer mag die warme Welt weiterhin und möchte nun alle TFB-Seiten vergleichen.
+Logo-Schriftzug schaltet auf jeder internen Seite/Unterseite um; Account und Dialoge
+folgen der Auswahl. Basis/Inhalte unverändert, keine zweite Datenkopie.
+Kühle Zahlen auf Home wieder feine rote Konturen (1.25px, Bricolage 600), Menü
+etwas größer, DM Sans 700, dunklerer Sekundärton. Neutrale Flächen auch in Kiosk,
+Abrechnungen, Sport/Training/Mannschaften, Club, Verabreden und Rechtstexten.
+Kühle Verabreden-Arten auf schmalen Geräten als 2x2, kein Textüberlauf.
+Warmer Look bleibt unverändert; beide Welten als spätere Admin-Option nur vorgemerkt.
+Ausführliche Quellen/Prüfung in DESIGNVERGLEICH.md. v180-Scope unten historisch.
+
+## Design-Experiment 13.10.2026: Home/Chat (v180)
+
+Nach dem Tagesabschluss bittet der Nutzer um einen reversiblen Vergleich zur
+Foks-Vorlage. Aktueller lokaler Cache v180, keine Design-Freigabe oder Veröffentlichung.
+Vorheriger warmer v179-Look bleibt Basis/Standard. Kleiner Schriftzug unter dem
+TFB-Zeichen schaltet auf Home/Chat zwischen warm und kühl; Zeichen bleibt Home-Link,
+Ball bleibt Admin-Gimmick. Inhalte/Fotos/Daten identisch, keine zweite Kopie.
+Getrennte Preview-CSS/JS, lokaler Preference-Key, außerhalb Home/Chat inaktiv.
+Originalfonts der aktuellen Hersteller-Demo identifiziert und lokal lizenziert:
+Bricolage Grotesque (Titel), DM Sans (Fließtext/Kategorien). Screenshotfläche
+gemessen #EFEFEF, neutrales Preview-Anthrazit #171717, TFB-Rot bleibt erhalten.
+Details, Quellen, Farbabweichungen und Rückbau: [DESIGNVERGLEICH.md](DESIGNVERGLEICH.md).
+Tests: Design-Umschaltung/offline/Dateiseite/Mobilbreiten, Fokus-Regression;
+Screenshots nur isolierte Testdaten. HTTP-Vorschau separat von bisherigen file-Daten.
+
+## Tagesabschluss 13.10.2026: freigegebener Stand v179
+
+Der Nutzer hat die Umsetzung der optionalen Chat-Hinweise ausdrücklich bestätigt
+(„gefällt mir genau so“) und die Arbeit für heute beendet. Aktueller lokaler Stand:
+`tfb-kiosk-v179`. Die folgenden Ergänzungen dokumentieren die Entwicklung;
+Versionsangaben v178 und früher sind historische Zwischenstände.
+
+- Fokus bleibt ausschließlich für Desktop; Installation für weitere Nutzer bleibt zurückgestellt.
+- Account: nächstes zugesagtes Match mit feinem Anthrazit-Rahmen; Kiosk-Umsätze
+  mit Details-Link zu Einzelposten/Monatsabrechnungen und Heute-Link zum Bierdeckel.
+- Laufende Abrechnung zeigt unter dem Betrag nur „Einzug am [Datum]“.
+- Klingel: optional bestehende Beiträge von Mannschafts-/Trainingsgruppenmitgliedern,
+  je Autor gebündelt, direkt verlinkt, nach Ansicht dauerhaft als gelesen entfernt.
+  Kein neuer Gruppenchat und keine Änderungen am Einladungsablauf.
+- Auswahl im eigenen Account unter Benachrichtigungen → Klingel. Standard:
+  „Nur Einladungen“; Opt-in: „Einladungen und Gruppenbeiträge“. Keine alten Beiträge
+  nachmelden, keine Personen-Followliste, keine Mails/Push/Banner.
+
+Zum Abschluss erfolgreich ausgeführt: `test:browser:chat-notices`,
+`test:browser:next-match`, `test:browser:overview`, `test:browser:meet-weekdays`.
+Schmale Account-Darstellung visuell kontrolliert; `git diff --check` erfolgreich.
+Nicht die gesamte Testsuite erneut ausgeführt; keine echte iPhone-/iPad-Geräteprüfung.
+Keine Veröffentlichung, kein Commit/Tag/Push und kein neuer JSON-Sicherungsexport.
+Separate Padel-Anwendung unverändert. Nächste Sitzung baut auf diesem Stand auf.
+
+## Ergänzung 13.10.2026: optionale Chat-Hinweise (v179)
+
+Aktueller lokaler Cache v179. Nutzer hat den zunächst besprochenen Gruppenchat
+ausdrücklich verworfen: KEIN neuer Chat unter Verabreden/Trainingsgruppen.
+Stattdessen bestehende Chat-/Insider-Beiträge nach Verfasser berücksichtigen:
+gemeinsame nuLiga-Mannschaft (bestehende rosterOf-Logik) oder bestätigte gemeinsame
+Verabreden-Gruppe. Pending zählt nicht. Account-Auswahl unter Benachrichtigungen:
+„Nur Einladungen“ (Standard) / „Einladungen und Gruppenbeiträge“.
+Beim Einschalten keine alten Beiträge nachmelden; beim erneuten Einschalten
+ebenfalls neuer Start. Eigene/verborgene/gelöschte/fremde Beiträge ausgenommen.
+Maximal sieben Tage, je Verfasser gebündelt und bei Mehrfachzuordnung nicht doppelt.
+Klingel-Link öffnet neuesten Beitrag direkt unter `#chat/beitrag/<id>`; nur dieser
+wird gelesen und verschwindet, weitere bleiben im Bündel. Öffnen aus Chat-Übersicht
+markiert ebenfalls gelesen. Entfernen/Alle Hinweise entfernen bestätigt alle
+Beiträge des jeweiligen Bündels; Einladungslogik unverändert.
+Account-speichernde APIs: chatNotices/readChatPosts; keine Mails, Push oder Banner.
+Weiterhin lokale Demo, keine geräteübergreifende Zustellung vor Backend-Anbindung.
+Neuer isolierter Test: `npm run test:browser:chat-notices` mit localhost:5180.
+Erfolgreich geprüft: Standard/Opt-in/Opt-out, Autor-Zuordnung, Bündelung,
+Ausschlüsse, Direktlink, dauerhaft gelesen nach Reload, Entfernen und 1100/390/320px.
+
+## Ergänzung 13.10.2026: Abrechnungshinweis (v178)
+
+Aktueller lokaler Cache v178. Im laufenden Monat unter „Meine Abrechnungen“
+steht unter dem Gesamtbetrag nur noch „Einzug am [Datum]“, ohne Strichanzahl
+und ohne den Zusatz „per SEPA-Lastschrift“. Einzelposten und Berechnung unverändert.
+
+## Ergänzung 13.10.2026: Account-Gliederung (v177)
+
+Aktueller Cache `tfb-kiosk-v177`, nur lokal. Nächstes Match jetzt mit feinem
+1px-Signature-Anthrazit-Rahmen und 16px-Rundung passend zu den Account-Feldern.
+Über den drei Beträgen steht „Kiosk-Umsätze“. Darunter führt „Details ansehen“
+zu `#abrechnungen` (laufender Monat mit Einzelposten und abgeschlossene Monate),
+schließt den Account; der Heute-Betrag führt weiterhin zum Bierdeckel im Kiosk.
+Keine Änderungen an Umsatz- oder Match-Berechnung. Der erweiterte isolierte
+Account-Browsertest ist erfolgreich; v176 unten beschreibt den vorherigen Stand.
+
+## Ergänzung 13.10.2026: nächstes Match im Account (v176)
+
+Aktueller Cache `tfb-kiosk-v176`, weiterhin nur lokal. Im Account unter den beiden
+Bestätigungen und über Kiosk-Beträgen/Angaben ein ungerahmter Hinweis mit Datum,
+Uhrzeit, Titel/Ort und Direktlink zum nächsten zugesagten Verabreden-Termin.
+Gemeinsame `lineup`-Logik: nur tatsächliche Spieler; offene Einladungen, Absagen,
+Ersatzplätze und bereits gestartete Termine ausgeschlossen. Auch Training enthalten,
+keine automatische Zusage für noch nicht verschickte Serien. Ohne Termin kurzer
+Leerhinweis. Quelle ausschließlich lokale TFB-Verabreden, keine Padel-Buchungsanbindung.
+Padel-Vorbild in `8. Padel Bielstein 2027` nur gelesen, nicht verändert.
+Read-only `TFB.meet.nextMatch(memberId)` in `meet.js`; Account in `app.js`, CSS
+`.acct-next-match`. Test `npm run test:browser:next-match` mit localhost:5180 und
+isolierten Daten erfolgreich: Sortierung/Zusagen/Ersatz/Absagen, Training, leer,
+Position/Direktlink und 1100/834/390/320px. Keine neue Veröffentlichung oder Sicherung.
+
+## Verbindliche Übergabe 13.10.2026: lokaler Stand v175
+
+**Dieser Abschnitt ist aktuell; v165 und frühere Abschlüsse unten sind historisch.**
+Nur die TFB-Website in `tfb-kiosk` wurde weiterentwickelt, nicht die separate
+Padel-Anwendung in `01 Software`. Fokus-Darstellung wurde vom Nutzer mehrfach
+praktisch bestätigt; letzter Auftrag ist die Dokumentationsaktualisierung.
+
+### Einstieg und Vorführung
+
+- Website: `/Users/jk/Dropbox/9. TFB-Website/tfb-kiosk/index.html`, lokal in Chrome;
+  gespeicherte Nutzerinhalte liegen im bisherigen Browserprofil und Bildspeicher.
+- Desktop `TFB.app`: eigener Hintergrundschalter, reines `#1C1A17`, ohne Logo/Text;
+  zweiter Doppelklick stellt den bisherigen Hintergrund samt Darstellung wieder her.
+- Desktop `TFB Vorführung.app`: lokale Website als Chrome-App-Fenster. Bei Bedarf
+  Ctrl+Cmd+F für Browser-Vollbild; Cmd+W schließt. Apps/Swift-Quellen und Hinweise
+  liegen neben dem Repository in `../Präsentationsmodus`, nicht im Website-Git.
+- F in der Kopfzeile öffnet Fokus auch ohne Installation/Anmeldung. Links neben
+  Klingel, unterkantenbündig; 21,6px-Kreis/1,15px-Anthrazitrand, F 90% Menügröße,
+  Gewicht 600, 15,4px Abstand. Auf iPhone/iPad/Android NICHT sichtbar, unabhängig
+  von Orientierung, Breite oder Browser-/App-Nutzung. Desktop braucht primären
+  Maus-/Trackpad-Zeiger. Keine mobile Freigabe beauftragt.
+- Fokus: dunkler Rahmen, mittige Breite 1440/834/390px oder seitlich ziehen;
+  versteckte Steuerung am unteren Rand, Alt+1/2/3 für Breiten, Alt+P für Steuerung.
+  Das sind Layoutsimulationen, keine iOS-Emulation. X/Escape beendet; eingebettetes
+  Desktop-F beendet ebenfalls. macOS-Hintergrund bleibt durch F unverändert.
+- Die normale Homepage enthält keinen Installations-/Fokus-Streifen mehr und
+  keine entsprechende Bearbeitung. Auch aus dem Konto entfernt. Alte
+  `site.focusStrip`-Daten erhalten, aber nicht gerendert.
+- Öffentliche App-Installation ausdrücklich bis zur grundsätzlichen Zustimmung
+  des Vorstands zurückgestellt. Nicht wieder aktivieren oder aus alten Wünschen
+  als offener aktueller Implementierungsauftrag ableiten.
+
+### Technischer Stand und Grenzen
+
+- Cache `tfb-kiosk-v175`, letzte eingefrorene Git-Fassung `d8d7762` / Tag
+  `stand-2026-10-12-v160`. Alle späteren Änderungen lokal/uncommittet; kein neuer
+  Commit/Push/Tag/Deployment/JSON-Export bei diesem Abschluss. Nutzerdateien,
+  vorhandene Änderungen und `.claude/` nicht zurücksetzen.
+- `praesentation.html`, `assets/js/presentation.js`, `presentation-bridge.js`,
+  `focus.js`, `assets/css/focus.css`: Fokus-Rahmen, Gerätebreiten, Brücke und Einstieg.
+  Vollbild benötigt Nutzerklick und Browserfreigabe; sonst Fokus im Browserfenster.
+- `demo-backend.js` lädt bei Fokus-Rückkehr lokale Daten frisch; `site.js` kann
+  Bildcache erneuern, `app.js` aktualisiert Profilbilder. `autosave.js` pausiert
+  das ausgeblendete Elternfenster, damit es keine alten Daten über neue schreibt.
+- TFB-Signature-Kachel ohne Ball als gemeinsames App-Symbol, Name `TF Bielstein`;
+  Quelle `assets/brand/tfb-app-icon-source.png`, Erzeugung `tools/build-brand.sh`.
+- Native Test-App `TF Bielstein.app` / ZIP `assets/downloads/tf-bielstein-mac-v2.zip`:
+  Paketfehler repariert, ganze App ad hoc signiert und entpackte ZIP verifiziert.
+  Trotzdem keine Developer-ID/Apple-Notarisierung; Gatekeeper blockiert den
+  heruntergeladenen Test-Installer weiterhin. Kein freigegebener öffentlicher
+  Installationsweg, keine Sicherheitsumgehung. Build `../Präsentationsmodus/build-tf-bielstein.sh`.
+  Mac-Launcher Apple Silicon/Chrome/lokaler Websiteordner; Windows-CMD nicht auf
+  Windows getestet. Die Dateien bleiben als zurückgestellter Entwurf erhalten.
+- `site.js`/`app.css`: Feature-Titel aus nicht trennbaren Wortspannen, Schrift
+  bei Bedarf anhand des längsten Worts einpassen; ResizeObserver plus Render-/Font-
+  Reaktion. Screenshotfehler „Tennisfreund / e“ behoben, ohne Inhaltsänderung.
+- Foto-Randfix in `app.css`: `.gal-single` und Foto maximal verfügbare Bühnenbreite,
+  kein horizontaler Fotoüberlauf. `tfb-presentation-page` versteckt nur die äußere
+  Fokus-Scrollleiste und sperrt Root-Scroll bei Modal; iframe-Hintergrund Anthrazit.
+  Normale Website bleibt scrollbar, Galerie/Foto-Wechsel unverändert bedienbar.
+- `meet.js`: Wochentag Mo–So vor Datum/erstem Termin, nächster passender Tag nach
+  lokaler Kalenderrechnung (auch über Zeitumstellung). Heute nur bei bevorstehender
+  gewählter Uhrzeit. Bei Serien späterer Start desselben Tags; Abweichung wird
+  beim Speichern zurückgewiesen. Einzel/Doppel: freie Datumswahl aktualisiert
+  Wochentagsknöpfe. Seriendetails oben schreibgeschütztes Feld Wochentag.
+  Datenmodell bleibt `from` als Quelle des Serientags, kein redundantes neues Feld,
+  keine Migration bestehender Serien/verschickter Termine. Demo-Verabreden bleibt
+  lokaler Speicher `tfb_meet_demo_v2`; echter automatischer Versand braucht weiterhin
+  einen Serverdienst, nicht durch diese Oberfläche implementiert.
+
+### Prüfnachweise und Weiterarbeit
+
+Nach den letzten Codeänderungen erfolgreich: Fokus-Test einschließlich Foto-Rand,
+Wortumbruch/F-Layout/Mobilausschluss; Wochentagstest einschließlich Speichern,
+Seriendetails/Einzel/Doppel/Zeitumstellung; Galerie- und Übersichts-Regression.
+Screenshots visuell geprüft. Alle Browserläufe in isolierten Testprofilen mit
+synthetischen Inhalten, nicht mit den privaten Nutzerinhalten. iPhone/iPad-Größen
+und Kennungen simuliert, kein vollständiger Safari-/echter Gerätetest.
+
+Aus `tfb-kiosk`, Vorschau für Fokus-/Einladungstest starten:
+
+```sh
+python3 -m http.server 5180 --bind 127.0.0.1
+npm run test:browser:focus
+npm run test:browser:meet-weekdays
+npm run test:browser:gallery
+npm run test:browser:overview
+```
+
+Auf diesem Mac liefen Tests mit
+`TFB_CHROME_PATH='/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'`.
+Die lokale HTML-Vorführung selbst braucht keinen Server. Vorschau über localhost
+hat getrennte Demodaten; nicht mit den gespeicherten file:-Inhalten verwechseln.
+`npm run test:browser` enthält weiterhin Übersicht/Galerie/Backups; die neuen
+Fokus-/Wochentagstests separat. Backup-/Node-Nachweise aus früheren Abschlüssen
+nicht als jetzt erneut ausgeführt ausgeben. Im Dokumentationsauftrag keine Tests
+erneut ausgeführt und keine neue Inhalts-/Bildsicherung erstellt.
+
+Nur auf neuen Nutzerauftrag weiterarbeiten. Bekannte Folgeaufgaben vom 12.10.2026
+(Jugendschutz/Rechte, Buchungsspeicherung, echter Mehrbenutzerbetrieb/Lastschrift,
+Sicherungsabgrenzungen und Wartbarkeit) bleiben offen; diese Vorführung ist keine
+Produktivfreigabe. Projektgedächtnis oben und aktuelle Umsetzung haben Vorrang
+vor den nachfolgenden historischen Zwischenständen.
+
+## Früherer Abschluss dieses Chats 13.10.2026 (v165, historisch)
+
+**Verbindlicher Einstieg: aktueller lokaler Stand vom Nutzer abgenommen.** Nutzer:
+„Gefällt mir sehr gut alles jetzt“, aktuell keine weiteren Anpassungen. Dieser
+Abschnitt enthält die letzte Button-Platzierung und Playwright-Einrichtung; die
+früheren Abschnitte v161 bis v165 darunter sind historische Zwischenstände.
+Bei diesem Abschluss wurden ausschließlich diese beiden Dokumentationsdateien aktualisiert.
+
+- Projektordner: `/Users/jk/Dropbox/9. TFB-Website`, eigentliche Anwendung und Git-Repository:
+  `/Users/jk/Dropbox/9. TFB-Website/tfb-kiosk`. Die andere Padel-Kopie im Projektordner
+  ist nicht diese Anwendung und darf nicht mit ihr verwechselt werden.
+- Startdatei: `tfb-kiosk/index.html`, vom Nutzer in Chrome als lokale Datei geöffnet.
+  Kein Entwicklungsserver erforderlich. Cache aktuell `tfb-kiosk-v165`.
+- Fertig implementiert: gemeinsame Galerie/Collage für Home und Aktuell mit Datum,
+  Überschrift, optionalem Text oben/unten und bestehendem Vollbild-Blättern; direkte
+  Maus-/Touch-Fotosortierung mit sofortiger Entwurfsanzeige; oberer/unterer Bleistift;
+  durchsuchbare Beitragsübersichten und zuletzt korrigierte Button-Platzierung.
+- Home: Im Standard-Look Wechselspiel sitzt „Alle Beiträge“ in der ersten Themenkachel
+  bei Breiten unter 900px rechts untenbündig mit der 01; Zahl bleibt links, Kicker darunter.
+  Die Desktop-Position bleibt oben rechts. Rückfall ohne Home-Themenkachel ist vorhanden.
+- Aktuell: Abstand oberhalb der Spalten von 8 über 12 auf 16px erhöht. Hauptüberschrift,
+  Einleitung und Desktop-Button nicht verschoben. Ab 1024px bleibt der Button rechts
+  im Seitenkopf untenbündig mit der Einleitung; News/Save the Date auf gleicher Höhe.
+  Unter 1024px sitzt genau ein sichtbarer Button rechts neben der aktiven Überschrift,
+  untenbündig mit deren rotem Strich und unterhalb der mobilen Tab-Auswahl. Funktioniert
+  bei News und Save the Date; die Zielübersicht enthält trotzdem nur News, keine Termine.
+  Ohne erste Strukturüberschrift bleibt ein mobiler Zugang oberhalb der Inhalte erhalten.
+- Letzte Layoutänderungen automatisiert und anhand isolierter Screenshots geprüft,
+  anschließend vom Nutzer ausdrücklich bestätigt. Keine weiteren Änderungen ohne neuen Auftrag.
+- Aktuelle Prüfnachweise: alle drei vorhandenen Browser-Tests erfolgreich (Übersicht,
+  Galerie/Collage, Foto-Sicherung). Positionsprüfung bei 1280/500/390/320px, beide mobilen
+  Aktuell-Tabs, Home-Nummer/Button-Unterkante und kein horizontaler Überlauf; Beitragsfilter,
+  Sprungziele, Zurück/Neuladen, Chat-Regression sowie Live-Maus-/Touch-Fotosortierung geprüft.
+  Fotoexport/-wiederherstellung und Ablehnung ungültiger Sicherungen geprüft.
+  Nach letzter rein optischer Home-Korrektur Übersichtstest erneut erfolgreich;
+  `git diff --check` erfolgreich. Frühere 51 Node-Tests auf v164 und 23 gezielte Tests
+  auf v165 bleiben historische Nachweise; in diesem Chat nicht erneut ausgeführt.
+- Änderungen seit v160 liegen lokal und uncommittet vor. Es wurde weder neu committet,
+  getaggt noch veröffentlicht. Bestehender Sicherungstag `stand-2026-10-12-v160` bleibt.
+  Geändert: `assets/css/app.css`, `assets/js/app.js`, `assets/js/demo-backend.js`,
+  `assets/js/site.js`, `sw.js`, `tools/test-home-features.mjs` und beide Gedächtnisdateien.
+  Neue Tests: `tools/test-browser-gallery.mjs`, `tools/test-browser-overview.mjs`.
+  Neu in diesem Chat: `package.json` und `package-lock.json` für Playwright und Testbefehle.
+  Vorbestehendes untracked `.claude/` erhalten, nicht bereinigen oder zurücksetzen.
+- Browser-Tests verwenden ausschließlich isolierte Testdaten; persönliche Chrome-Daten,
+  gespeicherte Inhalte und JSON-Sicherungen des Nutzers wurden dadurch nicht verändert.
+  Die Dokumentationsaktualisierung erzeugt keine neue JSON-Inhaltssicherung.
+- Nächster Arbeitsauftrag noch offen: erst die neue Nutzeranfrage aufnehmen. Keine
+  weiteren Funktionen oder Umgestaltungen aus älteren Gesprächsteilen eigenständig beginnen.
+
+## Frühere Playwright-Einrichtung (v165, historischer Prüfstand)
+
+Playwright **1.64.0** als Entwicklungsabhängigkeit im Unterordner `tfb-kiosk` installiert;
+Chromium-Testbrowser lokal vorhanden. Kostenlos, kein zusätzlicher Download für Besucher.
+`node_modules/` ist bereits ignoriert. Die lokale HTML-Seite bleibt ohne Build nutzbar.
+
+Aus dem Anwendungsordner:
+
+```sh
+npm run test:browser
+```
+
+Einzeln: `npm run test:browser:overview`, `npm run test:browser:gallery`,
+`npm run test:browser:backups`. Bei neuer Einrichtung zuerst `npm ci`, danach
+`npx playwright install chromium`. Auf diesem Mac benötigten die Testläufe außerhalb
+der Codex-Sandbox die native Freigabe, weil der Chromium-Start darin von macOS blockiert
+wurde. Das war eine Umgebungsbeschränkung, kein fehlgeschlagener Anwendungstest.
+Screenshots entstehen unter `/tmp/tfb-*.png` und sind temporäre Prüfergebnisse.
+
+Cache-Bezeichnung weiterhin `tfb-kiosk-v165`; in diesem Chat nicht erhöht. Die hier
+geprüfte direkte HTML-Nutzung lädt die lokalen Dateien. Für einen späteren Betrieb
+mit aktivem Service Worker die Cache-Version gemäß den Arbeitsregeln aktualisieren.
+
+## Frühere Platzierung von Alle Beiträge 13.10.2026 (historisch)
+
+Aktueller lokaler Arbeitsstand **v165**, Cache `tfb-kiosk-v165`, nicht committet oder
+veröffentlicht; Sicherungstag v160 unverändert.
+
+- Home: Button innerhalb der ersten Themenkachel oben rechts auf der Text-/Hintergrundfläche.
+  Kein zusätzlicher Buttonstreifen oberhalb der Kacheln. Ohne Themenkachel bleibt der
+  bisherige separate Zugang als Rückfall erhalten. Nicht im Baustein-Bearbeitungsmodus.
+- Aktuell: Button rechts im Seitenkopf, unten bündig mit dem Einleitungstext, oberhalb
+  von Save the Date. Er zeigt weiterhin ausschließlich News-Inhalte, keine Termine.
+  Aus News-Spalte entfernt; News/Save the Date beginnen auf Desktop auf gleicher Höhe.
+  Abstand zwischen Seitenkopf und Spalten auf 8px reduziert; mobile Kopfzeile darf umbrechen.
+- Isolierter Browsercheck bei 1280/390/320px: Home-Button innerhalb der Textfläche und
+  ohne Überdeckung der Nummer, keine zusätzliche Home-Zeile, bündige Desktop-Überschriften
+  und Einleitung/Button-Unterkante, kein horizontaler Überlauf. Screenshots kontrolliert.
+  Übersichtssuche, Filter, Rückkehr/Neuladen und Chat-Regression ebenfalls erfolgreich.
+  23 gezielte Home-/Aktuell-Tests bestanden. Keine Inhalts- oder Sicherungsdaten geändert.
+
+## Alle Beiträge für Home und Aktuell 13.10.2026
+
+Aktueller lokaler Arbeitsstand **v164**, Cache `tfb-kiosk-v164`, nicht committet oder
+veröffentlicht. Sicherungstag v160 bleibt unverändert.
+
+- Home erhält „Alle Beiträge“ oberhalb der Inhalte. Bei Aktuell sitzt der Schalter
+  ausschließlich in der linken News-Spalte, nicht bei „Save the Date“.
+- Eigene Übersichten `#home/alle` und `#aktuell/alle` im kompakten Chat-Look, mit
+  Titeln, Datum sofern vorhanden, Foto-Vorschau und Textauszug. Suche nach Titel/Text,
+  Filter nach Beitragsart sowie „Nur mit Fotos“; Anzahl und leere Trefferanzeige.
+- Themen, Beiträge, Texte, Fotos, gefüllte Galerien und Collagen in Seitenreihenfolge.
+  Termine, Strukturüberschriften und ungespeicherte neue Bausteine bleiben draußen.
+  Ausgeblendeter Galerie-/Collagentext erscheint auch nicht in Suche oder Vorschau.
+- Klick springt über `#home/beitrag/<id>` bzw. `#aktuell/beitrag/<id>` zum bestehenden
+  Inhalt auf der Seite, ohne neue Daten oder Kopien. Fokus folgt dem Ziel, Aktuell
+  aktiviert dabei die mobile News-Ansicht. Bestehende Home-Artikel-/Albumrouten bleiben.
+- 51 Node-Tests erfolgreich. Isolierter Browsercheck mit 20 Beiträgen plus Galerie
+  und Collage je Seite: Desktop/Handy, Suche/Filter, direkte Sprünge, Zurück/Neuladen,
+  keine Termine in der Übersicht sowie unveränderte Chat-Filter geprüft.
+- Zusätzlicher Browser-Test: `tools/test-browser-overview.mjs`; nur isolierte Testdaten,
+  kein Zugriff auf persönliche Chrome-Daten und keine Änderung der gespeicherten Seite.
+
+## Unterer Bleistift und direkte Live-Sortierung 13.10.2026
+
+Aktueller lokaler Arbeitsstand **v163**, Cache `tfb-kiosk-v163`, nicht committet oder
+veröffentlicht. Sicherungstag v160 bleibt unverändert.
+
+- Seiten mit vorhandenem Bearbeiten-Bleistift bekommen denselben Bleistift zusätzlich
+  am Seitenende. Gemeinsame Montage in `app.js`; Home, Aktuell, Club, Sport, Chat, Kiosk
+  sowie entsprechende Artikel-/Album-/Porträtansichten. Nur bei sichtbaren Admin-Werkzeugen.
+  Der untere Seitenschalter erhält die Scrollposition statt nach oben zu springen.
+- Fotos im Baustein-Editor direkt am Bild oder optional am Griff verschieben, mit Maus
+  und Touch. Kein nativer Drag-Schatten über dem unveränderten Ziel: Die Vorschaubilder
+  rücken bereits während des Ziehens in die neue Reihenfolge, Pfeile/Indizes werden angepasst.
+- Galerie/Collage auf der Seite zeigt denselben Entwurf sofort, ohne Speicherung beim
+  Ziehen. „Speichern“ übernimmt ihn; Editor schließen stellt den gespeicherten Stand wieder her.
+  Abgebrochene Touch-Gesten stellen die Reihenfolge vor dem Ziehen wieder her.
+- Foto einpassen/Löschen bleiben getrennt bedienbar. Auf den Sortierbildern dient die
+  Touch-Geste dem Verschieben; außerhalb der Bilder bleibt der Editor scrollbar.
+- Nachweis: 49 Node-Tests erfolgreich, Syntaxcheck und isolierter Browsercheck auf
+  Desktop/Handy. Untere Bleistifte auf Home/Aktuell/Club/Sport/Chat/Kiosk, Scrollposition,
+  Umordnung vor Loslassen ohne Griff, passende Seitenvorschau, Speicherung/Neuladen
+  und Rücksetzen einer abgebrochenen Touch-Geste geprüft.
+
+## Galerie und Collage flexibel platzieren 13.10.2026
+
+Aktueller lokaler Arbeitsstand **v162**, Cache `tfb-kiosk-v162`; nicht committet oder
+veröffentlicht. Sicherungstag v160 bleibt unverändert.
+
+- Collage als eigener Baustein auf Home und Aktuell, neben Galerie. Galerie mit gleichgroßen
+  Bildern, Collage mit wechselnden Bildgrößen im vorhandenen Unterseiten-Stil.
+- Beide mit Überschrift, optionalem Artikel-Datum und ausblendbarem Fließtext.
+  Textposition wählbar: unter der Überschrift oder unter den Bildern. Bestehende Galerien
+  ohne Positionsangabe behalten ihren Text unter den Bildern. Ausblenden löscht keinen Text.
+- Seitenposition beider Module über die bisherigen Hoch-/Runter-Pfeile im Bearbeitungsmodus;
+  Home hat separate Hinzufügen-Knöpfe, Aktuell beide Typen im Baustein-Auswahlmenü.
+- Bildgriff im Fotoeditor für direktes Verschieben, auch per Touch. Ziel wird hervorgehoben;
+  Scrollen am Rand der Seitenleiste beim Ziehen. Zusätzlich Bildpfeile und Pfeiltasten am Griff.
+- Beide öffnen das angeklickte Foto im selben vorhandenen Collagen-Betrachter.
+  Je Modul höchstens 100 Fotos, Upload- und Speicherprüfung auf beiden Typen.
+- 49 Node-Tests erfolgreich. Erweiterter Browsercheck unter `tools/test-browser-gallery.mjs`
+  erfolgreich: Home/Aktuell auf Desktop/Handy, Bildbetrachter, Modul-Pfeile, Textposition,
+  gespeicherte Reihenfolge nach Maus- und echtem Touch-Ziehen sowie Neuladen.
+  Griff oben mittig, Kamera links und Löschen rechts; drei Vorschaubilder pro Zeile,
+  damit die Bedienelemente auch auf dem Handy nicht überlappen.
+
+## Galerie für Home und Aktuell 13.10.2026
+
+Aktueller Arbeitsstand **v161**, Cache `tfb-kiosk-v161`; noch nicht eingefroren,
+committet oder veröffentlicht. Der Sicherungstag v160 unten bleibt unverändert erhalten.
+
+- Gemeinsamer Galeriebaustein auf Home und Aktuell, auf Home über „Galerie hinzufügen“
+  neben dem bisherigen Themen-Hinzufügen verfügbar. Keine neuen Beispielgalerien in den Nutzerdaten.
+- Klick auf beliebiges Foto öffnet direkt dieses Foto im bestehenden Collagen-Betrachter,
+  identisch zur Home-Unterseite: Klick aufs Bild, Pfeile, Pfeiltasten, Wischen,
+  umlaufendes Blättern und „Alle Fotos“. Kein separater neuer Viewer.
+- Optionales Datum mit bestehender Artikel-Datumsplakette und ausgeschriebenem Datum;
+  optionaler formatierter Fließtext unter den Fotos. „Text unter der Galerie anzeigen“
+  blendet nur die Darstellung aus, gespeicherter Text bleibt erhalten. Datum kann leer bleiben.
+- Fotos sortieren, entfernen und einpassen wie bisher. Höchstens 100 Fotos;
+  Uploadprüfung und `saveSite` sichern die Grenze auch für Galeriebausteine ab.
+  Bestehende Galerieinhalte bleiben erhalten, keine Datenmigration erforderlich.
+- 48 Node-Tests erfolgreich. Isolierter Chrome-Test auf Desktop/Handy prüft Home/Aktuell,
+  Klick/Pfeile/Tastatur, Rückkehr zur Übersicht, Neuladen, Editor-Datum, Textausblendung
+  ohne Datenverlust und Anlegen einer neuen Home-Galerie. Private Browserdaten unverändert.
+  Werkzeug: `tools/test-browser-gallery.mjs` (Laufzeitvariablen wie andere Browsertests).
+- Praktisch: Seite neu laden, Admin-Werkzeuge bei Bedarf über roten Ball einblenden;
+  Home bearbeiten → Galerie hinzufügen. Auf Aktuell: Baustein hinzufügen → Galerie.
+
 ## Tagesabschluss 12.10.2026
 
 **EINGEFROREN: v160**, Cache `tfb-kiosk-v160`, Katalogversion 13.

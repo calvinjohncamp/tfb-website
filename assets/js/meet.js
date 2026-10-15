@@ -11,7 +11,7 @@
 //
 // Postfach (Glocke oben neben dem Profilbild): Einladungen, Zu-/Absagen an den Einladenden,
 // „Runde steht“, Nachrücken, Absagen, Erinnerungen. Keine E-Mails, keine aufploppenden Banner –
-// die Glocke zeigt die Zahl der ungelesenen Einträge. (Chat und Insider News bewusst ohne Postfach.)
+// die Glocke zeigt ungelesene Einträge; optionale Chat-Hinweise werden je Autor gebündelt.
 // Im Echtbetrieb legt ein Serverdienst die wöchentlichen Termine an; hier passiert das beim Öffnen.
 //
 // Bewusst eigenständig, damit es sich schnell wieder entfernen lässt:
@@ -32,6 +32,8 @@
   const DAY = 864e5;
   const WD = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
   const WD_LONG = ['sonntags', 'montags', 'dienstags', 'mittwochs', 'donnerstags', 'freitags', 'samstags'];
+  const WD_NAMES = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'];
+  const weekdayPicker = selected => `<div class="field"><span>Wochentag</span><div class="seg meet-weekdays" role="group" aria-label="Wochentag">${[1, 2, 3, 4, 5, 6, 0].map(day => `<button type="button" data-weekday="${day}" class="${day === selected ? 'on' : ''}" aria-pressed="${day === selected}" aria-label="${WD_NAMES[day]}">${WD[day]}</button>`).join('')}</div></div>`;
 
   const KINDS = {
     einzel: { label: 'Einzel', hint: '2 Spieler', slots: 2 },
@@ -50,11 +52,13 @@
   const isoDay = (d) => new Date(d.getTime() - d.getTimezoneOffset() * 6e4).toISOString().slice(0, 10);
   const today = () => isoDay(new Date());
   const addDays = (iso, n) => { const [y, m, d] = iso.split('-').map(Number); return isoDay(new Date(y, m - 1, d + n)); };
-  const nextWeekday = (wd) => {
+  const nextWeekday = (wd, time = '') => {
     const d = new Date();
-    if (wd == null) return isoDay(new Date(d.getTime() + DAY));
-    const add = ((wd - d.getDay()) + 7) % 7 || 7;
-    return isoDay(new Date(d.getTime() + add * DAY));
+    if (wd == null) return addDays(today(), 1);
+    let add = ((wd - d.getDay()) + 7) % 7;
+    const currentTime = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+    if (!add && (!time || time <= currentTime)) add = 7;
+    return addDays(today(), add);
   };
   const weekdayOf = (iso) => { const [y, m, d] = iso.split('-').map(Number); return new Date(y, m - 1, d).getDay(); };
   const uid = (p = 'mt-') => p + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -120,7 +124,7 @@
       if (m.responses[p]) data.inbox[data.inbox.length - 1].read = true;   // schon beantwortet
     });
   }
-  const myInbox = () => (me() ? data.inbox.filter((n) => n.to === me().id).sort((a, b) => b.at - a.at) : []);
+  const myInbox = () => (me() ? [...data.inbox.filter((n) => n.to === me().id), ...ui().api.chatNotices()].sort((a, b) => b.at - a.at) : []);
   const unread = () => myInbox().filter((n) => !n.read).length;
   const bellSvg = '<svg viewBox="0 0 24 24"><path d="M6 16.5V11a6 6 0 0 1 12 0v5.5l1.5 2h-15z"/><path d="M10 20.5a2.2 2.2 0 0 0 4 0"/></svg>';
   function bellButton() {
@@ -133,6 +137,7 @@
     if (b) b.outerHTML = bellButton();
   }
   TFB.inbox = { button: bellButton, refresh: refreshBell };
+  document.addEventListener('tfb-chat-updated', refreshBell);
 
   // ---------- Aufräumen: nichts aufheben, was erledigt ist ----------
   function prune() {
@@ -283,7 +288,7 @@
     const { state, icon } = ui();
     if (!state.member) {
       return `
-        ${ui().viewHead('Verabreden', 'Einzel, Doppel, Training – wer ist dabei?', false)}
+        ${ui().viewHead('Dating 2.0', 'Einzel, Doppel, Training – wer ist dabei?', false)}
         <section class="card meet-login"><p>Zum Verabreden bitte einmal anmelden – danach bleibt dein Handy angemeldet.</p>
         <button type="button" class="btn primary" data-action="login">Anmelden</button></section>
         ${ui().partnerSlot('treffen', 'Verabreden wird dir präsentiert von')}`;
@@ -305,7 +310,7 @@
     const groupAsks = data.groups.filter((g) => (g.pending || []).includes(me().id));
     const gNames = await ui().api.memberNames(groupAsks.map((g) => g.createdBy));
     return `
-      ${ui().viewHead('Verabreden', 'Einzel, Doppel, Training – wer ist dabei?', false)}
+      ${ui().viewHead('Dating 2.0', 'Einzel, Doppel, Training – wer ist dabei?', false)}
       <section class="meet-new-row">
         ${Object.entries(KINDS).map(([k, v]) => `
           <button type="button" class="meet-kind-tile" data-action="meet-new" data-kind="${k}">
@@ -313,14 +318,14 @@
           </button>`).join('')}
       </section>
       ${waiting.length || groupAsks.length ? `
-        <h2 class="block-heading">Wartet auf deine Antwort</h2>
+        <h2 class="block-heading">Einladungen für mich</h2>
         <div class="meet-list">${groupAsks.map((g) => `
           <button type="button" class="card meet-card meet-series" data-action="group-answer" data-id="${g.id}">
             <span class="meet-series-icon">${kindIcon('training')}</span>
             <span class="meet-card-text"><strong>Gruppe ${esc(g.name)}</strong><small>${esc(firstName(gNames[g.createdBy]))} hat dich hinzugefügt · ${g.members.length} bestätigt</small></span>
             <span class="meet-mine open">Bestätigen</span>
           </button>`).join('')}${waiting.map((m) => card(m, names)).join('')}</div>` : ''}
-      <h2 class="block-heading">Anstehend</h2>
+      <h2 class="block-heading">Meine kommenden Matches</h2>
       ${rest.length ? `<div class="meet-list">${rest.map((m) => card(m, names)).join('')}</div>` : '<p class="muted">Gerade keine weiteren Verabredungen.</p>'}
       ${mySeries.length ? `
         <h2 class="block-heading">Regelmäßig</h2>
@@ -503,6 +508,7 @@
       invitees: isTraining ? everyone(g0) : (preset.invitees || [me().id]).slice(),
       picked: (preset.picked || []).slice(),   // angetippte Gruppen (Häkchen)
     };
+    draft.weekday = weekdayOf(draft.date);
     if (!draft.invitees.includes(me().id)) draft.invitees.unshift(me().id);
     let names = await ui().api.memberNames(draft.invitees);
 
@@ -526,8 +532,9 @@
               <button type="button" class="${draft.weekly ? 'on' : ''}" data-weekly="1">Jede Woche</button>
             </div>
           </div>
+          ${weekdayPicker(draft.weekday)}
           <div class="field-row">
-            <label class="field"><span>${draft.weekly ? 'Erster Termin' : 'Datum'}</span><input name="date" type="date" value="${esc(draft.date)}"></label>
+            <label class="field"><span>${draft.weekly ? 'Erster Termin' : 'Datum'}</span><input name="date" type="date" value="${esc(draft.date)}" min="${draft.weekly ? nextWeekday(draft.weekday, draft.time) : today()}" ${draft.weekly ? 'step="7"' : ''}></label>
             <label class="field"><span>Uhrzeit</span><input name="time" type="time" value="${esc(draft.time)}"></label>
           </div>
           ${draft.weekly ? `
@@ -535,7 +542,7 @@
               <label class="field"><span>Bis einschließlich</span><input name="until" type="date" value="${esc(draft.until)}" min="${esc(draft.date)}"></label>
               <label class="field"><span>Einladung geht raus</span><select name="leadDays">${LEADS.map((n) => `<option value="${n}" ${n === draft.leadDays ? 'selected' : ''}>${n} ${n === 1 ? 'Tag' : 'Tage'} vorher</option>`).join('')}</select></label>
             </div>
-            <p class="small muted meet-rule">Jede Woche ${esc(WD_LONG[weekdayOf(draft.date)])} bis ${esc(longDate(draft.until))}. Die Einladung zum jeweiligen Termin landet automatisch ${draft.leadDays} ${draft.leadDays === 1 ? 'Tag' : 'Tage'} vorher (${esc(sendDay)}) im Postfach aller Eingeladenen${firstSend <= today() ? ' – die erste sofort' : ` – die erste am ${esc(shortDate(firstSend))}`}. Jede Woche wird neu zu- oder abgesagt.</p>` : ''}
+            <p class="small muted meet-rule">Jede Woche ${esc(WD_LONG[draft.weekday])} bis ${esc(longDate(draft.until))}. Die Einladung zum jeweiligen Termin landet automatisch ${draft.leadDays} ${draft.leadDays === 1 ? 'Tag' : 'Tage'} vorher (${esc(sendDay)}) im Postfach aller Eingeladenen${firstSend <= today() ? ' – die erste sofort' : ` – die erste am ${esc(shortDate(firstSend))}`}. Jede Woche wird neu zu- oder abgesagt.</p>` : ''}
           <label class="field"><span>Wo</span><input name="place" value="${esc(draft.place)}"></label>
           ${draft.kind === 'frei' ? `<label class="field"><span>Plätze (leer = unbegrenzt)</span><input name="slots" type="number" min="2" max="40" inputmode="numeric" value="${draft.slots || ''}"></label>` : ''}
           <div class="field"><span>${draft.kind === 'einzel' || draft.kind === 'doppel' ? 'Wen fragen?' : 'Wer?'} · ${draft.invitees.length} eingeladen</span>
@@ -564,9 +571,25 @@
         if (form.elements.slots) draft.slots = parseInt(form.elements.slots.value, 10) || null;
       };
       form.addEventListener('change', (e) => {
-        if (['date', 'until', 'leadDays'].includes(e.target.name) && draft.weekly) { collect(); render(); }
+        if (e.target.name === 'date') {
+          collect();
+          if (!draft.date) return;
+          if (!draft.weekly) draft.weekday = weekdayOf(draft.date);
+          else if (weekdayOf(draft.date) !== draft.weekday) {
+            form.querySelector('.form-error').textContent = `Bitte einen ${WD_NAMES[draft.weekday]} als ersten Termin wählen.`;
+            return;
+          }
+          render(); return;
+        }
+        if (['until', 'leadDays'].includes(e.target.name) && draft.weekly) { collect(); render(); }
       });
       form.addEventListener('click', async (e) => {
+        const day = e.target.closest('[data-weekday]');
+        if (day) {
+          collect(); draft.weekday = Number(day.dataset.weekday);
+          draft.date = nextWeekday(draft.weekday, draft.time);
+          render(); return;
+        }
         const k = e.target.closest('[data-kind]');
         if (k) {
           collect();
@@ -626,6 +649,7 @@
         const err = form.querySelector('.form-error');
         if (!draft.title) { err.textContent = 'Bitte kurz eintragen, worum es geht.'; return; }
         if (!draft.date || draft.date < today()) { err.textContent = 'Bitte ein Datum ab heute wählen.'; return; }
+        if (draft.weekly && weekdayOf(draft.date) !== draft.weekday) { err.textContent = `Bitte einen ${WD_NAMES[draft.weekday]} als ersten Termin wählen.`; return; }
         if (draft.invitees.length < 2) { err.textContent = 'Bitte mindestens eine Person einladen.'; return; }
         if (draft.slots && draft.invitees.length < draft.slots) { err.textContent = `Bitte mindestens ${draft.slots} Personen einladen (inkl. dir).`; return; }
         if (draft.weekly && (!draft.until || draft.until < draft.date)) { err.textContent = 'Das Ende muss nach dem ersten Termin liegen.'; return; }
@@ -666,6 +690,7 @@
     openSheet(`
       <form class="editor meet-editor" data-series-form novalidate>
         <h2>${esc(s.title)}</h2>
+        <label class="field"><span>Wochentag</span><input name="weekday" value="${WD_NAMES[weekdayOf(s.from)]}" readonly></label>
         <p class="small muted">${esc(rhythm(s))} · ${esc(s.time)} Uhr · ${esc(s.place)}<br>
           ${nx ? `Nächste Einladung ${esc(sendText(nx.send))} für ${esc(shortDate(nx.date))}` : 'Alle Termine sind verschickt'}<br>
           Eingeladen: ${esc(s.invitees.map((i) => firstName(names[i])).join(', '))}</p>
@@ -724,6 +749,7 @@
       'group-left': `<b>${esc(who(n))}</b> hat „${esc(n.snap.title)}“ verlassen`,
       'group-complete': `<b>Alle haben bestätigt:</b> „${esc(n.snap.title)}“ ist komplett`,
       'group-joined': `<b>Du bist jetzt Mitglied</b> der Gruppe „${esc(n.snap.title)}“`,
+      chat: `<b>${esc(who(n))}</b> · ${n.count === 1 ? 'Neuer Chat-Beitrag' : `${n.count} neue Chat-Beiträge`}`,
     }[n.type] || esc(n.snap.title));
     const pending = (n) => {
       if (n.type === 'group-invite') { const g = group(n.groupId); return Boolean(g && (g.pending || []).includes(me().id)); }
@@ -734,15 +760,14 @@
     openSheet(`
       <div class="editor inbox-sheet">
         <h2>Postfach</h2>
-        <p class="small muted">Einladungen und Antworten zu deinen Verabredungen. Chat und Insider News stehen bewusst nicht hier – dort schaut jeder selbst rein.</p>
         ${items.length ? `<div class="inbox-list">${items.map((n) => {
           const isGroup = n.type.startsWith('group-');
-          const gone = isGroup ? !group(n.groupId) : !meetById(n.meetId);
+          const gone = n.type === 'chat' ? false : isGroup ? !group(n.groupId) : !meetById(n.meetId);
           const tag = pending(n) ? `<span class="meet-mine open">${isGroup ? 'Bestätigen' : 'Antworten'}</span>` : '';
           return `<div class="inbox-item ${n.read ? '' : 'unread'} ${gone ? 'gone' : ''}">
             <button type="button" class="inbox-open" data-open="${esc(n.id)}">
               <span class="inbox-dot" aria-hidden="true"></span>
-              <span class="inbox-text"><span>${text(n)}</span><small>${esc(isGroup ? 'Gruppe' : n.type === 'invite' || n.type === 'remind' || n.type === 'cancel' ? when(n) : `${n.snap.title} · ${when(n)}`)}${n.extra && n.extra.note ? ` · „${esc(n.extra.note)}“` : ''} · ${esc(ago(n.at))}</small></span>
+              <span class="inbox-text"><span>${text(n)}</span><small>${esc(n.type === 'chat' ? n.snap.title : isGroup ? 'Gruppe' : n.type === 'invite' || n.type === 'remind' || n.type === 'cancel' ? when(n) : `${n.snap.title} · ${when(n)}`)}${n.extra && n.extra.note ? ` · „${esc(n.extra.note)}“` : ''} · ${esc(ago(n.at))}</small></span>
               ${tag}
             </button>
             ${tag ? '' : `<button type="button" class="inbox-del" data-del="${esc(n.id)}" aria-label="Aus dem Postfach entfernen">${ui().icon.close}</button>`}
@@ -755,13 +780,16 @@
       const del = e.target.closest('[data-del]');
       if (del || e.target.closest('[data-clear]')) {
         const drop = del ? [del.dataset.del] : myInbox().filter((n) => !pending(n)).map((n) => n.id);
+        const postIds = myInbox().filter(n => n.type === 'chat' && drop.includes(n.id)).flatMap(n => n.postIds);
+        if (postIds.length) ui().api.readChatPosts(postIds);
         data.inbox = data.inbox.filter((n) => !drop.includes(n.id));
         save(); refreshBell(); openInbox(); return;
       }
       const it = e.target.closest('[data-open]');
       if (!it) return;
-      const n = data.inbox.find((x) => x.id === it.dataset.open);
+      const n = myInbox().find((x) => x.id === it.dataset.open);
       if (!n) return;
+      if (n.type === 'chat') { closeSheet(); location.hash = '#chat/beitrag/' + encodeURIComponent(n.postId); return; }
       if (!(n.type === 'invite' || n.type === 'group-invite') || !pending(n)) n.read = true;
       save(); refreshBell(); closeSheet();
       if (n.type === 'group-invite' && pending(n)) { if (!location.hash.startsWith('#treffen')) location.hash = '#treffen'; setTimeout(() => openGroupAnswer(n.groupId), 50); return; }
@@ -1011,5 +1039,18 @@
     ui().renderView();
   });
 
+  function nextMatch(memberId, now = new Date()) {
+    if (!memberId) return null;
+    return data.meets.map(meet => {
+      const [year, month, day] = meet.date.split('-').map(Number);
+      const [hour, minute] = meet.time.split(':').map(Number);
+      const start = new Date(year, month - 1, day, hour, minute).getTime();
+      const team = lineup(meet);
+      return { meet, start, team };
+    }).filter(({ start, team }) => Number.isFinite(start) && start > now.getTime() && team.players.includes(memberId))
+      .sort((a, b) => a.start - b.start || a.meet.id.localeCompare(b.meet.id))
+      .map(({ meet, team }) => ({ id: meet.id, title: meet.title, date: meet.date, time: meet.time, place: meet.place, missing: team.missing }))[0] || null;
+  }
+  TFB.meet = { nextMatch, chatPeers: memberId => [...new Set(data.groups.filter(g => g.members.includes(memberId)).flatMap(g => g.members))] };
   TFB.views.treffen = view;
 })();

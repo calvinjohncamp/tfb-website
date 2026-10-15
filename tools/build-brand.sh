@@ -9,7 +9,7 @@ set -e
 cd "${0:A:h}/.."
 B=assets/brand
 SRC=$B/tfb-logo-original.png
-GREEN="#1F4D3A"; CREAM="#F5F0E6"
+SIGNATURE="#1C1A17"; CREAM="#F5F0E6"
 
 alpha(){ magick "$@" -alpha extract -strip -define png:compression-level=9 PNG8:- ; }
 magick $SRC -trim +repage -resize 900x  PNG32:$B/tfb-logo.png
@@ -41,14 +41,14 @@ css=assets/css/brand.css
   done
 } > $css
 
-# App-Symbol: cremefarbenes TFB. auf Vereinsgrün
+# Signature-Kachel: Original-TFB ohne Ball, dieselbe Vorlage für alle App-Symbole.
 I=assets/icons
-magick -size 512x512 xc:none -fill "$GREEN" -draw "roundrectangle 0,0 511,511 112,112" \
-  \( $B/tfb-mark.png -resize 380x -fill "$CREAM" -colorize 100 \) -gravity center -geometry -6+0 -composite PNG32:$I/icon-512.png
-magick -size 512x512 xc:"$GREEN" \( $B/tfb-mark.png -resize 320x -fill "$CREAM" -colorize 100 \) -gravity center -composite PNG32:$I/icon-maskable-512.png
+magick $B/tfb-app-icon-source.png -resize 512x512 PNG32:$I/icon-512.png
+magick -size 512x512 xc:"$SIGNATURE" \( $B/tfb-app-icon-source.png -resize 420x420 \) -gravity center -composite PNG32:$I/icon-maskable-512.png
 magick $I/icon-512.png -resize 192x192 $I/icon-192.png
-magick -size 180x180 xc:"$GREEN" \( $B/tfb-mark.png -resize 136x -fill "$CREAM" -colorize 100 \) -gravity center -composite $I/icon-180.png
-magick -size 64x64 xc:none -fill "$GREEN" -draw "roundrectangle 0,0 63,63 14,14" \( $B/tfb-ball.png -resize 44x -fill "$CREAM" -colorize 100 \) -gravity center -composite $I/favicon-64.png
+magick -size 180x180 xc:"$SIGNATURE" \( $B/tfb-app-icon-source.png -resize 180x180 \) -gravity center -composite $I/icon-180.png
+magick $B/tfb-app-icon-source.png -resize 64x64 $I/favicon-64.png
+magick $B/tfb-app-icon-source.png -define icon:auto-resize=256,128,64,48,32,16 $I/icon.ico
 ls -la $css $I
 
 # Weißes "TFB."-Zeichen für Symbole (Kappe, Shirt) als data-URI, damit es auch per Doppelklick lädt

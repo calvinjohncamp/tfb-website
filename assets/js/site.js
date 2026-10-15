@@ -11,7 +11,38 @@
   let editing = null;       // Seite, die gerade bearbeitet wird
   let detailEditing = false; // Thema wird direkt auf seiner Unterseite bearbeitet
   let preview = null;        // Live-Vorschau beim Bearbeiten eines Themas: { id, draft, tab }
+  let photoPreview = null;   // Ungespeicherte Galerie-/Collagenreihenfolge auf der Seite.
   const ui = () => TFB.ui;
+
+  const titleWords = title => String(title || '').split(/(\s+)/).map(word =>
+    /^\s+$/.test(word) ? word : `<span class="feature-title-word">${esc(word)}</span>`).join('');
+  const observedTitles = new Set();
+  let titleFrame = 0;
+  function fitFeatureTitles() {
+    titleFrame = 0;
+    observedTitles.forEach(title => {
+      if (!title.isConnected) { titleResize.unobserve(title); observedTitles.delete(title); return; }
+      title.style.removeProperty('font-size');
+      const width = title.clientWidth;
+      if (!width) return;
+      const base = parseFloat(getComputedStyle(title).fontSize);
+      const longest = Math.max(0, ...Array.from(title.querySelectorAll('.feature-title-word'), word => word.getBoundingClientRect().width));
+      // Keep whole words; shrink only when the longest word cannot fit naturally.
+      if (longest > width) title.style.fontSize = `${base * (width - 1) / longest}px`;
+    });
+  }
+  function scheduleTitleFit() {
+    if (!titleFrame) titleFrame = requestAnimationFrame(fitFeatureTitles);
+  }
+  const titleResize = new ResizeObserver(scheduleTitleFit);
+  new MutationObserver(() => {
+    document.querySelectorAll('.feature-body h2').forEach(title => {
+      if (!observedTitles.has(title)) { observedTitles.add(title); titleResize.observe(title); }
+    });
+    scheduleTitleFit();
+  }).observe(document.getElementById('app'), { childList: true, subtree: true });
+  document.fonts.ready.then(scheduleTitleFit);
+  document.addEventListener('tfb-design-preview', scheduleTitleFit);
 
   // Seiten-Schlüssel → Adresse im Menü (die Seite „verein“ heißt seit 10.10. „Club“)
   const ROUTE = { verein: 'club' };
@@ -28,6 +59,7 @@
     ['heading', 'Zwischenüberschrift', 'gliedert die Seite'],
     ['image', 'Foto', 'ein Bild mit Bildunterschrift'],
     ['gallery', 'Galerie', 'mehrere Fotos, groß ansehbar'],
+    ['collage', 'Collage', 'Fotos in wechselnden Größen, groß ansehbar'],
     ['people', 'Ansprechpartner', 'Rolle und Name'],
     ['facts', 'Zahlen', 'bis zu fünf große Kennzahlen'],
     ['button', 'Knopf', 'Link zu einer Seite oder Website'],
@@ -419,10 +451,12 @@
             ${(b.images || []).filter(shownImage).length ? newsCollage(b) : wrap(`<div class="feature-media">${picture(b.image, b.id, b.title)}</div>`)}
             <div class="feature-body">
               <div class="feature-left">
-                <p class="feature-kicker">${page === 'home' && ui().api.mode === 'demo'
+                <div class="feature-kicker">${page === 'home' && ui().api.mode === 'demo'
                   ? `<button type="button" class="feature-number" data-action="home-color-peek" data-id="${esc(b.id)}" aria-label="Standardfarben oder eigene Farben anzeigen" aria-pressed="${Boolean(colorsOn)}"><span>${n}</span></button>`
-                  : `<span>${n}</span>`}${esc(b.kicker || '')}</p>
-                ${wrap(`<h2>${esc(b.title)}</h2>`)}
+                  : `<span>${n}</span>`}<span class="feature-kicker-label">${esc(b.kicker || '')}</span>
+                  ${page === 'home' && n === '01' && !isEdit && !preview ? contentOverviewLink('home') : ''}
+                </div>
+                ${wrap(`<h2>${titleWords(b.title)}</h2>`)}
                 ${b.subtitle ? `<p class="feature-sub">${esc(b.subtitle)}</p>` : ''}
                 ${slot('left', 'Link hierher')}
               </div>
@@ -445,7 +479,7 @@
           ${b.image ? `<figure class="training-coach-photo">${picture(b.image, b.id, b.title)}</figure>` : ''}</section>`;
         if (b.id === 'v-history') return `<section class="block-text story-teaser">${b.title ? `<h2><a class="post-title-link" href="#club/history">${esc(b.title)}</a></h2>` : ''}${paragraphs(b.text)}
           <p class="feature-more"><a class="more-link" href="#club/history">${esc(b.linkLabel || 'Mehr erfahren')} <span aria-hidden="true">→</span></a></p></section>`;
-        return `<section class="block-text">${b.title ? `<h2>${esc(b.title)}</h2>` : ''}${paragraphs(b.text)}</section>`;
+        return `<section class="block-text" data-site-content="${esc(b.id)}">${b.title ? `<h2>${esc(b.title)}</h2>` : ''}${paragraphs(b.text)}</section>`;
       case 'event':
         return `
           <article class="event card">
@@ -458,7 +492,7 @@
           </article>`;
       case 'post':
         return `
-          <article class="post card">
+          <article class="post card" data-site-content="${esc(b.id)}">
             ${postPhotos(b)}
             <div class="post-body">
               <p class="post-date">${esc(fmt(b.date, { day: 'numeric', month: 'long', year: 'numeric' }))}</p>
@@ -468,17 +502,23 @@
           </article>`;
       case 'image':
         return b.original
-          ? `<figure class="block-image natural ${alignClass(b.align)}">${picture(b.image, b.id, b.caption)}${b.caption ? `<figcaption>${esc(b.caption)}</figcaption>` : ''}</figure>`
-          : `<figure class="block-image card">${picture(b.image, b.id, b.caption)}${b.caption ? `<figcaption>${esc(b.caption)}</figcaption>` : ''}</figure>`;
-      case 'gallery': {
-        const list = (b.images || []).filter((ref) => images[ref]);
+          ? `<figure class="block-image natural ${alignClass(b.align)}" data-site-content="${esc(b.id)}">${picture(b.image, b.id, b.caption)}${b.caption ? `<figcaption>${esc(b.caption)}</figcaption>` : ''}</figure>`
+          : `<figure class="block-image card" data-site-content="${esc(b.id)}">${picture(b.image, b.id, b.caption)}${b.caption ? `<figcaption>${esc(b.caption)}</figcaption>` : ''}</figure>`;
+      case 'gallery':
+      case 'collage': {
+        const list = (b.images || []).filter(shownImage).slice(0, 100);
+        const mosaic = b.type === 'collage';
+        const text = b.showText !== false && b.text ? `<div class="gallery-text">${paragraphs(b.text)}</div>` : '';
         if (!list.length && editing !== page) return '';
         return `
-          <section class="block-gallery">
+          <section class="block-gallery${mosaic ? ' block-collage' : ''}${b.date ? ' has-date' : ''}" data-photo-module="${esc(b.id)}">
             ${b.title ? `<h2>${esc(b.title)}</h2>` : ''}
+            ${b.textPosition === 'above' ? text : ''}
             ${list.length
-              ? `<div class="gallery-grid">${list.map((ref, i) => `<button type="button" class="gallery-item" data-action="gallery-open" data-block="${esc(b.id)}" data-index="${i}" aria-label="Foto ${i + 1} groß ansehen">${picture(ref, ref)}</button>`).join('')}</div>`
+              ? `<div class="gallery-media"><div class="${mosaic ? `collage module-collage collage-${Math.min(list.length, 5)}` : 'gallery-grid'}">${list.map((ref, i) => `<button type="button" class="${mosaic ? 'collage-item' : 'gallery-item'}" data-action="gallery-open" data-block="${esc(b.id)}" data-index="${i}" aria-label="Foto ${i + 1} von ${list.length} groß ansehen">${picture(ref, ref)}</button>`).join('')}</div>${b.date ? dateBadge(b.date) : ''}</div>`
               : '<p class="muted small empty-hint">Noch keine Fotos – über den Stift Fotos hinzufügen.</p>'}
+            ${b.date ? `<p class="post-date"><time datetime="${esc(b.date)}">${esc(fmt(b.date, { day: 'numeric', month: 'long', year: 'numeric' }))}</time></p>` : ''}
+            ${b.textPosition !== 'above' ? text : ''}
           </section>`;
       }
       case 'people':
@@ -567,6 +607,7 @@
     } else window.scrollTo(0, y);
   }
   function endLive() {
+    photoPreview = null;
     if (!preview) return;
     preview = null; readDraft = null; lastTab = null;
     clearTimeout(previewTimer);
@@ -594,6 +635,7 @@
   new MutationObserver(() => {
     const root = document.getElementById('sheet-root');
     if (preview && root && !root.querySelector('[data-editor=block]')) { endLive(); ui().renderView(); }
+    if (photoPreview && root && !root.querySelector('[data-editor=block]')) { photoPreview = null; ui().renderView(); }
   }).observe(document.getElementById('sheet-root') || document.body, { childList: true });
 
   // ---------- Unterseite eines Home-Themas („Mehr erfahren“) ----------
@@ -748,19 +790,63 @@
   }
 
   // ---------- Seite ----------
+  const CONTENT_TYPES = [['feature', 'Themen'], ['post', 'Beiträge'], ['gallery', 'Galerien'], ['collage', 'Collagen'], ['text', 'Texte'], ['image', 'Fotos']];
+  function contentBlocks(key) {
+    return (key === 'home' ? homeBlocks() : site.pages[key].blocks).filter(b => !b._new
+      && CONTENT_TYPES.some(([type]) => type === b.type)
+      && (!['gallery', 'collage'].includes(b.type) || (b.images || []).some(shownImage)));
+  }
+  function contentOverviewLink(key) {
+    return `<div class="content-overview-tools"><a class="btn small" href="#${key}/alle">Alle Beiträge ${ui().icon.chevron}</a></div>`;
+  }
+  async function contentOverview(key) {
+    const list = contentBlocks(key);
+    const { icon } = ui();
+    const plain = value => { const el = document.createElement('div'); el.innerHTML = paragraphs(value || ''); return el.textContent || ''; };
+    return `<div class="overview content-overview" data-content-page="${key}">
+      <header class="view-head page-head"><div><p class="page-kicker">${esc(site.pages[key].title)}</p><h1>Alle Beiträge</h1></div><a class="view-close" href="#${key}" aria-label="Zurück">${icon.close}</a></header>
+      <div class="ov-filters">
+        <label class="ov-search"><input type="search" data-ov="q" aria-label="Beiträge durchsuchen" placeholder="Titel oder Stichwort" autocomplete="off"></label>
+        <select data-ov="where" aria-label="Beitragsart"><option value="">Alle Arten</option>${CONTENT_TYPES.filter(([type]) => list.some(b => b.type === type)).map(([type, label]) => `<option value="${type}">${label}</option>`).join('')}</select>
+        <label class="meet-check ov-photos"><input type="checkbox" data-ov="photos"><span>Nur mit Fotos</span></label>
+      </div>
+      <p class="ov-count muted small" data-ovcount>${list.length} ${list.length === 1 ? 'Beitrag' : 'Beiträge'}</p>
+      <div class="mini-grid">${list.map(b => {
+        const refs = (b.images?.length ? b.images : [b.image]).filter(shownImage);
+        const title = b.title || b.caption || CONTENT_TYPES.find(([type]) => type === b.type)[1];
+        const text = b.showText === false ? '' : plain(b.text);
+        return `<a class="mini" href="#${key}/beitrag/${encodeURIComponent(b.id)}" data-author="" data-text="${esc(`${title} ${b.kicker || ''} ${b.subtitle || ''} ${text}`.toLowerCase())}" data-where="${b.type}" data-teams="" data-photos="${refs.length}" data-at="${esc(b.date || '')}">
+          ${refs.length ? `<span class="mini-img">${picture(refs[0], refs[0], title)}${refs.length > 1 ? `<i>${refs.length} Fotos</i>` : ''}</span>` : ''}
+          <span class="mini-head"><span><b>${esc(title)}</b>${b.date ? `<small>${esc(fmt(b.date, { day: 'numeric', month: 'long', year: 'numeric' }))}</small>` : ''}</span></span>
+          ${text ? `<span class="mini-text">${esc(text)}</span>` : ''}</a>`;
+      }).join('')}</div><p class="ov-empty muted" ${list.length ? 'hidden' : ''}>Keine Beiträge gefunden.</p>
+    </div>`;
+  }
+  TFB.scrollToSiteContent = () => {
+    const [route, mode, id] = location.hash.slice(1).split('/');
+    if (!['home', 'aktuell'].includes(route) || mode !== 'beitrag' || !id) return;
+    let decoded;
+    try { decoded = decodeURIComponent(id); } catch (_) { return; }
+    const target = [...document.querySelectorAll('#view [data-site-content], #view [data-feature], #view [data-photo-module]')]
+      .find(el => (el.dataset.siteContent || el.dataset.feature || el.dataset.photoModule) === decoded);
+    if (target) { target.tabIndex = -1; target.focus({ preventScroll: true }); target.scrollIntoView({ block: 'start' }); }
+  };
   async function pageView(key) {
     await ensure();
+    const section = location.hash.split('/')[1];
+    if (['home', 'aktuell'].includes(key) && section === 'alle') { editing = null; return contentOverview(key); }
+    if (key === 'aktuell' && section === 'beitrag') aktuellTab = 'news';
     if (key === 'home' && preview?.tab === 'album') return albumDetail(preview.id);
     if (key === 'home' && preview && preview.tab === 'sub') return featureDetail(preview.id);
     if (key === 'home' && !preview && location.hash.split('/')[2] === 'fotos') return albumDetail(location.hash.split('/')[1]);
-    if (key === 'home' && !preview && location.hash.split('/')[1]) return featureDetail(location.hash.split('/')[1]);
+    if (key === 'home' && !preview && section && section !== 'beitrag') return featureDetail(section);
     if (key === 'verein' && location.hash.split('/')[1] === 'history') return storyPageView('history');
     const { state, icon, partnerSlot } = ui();
     const page = site.pages[key];
     const edit = editing === key && state.member && state.member.isAdmin && !preview;
     const admin = state.member && state.member.isAdmin;
     const training = key === 'sport' && location.hash.split('/')[1] === 'training';
-    const list = (key === 'home' ? homeBlocks() : page.blocks).filter((b) => (!b._new || (preview && b.id === preview.id))
+    const list = (key === 'home' ? homeBlocks() : page.blocks).map(b => photoPreview?.id === b.id ? photoPreview.draft : b).filter((b) => (!b._new || (preview && b.id === preview.id) || photoPreview?.id === b.id)
       && (key !== 'sport' || (training ? b.type !== 'teams' : b.type === 'teams')));
     const legal = key === 'impressum' || key === 'satzung';
     const blocks = edit
@@ -774,16 +860,17 @@
             <button type="button" class="btn primary" data-action="site-done">Fertig</button>
           </div>` : ''}
         ${key === 'home' && !edit
-          ? (admin ? `<div class="home-tools"><button type="button" class="view-close" data-action="site-edit" data-page="home" aria-label="Startseite bearbeiten">${icon.pencil}</button></div>` : '')
+          ? (admin ? `<div class="home-tools">${TFB.designPreview?.buttons() || ''}<button type="button" class="view-close" data-action="site-edit" data-page="home" aria-label="Startseite bearbeiten">${icon.pencil}</button></div>` : '')
           : `<header class="view-head page-head">
           <div><h1>${esc(page.title)}</h1>${page.intro ? `<p class="muted">${esc(page.intro)}</p>` : ''}</div>
-          ${admin && !edit ? `<button type="button" class="view-close" data-action="site-edit" data-page="${key}" aria-label="Seite bearbeiten">${icon.pencil}</button>` : ''}
+          ${key === 'aktuell' ? '<div class="page-head-tools">' : ''}${admin && !edit ? `<button type="button" class="view-close" data-action="site-edit" data-page="${key}" aria-label="Seite bearbeiten">${icon.pencil}</button>` : ''}${key === 'aktuell' ? `${!edit ? contentOverviewLink(key) : ''}</div>` : ''}
         </header>`}
         ${key === 'sport' ? `<nav class="seg sport-switch" aria-label="Sportbereiche">
           <a class="${training ? '' : 'on'}" href="#sport" ${training ? '' : 'aria-current="page"'}>Mannschaften</a>
           <a class="${training ? 'on' : ''}" href="#sport/training" ${training ? 'aria-current="page"' : ''}>Training</a>
         </nav>` : ''}
         ${key === 'home' ? `<div class="home-masthead"><span>Neu im Club</span><span>${esc(new Date().toLocaleDateString('de-DE', { month: 'long', year: 'numeric' }))}</span></div>` : ''}
+        ${key === 'home' && !edit && !list.some(b => b.type === 'feature') ? contentOverviewLink(key) : ''}
         ${key === 'home' && edit ? lookPicker() + colorModeCard() + navCard() : ''}
         ${blocks}
         ${edit && key === 'home' ? homeAddButton(list) : ''}
@@ -885,9 +972,10 @@
   const MAX_HOME_FEATURES = 10;
   function homeAddButton(list) {
     const n = list.filter((b) => b.type === 'feature').length;
-    return n >= MAX_HOME_FEATURES
+    const feature = n >= MAX_HOME_FEATURES
       ? `<p class="muted small add-limit">Die Startseite zeigt höchstens ${MAX_HOME_FEATURES} Themen. Für ein neues Thema bitte zuerst eines löschen.</p>`
       : `<button type="button" class="btn block add-section add-feature" data-action="block-add" data-type="feature">${ui().icon.plus} Neues Thema <small>${n} von ${MAX_HOME_FEATURES}</small></button>`;
+    return feature + ['gallery', 'collage'].map(type => `<button type="button" class="btn block add-section" data-action="block-add" data-type="${type}">${ui().icon.camera} ${type === 'gallery' ? 'Galerie' : 'Collage'} hinzufügen</button>`).join('');
   }
   const homeLook = () => (HOME_LOOKS.some(([k]) => k === site?.homeLook) ? site.homeLook : '6');
   // Farben der Home-Themen: genau eine bunte Fassung (Farben je Thema) oder „Standard“ (Creme/Weiß).
@@ -930,13 +1018,20 @@
     if (eventIdx.length && list[eventIdx[0] - 1] && list[eventIdx[0] - 1].type === 'heading') asideIdx.add(eventIdx[0] - 1);
     const main = list.filter((_, i) => !asideIdx.has(i));
     const aside = list.filter((_, i) => asideIdx.has(i));
+    const renderColumnBlock = (b, first) => {
+      const block = renderBlock(b, key);
+      if (key !== 'aktuell' || !first) return block;
+      return b.type === 'heading'
+        ? `<div class="aktuell-column-head">${block}${contentOverviewLink(key)}</div>`
+        : `<div class="aktuell-column-head">${contentOverviewLink(key)}</div>${block}`;
+    };
 
     // Einheiten: Knopf gehört zum Text davor.
     const units = [];
     main.forEach((b) => {
       const last = units[units.length - 1];
       if (b.type === 'button' && last && last.kind === 'text') last.html += renderBlock(b, key);
-      else units.push({ kind: b.id === 's-training' ? 'trainer' : b.type === 'text' ? 'text' : b.type, html: renderBlock(b, key) });
+      else units.push({ kind: b.id === 's-training' ? 'trainer' : b.type === 'text' ? 'text' : b.type, html: renderColumnBlock(b, b === main[0]) });
     });
     // Läufe gleicher Art zusammenfassen (Beiträge, Texte)
     let html = '';
@@ -957,7 +1052,7 @@
         </div>
         <div class="page-grid news-dates show-${aktuellTab}">
           <div class="page-main col-news">${html}</div>
-          <aside class="page-aside col-dates">${aside.map((b) => renderBlock(b, key)).join('')}</aside>
+          <aside class="page-aside col-dates">${aside.map((b, i) => renderColumnBlock(b, i === 0)).join('')}</aside>
         </div>`;
     }
     if (!aside.length) return `<div class="page-grid single"><div class="page-main">${html}</div></div>`;
@@ -1145,6 +1240,17 @@
   }
   TFB.views.gefluester = overviewView;
   TFB.views.chat = async () => {
+    const [, section, postId] = location.hash.split('/');
+    if (section === 'beitrag') {
+      await ensure();
+      const posts = await ui().api.posts('club', { withTeams: true });
+      const p = posts.find(p => p.id === decodeURIComponent(postId || ''));
+      if (!p) return `${ui().viewHead('Chat', '', false)}<p class="muted">Dieser Beitrag ist nicht mehr verfügbar.</p>`;
+      postCache[p.id] = p;
+      if (ui().state.member) ui().api.readChatPosts([p.id]);
+      setTimeout(() => TFB.inbox?.refresh(), 0);
+      return `${ui().viewHead('Chat', '', false)}<div class="chat-stream">${postHtml(p, Boolean(ui().state.member))}</div>`;
+    }
     if (location.hash.split('/')[1] === 'alle') return overviewView();
     await ensure();
     return `<div class="chat-page"><header class="view-head page-head"><div><h1>${esc(chatText().feedTitle)}</h1></div>${chatEditButton()}</header>
@@ -1162,14 +1268,14 @@
     let n = 0;
     root.querySelectorAll('.mini').forEach((c) => {
       const ok = (!q || c.dataset.author.includes(q) || c.dataset.text.includes(q))
-        && (!where || (where === 'club' && c.dataset.where === 'club') || (where === 'team' && c.dataset.where === 'team')
+        && (!where || (root.dataset.contentPage && c.dataset.where === where) || (where === 'club' && c.dataset.where === 'club') || (where === 'team' && c.dataset.where === 'team')
           || (where.startsWith('t:') && c.dataset.teams.split(' ').includes(where.slice(2))))
         && (!photos || Number(c.dataset.photos) > 0)
         && (!since || new Date(c.dataset.at).getTime() >= since);
       c.hidden = !ok;
       if (ok) n++;
     });
-    root.querySelector('[data-ovcount]').textContent = `${n} ${n === 1 ? chatText().countOne : chatText().countMany}`;
+    root.querySelector('[data-ovcount]').textContent = root.dataset.contentPage ? `${n} ${n === 1 ? 'Beitrag' : 'Beiträge'}` : `${n} ${n === 1 ? chatText().countOne : chatText().countMany}`;
     root.querySelector('.ov-empty').hidden = n > 0;
   }
   document.addEventListener('input', (e) => { if (e.target.closest && e.target.closest('.ov-filters')) applyOverviewFilters(); });
@@ -1189,6 +1295,7 @@
     const p = postCache[id];
     if (!p) return;
     ui().openSheet(`<div class="editor post-sheet">${postHtml(p, Boolean(ui().state.member))}</div>`);
+    if (ui().state.member) { ui().api.readChatPosts([p.id]); TFB.inbox?.refresh(); }
   }
 
   // Schreiben: Hinweise (einmalig) → bei Jugendlichen Einverständnis der Eltern → Beitrag mit bis zu 6 Fotos
@@ -1546,9 +1653,9 @@
     return `<button type="button" class="${compact ? 'thumb-frame' : 'btn small'}" data-action="photo-frame" data-ref="${esc(ref)}" ${format ? `data-format="${format}"` : ''} title="Bildausschnitt anpassen (ziehen, zoomen)" aria-label="Bildausschnitt anpassen">${ui().icon.camera}${compact ? '' : ' Foto einpassen'}</button>`;
   }
   function thumbEdit(ref, list, i, n, removeAttr, format = '') {
-    return `<div class="gallery-thumb sortable" draggable="true" data-list="${list}" data-index="${i}">
+    return `<div class="gallery-thumb sortable" draggable="false" data-list="${list}" data-index="${i}">
       ${picture(ref, ref)}${frameButton(ref, true, format)}
-      <span class="thumb-grip" aria-hidden="true" title="Ziehen zum Sortieren">⠿</span>
+      <button type="button" class="thumb-grip" title="Ziehen zum Sortieren" aria-label="Foto ${i + 1} verschieben (ziehen oder Pfeiltasten)">⠿</button>
       <button type="button" ${removeAttr}="${esc(ref)}" aria-label="Foto entfernen">×</button>
       <span class="thumb-move">
         <button type="button" data-move-list="${list}" data-move-index="${i}" data-move-dir="-1" ${i === 0 ? 'disabled' : ''} aria-label="Nach vorne">‹</button>
@@ -1595,6 +1702,14 @@
     };
     const moreBox = (k, inner) => `<details class="ed-more" data-edmore="${k}" ${edMore[k] ? 'open' : ''}><summary>Mehr Gestaltung <small>freiwillig – ohne Änderung sieht alles gut aus</small></summary>${inner}</details>`;
     const live = draft.type === 'feature';   // Themen: Seitenleiste mit Live-Vorschau
+    const photoModule = ['gallery', 'collage'].includes(draft.type);
+    const refreshPhotoPreview = () => {
+      if (!photoModule) return;
+      photoPreview = { id, draft };
+      const module = [...document.querySelectorAll('#view [data-photo-module]')].find(el => el.dataset.photoModule === id);
+      if (module) module.outerHTML = renderBlock(draft, editing);
+      else ui().renderView();
+    };
     const label = (BLOCK_TYPES.find(([t]) => t === draft.type) || [0, 'Baustein'])[1];
 
     const body = () => {
@@ -1713,13 +1828,20 @@
           + `<label class="meet-check"><input type="checkbox" name="imgOriginal" data-rerender ${draft.original ? 'checked' : ''}><span>Originalformat (nicht zuschneiden)</span></label>`
           + (draft.original ? `<div class="field"><span>Ausrichtung</span><div class="seg align-seg">${[['left', 'Links'], ['center', 'Mitte'], ['right', 'Rechts']].map(([v, l]) =>
                 `<button type="button" class="${(draft.align || 'center') === v ? 'on' : ''}" data-align="image:${v}">${l}</button>`).join('')}</div></div>` : '');
-        case 'gallery': return field('Überschrift', 'title', draft.title) + `
-          <div class="field"><span>Fotos</span>
+        case 'gallery':
+        case 'collage': return field('Überschrift', 'title', draft.title)
+          + field('Datum', 'date', draft.date, { type: 'date' }) + `
+          <div class="field"><span>Fotos (${(draft.images || []).filter(shownImage).length} / 100)</span>
             <div class="gallery-edit">
-              ${(() => { const l = (draft.images || []).filter((r) => images[r]); return l.map((ref, i) => thumbEdit(ref, 'gallery', i, l.length, 'data-gallery-remove')).join(''); })()}
-              <label class="gallery-add">${ui().icon.plus}<span>Fotos</span><input type="file" accept="image/*" multiple data-gallery-input hidden></label>
+              ${(() => { const l = (draft.images || []).filter(shownImage); return l.map((ref, i) => thumbEdit(ref, 'gallery', i, l.length, 'data-gallery-remove')).join(''); })()}
+              ${(draft.images || []).length < 100 ? `<label class="gallery-add">${ui().icon.plus}<span>Fotos</span><input type="file" accept="image/*" multiple data-gallery-input hidden></label>` : ''}
             </div>
-          </div>`;
+          </div><label class="meet-check"><input type="checkbox" name="showText" ${draft.showText !== false ? 'checked' : ''}><span>Text anzeigen</span></label>
+          <label class="field"><span>Textposition</span><select name="textPosition">
+            <option value="above" ${draft.textPosition === 'above' ? 'selected' : ''}>Unter der Überschrift</option>
+            <option value="below" ${draft.textPosition !== 'above' ? 'selected' : ''}>Unter den Bildern</option>
+          </select></label>`
+          + field('Text', 'text', draft.text, { area: true, rich: true, simple: true, rows: 7 });
         case 'people': return field('Überschrift', 'title', draft.title)
           + field('Personen – je Zeile „Rolle: Name“', 'people', (draft.people || []).map((p) => `${p.role}: ${p.name}`).join('\n'), { area: true, rows: 6 });
         case 'facts': return `<div class="facts-editor">${(draft.items || []).map((f, i, list) => `
@@ -1751,37 +1873,93 @@
           <button type="button" class="btn block danger" data-delete>${live ? 'Thema löschen' : 'Baustein löschen'}</button>
         </form>`);
       const form = document.querySelector('[data-editor=block]');
-      // Fotos per Ziehen umsortieren (innerhalb derselben Liste)
-      let dragThumb = null;
-      form.addEventListener('dragstart', (e) => {
-        const t = e.target.closest && e.target.closest('.gallery-thumb.sortable');
-        if (!t) return;
-        dragThumb = t;
-        t.classList.add('dragging');
-        e.dataTransfer.effectAllowed = 'move';
-        try { e.dataTransfer.setData('text/plain', t.dataset.index); } catch (_) {}
-      });
-      form.addEventListener('dragover', (e) => {
-        const t = e.target.closest && e.target.closest('.gallery-thumb.sortable');
-        if (!dragThumb || !t || t.dataset.list !== dragThumb.dataset.list) return;
-        e.preventDefault();
-        form.querySelectorAll('.gallery-thumb.drop-target').forEach((x) => x !== t && x.classList.remove('drop-target'));
-        if (t !== dragThumb) t.classList.add('drop-target');
-      });
-      form.addEventListener('drop', (e) => {
-        const t = e.target.closest && e.target.closest('.gallery-thumb.sortable');
-        if (!dragThumb || !t || t.dataset.list !== dragThumb.dataset.list) return;
-        e.preventDefault();
+      refreshPhotoPreview();
+      // Die Liste ordnet sich schon während des Ziehens neu, ohne das Formular zu ersetzen.
+      let pointerDrag = null;
+      let scrollFrame = null;
+      const reorderThumbs = (list, a, b) => {
+        if (a === b) return;
+        const nodes = [...form.querySelectorAll(`.gallery-thumb[data-list="${list}"]`)];
+        if (b < 0 || b >= nodes.length) return;
         collect(form);
-        moveInList(t.dataset.list, Number(dragThumb.dataset.index), Number(t.dataset.index));
-        dragThumb = null;
+        moveInList(list, a, b);
+        const [node] = nodes.splice(a, 1);
+        nodes.splice(b, 0, node);
+        const holder = node.parentElement;
+        const add = holder.querySelector('.gallery-add');
+        nodes.forEach((thumb, index) => {
+          holder.insertBefore(thumb, add);
+          thumb.dataset.index = index;
+          const grip = thumb.querySelector('.thumb-grip');
+          if (grip) grip.setAttribute('aria-label', `Foto ${index + 1} verschieben (ziehen oder Pfeiltasten)`);
+          thumb.querySelectorAll('[data-move-index]').forEach(button => {
+            button.dataset.moveIndex = index;
+            button.disabled = Number(button.dataset.moveDir) < 0 ? index === 0 : index === nodes.length - 1;
+          });
+        });
+        refreshPhotoPreview();
+        if (live) schedulePreview();
+      };
+      const clearTargets = () => form.querySelectorAll('.drop-target').forEach(x => x.classList.remove('drop-target'));
+      const updateTarget = () => {
+        const hit = document.elementFromPoint(pointerDrag.x, pointerDrag.y)?.closest('.gallery-thumb.sortable');
+        clearTargets();
+        if (!hit || hit.dataset.list !== pointerDrag.thumb.dataset.list || hit === pointerDrag.thumb) return;
+        reorderThumbs(hit.dataset.list, Number(pointerDrag.thumb.dataset.index), Number(hit.dataset.index));
+      };
+      const scrollDrag = () => {
+        if (!pointerDrag) return;
+        if (!form.isConnected) { pointerDrag = null; return; }
+        const sheet = form.closest('.sheet');
+        if (sheet) {
+          const bounds = sheet.getBoundingClientRect();
+          if (pointerDrag.y < bounds.top + 48) sheet.scrollTop -= 8;
+          else if (pointerDrag.y > bounds.bottom - 48) sheet.scrollTop += 8;
+        }
+        updateTarget();
+        scrollFrame = requestAnimationFrame(scrollDrag);
+      };
+      form.addEventListener('pointerdown', e => {
+        const grip = e.target.closest('.thumb-grip');
+        const thumb = e.target.closest('.gallery-thumb.sortable');
+        if (!thumb || (!grip && e.target.closest('button')) || pointerDrag || e.button !== 0 || !e.isPrimary) return;
+        e.preventDefault();
+        pointerDrag = { thumb, pointerId: e.pointerId, x: e.clientX, y: e.clientY, startIndex: Number(thumb.dataset.index) };
+        form.setPointerCapture(e.pointerId);
+        thumb.classList.add('dragging');
+        scrollFrame = requestAnimationFrame(scrollDrag);
+      });
+      form.addEventListener('pointermove', e => {
+        if (!pointerDrag || e.pointerId !== pointerDrag.pointerId) return;
+        pointerDrag.x = e.clientX; pointerDrag.y = e.clientY;
+        updateTarget();
+      });
+      const endPointer = (e, cancel = false) => {
+        if (!pointerDrag || e.pointerId !== pointerDrag.pointerId) return;
+        const { thumb, pointerId, startIndex } = pointerDrag;
+        pointerDrag = null;
+        cancelAnimationFrame(scrollFrame);
+        thumb.classList.remove('dragging');
+        clearTargets();
+        if (form.hasPointerCapture(pointerId)) form.releasePointerCapture(pointerId);
+        if (cancel) reorderThumbs(thumb.dataset.list, Number(thumb.dataset.index), startIndex);
+      };
+      form.addEventListener('pointerup', e => endPointer(e));
+      form.addEventListener('pointercancel', e => endPointer(e, true));
+      form.addEventListener('lostpointercapture', e => endPointer(e, true));
+      form.addEventListener('keydown', e => {
+        const grip = e.target.closest('.thumb-grip');
+        if (!grip || !['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) return;
+        e.preventDefault();
+        const thumb = grip.closest('.gallery-thumb');
+        const index = Number(thumb.dataset.index) + (['ArrowLeft', 'ArrowUp'].includes(e.key) ? -1 : 1);
+        if (index < 0 || index >= form.querySelectorAll(`.gallery-thumb[data-list="${thumb.dataset.list}"]`).length) return;
+        collect(form);
+        moveInList(thumb.dataset.list, Number(thumb.dataset.index), index);
         render();
+        document.querySelector(`[data-editor=block] .gallery-thumb[data-list="${thumb.dataset.list}"][data-index="${index}"] .thumb-grip`)?.focus();
       });
-      form.addEventListener('dragend', () => {
-        if (dragThumb) dragThumb.classList.remove('dragging');
-        dragThumb = null;
-        form.querySelectorAll('.drop-target').forEach((x) => x.classList.remove('drop-target'));
-      });
+      form.addEventListener('dragstart', e => { if (e.target.closest('.gallery-thumb.sortable')) e.preventDefault(); });
       // Farben: Farbfeld, Pipette, Farbcode, Standard – alles mit Live-Vorschau
       wireColorFields(form, () => { if (live) schedulePreview(); });
       wireGapFields(form, () => { if (live) schedulePreview(); });
@@ -1924,7 +2102,7 @@
             ui().toast(`Höchstens ${input.dataset.max} Fotos pro Beitrag – bitte weniger auswählen.`);
             input.value = ''; return;
           }
-          if (input.matches('[data-news-input]') && files.length + (draft.images || []).length + (draft.image ? 1 : 0) > 100) {
+          if (input.matches('[data-news-input], [data-gallery-input]') && files.length + (draft.images || []).length + (draft.image ? 1 : 0) > 100) {
             ui().toast('Eine Fotokollage kann höchstens 100 Bilder enthalten. Bitte weniger Fotos auswählen.');
             input.value = ''; return;
           }
@@ -1958,7 +2136,7 @@
     // Foto in einer Liste von Position a nach b verschieben (nur angezeigte Fotos zählen)
     function moveInList(list, a, b) {
       const get = () => (list === 'album' ? draft.album?.images : list === 'hero' ? (draft.more || {}).heroImages : list === 'more' ? (draft.more || {}).images : draft.images) || [];
-      const visible = get().filter(list === 'gallery' ? (r) => images[r] : shownImage);
+      const visible = get().filter(shownImage);
       if (b < 0 || b >= visible.length || a === b) return;
       const [item] = visible.splice(a, 1);
       visible.splice(b, 0, item);
@@ -1973,6 +2151,10 @@
       const f = form.elements;
       ['title', 'text', 'date', 'time', 'place', 'caption', 'label', 'url', 'kicker', 'subtitle', 'note', 'phone', 'email'].forEach((k) => { if (f[k]) draft[k] = f[k].value.trim(); });
       if (f.imgOriginal) draft.original = f.imgOriginal.checked;
+      if (['gallery', 'collage'].includes(draft.type)) {
+        if (f.showText) draft.showText = f.showText.checked;
+        if (f.textPosition) draft.textPosition = f.textPosition.value === 'above' ? 'above' : 'below';
+      }
       [['linkTop', LINK_TOP], ['linkGap', LINK_GAP]].forEach(([k, def]) => {
         if (!f[k]) return;
         const v = Number(f[k].value);
@@ -2037,7 +2219,8 @@
       heading: { title: 'Neue Überschrift' }, text: { title: '', text: '' },
       event: { date: today(), time: '', title: '', place: 'Tennisanlage', text: '' },
       post: { date: today(), title: '', text: '', image: null }, image: { image: null, caption: '' },
-      gallery: { title: 'Galerie', images: [] }, people: { title: 'Ansprechpartner', people: [] },
+      gallery: { title: 'Galerie', images: [], date: '', text: '', showText: true, textPosition: 'below' },
+      collage: { title: 'Collage', images: [], date: '', text: '', showText: true, textPosition: 'below' }, people: { title: 'Ansprechpartner', people: [] },
       facts: { items: Array.from({ length: 5 }, () => ({ value: '–', label: 'Kennzahl' })) }, button: { label: 'Mehr erfahren', url: '' }, teams: { title: 'Mannschaften' },
     };
     return { id, type, ...defaults[type] };
@@ -2466,7 +2649,7 @@
       } catch (error) { form.querySelector('.form-error').textContent = error.message; button.disabled = false; }
     });
   }
-  TFB.refreshSite = async () => { site = null; await ui().renderView(); };
+  TFB.refreshSite = async (reloadImages = false) => { site = null; if (reloadImages) imagesLoaded = false; await ui().renderView(); };
   Object.assign(TFB.actions, {
     'photo-frame': async (el) => {
       await ensure();
@@ -2523,10 +2706,11 @@
       if (person && person.avatar && person.avatarLarge) ui().openLightbox(person.avatarLarge, person.name);
     },
     'site-edit': async (el) => {
+      const y = window.scrollY;
       editing = el.dataset.page;
       ui().closeSheet();
-      if (ui().currentView() === routeOf(editing)) ui().renderView(); else location.hash = '#' + routeOf(editing);
-      window.scrollTo(0, 0);
+      if (ui().currentView() === routeOf(editing)) await ui().renderView(); else location.hash = '#' + routeOf(editing);
+      window.scrollTo(0, el.dataset.keepScroll ? y : 0);
     },
     'nav-edit': () => openNavEditor(),
     'home-color-peek': async (el) => {
@@ -2625,8 +2809,9 @@
     'team-post': (el) => openTeamPost(el.dataset.team, el.dataset.id),
     'gallery-open': (el) => {
       const block = Object.values(site.pages).flatMap((p) => p.blocks).find((b) => b.id === el.dataset.block);
-      const list = (block.images || []).filter((r) => images[r]);
-      ui().openLightbox(images[list[Number(el.dataset.index)]], block.title || 'Galerie');
+      if (!block) return;
+      const list = (block.images || []).filter(shownImage).slice(0, 100);
+      openGallery(list, block.title || 'Galerie', true, Number(el.dataset.index) || 0);
     },
   });
 

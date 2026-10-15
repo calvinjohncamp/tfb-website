@@ -4,6 +4,281 @@ Für den schnellen Einstieg zuerst die kurze **[UEBERGABE.md](UEBERGABE.md)** le
 Diese Datei enthält alle Entscheidungen, Konzepte, offenen Punkte und den Verlauf.
 Neues bitte unten bei „Verlauf“ ergänzen.
 
+## Entscheidung: Kühle Welt voreingestellt (v183)
+
+Nutzer bevorzugt die neue kühle Welt, insbesondere Menütypografie und einheitliche
+Kiosk-Hintergründe. Verbindlich: zwei Welten, cool als Standard, warm als erhaltene
+Alternative. Zwischenvariante mit alten Schriften entfernt (auch CSS).
+Home-Admin-Zeile links „Kühle Welt“/„Warme Welt“, rechts vorhandener Bleistift;
+gleiche Höhe und Sichtbarkeitsbedingung, im Demo-Modus gemeinsam ein-/ausgeblendet.
+Logo-Schriftzug wechselt weiterhin auf allen internen Seiten und in der Präsentation.
+Lokale Auswahl mit neuem Key `tfb_design_world_v2`; alte Dreier-Testauswahl ignoriert.
+Kein zweiter Inhaltssatz, keine globale Backend-Konfiguration, keine Veröffentlichung.
+Tests: Default/gespeicherte Wahl/Legacy, Admin/Gast/Mitglied, exakte Ausrichtung,
+alle Seiten bei schmalen/ großen Breiten, Dateiseite/Fonts, Focus-Wechsel erfolgreich.
+Aktuelle Bedienung und Quellen in DESIGNVERGLEICH.md. Ältere drei Welten historisch.
+
+## Drei Vergleichswelten und Dating 2.0 (v182)
+
+Auf Nutzerwunsch dritter Zustand zum Trennen von Farb- und Schriftpräferenz:
+warm → kühle Farben mit alten Schriften UND Schriftfarben exakt → neue kühle
+Schrift-/Farbwelt → warm. Logo-Schriftzug als Schalter für alle internen Seiten.
+Originalstandard und Inhaltsdaten unverändert; mittlere CSS-Schicht ändert nur
+Hintergründe/Linien/Flächen, kein Branding-Text oder Typografie. Vorhandene neue
+kühle Variante erhalten. Lokale Preference `colors` zusätzlich zu `cool`.
+Verabreden-Menü unverändert, Seitentitel „Dating 2.0“, neue Abschnittstitel
+„Einladungen für mich“ und „Meine kommenden Matches“. Keine Funktionsänderung.
+Design-Test erweitert um Font-/Farbgleichheit der Mittelvariante auf allen
+Seiten/Breiten und Dreierfolge/Reload/Texte. Details in DESIGNVERGLEICH.md.
+Cache v182; keine Veröffentlichung, endgültige Weltwahl oder Admin-Weltenverwaltung.
+
+## Designvergleich auf alle Seiten erweitert (v181)
+
+Nutzer noch unentschieden; warme Farbwelt gefällt weiterhin. Auftrag: gesamte TFB-
+Website in kühler Welt vergleichbar machen, Logo-Schriftzug überall zum Umschalten.
+Umgesetzt ohne Änderung der warmen Basis: alle internen Seiten/Unterseiten, Account,
+Dialoge. Konturzahlen auf Home (neue Schrift, transparent/1.25px rot), deutlicheres
+Menü mit größeren DM-Sans-Zeichen/700 und dunklerem Grau. Neutrale Farben/Flächen
+für Kiosk, Aktuell, Sport, Club, Verabreden, Abrechnungen und Rechtstexte.
+Bei schmalen Geräten kühle Verabreden-Auswahl 2x2 gegen Textüberlauf.
+Admin-Auswahl/regelmäßiger Wechsel der Welten nur zukünftige Option, nicht programmiert.
+Keine Design-Freigabe, Veröffentlichung oder Datenmigration. Cache v181.
+Details/Quellen/Prüfumfang: DESIGNVERGLEICH.md. Ältere Home/Chat-Begrenzung aufgehoben.
+
+## Neues Experiment 13.10.2026: kühle Home/Chat-Vorschau (v180)
+
+Nutzer möchte nach dem Tagesabschluss die Schriften/Farben seines Foks-Screenshots
+auf Home/Chat vergleichen, ohne die bisherige warme Gestaltung aufzugeben.
+Umgesetzt als separate, lokal umschaltbare CSS-Schicht über denselben Inhalten:
+Klick auf kleinen Logo-Schriftzug wechselt, TFB-Zeichen/roter Ball behalten Funktionen.
+Nur Home/Chat betroffen, kein Admin-Welten-Setup (dies wäre späterer Step 2).
+Schriften per Hersteller-CSS identifiziert: Bricolage Grotesque/DM Sans; beide lokal
+und frei lizenziert, keine Online-Abhängigkeit. Screenshotfläche #EFEFEF gemessen,
+Preview-Anthrazit #171717 neutraler/dunkler als Markenbasis #2A2D2E. Signalrot bleibt.
+Warme Basis unverändert; Vergleich enthält keine endgültige Designfreigabe.
+Ausführliche Recherche/Abgrenzung/Bedienung/Rückbau in [DESIGNVERGLEICH.md](DESIGNVERGLEICH.md).
+Cache v180, kein Commit/Push/Deployment. Daten-/Inhaltsgleichheit und Umschaltung
+isoliert geprüft, inklusive file-Schriften, schmaler Ansichten und Fokus-Regression.
+
+## Tagesabschluss 13.10.2026: vom Nutzer bestätigt (v179)
+
+Nutzer bestätigt die aktuelle Klingel-Umsetzung („Hervorragend, gefällt mir genau so“)
+und beendet die Sitzung. Verbindlicher aktueller lokaler Stand: `tfb-kiosk-v179`.
+Ältere Versionsstände in den folgenden Ergänzungen beschreiben den Verlauf.
+
+Abgeschlossen: Desktop-Fokus; nächstes zugesagtes Match im Account mit feinem
+Anthrazit-Rahmen; Kiosk-Umsätze mit Details-Link; vereinfachter Einzugshinweis.
+Klingel ergänzt ausschließlich vorhandene Chat-/Insider-Beiträge von Verfassern aus
+eigener Mannschaft oder bestätigter Trainingsgruppe, keinen neuen Gruppenchat.
+Eigene Account-Auswahl mit ruhigem Standard „Nur Einladungen“; Opt-in für
+„Einladungen und Gruppenbeiträge“. Je Autor gebündelt, Direktlink zum neuesten
+Beitrag, gelesen dauerhaft entfernt, weitere Beiträge bleiben erreichbar.
+Installation für weitere Nutzer und Personen-Followlisten bleiben zurückgestellt.
+
+Abschließend erfolgreich: Browserprüfungen Chat-Hinweise, nächstes Match/Account,
+Home/Aktuell/Chat-Übersicht und Wochentage/Einladungen. Schmale Account-Ansicht
+visuell geprüft, `git diff --check` ohne Fehler. Keine gesamte Testsuite erneut,
+keine echte Mobilgeräteprüfung. Übergabe ist aktualisiert. Keine Veröffentlichung,
+kein Commit/Tag/Push oder neuer JSON-Export; separate Padel-Anwendung unverändert.
+
+## Ergänzung 13.10.2026: optionale Chat-Hinweise (v179)
+
+Verbindliche Nutzerkorrektur: keinen neuen Chat bei Trainingsgruppen/Einladungen
+anlegen. Nur vorhandene Beiträge von Personen aus eigener Mannschaft oder bestätigter
+Trainingsgruppe in Klingel aufnehmen. Account-Auswahl „Nur Einladungen“ standardmäßig,
+alternativ „Einladungen und Gruppenbeiträge“. Beim Einschalten nur künftige Beiträge,
+keine eigenen/verborgenen/gelöschten Beiträge, pending Gruppenmitglieder ausgeschlossen.
+Je Autor gebündelt, Überschneidungen dedupliziert. Klick öffnet neuesten Beitrag
+direkt; nach dem Ansehen verschwinden dessen Hinweis/ungelesener Status dauerhaft,
+weitere bleiben erreichbar. Auch Einzelansicht aus Chat-Übersicht markiert gelesen.
+Hinweise nach sieben Tagen ausblenden, Entfernen bestätigt Bündel. Einstellungen
+und gelesene IDs je Account gespeichert. Keine Mails/Push und keine Personen-Followliste.
+Nur lokale Demo, keine Online-Zustellung implementiert. Cache v179; keine Veröffentlichung.
+Isolierter Test `test:browser:chat-notices` erfolgreich: Zuordnung/Bündelung,
+Opt-in/Opt-out, Ausschlüsse, Link/gelesen/Reload/Entfernen und schmale Ansichten.
+
+## Ergänzung 13.10.2026: Abrechnungshinweis (v178)
+
+Auf Nutzerwunsch im laufenden Monat unter „Meine Abrechnungen“ nur
+„Einzug am [Datum]“ anzeigen. Strichanzahl dort entfernt, da ein Strich
+einzelne Getränke oder einen Kranz darstellen kann. Einzelposten/Beträge unverändert.
+Lokaler Cache v178; keine Veröffentlichung.
+
+## Ergänzung 13.10.2026: Account-Gliederung (v177)
+
+Der nächste Match-Hinweis erhält auf Nutzerwunsch einen feinen schwarzen/
+Signature-Anthrazit-Rahmen (1px, 16px-Rundung wie Account-Felder).
+„Kiosk-Umsätze“ steht über den Beträgen, „Details ansehen“ darunter öffnet die
+Abrechnungen mit Einzelposten und Monatsübersicht und schließt den Account.
+Der Heute-Betrag bleibt der Direktweg zum Bierdeckel. Bestehende Berechnungen
+unverändert. Isolierter Browsertest inklusive Link und 1100/834/390/320px erfolgreich.
+Cache v177, keine Veröffentlichung und kein neuer Commit.
+
+## Ergänzung 13.10.2026: Account mit nächstem Match (v176)
+
+Neuester lokaler Cache `tfb-kiosk-v176`. Nach Vorbild der Padel-Account-Titelseite
+ein kompakter, ungerahmter Hinweis unter den beiden Account-Bestätigungen, über
+Kiosk-Beträgen und eigenen Angaben. Nur nächster noch nicht gestarteter Termin,
+bei dem das Mitglied laut bestehender Zusage-/Nachrücklogik tatsächlich mitspielt.
+Offene/abgesagte Einladungen und Ersatzplätze ausgeschlossen, Training eingeschlossen.
+Datum/Uhrzeit/Titel/Ort, gegebenenfalls noch freie Plätze, Direktlink zu Details;
+ohne zugesagten Termin dezenter Leerhinweis. Read-only `TFB.meet.nextMatch`, kein
+Versand oder neue Zusage beim Öffnen des Accounts. Keine Anbindung an Padel-Buchungen.
+Padel-Original im separaten Ordner nur als Vorlage gelesen. Isolierter Browser-Test
+`test-browser-next-match.mjs` einschließlich Logik/Position/Details/Training/leerem
+Zustand und schmalen Ansichten erfolgreich. Frühere Entscheidungen unten unverändert;
+keine Veröffentlichung, kein Commit/Tag/JSON-Export.
+
+## Aktueller Abschluss 13.10.2026: Fokus und Einladungen (v175)
+
+Verbindlicher lokaler Stand: Cache `tfb-kiosk-v175`. Anwendung/Repository ist
+`/Users/jk/Dropbox/9. TFB-Website/tfb-kiosk`; Padel Bielstein bleibt getrennt.
+Die folgenden Entscheidungen ersetzen die früheren Fokus-/Installationsentwürfe.
+Keine Veröffentlichung, kein Commit/Push/neuer Sicherungstag oder JSON-Export
+in diesem Abschluss. Letzter Git-Commit weiterhin `d8d7762`, eingefrorener Tag
+`stand-2026-10-12-v160`. Vorbestehende Änderungen und `.claude/` erhalten.
+
+### Verbindliche Entscheidungen
+
+- Vorstandsvorführung zuerst: Website ist ein Vorschlag zur Zusammenführung und
+  Modernisierung. Eine öffentliche App-Installation erst nach grundsätzlicher
+  Zustimmung des Vorstands weiterentwickeln, nicht eigenständig wieder aktivieren.
+- Home-Installationsstreifen samt Position-/Höhenbearbeitung entfernt. Auch im Konto
+  kein Fokus-/Installationsangebot. Alte `site.focusStrip`-Werte bleiben ungenutzt
+  erhalten; sie dürfen den Streifen nicht wieder sichtbar machen.
+- Stattdessen kleines F links neben der Klingel in der Kopfzeile, nur Desktop mit
+  primärer Maus/Trackpad-Bedienung. iPhone, iPad (auch Desktop-Kennung mit Touch)
+  und Android ausgeschlossen: weder Hoch-/Querformat noch Browser-/App-Nutzung
+  ändern diese Regel. Nutzer hat ausdrücklich zugestimmt. Breite allein ist kein Kriterium.
+- F-Kreis 21,6px, unten bündig mit der 27px-Klingel, Rand 1,15px Signature-Anthrazit
+  `#1C1A17`, weiße Fläche. F-Schrift 90% der jeweils tatsächlichen Menüschrift,
+  Gewicht 600 (mittelfett), Abstand zur Klingel 15,4px. Hinweis beim Hover/Tastaturfokus.
+- F öffnet eine dunkle Browser-Vollbildfläche mit mittigem Inhalt, keine Änderung
+  des macOS-Schreibtischhintergrunds und keine Installation. Desktop/iPad/iPhone-
+  Breiten 1440/834/390px, seitlich ziehbar; Steuerung unten blendet aus. Escape/X
+  bzw. F in der eingebetteten Desktop-Ansicht beendet Fokus. Bei nicht freigegebenem
+  Vollbild bleibt die Ansicht innerhalb des Browserfensters mit entsprechendem Hinweis.
+- Für Mobilgeräte ist Fokus nicht beauftragt. Später wäre eine Entscheidung nach
+  Browser-Unterstützung/Standalone-Modus möglich; iPhone-Webseiten haben nicht
+  dieselbe Vollbild-Unterstützung wie Desktop, iPad oder Android-Chrome. Nicht umgesetzt.
+
+### Fertig und geprüft
+
+- Lokale Mac-Startknöpfe außerhalb des Website-Repositorys in `../Präsentationsmodus`:
+  `TFB.app` schaltet rein anthrazitfarbenen Desktop ein/aus und stellt das vorherige
+  Hintergrundbild samt Darstellungsoptionen wieder her. `TFB Vorführung.app` startet
+  die vorhandene lokale Seite als Chrome-App-Fenster ohne Tabs/Adresszeile.
+  TFB-Symbol ohne Ball; bisherige Desktop-Knöpfe unverändert beibehalten.
+- Der zusätzliche Download `TF Bielstein.app` hatte zunächst eine ungültige
+  Bundle-Signatur. Paketbau repariert, komplettes Bundle ad hoc signiert und auch
+  nach Entpacken geprüft (`build-tf-bielstein.sh`, `tf-bielstein-mac-v2.zip`).
+  Trotzdem blockiert macOS den nicht Apple-beglaubigten Browser-Download:
+  kein öffentlich freigegebener Installer, keine Developer-ID/Notarisierung.
+  Keine Quarantäne-/Gatekeeper-Umgehung. Windows-CMD nur vorbereitet, nicht getestet.
+- Website-App-Symbol/Manifest verwenden die TFB-Signature-Kachel ohne Ball,
+  App-Name `TF Bielstein`, Quelle `assets/brand/tfb-app-icon-source.png`.
+- Rückkehr aus Fokus lädt lokale Daten/Bilder frisch; der ausgeblendete Elternbereich
+  schreibt währenddessen keine veralteten automatischen Sicherungen.
+- Feature-Überschriften halten einzelne Wörter zusammen. Resize-/Render-/Font-Laden
+  passt die Schrift nur bei Bedarf an das längste Wort an. „Tennisfreunde“ wird nicht
+  mehr vor dem letzten e getrennt, auch bei engen Desktop-Spalten und mobilen Größen.
+- Foto-Randfix: Galerie-Einzelfoto nach tatsächlich verfügbarer Bühnenbreite statt
+  `94vw`, kein horizontaler Überlauf. Nur eingebettete Fokus-Seite blendet die äußere
+  Scrollleiste aus; Browser-Fokusrahmen hat dunklen Hintergrund. Foto-Wechsel bleibt.
+- Einladungen: Mo–So vor dem Datum, nächstes passendes Kalenderdatum automatisch
+  (heute nur bei noch bevorstehender gewählter Uhrzeit). Späterer Serienstart muss
+  denselben Wochentag haben; explizite Prüfung auch beim Speichern. Einzel/Doppel
+  nutzen die Datumshilfe, erlauben aber jedes manuell gewählte Datum und synchronisieren
+  die Tagesauswahl. Seriendetails zeigen oben ein eigenes schreibgeschütztes Feld
+  Wochentag, z. B. Mittwoch; Rhythmustext bleibt. Uhrzeit/Ort/Vorlauf bleiben erhalten,
+  bestehende Serien und bereits verschickte Termine werden nicht migriert.
+
+Letzte erfolgreiche Prüfungen: `test-browser-focus.mjs` (einschließlich Fokus-Fotos,
+F-Schrift/Abstände, iPhone/iPad-Ausschluss und Wortumbruch), `test-browser-meet-weekdays.mjs`
+(Serienstart/Details/Speichern, Einzel/Doppel, Mobil, Zeitumstellung),
+`test-browser-gallery.mjs` und `test-browser-overview.mjs`. Isolierte Chromium-Profile,
+synthetische Daten; keine Änderung privater Chrome-Inhalte. Größenprüfung ist keine
+vollständige Prüfung echter iOS-Geräte. Frühere Backup-/Node-Prüfstände unten bleiben
+historisch, wurden beim abschließenden Dokumentationsauftrag nicht erneut ausgeführt.
+
+Nächster Schritt ausschließlich auf neuen Nutzerauftrag. Technische Folgeaufgaben
+aus der Prüfung vom 12.10. bleiben offen; keine Livefreigabe dadurch. Praktische
+Startwege, Dateien und Testbefehle: `docs/UEBERGABE.md` ganz oben.
+
+## Früherer Chatabschluss 13.10.2026 (v165, historisch)
+
+Auf Nutzerwunsch Projektgedächtnis und Übergabe nach ausdrücklicher Abnahme der
+letzten Anpassungen aktualisiert: „Gefällt mir sehr gut alles jetzt.“ Aktueller
+lokaler Stand enthält die nachfolgenden Layoutkorrekturen und Playwright-Einrichtung;
+Cache-Bezeichnung weiterhin `tfb-kiosk-v165`. Nur Dokumentation bei diesem Abschluss.
+Die konsolidierte Übergabe steht ganz oben in
+`docs/UEBERGABE.md` und hat Vorrang vor den historischen Zwischenständen weiter unten.
+
+Fertig: Galerie/Collage auf Home/Aktuell, optionaler Text oben/unten, Datum,
+gemeinsames Vollbild-Blättern, direktes Foto-Verschieben mit Live-Entwurfsanzeige,
+Bleistifte oben/unten sowie „Alle Beiträge“ mit Suche/Filtern und direktem Sprungziel.
+Letzte Korrekturen: Abstand oberhalb der Aktuell-Spalten von 8 auf 12 und schließlich
+16px erhöht; Überschrift, Einleitung und Desktop-Button bleiben an ihrer Position.
+Mobil steht „Alle Beiträge“ rechts neben der jeweils sichtbaren Überschrift News
+oder Save the Date, untenbündig mit dem roten Strich. Auf Home im Standard-Look
+Wechselspiel sitzt der Button rechts untenbündig mit der 01. Desktop-Platzierung
+beibehalten. Automatisiert und visuell geprüft, vom Nutzer ausdrücklich abgenommen.
+Aktuell keine weiteren Anpassungen beauftragt; erst auf neue Nutzeranfrage weiterarbeiten.
+
+Playwright 1.64.0 und Chromium installiert; Entwicklungsabhängigkeit in `package.json`
+und `package-lock.json`. Alle drei Browser-Tests bestanden: Seitenübersicht,
+Galerie/Collage und Foto-Sicherung. Positionsprüfung auf 1280/500/390/320px, beide
+mobilen Aktuell-Tabs und Home-Nummer/Button-Unterkante eingeschlossen.
+Aus `tfb-kiosk`: `npm run test:browser`; Einzelbefehle siehe Übergabe.
+
+Anwendung liegt im Unterordner `tfb-kiosk`, nicht in der separaten Padel-Kopie.
+Arbeitsänderungen seit Sicherungstag v160 sind lokal uncommittet; keine neue
+Veröffentlichung, kein neuer Git-Sicherungstag und keine neue JSON-Inhaltssicherung
+bei diesem Abschluss. Vorhandene Nutzeränderungen und `.claude/` bleiben erhalten.
+Prüfstände und betroffene Dateien sind in der konsolidierten Übergabe aufgeführt.
+
+## Frühere Weiterarbeit 13.10.2026 (historische Zwischenstände)
+
+**Layoutkorrektur v165:** Home-Übersichtsbutton oben rechts innerhalb der ersten
+Themenkachel auf der Hintergrund-/Textfläche statt in zusätzlicher Zeile davor.
+Aktuell-Button rechts im Seitenkopf, bündig unten mit der Einleitung; News und
+Save the Date beginnen wieder auf gleicher Höhe, Abstand zum Kopf reduziert.
+Übersicht weiterhin ausschließlich News, keine Termine. Desktop/Handy/320px anhand
+von Browser-Screenshots und Positionsprüfungen kontrolliert; 23 gezielte Tests bestanden.
+Keine Änderung gespeicherter Inhalte; lokaler uncommitteter Stand, Cache v165.
+
+**Erweiterung v164:** „Alle Beiträge“ für Home und ausschließlich die linke News-Spalte
+von Aktuell. Kompakte Übersicht im Chat-Look, in Seitenreihenfolge, mit Titel/Datum,
+Foto/Textauszug, Suche sowie Art-/Fotofilter. Gefüllte Galerien und Collagen eingeschlossen;
+Termine/Save the Date, Strukturüberschriften und ungespeicherte neue Bausteine ausgeschlossen.
+Ausgeschalteter Fotomodultext bleibt auch in der Übersicht unsichtbar. Klick springt
+direkt zum vorhandenen Seiteninhalt und aktiviert bei Aktuell die mobile News-Ansicht.
+Keine Änderung der Inhalte, Preise oder Sicherungsdaten. 51 Node-Tests und isolierter
+Desktop-/Handycheck mit 22 Einträgen pro Seite sowie Chat-Regression erfolgreich.
+Lokaler Stand, nicht committet/veröffentlicht; Sicherungstag v160 unverändert.
+
+**Erweiterung v163:** Bleistift zusätzlich am Seitenende, mit derselben Aktion wie oben
+und ohne Sprung nach oben beim unteren Seitenschalter. Direkte Foto-Sortierung am Bild
+oder Griff: Live-Umordnung bereits während des Ziehens, auch per Touch. Galerie/Collage
+zeigt auf der Seite sofort denselben ungespeicherten Entwurf. Erst „Speichern“ übernimmt
+die neue Reihenfolge; abgebrochene Gesten setzen sie zurück. Details in der Übergabe.
+
+**Erweiterung v162:** Eigenständige Collage zusätzlich zur Galerie auf Home/Aktuell.
+Beide Module mit Datum, Überschrift und optionalem Text oberhalb oder unterhalb der Bilder;
+Pfeile verschieben die Module auf der Seite. Bilder im Editor am Griff mit Maus/Touch
+direkt sortieren, zusätzlich Pfeile und Tastatur. Bestehende Galerien behalten Textposition
+unten, Daten unverändert. 49 Tests sowie isolierter Desktop-/Handycheck erfolgreich,
+einschließlich Maus-/Touch-Ziehen und gespeicherter Modulreihenfolge. Details in der Übergabe.
+
+Auf neuen Nutzerauftrag lokaler Arbeitsstand **v161**: Galeriebaustein für Home und Aktuell
+mit optionalem Datum im Artikel-Look und ausblendbarem Fließtext darunter. Ausblenden
+erhält den gespeicherten Text. Home bekommt einen eigenen Galerie-Hinzufügen-Knopf;
+vorhandener Aktuell-Baustein wird erweitert. Klick öffnet das gewählte Foto im gleichen
+blätterbaren Betrachter wie die Home-Unterseiten/50-Jahre-Kollage. Genau bestehendes
+Klick-/Pfeil-/Tastatur-/Wischverhalten, keine zweite Viewer-Implementierung.
+48 Tests erfolgreich sowie isolierte Desktop-/Handyprüfung mit Speicher-/Neuladetest.
+Kein Commit/Push; Sicherungstag v160 bleibt der letzte eingefrorene Stand.
+
 ## Verbindlicher Tagesabschluss 12.10.2026
 
 Aktueller freigegebener Stand **v160**, Katalogversion 13, lokaler Sicherungstag
@@ -978,3 +1253,23 @@ Monatsabschluss.
   Flutlicht/Gastspieler ergänzt und Spezialitäten/Snacks getrennt (v160). Nutzer bestätigt
   alles und beendet den Arbeitstag. Eingefroren als `stand-2026-10-12-v160`, nur lokal.
   46 Tests erfolgreich; nächste Arbeiten nur auf neuen Auftrag, offene Risiken siehe Übergabe.
+- **13.10.2026 – Abschluss nach Layout-Abnahme und Playwright-Einrichtung:** Aktuell-
+  Spaltenabstand schrittweise 8 → 12 → 16px. Mobile Übersichtsbuttons an die sichtbare
+  Spaltenüberschrift gebunden, rechts und untenbündig mit deren rotem Strich, unterhalb
+  der News/Save-the-Date-Auswahl. Home im Wechselspiel rechts untenbündig mit der 01;
+  Zahl weiterhin links. Desktop-Positionen erhalten. Playwright 1.64.0 mit Chromium
+  im Projekt installiert, wiederholbare Installation und Testbefehle in den neuen
+  `package.json`/`package-lock.json`. Alle drei Browser-Tests erfolgreich, Screenshots
+  kontrolliert; Übersichtstest um 500px sowie beide mobilen Tabs und Unterkanten ergänzt.
+  Nutzer: „Gefällt mir sehr gut alles jetzt“, keine weiteren Anpassungen. Nur lokale
+  Änderungen; kein Commit, Tag, Push, Deployment oder neue JSON-Sicherung. Cache-Bezeichnung
+  bleibt v165, technische Folgeaufgaben aus früherer Prüfung weiterhin offen.
+- **13.10.2026 – Folgeabschluss v175:** Desktop-Fokus mit dezentem F links neben der
+  Klingel; auf iPhone/iPad/Android ausdrücklich kein F. Installationsstreifen und
+  Kontozugänge wieder entfernt, native öffentliche Installation zurückgestellt.
+  Mac-Desktop-/Vorführknöpfe lokal erstellt; ad-hoc-Paketprüfung ersetzt keine
+  Apple-Notarisierung. Wortumbruch von Feature-Titeln und Fotoüberlauf/heller
+  Fokus-Rand korrigiert. Wochentagsauswahl Mo–So für Einladungen, späterer Start
+  desselben Serientags und eigenes Wochentagsfeld in Details. Fokus-/Einladungs-/
+  Galerie-/Übersichtstests positiv. Projektgedächtnis und Übergaben aktualisiert,
+  kein Commit/Push/Deployment/neuer Tag/JSON-Export. Aktueller Abschnitt oben gilt.

@@ -7,10 +7,12 @@ import { test } from 'node:test';
 const root = new URL('../', import.meta.url);
 async function setup() {
   const storage = new Map();
-  const context = { console, crypto: webcrypto, TextEncoder, setTimeout, clearTimeout,
+  const context = { console, crypto: webcrypto, TextEncoder, setTimeout, clearTimeout, Event,
     location: { hash: '#home' }, addEventListener() {},
-    document: { addEventListener() {}, getElementById() { return null; }, querySelector() { return null; }, body: {} },
+    document: { addEventListener() {}, dispatchEvent() {}, fonts: { ready: Promise.resolve() }, getElementById() { return null; }, querySelector() { return null; },
+      createElement() { return { innerHTML: '', get textContent() { return this.innerHTML.replace(/<[^>]*>/g, ''); } }; }, body: {} },
     MutationObserver: class { observe() {} },
+    ResizeObserver: class { observe() {} unobserve() {} }, requestAnimationFrame() { return 1; },
     localStorage: { getItem: k => storage.get(k) || null, setItem: (k,v) => storage.set(k,v), removeItem: k => storage.delete(k) } };
   context.window = context;
   vm.createContext(context);
@@ -33,6 +35,137 @@ async function setup() {
   vm.runInContext(readFileSync(new URL('assets/js/site.js', root), 'utf8'), context);
   return { context, api, opened, storage };
 }
+
+test('Home and Aktuell overview includes twenty news items but no dates or structural blocks', async () => {
+  const { context, api } = await setup();
+  const site = await api.site();
+  for (const key of ['home', 'aktuell']) {
+    site.pages[key].blocks = Array.from({ length: 20 }, (_, i) => ({ id: `${key}-${i}`, type: 'post', title: `Bericht ${i + 1}`, date: '2026-10-13', text: 'Unser Bericht' }));
+    site.pages[key].blocks.push({ id: key + '-heading', type: 'heading', title: 'Termine' }, { id: key + '-event', type: 'event', title: 'Nur Save the Date', date: '2026-10-20' });
+  }
+  await api.saveSite(site);
+  for (const key of ['home', 'aktuell']) {
+    context.location.hash = `#${key}/alle`;
+    const html = await context.TFB.views[key]();
+    assert.match(html, /Alle Beiträge/);
+    assert.match(html, /20 Beiträge/);
+    assert.equal((html.match(/class="mini"/g) || []).length, 20);
+    assert.doesNotMatch(html, /Nur Save the Date|>Termine</);
+    assert.match(html, new RegExp(`href="#${key}/beitrag/${key}-19"`));
+    context.location.hash = `#${key}/beitrag/${key}-19`;
+    const page = await context.TFB.views[key]();
+    assert.match(page, new RegExp(`data-site-content="${key}-19"`));
+    assert.match(page, /Bericht 20/);
+  }
+});
+
+test('Overview includes populated photo modules, preserves order and excludes hidden gallery text', async () => {
+  const { context, api } = await setup();
+  const site = await api.site();
+  const image = 'assets/images/board/kai-eichmann.jpg';
+  site.pages.home.blocks = [
+    { id: 'feature-a', type: 'feature', title: 'Unser Thema', image, text: 'Ein Thema' },
+    { id: 'gallery-a', type: 'gallery', title: 'Galerie A', images: [image], text: 'Privater Entwurf', showText: false },
+    { id: 'collage-a', type: 'collage', title: 'Collage A', images: [image], text: 'Sichtbarer Text' },
+    { id: 'empty-a', type: 'gallery', title: 'Noch leer', images: [] },
+    { id: 'new-a', type: 'post', title: 'Ungespeichert', _new: true },
+  ];
+  await api.saveSite(site);
+  context.location.hash = '#home/alle';
+  const html = await context.TFB.views.home();
+  assert.match(html, /3 Beiträge/);
+  assert.ok(html.indexOf('beitrag/feature-a') < html.indexOf('beitrag/gallery-a'));
+  assert.ok(html.indexOf('beitrag/gallery-a') < html.indexOf('beitrag/collage-a'));
+  assert.doesNotMatch(html, /Privater Entwurf|Noch leer|Ungespeichert/);
+  assert.match(html, /Sichtbarer Text/);
+});
+
+test('Home and Aktuell share galleries with optional article date and preserved hidden text', async () => {
+  const { context, api, storage } = await setup();
+  const site = await api.site();
+  const images = ['assets/images/board/kai-eichmann.jpg', 'assets/images/board/thomas-heine.jpg'];
+  for (const key of ['home', 'aktuell']) site.pages[key].blocks.push({id:'gallery-' + key,type:'gallery',title:'Unser Sommer',date:'2026-10-13',images,text:'Unser eigener Galerietext',showText:false});
+  await api.saveSite(site);
+  for (const key of ['home', 'aktuell']) {
+    const html = await context.TFB.views[key]();
+    assert.match(html, /block-gallery has-date/);
+    assert.match(html, /class="date-badge"/);
+    assert.match(html, /<time datetime="2026-10-13">13. Oktober 2026<\/time>/);
+    assert.doesNotMatch(html, /Unser eigener Galerietext/);
+    assert.equal((html.match(/data-action="gallery-open"/g) || []).length, 2);
+  }
+  assert.equal(JSON.parse(storage.get('tfb_kiosk_demo_v1')).site.pages.home.blocks.at(-1).text, 'Unser eigener Galerietext');
+  for (const key of ['home', 'aktuell']) site.pages[key].blocks.at(-1).showText = true;
+  await api.saveSite(site);
+  vm.runInContext(readFileSync(new URL('assets/js/site.js', root), 'utf8'), context);
+  for (const key of ['home', 'aktuell']) {
+    const html = await context.TFB.views[key]();
+    assert.ok(html.indexOf('class="gallery-text"') > html.indexOf('class="gallery-grid"'));
+    assert.match(html, /Unser eigener Galerietext/);
+  }
+  site.pages.home.blocks.at(-1).images = Array(101).fill(images[0]);
+  await assert.rejects(api.saveSite(site), /100 Bilder/);
+});
+
+test('collage modules and galleries preserve chosen text order on Home and Aktuell', async () => {
+  const { context, api, storage } = await setup();
+  const site = await api.site();
+  for (const key of ['home', 'aktuell']) {
+    for (const type of ['gallery', 'collage']) site.pages[key].blocks.push({
+      id: `${key}-${type}`, type, title: 'Bilder vom Club', date: '2026-10-13',
+      images: Array(5).fill('assets/images/board/kai-eichmann.jpg'),
+      text: 'Unser Text davor', textPosition: 'above', showText: true,
+    });
+  }
+  await api.saveSite(site);
+  for (const key of ['home', 'aktuell']) {
+    const html = await context.TFB.views[key]();
+    assert.match(html, /block-collage has-date/);
+    assert.match(html, /collage module-collage collage-5/);
+    for (const section of html.matchAll(/<section class="block-gallery[\s\S]*?<\/section>/g)) {
+      assert.ok(section[0].indexOf('Unser Text davor') < section[0].indexOf('class="gallery-media"'));
+    }
+    site.pages[key].blocks.filter(b => ['gallery', 'collage'].includes(b.type)).forEach(b => { b.textPosition = 'below'; });
+  }
+  await api.saveSite(site);
+  vm.runInContext(readFileSync(new URL('assets/js/site.js', root), 'utf8'), context);
+  for (const key of ['home', 'aktuell']) {
+    const html = await context.TFB.views[key]();
+    for (const section of html.matchAll(/<section class="block-gallery[\s\S]*?<\/section>/g)) {
+      assert.ok(section[0].indexOf('Unser Text davor') > section[0].indexOf('class="gallery-media"'));
+    }
+  }
+  assert.equal(JSON.parse(storage.get('tfb_kiosk_demo_v1')).site.pages.aktuell.blocks.at(-1).textPosition, 'below');
+  site.pages.aktuell.blocks.at(-1).images = Array(101).fill('assets/images/board/kai-eichmann.jpg');
+  await assert.rejects(api.saveSite(site), /100 Bilder/);
+});
+
+test('gallery opens the clicked photo and uses collage navigation, wraparound and keys', async () => {
+  const { context, api } = await setup();
+  const site = await api.site();
+  site.pages.home.blocks.push({id:'test-gallery',type:'gallery',images:['img:missing',...Array(3).fill('assets/images/board/kai-eichmann.jpg')]});
+  await api.saveSite(site);
+  await context.TFB.views.home();
+  const handlers = {};
+  let onKey;
+  const box = {innerHTML:'',classList:{add(){},remove(){}},addEventListener:(name, handler)=>{handlers[name]=handler;},remove(){}};
+  context.document.createElement = () => box;
+  context.document.addEventListener = (name, handler) => { if (name === 'keydown') onKey = handler; };
+  context.document.removeEventListener = () => {};
+  context.document.body = {appendChild(){},classList:{add(){},remove(){}}};
+  context.requestAnimationFrame = fn => fn();
+  context.TFB.actions['gallery-open']({dataset:{block:'test-gallery',index:'2'}});
+  assert.match(box.innerHTML, /3 \/ 3/);
+  const target = selectors => ({closest: selector => selectors[selector] || null});
+  handlers.click({target:target({'.gal-single':{}})});
+  assert.match(box.innerHTML, /1 \/ 3/);
+  onKey({key:'ArrowLeft'});
+  assert.match(box.innerHTML, /3 \/ 3/);
+  handlers.click({target:target({'[data-gstep]':{dataset:{gstep:'-1'}}})});
+  assert.match(box.innerHTML, /2 \/ 3/);
+  handlers.click({target:target({'[data-gback]':{}})});
+  assert.equal((box.innerHTML.match(/data-gi=/g) || []).length, 3);
+});
 
 test('community starts empty and removes only former example posts on every reload', async () => {
   const { context, storage } = await setup();

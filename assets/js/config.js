@@ -5,7 +5,7 @@ window.TFB = window.TFB || {};
 TFB.config = {
   clubName: 'Tennisfreunde Bielstein',
   clubShort: 'TFB',
-  appName: 'TFB-Kiosk',
+  appName: 'TF Bielstein',
 
   // 'demo' = alle Daten bleiben auf diesem Gerät (bis Supabase verfügbar ist).
   backend: 'demo',
@@ -14,7 +14,7 @@ TFB.config = {
   padelUrl: 'https://padel-bielstein.de',
 
   // Öffentliche Adresse nach der Veröffentlichung – für Einladungslinks in WhatsApp.
-  publicUrl: 'https://kiosk.joern-kaemper.de',
+  publicUrl: 'https://joern-kaemper.de',
 
   // Zusatzfunktionen, einzeln abschaltbar. treffen = Menüpunkt „Verabreden“ (Vorführung, assets/js/meet.js).
   features: { treffen: true },

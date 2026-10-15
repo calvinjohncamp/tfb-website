@@ -1,9 +1,14 @@
 // TFB-Kiosk – Service Worker.
 // Netz zuerst, damit Änderungen sofort ankommen; ohne Netz startet die App aus dem Zwischenspeicher.
-const CACHE = 'tfb-kiosk-v160';
+const CACHE = 'tfb-kiosk-v184';
 const SHELL = [
   './', './index.html', './manifest.webmanifest',
+  './praesentation.html', './assets/css/focus.css', './assets/js/focus.js',
+  './assets/js/presentation-icons.js', './assets/js/presentation.js', './assets/js/presentation-bridge.js',
+  './assets/icons/icon-512.png', './assets/icons/icon-maskable-512.png', './assets/icons/icon-180.png',
   './assets/css/brand.css', './assets/css/app.css',
+  './assets/css/design-preview.css', './assets/js/design-preview.js',
+  './assets/fonts/editorial/bricolage-grotesque.ttf', './assets/fonts/editorial/dm-sans.ttf',
   './assets/js/config.js', './assets/data/partners.js', './assets/data/teams.js', './assets/data/site-seed.js', './assets/js/partner-rotation.js', './assets/js/site.js', './assets/js/meet.js', './assets/js/demo-backend.js', './assets/js/brand-data.js', './assets/js/art.js', './assets/js/app.js',
   './assets/icons/favicon-64.png', './assets/icons/icon-192.png',
   './assets/js/membership.js',

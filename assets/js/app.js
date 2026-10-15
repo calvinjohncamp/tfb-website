@@ -67,7 +67,7 @@
   const avatarFace = (m) => (m.avatar ? `<img src="${esc(m.avatar)}" alt="">` : esc(initials(m)));
 
   // ---------- Erscheinungsbild (fest) ----------
-  // Markenfarbe Anthrazit und Schrift Avenir Next sind gesetzt – keine Umschalter mehr in der App.
+  // Unveränderte Basis; die lokale Home/Chat-Vorschau überschreibt nur ihre eigene CSS-Schicht.
   const BRAND = '#2A2D2E';
   const FONT = '"Avenir Next", Avenir, -apple-system, "Segoe UI", sans-serif';
   document.documentElement.style.setProperty('--brand', BRAND);
@@ -277,12 +277,18 @@
     $app.innerHTML = `
       <header class="topbar">
         <div class="topbar-row">
-          <a class="brand" href="#home" aria-label="${esc(cfg.clubName)} – Startseite">
+          <div class="brand brand-preview-wrap">
+          <a class="brand-home" href="#home" aria-label="${esc(cfg.clubName)} – Startseite">
             <span class="tfb-logo-split header-logo" role="img" aria-label="${esc(cfg.clubName)}"><span class="tfb-logo-noball"></span><span class="tfb-logo-ball"></span></span>
           </a>
-          ${state.member
-            ? `<div class="top-actions">${TFB.inbox ? TFB.inbox.button() : ''}<button class="avatar" type="button" data-action="profile" aria-label="Profil">${avatarFace(state.member)}</button></div>`
-            : `<button class="avatar guest" type="button" data-action="login" aria-label="Anmelden">${icon.user}</button>`}
+          <button type="button" class="brand-world-switch" data-design-preview aria-label="Gestaltung wechseln" aria-pressed="false"></button>
+          </div>
+          <div class="top-actions">
+            <div class="header-tools">${TFB.focus?.headerButton() || ''}${state.member && TFB.inbox ? TFB.inbox.button() : ''}</div>
+            ${state.member
+              ? `<button class="avatar" type="button" data-action="profile" aria-label="Profil">${avatarFace(state.member)}</button>`
+              : `<button class="avatar guest" type="button" data-action="login" aria-label="Anmelden">${icon.user}</button>`}
+          </div>
         </div>
         <nav class="topnav" aria-label="Bereiche">${navLinks(area)}</nav>
       </header>
@@ -302,13 +308,18 @@
     const act = document.querySelector('.topbar .top-actions') || document.querySelector('.topbar-row > .avatar');
     const tab = document.querySelector('.topnav .tab');
     if (!act || !tab) return;
+    const cs = getComputedStyle(tab);
+    const focusButton = act.querySelector('.header-focus');
+    if (focusButton) {
+      focusButton.style.fontSize = `${parseFloat(cs.fontSize) * .9}px`;
+      focusButton.style.fontWeight = '600';
+    }
     act.style.transform = '';
     if (window.innerWidth < 1024) return;
     // Grundlinie direkt an der Schrift: Oberkante der Textzeile + Oberlänge der Schrift
     const range = document.createRange();
     range.selectNodeContents(tab);
     const line = range.getBoundingClientRect();
-    const cs = getComputedStyle(tab);
     const ctx = document.createElement('canvas').getContext('2d');
     ctx.font = `${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
     const baseline = line.top + ctx.measureText(tab.textContent).fontBoundingBoxAscent;
@@ -388,6 +399,7 @@
   }
 
   async function renderView(view = currentView()) {
+    TFB.designPreview?.apply();
     const $view = document.getElementById('view');
     if (!$view) return;
     try {
@@ -397,6 +409,19 @@
         const body = view === 'kiosk' ? await kioskView() : view === 'strichliste' ? await tallyView() : await statementsView();
         $view.innerHTML = body;
       } else if (TFB.views && TFB.views[view]) $view.innerHTML = await TFB.views[view]();
+      if (state.member?.isAdmin) {
+        const edit = $view.querySelector('.view-close[data-action="site-edit"], .view-close[data-action="edit-start"], .view-close[data-action="feature-edit"], .view-close[data-action="album-edit"], .view-close[data-action="portrait-edit"], .view-close[data-action="chat-text-edit"]');
+        if (edit) {
+          const tools = document.createElement('div');
+          tools.className = 'page-bottom-tools';
+          const button = edit.cloneNode(true);
+          button.dataset.keepScroll = '1';
+          button.title = button.getAttribute('aria-label') || 'Bearbeiten';
+          tools.appendChild(button);
+          $view.appendChild(tools);
+        }
+      }
+      TFB.scrollToSiteContent?.();
     } catch (err) {
       $view.innerHTML = `<div class="card error-card"><h2>Das hat nicht geklappt</h2><p>${esc(err.message)}</p></div>`;
     }
@@ -637,7 +662,7 @@
           <span class="muted">${esc(monthName(open.month))}</span>
         </div>
         <strong class="month-amount">${euro(open.totalCents)}</strong>
-        <p class="muted">${strokesWord(open.items.length)} · Einzug am ${esc(nextMonthDebit(open.month))} per SEPA-Lastschrift</p>
+        <p class="muted">Einzug am ${esc(nextMonthDebit(open.month))}</p>
         ${groups.size ? [...groups.values()].map((g) => `
           <div class="day">
             <h3>${esc(g.label)}</h3>
@@ -857,7 +882,7 @@
 
   // ---------- Profil ----------
   // Account-Karte – Aufbau nach dem Vorbild der Padel-App: Profilbild, Name, Mitgliedschaft,
-  // eigene Angaben und Einstellungen; Admin-Bereich (Mitgliederliste, Sichern, Foto-Freigaben) und „Als App aufs Handy“ ganz unten.
+  // nächstes zugesagtes Match, eigene Angaben und Einstellungen; Admin-Bereich ganz unten.
   async function openProfile() {
     const m = state.member;
     let open = null;
@@ -865,6 +890,8 @@
     const today = dayKey(new Date().toISOString());
     const todayCents = open ? open.items.filter((i) => dayKey(i.createdAt) === today).reduce((s, i) => s + i.priceCents, 0) : 0;
     const consentDate = m.consentedAt ? new Date(m.consentedAt).toLocaleDateString('de-DE', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
+    const nextMatch = TFB.meet?.nextMatch(m.id);
+    const matchDate = nextMatch ? new Date(`${nextMatch.date}T12:00:00`).toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'long', ...(nextMatch.date.slice(0, 4) !== String(new Date().getFullYear()) ? { year: 'numeric' } : {}) }) : '';
     const row = (on, title, sub) => `
       <div class="acct-row">
         <span class="acct-check ${on ? 'on' : ''}" aria-hidden="true">${on ? icon.check : ''}</span>
@@ -893,11 +920,23 @@
             : 'Noch nicht freigeschaltet – beim ersten Besuch im Kiosk einmal zustimmen.')}
         </section>
 
+        ${TFB.meet ? `<section class="acct-next-match" aria-label="Nächstes Match">
+          <h3>Nächstes Match</h3>
+          ${nextMatch ? `<p>Dein nächstes Match startet am <strong>${esc(matchDate)}</strong> um <strong>${esc(nextMatch.time)} Uhr</strong>.</p>
+            <small>${esc(nextMatch.title)}${nextMatch.place ? ` · ${esc(nextMatch.place)}` : ''}${nextMatch.missing ? ` · Noch ${nextMatch.missing} ${nextMatch.missing === 1 ? 'Platz frei' : 'Plätze frei'}` : ''}</small>
+            <a href="#treffen/${esc(nextMatch.id)}" data-action="close-sheet">Details ansehen <span aria-hidden="true">→</span></a>`
+            : '<p class="muted">Aktuell hast du kein zugesagtes Match.</p>'}
+        </section>` : ''}
+
         ${open ? `
-        <section class="acct-stats">
+        <section class="acct-kiosk" aria-label="Kiosk-Umsätze">
+          <h3 class="acct-section">Kiosk-Umsätze</h3>
+          <div class="acct-stats">
           <a href="#kiosk" data-action="close-sheet"><small>Heute</small><b>${euro(todayCents)}</b></a>
           <a href="#abrechnungen" data-action="close-sheet"><small>${esc(monthName(open.month, false))}</small><b>${euro(open.totalCents)}</b></a>
           <a href="#abrechnungen" data-action="close-sheet"><small>Einzug</small><b>${esc(nextMonthDebit(open.month).replace(/(\d+)\. (\w{3})\w*/, '$1. $2'))}</b></a>
+          </div>
+          <a class="acct-details" href="#abrechnungen" data-action="close-sheet">Details ansehen <span aria-hidden="true">→</span></a>
         </section>` : ''}
 
         <form class="acct-card acct-form" data-account-form novalidate>
@@ -911,6 +950,10 @@
           <label class="field"><span>Handynummer <em>freiwillig</em></span><input name="phone" type="tel" inputmode="tel" value="${esc(m.phone)}" placeholder="z. B. 0170 1234567"></label>
 
           <h3 class="acct-section">Benachrichtigungen</h3>
+          <label class="field"><span>Klingel</span><select name="groupChatNotices">
+            <option value="off" ${m.groupChatNotices ? '' : 'selected'}>Nur Einladungen</option>
+            <option value="on" ${m.groupChatNotices ? 'selected' : ''}>Einladungen und Gruppenbeiträge</option>
+          </select></label>
           <label class="acct-pref"><input type="checkbox" name="infoMails" ${m.infoMails !== false ? 'checked' : ''}>
             <span><strong>E-Mail-Benachrichtigungen vom Club</strong><em>Termine, Turniere, Platzsperrungen zusätzlich per E-Mail. In der App stehen sie ohnehin unter Aktuell und im Chat. Abrechnungen bekommst du unabhängig davon.</em></span></label>
           <label class="acct-pref"><input type="checkbox" name="openInvites" ${m.openInvites !== false ? 'checked' : ''}>
@@ -952,16 +995,6 @@
 
         <button type="button" class="btn block acct-logout" data-action="logout">Abmelden</button>
 
-        <section class="acct-install">
-          <span class="acct-install-icon" aria-hidden="true">${logo('ball', 'acct-install-ball')}</span>
-          <div>
-            <strong>Als App aufs Handy</strong>
-            <ol>
-              <li><b>iPhone:</b> unten auf <i>Teilen</i> tippen → <i>Zum Home-Bildschirm</i></li>
-              <li><b>Android:</b> Menü <i>⋮</i> → <i>App installieren</i></li>
-            </ol>
-          </div>
-        </section>
         ${api.mode === 'demo' ? '<button type="button" class="link center small" data-action="demo-reset">Demo-Daten zurücksetzen</button>' : ''}
       </div>`);
   }
@@ -1070,6 +1103,7 @@
         state.member = await api.updateProfile({
           firstName: acct.elements.firstName.value, lastName: acct.elements.lastName.value, email: acct.elements.email.value,
           phone: acct.elements.phone.value, infoMails: acct.elements.infoMails.checked, openInvites: acct.elements.openInvites.checked,
+          groupChatNotices: acct.elements.groupChatNotices.value === 'on',
         });
         toast(before !== state.member.email ? `Gespeichert – anmelden künftig mit ${state.member.email}` : 'Angaben gespeichert', true);
         refreshAvatars();
@@ -1268,8 +1302,9 @@
         toast(`Gesichert: ${Object.keys(data.images).length} Fotos – Datei liegt in „Downloads“`, true);
       } catch (err) { toast(err.message); } finally { el.disabled = false; }
     } else if (action === 'edit-start') {
+      const y = window.scrollY;
       state.editMode = true;
-      if (currentView() === 'kiosk') renderView(); else location.hash = '#kiosk';
+      if (currentView() === 'kiosk') { await renderView(); if (el.dataset.keepScroll) window.scrollTo(0, y); } else location.hash = '#kiosk';
     } else if (action === 'edit-done') {
       state.editMode = false;
       renderView();
@@ -1341,9 +1376,9 @@
   });
 
   // Schnittstelle für die Vereinsseiten (site.js)
-  TFB.ui = { state, api, cfg, esc, icon, logo, viewHead, partnerSlot, openSheet, closeSheet, toast, renderView, currentView, loadImage, largeImage, openLightbox, openAvatarCropper };
+  TFB.ui = { state, api, cfg, esc, icon, logo, viewHead, partnerSlot, openSheet, closeSheet, toast, renderView, currentView, loadImage, largeImage, openLightbox, openAvatarCropper, refreshAvatars };
 
-  if ('serviceWorker' in navigator && location.protocol === 'https:') {
+  if ('serviceWorker' in navigator && (location.protocol === 'https:' || ['localhost', '127.0.0.1', '[::1]'].includes(location.hostname))) {
     navigator.serviceWorker.register('sw.js').catch(() => {});
   }
 
