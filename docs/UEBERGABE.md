@@ -1,6 +1,6 @@
 # TFB – Übergabe für die nächste Sitzung
 
-**Aktueller Stand: 15.10.2026, Strichlisten-Feinschliff v199.** Grundlage ist der
+**Aktueller Stand: 15.10.2026, Strichlisten-Feinschliff v200.** Grundlage ist der
 vom Nutzer bestätigte Vorführstand v196 für die Vorstandspräsentation. Dies ist die aktuelle
 Arbeitsgrundlage, keine Freigabe für den produktiven Vereinsbetrieb.
 Ausführlicher Verlauf: [PROJEKTGEDAECHTNIS.md](PROJEKTGEDAECHTNIS.md).
@@ -10,8 +10,8 @@ Die folgende Zusammenfassung hat Vorrang vor den historischen Zwischenständen.
 
 - Website: https://joern-kaemper.de/ – DNS-Prüfung erfolgreich, HTTPS erzwungen.
   `www` zeigt per CNAME auf `calvinjohncamp.github.io`; Mail-Einträge bleiben erhalten.
-- Ausgelieferter Quellstand `8fda7c8`, Service-Worker `tfb-kiosk-v199`;
-  GitHub-Pages-Veröffentlichung erfolgreich (Workflow-Lauf `38775160695`).
+- Ausgelieferter Quellstand `9c08cc8`, Service-Worker `tfb-kiosk-v200`;
+  GitHub-Pages-Veröffentlichung erfolgreich (Workflow-Lauf `38775667650`).
 - Repository `calvinjohncamp/tfb-website`, lokaler Projektordner `tfb-kiosk`.
   GitHub ist öffentlich; private Mitgliederdaten, Meldelisten, Sicherungen und
   Schlüssel gehören niemals in Git oder das Pages-Paket.
@@ -34,7 +34,7 @@ Die folgende Zusammenfassung hat Vorrang vor den historischen Zwischenständen.
   einer linken Namensspalte; alle fünf Kategorien bleiben rechts daneben.
   Getränkestriche sind wie alle anderen Striche mittig unter der Überschrift.
   Getränke bleiben breiter; auf Handybreite umbrechen Bündel innerhalb der
-  Spalte, ohne zusammengequetscht zu werden. Überschriften: Getränke ausgeschrieben, Kranz (auch auf Desktop),
+  Spalte, ohne zusammengequetscht zu werden. Überschriften: Getränke ausgeschrieben, Kränze (auch auf Desktop),
   Snacks, Spiel, Equip. Mobile Spielernamen um 2px größer (15,6px bzw.
   14,8px auf den kleinsten Displays). Sehr lange Namen dürfen innerhalb ihrer Spalte umbrechen.
   Alte, widersprüchliche Strichlisten-Regeln in app.css zusammengeführt.

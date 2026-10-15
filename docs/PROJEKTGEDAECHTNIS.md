@@ -4,7 +4,7 @@ Für den schnellen Einstieg zuerst die kurze **[UEBERGABE.md](UEBERGABE.md)** le
 Diese Datei enthält alle Entscheidungen, Konzepte, offenen Punkte und den Verlauf.
 Neues bitte unten bei „Verlauf“ ergänzen.
 
-**Aktueller Stand 15.10.2026:** Strichlisten-Feinschliff v199 auf Grundlage des
+**Aktueller Stand 15.10.2026:** Strichlisten-Feinschliff v200 auf Grundlage des
 vom Nutzer bestätigten Vorführstands v196. Verbindlicher Kurzstand und Betriebsgrenzen stehen in
 [UEBERGABE.md](UEBERGABE.md); der Abschluss ist unten dokumentiert. Frühere
 Versions- und Veröffentlichungsaussagen sind historische Zwischenstände.
@@ -1437,3 +1437,12 @@ Kränze/Kr. und mobile Spielernamen um 2px vergrößert. Equipment bleibt
 mit Equip. als mobiler Kurzform erhalten. Zentrierung und Spaltenaufteilung
 bleiben bestehen. Layouttest auf 15 Displaybreiten erfolgreich, 390px und
 320px visuell geprüft. Quellstand 8fda7c8, Pages-Lauf 38775160695.
+
+
+## Kränze wieder ausgeschrieben – 15.10.2026 (v200)
+
+Nutzer korrigiert Kranz wieder zu Kränze, größere mobile Namensschrift bleibt.
+Kränzespalte mobil minimal verbreitert, übrige Spalten entsprechend angepasst;
+Namensspalte bleibt mindestens 76px breit. Layouttest auf allen 15 Breiten
+bestanden, kleinste Ansicht visuell geprüft. Quellstand 9c08cc8,
+Pages-Lauf 38775667650.
