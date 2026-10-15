@@ -33,11 +33,11 @@ TFB.config = {
   debitDayOfMonth: 5,    // Lastschrift-Einzug für den Vormonat
 
   // Version der Einwilligung. Bei Textänderung hochzählen, dann stimmen alle neu zu.
-  consentVersion: 'tfb-kiosk-v1',
+  consentVersion: 'tfb-kiosk-v2',
   consentPoints: [
     'Ich nutze den TFB-Kiosk statt der Papier-Strichliste.',
     'Meine Striche werden am Monatsende zusammengerechnet und vom Verein über mein bestehendes SEPA-Lastschriftmandat eingezogen.',
-    'Wie bisher auf der Strichliste sehen angemeldete Mitglieder, wer in den letzten 7 Tagen etwas genommen hat – nur Name und Anzahl der Striche, keine Beträge.',
+    'Die bisherige Strichliste bleibt erhalten – angemeldete Mitglieder sehen wie bisher, was in den vergangenen 7 Tagen im Kiosk passiert ist – es erscheinen dort nur die Namen und Anzahl der Striche, keine Beträge.',
     'Meine Monatsabrechnungen sehe nur ich und der Kassenwart.',
   ],
 };
