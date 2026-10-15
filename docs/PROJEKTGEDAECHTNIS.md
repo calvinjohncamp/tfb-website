@@ -4,6 +4,11 @@ Für den schnellen Einstieg zuerst die kurze **[UEBERGABE.md](UEBERGABE.md)** le
 Diese Datei enthält alle Entscheidungen, Konzepte, offenen Punkte und den Verlauf.
 Neues bitte unten bei „Verlauf“ ergänzen.
 
+**Aktueller Abschluss 15.10.2026:** Nutzer bestätigt v196 für die
+Vorstandsvorführung. Verbindlicher Kurzstand und Betriebsgrenzen stehen in
+[UEBERGABE.md](UEBERGABE.md); der Abschluss ist unten dokumentiert. Frühere
+Versions- und Veröffentlichungsaussagen sind historische Zwischenstände.
+
 ## Entscheidung: Kühle Welt voreingestellt (v183)
 
 Nutzer bevorzugt die neue kühle Welt, insbesondere Menütypografie und einheitliche
@@ -1365,3 +1370,48 @@ kein Rechtewechsel. Verwaltungsaktionen an fremden Beiträgen/Kommentaren folgen
 ebenfalls der gewählten Ansicht. Eigene Beiträge bleiben für Mitglieder bearbeitbar.
 Profil-Import/Sicherung zunächst über den Ball sichtbar machen. Regression deckt
 Home/Kiosk, Sitzungsauffrischung, Neuladen und normale Mitglieder ohne Adminrechte ab.
+
+
+## Bestätigter Vorstandsvorführstand und Dokumentationsabschluss – 15.10.2026 (v196)
+
+Der Nutzer bestätigt den aktuellen Stand ausdrücklich als sehr zufriedenstellende
+Grundlage für die Vorstandspräsentation und beauftragt die Aktualisierung von
+Projektgedächtnis und Übergabe. Kein weiterer Funktionsumbau aus diesem Auftrag.
+Quellstand `78e526e`, Cache `tfb-kiosk-v196`, Pages-Lauf `38701695501` erfolgreich;
+Website unter https://joern-kaemper.de/ mit erzwungenem HTTPS erreichbar.
+Die aktuelle Übergabe fasst den Stand konsolidiert zusammen und hat Vorrang vor
+alten Zwischenständen, insbesondere „noch nicht veröffentlicht“, aufklappbarer
+Überschrift und immer sichtbaren Admin-Werkzeugen.
+
+Bestätigt sind Kiosk-Zustimmung v3 und saubere Namensumbrüche; weitere Einladungen
+im bestehenden Spiel, sichtbare Ersatzbank und spätere Absage auch des Einladenden;
+Chat mit dauerhaft sichtbarer freiwilliger Überschrift, eigenen Mannschaften,
+flachen Kommentaren mit bis zu drei Bildern und gebündelten Klingelhinweisen.
+Der rote Ball schaltet Admin-Werkzeuge auch bei geschütztem Login wieder ein/aus,
+nach Neuladen zunächst aus. Rollenprüfung bleibt serverseitig unverändert.
+Der Nutzer hat die Wiederherstellung seiner drei Chat-Beiträge mit acht Fotos
+bestätigt; aktuellen Browserstand erhalten, keine alte Sicherung erneut einspielen.
+
+Abgrenzung bleibt verbindlich: Nur Mitgliederzugang, geschützte Suche und eigene
+Mannschaftszuordnung liegen online in Cloudflare/D1. Kiosk, Beiträge, Kommentare,
+Bilder, Verabredungen und Klingel bleiben lokale Vorführung je Browser; keine
+gemeinsame Speicherung, echte Zustellung oder SEPA-Ausführung. Demo-Antworten
+bleiben aktiv. Private vollständige JSON-Sicherung schließt Bilder ein; dieser
+Dokumentationsabschluss erzeugt keinen neuen Export aus dem Browser.
+
+Cloudflare bleibt für die Vorführung im vorhandenen persönlichen Konto.
+Für späteren Vereinsbetrieb bevorzugt der Nutzer Supabase im vorhandenen
+Vereinsumfeld wegen der Padel-App; kein zusätzliches Cloudflare-Vereinskonto.
+Keine Migration, Datenbank-Zusammenlegung oder Änderung der Padel-App beauftragt.
+Klingel statt E-Mail bleibt gewünscht, Push bisher nur spätere Option.
+Vor Vereinsbetrieb gemeinsame Speicherung, Zugriffsrechte, Medien, Zustellung,
+Pflege, Sicherungen und Betriebszuständigkeiten gesondert umsetzen und abnehmen.
+38 nicht eindeutig zugeordnete Mannschaftsmeldungen bleiben zur privaten Klärung.
+
+Letzte Funktionsprüfungen: isolierte Browserregressionen für Admin-Schalter,
+Kommentare/Bilder/eigene Mannschaften, Chat-Wiederherstellung und schmale Ansichten;
+zugehörige Backend-/Sicherungsprüfungen erfolgreich. Keine physische Geräteabnahme.
+Dieser Abschluss betrifft nur Dokumentation, ohne erneute Code-Veröffentlichung,
+Migration oder Änderung privater Daten. Die zentralen Dateien unter `00 START HIER`
+gehören zur separaten Padel-Anwendung und bleiben unverändert.
+Der Nutzer kündigt ein neues Thema für beide Projekte an; Inhalt noch offen.

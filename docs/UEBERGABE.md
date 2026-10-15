@@ -1,40 +1,107 @@
 # TFB – Übergabe für die nächste Sitzung
 
-**Zuerst lesen.** Ausführlicher Verlauf: [PROJEKTGEDAECHTNIS.md](PROJEKTGEDAECHTNIS.md).
-Diese Zusammenfassung hat Vorrang vor älteren Zwischenständen.
+**Bestätigter Vorführstand: 15.10.2026, v196.** Der Nutzer ist mit dem aktuellen
+Stand für die Vorstandspräsentation sehr zufrieden. Dies ist die aktuelle
+Arbeitsgrundlage, keine Freigabe für den produktiven Vereinsbetrieb.
+Ausführlicher Verlauf: [PROJEKTGEDAECHTNIS.md](PROJEKTGEDAECHTNIS.md).
+Die folgende Zusammenfassung hat Vorrang vor den historischen Zwischenständen.
 
-## Aktuelle Korrekturen 15.10.2026 (v195)
+## Veröffentlichung und Projektgrenze
 
-Freiwillige Überschrift wieder dauerhaft sichtbar. Beitragseditor zeigt nur die
-eigenen Mannschaften als auswählbare zusätzliche Anzeige, keine Admin-Auswahl
-beliebiger Mannschaften. Eigene Zuordnung kommt geschützt aus D1 `member_teams`;
-Schema-Migration vor Worker-Update nötig. Private Daten nie veröffentlichen.
-Kommentare nun mit bis zu drei Bildern, Galerie, Bearbeiten und Einwilligung;
-weiterhin lokale Simulation. Ausführliche Pflegehinweise und offene Abgleiche
-stehen am Ende des Projektgedächtnisses. Ältere Aussage „aufklappbare Überschrift“
-ist damit aufgehoben.
+- Website: https://joern-kaemper.de/ – DNS-Prüfung erfolgreich, HTTPS erzwungen.
+  `www` zeigt per CNAME auf `calvinjohncamp.github.io`; Mail-Einträge bleiben erhalten.
+- Ausgelieferter Quellstand `78e526e`, Service-Worker `tfb-kiosk-v196`;
+  GitHub-Pages-Veröffentlichung erfolgreich (Workflow-Lauf `38701695501`).
+- Repository `calvinjohncamp/tfb-website`, lokaler Projektordner `tfb-kiosk`.
+  GitHub ist öffentlich; private Mitgliederdaten, Meldelisten, Sicherungen und
+  Schlüssel gehören niemals in Git oder das Pages-Paket.
+- Die separate Padel-App wird durch diesen Abschluss nicht verändert.
+  Ein neues gemeinsames Thema hat der Nutzer angekündigt, aber noch nicht benannt.
 
-## Kommentar-Vorführung 15.10.2026 (v194)
+## Bestätigte Bedienung und Funktionen
 
-Chat-Beiträge haben eine flache Kommentarebene in ihrer Einzelansicht; Einstieg
-über Sprechblase/Anzahl unter dem Beitrag. Nachricht zuerst, freiwillige
-Überschrift über aufklappbaren Link. Eigene Kommentare bearbeiten/löschen,
-Verwaltung kann andere entfernen. Neue Kommentare werden für den Beitragsautor
-je Beitrag in der Klingel gebündelt; eigener Text erzeugt keinen Hinweis.
-Gelesen-Status bleibt erhalten. Kommentare bleiben lokale Demo-Daten und gehören
-in den vollständigen privaten JSON-Export; kein Cloudflare-Kommentarserver und
-keine geräteübergreifende Zustellung. Späterer Vereinsbetrieb bevorzugt Supabase.
-Details/Abgrenzungen im Projektgedächtnis. Browserprüfung: Kommentare, Rechte,
-Moderation, Klingel, Persistenz, vorhandene Gruppenhinweise und Übersichten.
+- Kühle Gestaltung ist Standard, warme Gestaltung bleibt als Alternative erhalten.
+- Roter Ball: Admin-Werkzeuge sind nach Neuladen ausgeblendet; ein Klick blendet
+  sie ein, der nächste wieder aus. Das gilt auch bei Cloudflare-Anmeldung.
+  Serverseitige Berechtigungen bleiben unabhängig davon geprüft. Eigene Beiträge
+  und Kommentare bleiben für Mitglieder bearbeitbar. Sichern/Laden im Profil
+  wird für die Verwaltung ebenfalls über diesen Schalter sichtbar.
+- Kiosk: Zustimmungstexte gemäß letzter Nutzerfassung, Version `tfb-kiosk-v3`.
+  Die bekannte Strichliste zeigt angemeldeten Mitgliedern die vergangenen sieben
+  Tage mit Namen und Strichen, ohne Beträge. Monatsabrechnungen sind für das
+  Mitglied und den Kassenwart vorgesehen. Namen umbrechen zwischen Nach- und
+  Vorname; schmale Ansichten erhalten eine eigene Namenszeile.
+- Verabreden: Einladende können direkt im Spiel weitere Mitglieder einladen.
+  Zusagen über die Spielerzahl hinaus erscheinen auf der sichtbaren Ersatzbank.
+  Jeder Teilnehmer einschließlich Einladendem kann mit „Kann nicht“ später absagen,
+  bleibt unter „abgesagt“ sichtbar; der erste Ersatz rückt automatisch nach.
+- Chat: freiwilliges Überschriftenfeld dauerhaft sichtbar, Nachricht zuerst.
+  „Auch in meiner Mannschaft anzeigen“ bietet nur die eigenen Mannschaften an;
+  bei mehreren sind diese einzeln wählbar. Bestehende Beitragszuordnungen bleiben
+  beim Bearbeiten erhalten. Keine beliebige Admin-Mannschaftsauswahl im Editor.
+- Vollständiger Beitrag mit flachen Kommentaren über „Kommentieren“/Kommentarzahl.
+  Eigene Kommentare bearbeiten/löschen, Verwaltung kann fremde entfernen.
+  Bis zu drei Bilder pro Kommentar, auch reine Bildantworten, mit Galerie,
+  Bildbearbeitung im Sinne von Entfernen/Ergänzen und Einwilligung für Personenfotos.
+- Neue Kommentare anderer Mitglieder werden beim Beitragsautor je Beitrag in der
+  Klingel gebündelt. Lesen/Entfernen bleibt gespeichert; spätere Kommentare melden
+  sich erneut. Zusätzliche Hinweise auf Gruppenbeiträge bleiben freiwillig.
+- Die drei wiederhergestellten eigenen Chat-Beiträge einschließlich aller acht
+  Fotos sind laut Nutzer wieder vollständig vorhanden. Nicht erneut importieren
+  oder den aktuellen Browserstand durch eine ältere Sicherung ersetzen.
 
-## Aktuelle Entscheidung 15.10.2026: Vorführung und Vereinsbetrieb
+## Was online ist und was lokal bleibt
 
-Cloudflare/D1 bleibt für die Vorführung. Für den späteren Vereinsbetrieb ist
-Supabase im bereits vorhandenen Vereinsumfeld bevorzugt; kein zusätzliches
-Cloudflare-Vereinskonto planen. Noch keine Migration, Padel nicht verändern.
-Klingel-Postfach ohne E-Mail bleibt gewünscht. Details stehen am Ende des
-Projektgedächtnisses. Ältere Aussagen zu fehlender Veröffentlichung sind historisch:
-Die Website ist inzwischen unter https://joern-kaemper.de veröffentlicht.
+Cloudflare-Worker `https://tfb-api.calvinjohncamp.workers.dev` mit D1 `tfb-website`,
+Binding `DB`: geschützter Mitgliederzugang, Verwaltung, Mitgliedersuche und eigene
+Mannschaftszuordnung. Zugang ist eingerichtet. `member_teams`-Migration ist bereits
+angewendet; bei anderen bestehenden Datenbanken vor dem Worker-Update ausführen.
+Private Zuordnungen: 313 für 138 Konten; 38 Meldungszeilen ohne eindeutigen Abgleich
+bleiben offen. Neue Saison/neue Mitglieder erfordern einen vertrauenswürdigen
+privaten Abgleich; Zuordnungen nicht erraten.
+
+**Weiterhin lokale Vorführung je Browser:** Kiosk-Käufe und Abrechnungen,
+Chat-Beiträge/Kommentare/Bilder, Verabredungen/Gruppen/Einladungen/Antworten,
+Ersatzbank und Klingelzustand. Keine gemeinsame geräteübergreifende Speicherung
+oder echte Zustellung; automatische Demo-Antworten bleiben aktiv. Kein echter
+SEPA-Einzug oder E-Mail-Versand. Öffentlich erreichbare Website bedeutet hier
+noch keinen produktiven Vereinsbetrieb.
+
+Lokale Daten und Bilder gehören in den vollständigen privaten JSON-Export.
+Browserdaten nicht pauschal löschen. Die gezielte Chat-Wiederherstellung ist von
+„Sicherung laden“ zu unterscheiden, das den vollständigen Stand ersetzt.
+Dieser Dokumentationsabschluss erstellt keinen neuen Browserdaten-Export.
+
+## Verbindliche Richtung für den späteren Vereinsbetrieb
+
+Cloudflare im vorhandenen persönlichen Konto bleibt für die Vorführung.
+Bei Vereinsentscheidung wird Supabase im bereits vorhandenen Vereinsumfeld
+bevorzugt, da die Padel-App es bereits nutzt. Kein zusätzliches Cloudflare-
+Vereinskonto planen. Noch keine Migration oder Zusammenlegung mit Padel beauftragt.
+
+Vor echtem Betrieb gemeinsame Speicherung samt Zugriffsrechten, Medien,
+Einladungen/Ersatzbank und Benachrichtigungen umsetzen und abnehmen;
+Mannschaftspflege, Sicherung/Wiederherstellung und Zuständigkeiten festlegen.
+Die Klingel als zentrales Postfach ohne E-Mail bleibt gewünscht; Handy-Push ist
+nur eine mögliche spätere Ergänzung, noch nicht umgesetzt.
+
+## Prüfung und Weiterarbeit
+
+Die letzten Funktionsänderungen wurden mit isolierten Browserprüfungen für
+Admin-Umschaltung, Kommentare/Bilder/Mannschaften, Wiederherstellung und schmale
+Ansichten sowie den zugehörigen Backend-/Sicherungsprüfungen geprüft. Keine echte
+iPhone-/iPad-Geräteabnahme behaupten. Für diesen Abschluss nur Dokumentation
+geändert; keine neue Website-Veröffentlichung oder Datenmigration erforderlich.
+
+Nächste Sitzung: auf diesem bestätigten Stand aufbauen und das vom Nutzer noch
+zu benennende Thema zu TFB-Website und Padel aufnehmen. Keine alte offene Liste
+ungeprüft abarbeiten und keine privaten Vorführdaten zurücksetzen.
+
+## Historischer Verlauf – frühere Zwischenstände
+
+Die folgenden Abschnitte dokumentieren frühere Sitzungen. Versionsnummern,
+Veröffentlichungsstatus und Bedienhinweise dort gelten nur für den jeweiligen
+Zeitpunkt; der Stand v196 oben ist maßgeblich.
 
 ## Kühle Welt als Standard, zwei Admin-Optionen (v183)
 
