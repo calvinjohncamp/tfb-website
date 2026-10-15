@@ -4,8 +4,8 @@ Für den schnellen Einstieg zuerst die kurze **[UEBERGABE.md](UEBERGABE.md)** le
 Diese Datei enthält alle Entscheidungen, Konzepte, offenen Punkte und den Verlauf.
 Neues bitte unten bei „Verlauf“ ergänzen.
 
-**Aktueller Abschluss 15.10.2026:** Nutzer bestätigt v196 für die
-Vorstandsvorführung. Verbindlicher Kurzstand und Betriebsgrenzen stehen in
+**Aktueller Stand 15.10.2026:** Strichlisten-Korrektur v197 auf Grundlage des
+vom Nutzer bestätigten Vorführstands v196. Verbindlicher Kurzstand und Betriebsgrenzen stehen in
 [UEBERGABE.md](UEBERGABE.md); der Abschluss ist unten dokumentiert. Frühere
 Versions- und Veröffentlichungsaussagen sind historische Zwischenstände.
 

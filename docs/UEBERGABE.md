@@ -1,7 +1,7 @@
 # TFB – Übergabe für die nächste Sitzung
 
-**Bestätigter Vorführstand: 15.10.2026, v196.** Der Nutzer ist mit dem aktuellen
-Stand für die Vorstandspräsentation sehr zufrieden. Dies ist die aktuelle
+**Aktueller Stand: 15.10.2026, Strichlisten-Korrektur v197.** Grundlage ist der
+vom Nutzer bestätigte Vorführstand v196 für die Vorstandspräsentation. Dies ist die aktuelle
 Arbeitsgrundlage, keine Freigabe für den produktiven Vereinsbetrieb.
 Ausführlicher Verlauf: [PROJEKTGEDAECHTNIS.md](PROJEKTGEDAECHTNIS.md).
 Die folgende Zusammenfassung hat Vorrang vor den historischen Zwischenständen.
@@ -10,8 +10,8 @@ Die folgende Zusammenfassung hat Vorrang vor den historischen Zwischenständen.
 
 - Website: https://joern-kaemper.de/ – DNS-Prüfung erfolgreich, HTTPS erzwungen.
   `www` zeigt per CNAME auf `calvinjohncamp.github.io`; Mail-Einträge bleiben erhalten.
-- Ausgelieferter Quellstand `78e526e`, Service-Worker `tfb-kiosk-v196`;
-  GitHub-Pages-Veröffentlichung erfolgreich (Workflow-Lauf `38701695501`).
+- Ausgelieferter Quellstand `a1aab7b`, Service-Worker `tfb-kiosk-v197`;
+  GitHub-Pages-Veröffentlichung erfolgreich (Workflow-Lauf `38773893458`).
 - Repository `calvinjohncamp/tfb-website`, lokaler Projektordner `tfb-kiosk`.
   GitHub ist öffentlich; private Mitgliederdaten, Meldelisten, Sicherungen und
   Schlüssel gehören niemals in Git oder das Pages-Paket.
@@ -30,7 +30,12 @@ Die folgende Zusammenfassung hat Vorrang vor den historischen Zwischenständen.
   Die bekannte Strichliste zeigt angemeldeten Mitgliedern die vergangenen sieben
   Tage mit Namen und Strichen, ohne Beträge. Monatsabrechnungen sind für das
   Mitglied und den Kassenwart vorgesehen. Namen umbrechen zwischen Nach- und
-  Vorname; schmale Ansichten erhalten eine eigene Namenszeile.
+  Vorname; nur Listen bis 639px Breite erhalten eine eigene Namenszeile.
+  Getränke bleiben auf breiteren Listen rechts neben der Namensspalte. Die
+  übrigen Spalten passen sich zwischen 36 und 76px an; Namen haben mindestens
+  174px und Getränke 128px. Kurze Spaltentitel unter 681px Listenbreite vermeiden
+  Überschneidungen. Prüflauf: `node tools/test-browser-tally-layout.mjs`, zwölf
+  Displaybreiten von 320 bis 1920px, lange Namen, 18 Getränke und Zeilendetails.
 - Verabreden: Einladende können direkt im Spiel weitere Mitglieder einladen.
   Zusagen über die Spielerzahl hinaus erscheinen auf der sichtbaren Ersatzbank.
   Jeder Teilnehmer einschließlich Einladendem kann mit „Kann nicht“ später absagen,
