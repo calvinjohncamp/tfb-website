@@ -14,7 +14,7 @@ try {
   await page.addInitScript(() => {
     window.commentTest = JSON.parse(sessionStorage.getItem('comment-test') || '{}');
     window.useCommentMember = async (id, admin = false) => {
-      TFB.ui.state.member = TFB.api.attachDirectoryMember({ id, firstName: 'Test', lastName: id, email: id + '@example.invalid', active: true, isAdmin: admin });
+      TFB.ui.state.member = TFB.api.attachDirectoryMember({ id, firstName: 'Test', lastName: id, email: id + '@example.invalid', active: true, isAdmin: admin, teams: id === 'moderator' ? ['herren-55-1'] : [] });
       await TFB.api.acceptFeedRules();
     };
   });
@@ -31,10 +31,6 @@ try {
   const result = await page.evaluate(async () => {
     const api = TFB.api;
     window.commentTest = {};
-    window.useCommentMember = async (id, admin = false) => {
-      TFB.ui.state.member = api.attachDirectoryMember({ id, firstName: 'Test', lastName: id, email: id + '@example.invalid', active: true, isAdmin: admin });
-      await api.acceptFeedRules();
-    };
     await useCommentMember('owner');
     const first = await api.addPost({ scope: 'club', text: 'Spontane Nachricht ohne Überschrift' });
     const second = await api.addPost({ scope: 'club', title: 'Zweiter Beitrag', text: 'Ein anderes Thema' });
@@ -111,17 +107,51 @@ try {
   const modRemove = page.locator('.comment [data-action="comment-delete"]').first();
   await modRemove.click(); await modRemove.click();
   await page.waitForFunction(() => document.querySelectorAll('.comment').length === 3);
-  // Composer: message first, optional heading, preserve text while opening it.
+  // Photo replies: reject four files, allow three, require consent, open gallery.
+  const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jR1kAAAAASUVORK5CYII=', 'base64');
+  const files = Array.from({ length: 4 }, (_, i) => ({ name: `foto-${i}.png`, mimeType: 'image/png', buffer: png }));
+  const replyForm = page.locator('[data-comment-form]');
+  await replyForm.locator('[data-comment-upload]').setInputFiles(files);
+  await replyForm.locator('.form-error').getByText('Pro Kommentar sind höchstens 3 Fotos möglich.').waitFor();
+  await replyForm.locator('[data-comment-upload]').setInputFiles(files.slice(0, 3));
+  await page.waitForFunction(() => document.querySelectorAll('[data-comment-form] .gallery-thumb').length === 3);
+  await replyForm.locator('[type="submit"]').click();
+  await replyForm.locator('.form-error').getByText('Bitte bestätigen, dass die abgebildeten Personen einverstanden sind.').waitFor();
+  await replyForm.locator('[name="commentPhotoOk"]').check();
+  await replyForm.locator('[type="submit"]').click();
+  const photoReply = page.locator('.comment').filter({ has: page.locator('.message-collage.n3') });
+  await photoReply.waitFor();
+  assert.equal(await photoReply.locator('img').count(), 3);
+  await photoReply.locator('[data-action="comment-gallery"]').nth(1).click();
+  await page.locator('.viewer.gallery').waitFor();
+  await page.locator('.viewer-close').click();
+  // Re-editing keeps attachments, and explicitly removing one persists.
+  await photoReply.locator('[data-action="comment-edit"]').click();
+  const editPhotos = page.locator('[data-comment-edit]');
+  assert.equal(await editPhotos.locator('.gallery-thumb').count(), 3);
+  await editPhotos.locator('[data-comment-remove]').first().click();
+  await editPhotos.locator('[name="commentPhotoOk"]').check();
+  await editPhotos.locator('[type="submit"]').click();
+  await page.locator('.comment .message-collage.n2').waitFor();
+  await page.reload();
+  await page.locator('.comment .message-collage.n2').waitFor();
+  // Restore the test admin role display, which is normally supplied by the server.
+  await page.evaluate(() => { TFB.api.secureDirectory = true; });
+  // Composer: heading stays visible; own teams only, no admin dropdown.
   await page.evaluate(() => { location.hash = '#chat'; });
   await page.locator('[data-action="post-new"]').first().click();
   const compose = page.locator('[data-compose]');
-  assert.equal(await compose.locator('[name="title"]').isVisible(), false);
+  assert.equal(await compose.locator('[name="title"]').isVisible(), true);
   await compose.locator('textarea[name="text"]').fill('Kurze Nachricht');
-  await compose.locator('summary').click();
   await compose.locator('[name="title"]').fill('Freiwillige Überschrift');
   assert.equal(await compose.locator('textarea[name="text"]').inputValue(), 'Kurze Nachricht');
+  await compose.getByText('Auch in meiner Mannschaft anzeigen', { exact: true }).waitFor();
+  assert.equal(await compose.locator('[name="alsoTeam"]').count(), 1);
+  assert.equal(await compose.locator('[data-addteam]').count(), 0);
+  await compose.locator('[name="alsoTeam"]').check();
   await compose.locator('[type="submit"]').click();
   await page.getByRole('heading', { name: 'Freiwillige Überschrift', exact: true }).waitFor();
+  assert.deepEqual(await page.evaluate(async () => (await TFB.api.posts('club')).find(p => p.title === 'Freiwillige Überschrift').alsoTeams), ['herren-55-1']);
   await page.evaluate(() => { location.hash = '#chat/alle'; });
   await page.locator('.mini-comment-count').first().waitFor();
   await page.locator('.mini').filter({ hasText: 'Spontane Nachricht ohne Überschrift' }).click();
@@ -135,8 +165,9 @@ try {
   await page.evaluate(async () => {
     await TFB.api.deletePost(commentTest.second);
     await useCommentMember('owner');
+    TFB.api.readCommentPosts([commentTest.first]);
   });
   assert.equal(await page.evaluate(() => TFB.api.commentNotices().length), 0);
   assert.deepEqual(errors, []);
-  console.log('PASS: optional heading, flat comments, escaped text, permissions, edit/delete/moderation, grouped bell notices, read state, reload and responsive detail view.');
+  console.log('PASS: visible optional heading, own team selection, three comment photos with consent/gallery/editing, flat comments, permissions, moderation, grouped bell notices, reload and responsive view.');
 } finally { await browser.close(); }

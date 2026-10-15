@@ -27,9 +27,10 @@ export async function passwordHash(password, salt, pepper) {
   const key = await crypto.subtle.importKey('raw', prehash, 'PBKDF2', false, ['deriveBits']);
   return hex(await crypto.subtle.deriveBits({ name: 'PBKDF2', salt: unhex(salt), iterations: 100000, hash: 'SHA-256' }, key, 256));
 }
-function publicMember(m) {
+async function publicMember(env, m) {
+  const teams = (await env.DB.prepare('SELECT team_key FROM member_teams WHERE member_id=? ORDER BY team_key').bind(m.id).all()).results.map(row => row.team_key);
   return { id: m.id, memberNo: m.member_no, firstName: m.first_name, lastName: m.last_name,
-    email: m.email, isAdmin: Boolean(m.is_admin), active: true };
+    email: m.email, isAdmin: Boolean(m.is_admin), active: true, teams };
 }
 async function body(request) {
   if (!/^application\/json(?:;|$)/i.test(request.headers.get('Content-Type') || '')) fail(415, 'Bitte JSON-Daten senden.');
@@ -83,7 +84,7 @@ async function createSession(env, m) {
     env.DB.prepare('INSERT INTO sessions(token_hash,member_id,expires_at) VALUES (?,?,?)')
       .bind(await hash(token), m.id, Date.now() + SESSION_MS),
   ]);
-  return { token, member: publicMember(m) };
+  return { token, member: await publicMember(env, m) };
 }
 function validatePassword(value) {
   if (typeof value !== 'string' || value.length < 12 || value.length > 128) fail(400, 'Bitte ein Passwort mit 12 bis 128 Zeichen verwenden.');
@@ -191,7 +192,7 @@ async function route(request, env, url) {
   }
   const { member, tokenHash } = await authenticated(request, env, path.startsWith('/admin/'));
   await rate(env, request, 'directory', member.is_admin ? 600 : 120);
-  if (request.method === 'GET' && path === '/auth/session') return { member: publicMember(member) };
+  if (request.method === 'GET' && path === '/auth/session') return { member: await publicMember(env, member) };
   if (request.method === 'POST' && path === '/auth/logout') {
     await env.DB.prepare('DELETE FROM sessions WHERE token_hash=?').bind(tokenHash).run(); return { ok: true };
   }

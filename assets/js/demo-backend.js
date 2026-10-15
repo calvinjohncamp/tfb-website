@@ -407,12 +407,19 @@
   function rosterOf(team) {
     const ids = new Set(db.community.rosters[team] || []);
     const names = new Set((nuligaRosters()[team] || []).map(nameKey));
-    if (names.size) db.members.forEach((m) => { if (m.active && names.has(nameKey(`${m.lastName}, ${m.firstName}`))) ids.add(m.id); });
+    db.members.forEach(m => {
+      if (!m.active) return;
+      if (Array.isArray(m.directoryTeams)) { if (m.directoryTeams.includes(team)) ids.add(m.id); }
+      else if (names.has(nameKey(`${m.lastName}, ${m.firstName}`))) ids.add(m.id);
+    });
     return [...ids];
   }
-  const allTeamKeys = () => [...new Set([...Object.keys(db.community.rosters || {}), ...Object.keys(nuligaRosters())])];
-  const teamsOfMember = (id) => allTeamKeys().filter((k) => rosterOf(k).includes(id));
-  const inTeam = (member, team) => rosterOf(team).includes(member.id);
+  const allTeamKeys = () => [...new Set([...Object.keys(db.community.rosters || {}), ...Object.keys(nuligaRosters()), ...db.members.flatMap(m => m.directoryTeams || [])])];
+  const teamsOfMember = (id) => {
+    const member = db.members.find(m => m.id === id);
+    return Array.isArray(member?.directoryTeams) ? member.directoryTeams.slice() : allTeamKeys().filter(k => rosterOf(k).includes(id));
+  };
+  const inTeam = (member, team) => teamsOfMember(member.id).includes(team);
 
   // Korrektur 11.10.: Die Demo hatte das Admin-Konto fälschlich Herren 40 1 zugeordnet. Sobald die
   // nuLiga-Meldungen vorliegen, gilt nur noch der echte Abgleich – und Beiträge wandern mit.
@@ -687,6 +694,7 @@
     // local record: the protected directory independently verifies its token.
     attachDirectoryMember(member) {
       if (!member) { setSession(null); return null; }
+      if (Array.isArray(member.teams)) member = { ...member, directoryTeams: member.teams.filter(t => typeof t === 'string' && /^[a-z0-9-]{1,80}$/.test(t)) };
       const old = db.members.find(m => m.id === member.id);
       if (old) Object.assign(old, member); else db.members.push({ ...member });
       if (!accountOf(member.id)) db.accounts.push({ memberId: member.id, passwordHash: null });
@@ -811,19 +819,20 @@
         ...clone(c), author: displayName(db.members.find(m => m.id === c.authorId)), mine: c.authorId === member?.id, canModerate: Boolean(member?.isAdmin),
       }));
     },
-    async addComment(postId, text) {
+    async addComment(postId, text, { images = [] } = {}) {
       const member = requireMember();
       const post = db.community.posts.find(p => p.id === postId && !p.hidden);
       if (!post) throw Error('Dieser Beitrag ist nicht mehr verfügbar.');
       if (!mayWrite(member, post.scope).ok) throw Error('Bitte zuerst die Hinweise bestätigen oder die Mannschaftsberechtigung prüfen.');
       const value = String(text || '').trim();
-      if (!value || value.length > 2000) throw Error('Bitte einen Kommentar mit höchstens 2000 Zeichen schreiben.');
+      if (!Array.isArray(images) || images.length > 3 || images.some(ref => typeof ref !== 'string' || !/^img:.+/.test(ref))) throw Error('Pro Kommentar sind höchstens 3 Fotos möglich.');
+      if ((!value && !images.length) || value.length > 2000) throw Error('Bitte einen Kommentar oder ein Foto hinzufügen (höchstens 2000 Zeichen).');
       const next = clone(db);
-      next.community.comments = [...(next.community.comments || []), { id: 'c-' + uid(), postId, authorId: member.id, text: value, createdAt: new Date().toISOString() }];
+      next.community.comments = [...(next.community.comments || []), { id: 'c-' + uid(), postId, authorId: member.id, text: value, images: images.slice(), createdAt: new Date().toISOString() }];
       if (!save(next)) throw Error('Der Kommentar konnte nicht gespeichert werden.');
       db = next; document.dispatchEvent(new Event('tfb-chat-updated'));
     },
-    async editComment(id, text) {
+    async editComment(id, text, options = {}) {
       const member = requireMember();
       const next = clone(db);
       const comment = (next.community.comments || []).find(c => c.id === id);
@@ -831,8 +840,10 @@
       const post = next.community.posts.find(p => p.id === comment.postId && !p.hidden);
       if (!post) throw Error('Dieser Beitrag ist nicht mehr verfügbar.');
       const value = String(text || '').trim();
-      if (!value || value.length > 2000) throw Error('Bitte einen Kommentar mit höchstens 2000 Zeichen schreiben.');
-      comment.text = value; comment.editedAt = new Date().toISOString();
+      const images = options.images === undefined ? (comment.images || []) : options.images;
+      if (!Array.isArray(images) || images.length > 3 || images.some(ref => typeof ref !== 'string' || !/^img:.+/.test(ref))) throw Error('Pro Kommentar sind höchstens 3 Fotos möglich.');
+      if ((!value && !images.length) || value.length > 2000) throw Error('Bitte einen Kommentar oder ein Foto hinzufügen (höchstens 2000 Zeichen).');
+      comment.text = value; comment.images = images.slice(); comment.editedAt = new Date().toISOString();
       if (!save(next)) throw Error('Der Kommentar konnte nicht gespeichert werden.');
       db = next; document.dispatchEvent(new Event('tfb-chat-updated'));
     },

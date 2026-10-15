@@ -3,6 +3,17 @@
 **Zuerst lesen.** Ausführlicher Verlauf: [PROJEKTGEDAECHTNIS.md](PROJEKTGEDAECHTNIS.md).
 Diese Zusammenfassung hat Vorrang vor älteren Zwischenständen.
 
+## Aktuelle Korrekturen 15.10.2026 (v195)
+
+Freiwillige Überschrift wieder dauerhaft sichtbar. Beitragseditor zeigt nur die
+eigenen Mannschaften als auswählbare zusätzliche Anzeige, keine Admin-Auswahl
+beliebiger Mannschaften. Eigene Zuordnung kommt geschützt aus D1 `member_teams`;
+Schema-Migration vor Worker-Update nötig. Private Daten nie veröffentlichen.
+Kommentare nun mit bis zu drei Bildern, Galerie, Bearbeiten und Einwilligung;
+weiterhin lokale Simulation. Ausführliche Pflegehinweise und offene Abgleiche
+stehen am Ende des Projektgedächtnisses. Ältere Aussage „aufklappbare Überschrift“
+ist damit aufgehoben.
+
 ## Kommentar-Vorführung 15.10.2026 (v194)
 
 Chat-Beiträge haben eine flache Kommentarebene in ihrer Einzelansicht; Einstieg

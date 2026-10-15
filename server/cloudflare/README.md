@@ -1,9 +1,9 @@
 # Geschütztes Mitgliederverzeichnis ohne Supabase
 
-Stand 15.10.2026: Worker online, Version `62b9877d-310b-4c93-8c49-4dda18f35d52`.
+Stand 15.10.2026: Worker online, Version `da44e29e-1844-48c0-99a7-da0f5a572d96`.
 Health-Check 200; anonyme Suche/Verwaltung 401; fremder Browser-Ursprung 403.
 Secrets ausschließlich im Worker und lokal unter `.private/`. Verwaltungskonto
-eingerichtet; Website-Anbindung aktiviert, privater Mitgliederimport steht noch aus.
+eingerichtet; Website-Anbindung aktiviert, geschützte Mitgliederliste geladen.
 Die Domain hat ein bis 13.01.2027 gültiges Zertifikat; HTTPS wird erzwungen.
 
 Worker `tfb-api`, D1 `tfb-website`, Binding `DB`. Getrennt von den vorhandenen
@@ -81,3 +81,17 @@ Er prüft Freischaltung, Login, Namensvorschläge im Einladungsformular, Abmeldu
 und dass die fremde E-Mail nicht in den lokalen Demo-Datenbestand kopiert wird.
 
 Weitere Regressionen: bestehende Node-Tests und `npm run test:browser`.
+
+## Eigene Mannschaften (15.10.2026)
+
+`member_teams(member_id, team_key)` enthält die privaten Mannschaftszuordnungen.
+Bei bestehender Datenbank vor dem Worker-Update die reine Schema-Migration
+`migrations/0002-member-teams.sql` ausführen. Neue Datenbanken erhalten die Tabelle
+über `schema.sql`. Login und `/auth/session` liefern nur die Mannschaften des
+jeweils angemeldeten Mitglieds; Namenssuche liefert keine Mannschaftslisten.
+
+Der private nuLiga-Abgleich liegt ausschließlich lokal unter `.private/`.
+Nicht eindeutige Namen nicht automatisch zuordnen. Bei neuen Mitgliedern oder
+neuen Mannschaftsmeldungen die private Relation aktualisieren; keine Zuordnung
+aus der Nachricht eines Mitglieds oder aus ausgewählten Beitragsempfängern ableiten.
+Für den Vereinsbetrieb diese Relation beim geplanten Supabase-Umzug übernehmen.

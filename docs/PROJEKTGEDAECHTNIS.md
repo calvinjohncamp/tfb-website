@@ -1324,3 +1324,33 @@ Auch Kommentare und Gelesen-Status bleiben in der aktuellen Vorführung lokal.
 Sie sind Bestandteil der vollständigen privaten JSON-Sicherung; für Vereinsbetrieb
 zusammen mit Beiträgen/Postfach nach Supabase migrieren. Keine echte Online-
 Zustellung, kein E-Mail-Versand und keine Änderung der Padel-Anwendung.
+
+## Korrektur 15.10.2026: Überschrift sichtbar, eigene Mannschaften, Kommentarfotos (v195)
+
+Verbindliche Nutzerkorrektur: Das freiwillige Überschriftenfeld im Chat-Editor
+bleibt dauerhaft sichtbar. Kein Aufklappen mehr. Nachrichtentext bleibt zuerst.
+Die Admin-Auswahl fremder Mannschaften im normalen Beitragseditor entfällt.
+Stattdessen „Auch in meiner Mannschaft anzeigen“ bzw. bei mehreren Mannschaften
+„Auch in meinen Mannschaften anzeigen“ mit Auswahl der eigenen Mannschaften.
+Bestehende Beitragszuordnungen werden beim Bearbeiten erhalten; zusätzliche
+Mannschaftsanzeige verschickt keine E-Mail und ist keine automatische Nachricht
+an jedes Mannschaftsmitglied.
+
+Bisher kam im geschützten Zugang keine Mannschaftszuordnung an. Worker ergänzt
+nun ausschließlich beim eigenen Login/Sitzungsabruf das Feld `teams` aus privater
+D1-Tabelle `member_teams`. Schemaänderung für bestehende Datenbanken steht unter
+server/cloudflare/migrations/0002-member-teams.sql und muss vor Deployment laufen.
+Private nuLiga-Meldungen wurden mit aktiven Mitgliedern abgeglichen; Namens-
+Mehrdeutigkeiten nicht allgemein automatisch zuweisen. Das vom Nutzer eingerichtete
+Verwaltungskonto wurde anhand des alten eigenen Kontos gesondert abgeglichen.
+Vorführung: 313 Zuordnungen für 138 Konten; 38 Meldungszeilen ohne eindeutigen
+Mitgliederabgleich bleiben offen. Die Zuordnungen und Abgleichdateien bleiben
+unter `.private/` und in D1, niemals in Git/Pages. Neues Mitglied / neue Saison:
+vertrauenswürdigen Abgleich aktualisieren; aus fehlender Zuordnung keine Mannschaft
+erraten. Im späteren Supabase-Vereinsbetrieb diese Relation und Pflege übernehmen.
+
+Kommentare unterstützen bis zu drei Fotos/Bilder, einschließlich reiner Bild-
+Antworten, Galerie, Entfernen/Ergänzen beim Bearbeiten und Einwilligung zur
+Veröffentlichung abgebildeter Personen. Textänderungen erhalten bestehende Bilder.
+Fotos liegen weiterhin lokal in IndexedDB und werden im vollständigen privaten
+JSON-Export mitgesichert. Vorhandene Beiträge/Kommentare werden nicht zurückgesetzt.

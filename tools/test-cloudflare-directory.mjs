@@ -68,6 +68,19 @@ test('no names without a valid server session, forged browser admin does not hel
   const blocked=await f.call('/members/search?q=jörn',undefined,f.admin,'https://attacker.invalid');
   assert.equal(blocked.status,403);assert.equal(blocked.headers.get('Access-Control-Allow-Origin'),null);
 });
+test('only own team memberships accompany login/session and changed rosters take effect',async()=>{
+  const f=await fixture();const user=await activated(f);
+  f.env.DB.sqlite.prepare('INSERT INTO member_teams(member_id,team_key) VALUES (?,?)').run(user.member.id,'herren-55-1');
+  const other=f.env.DB.sqlite.prepare('SELECT id FROM members WHERE member_no=?').get('3');
+  f.env.DB.sqlite.prepare('INSERT INTO member_teams(member_id,team_key) VALUES (?,?)').run(other.id,'private-other-team');
+  const signed=await f.call('/auth/login',{identifier:'2',password});
+  assert.deepEqual(signed.body.member.teams,['herren-55-1']);
+  assert.deepEqual((await f.call('/auth/session',undefined,user.token)).body.member.teams,['herren-55-1']);
+  const hits=await f.call('/members/search?q=private',undefined,user.token);
+  assert.equal(JSON.stringify(hits.body).includes('private-other-team'),false);
+  f.env.DB.sqlite.prepare('DELETE FROM member_teams WHERE member_id=?').run(user.member.id);
+  assert.deepEqual((await f.call('/auth/session',undefined,user.token)).body.member.teams,[]);
+});
 test('activation requires the issued code, is single use, stores only token and code hashes',async()=>{
   const f=await fixture();const user=await activated(f);
   const replay=await f.call('/auth/activate',{identifier:'2',password,code:user.code});assert.equal(replay.status,401);

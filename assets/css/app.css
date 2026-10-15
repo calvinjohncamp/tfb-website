@@ -2589,7 +2589,10 @@ body.admin-hidden [data-action="post-hide"] { display: none !important; }
 .comment-form textarea, .comment-edit-form textarea { width: 100%; min-height: 88px; resize: vertical; }
 .comment-form .btn { display: block; margin-left: auto; }
 .compose-heading { margin: 10px 0 16px; }
-.compose-heading summary { color: var(--muted); font-size: .85rem; cursor: pointer; }
-.compose-heading[open] summary { margin-bottom: 10px; }
 @media (max-width: 420px) { .post-comments { padding: 16px; } }
 .mini-where.is-excerpt { font-weight: 400; }
+.comment-photo-picker { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 12px; }
+.comment-photo-picker .gallery-thumb { position: relative; width: 88px; height: 88px; }
+.comment-photo-picker .gallery-thumb > button { position: absolute; right: 3px; top: 3px; border: 0; border-radius: 50%; width: 25px; height: 25px; background: var(--paper); cursor: pointer; }
+.comment-photo-picker .gallery-add { min-width: 110px; min-height: 74px; }
+.comment .message-collage { margin-top: 12px; }

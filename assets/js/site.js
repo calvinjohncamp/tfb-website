@@ -1171,11 +1171,13 @@
       <h2>${comments.length ? `${comments.length} ${comments.length === 1 ? 'Kommentar' : 'Kommentare'}` : 'Kommentare'}</h2>
       ${comments.length ? `<div class="comment-list">${comments.map(c => `<article class="comment" data-comment="${esc(c.id)}">
         <header><b>${esc(c.author)}</b><small>${esc(whenText(c.createdAt))}${c.editedAt ? ' · bearbeitet' : ''}</small></header>
-        <div class="comment-text">${postText(c.text)}</div>
+        ${c.text ? `<div class="comment-text">${postText(c.text)}</div>` : ''}
+        ${(c.images || []).length ? `<div class="message-collage n${c.images.length}">${c.images.map((ref, index) => `<button type="button" class="message-photo" data-action="comment-gallery" data-post="${esc(post.id)}" data-id="${esc(c.id)}" data-index="${index}" aria-label="Foto ${index + 1} von ${c.images.length} ansehen">${picture(ref, ref, '')}</button>`).join('')}</div>` : ''}
         ${c.mine || c.canModerate ? `<footer>${c.mine ? `<button type="button" data-action="comment-edit" data-id="${esc(c.id)}" data-post="${esc(post.id)}">Bearbeiten</button>` : ''}<button type="button" data-action="comment-delete" data-id="${esc(c.id)}">${c.mine ? 'Löschen' : 'Entfernen (Verwaltung)'}</button></footer>` : ''}
       </article>`).join('')}</div>` : '<p class="muted">Noch keine Kommentare. Schreib die erste Antwort.</p>'}
       ${post.hidden ? '<p class="muted">Dieser Beitrag ist ausgeblendet. Neue Kommentare sind hier nicht möglich.</p>' : may.ok ? `<form data-comment-form="${esc(post.id)}" class="comment-form">
-        <label class="field"><span>Dein Kommentar</span><textarea name="text" rows="3" maxlength="2000" required placeholder="Dein Kommentar …"></textarea></label>
+        <label class="field"><span>Dein Kommentar</span><textarea name="text" rows="3" maxlength="2000" placeholder="Dein Kommentar …"></textarea></label>
+        <div data-comment-attachments>${commentAttachments([])}</div>
         <p class="form-error" role="alert"></p><button type="submit" class="btn signal">Senden</button></form>`
         : state.member ? may.reason === 'team' ? '<p class="muted">Hier kommentieren die Spieler dieser Mannschaft.</p>' : `<button type="button" class="btn" data-action="comment-unlock" data-id="${esc(post.id)}">${may.reason === 'parents' ? 'Einverständnis der Eltern hinterlegen' : 'Hinweise bestätigen und kommentieren'}</button>`
         : '<button type="button" class="btn" data-action="login">Zum Kommentieren anmelden</button>'}
@@ -1187,10 +1189,48 @@
     e.preventDefault();
     const button = form.querySelector('[type="submit"]'); button.disabled = true;
     try {
-      await ui().api.addComment(form.dataset.commentForm, form.elements.text.value);
+      const refs = commentImages.get(form) || [];
+      if (refs.length && !form.elements.commentPhotoOk?.checked) throw Error('Bitte bestätigen, dass die abgebildeten Personen einverstanden sind.');
+      await ui().api.addComment(form.dataset.commentForm, form.elements.text.value, { images: refs });
       await ui().renderView();
       document.getElementById('post-comments')?.scrollIntoView({ block: 'start' });
     } catch (error) { form.querySelector('.form-error').textContent = error.message; button.disabled = false; }
+  });
+  const commentImages = new WeakMap();
+  function commentAttachments(refs) {
+    return `<div class="comment-photo-picker">${refs.map((ref, index) => `<div class="gallery-thumb">${picture(ref, ref, '')}<button type="button" data-comment-remove="${index}" aria-label="Foto entfernen">×</button></div>`).join('')}
+      ${refs.length < 3 ? `<label class="gallery-add">${ui().icon.camera}<span>Fotos hinzufügen</span><input type="file" accept="image/*" multiple data-comment-upload hidden></label>` : ''}</div>
+      <p class="small muted">Bis zu 3 Fotos oder Bilder.</p>
+      ${refs.length ? '<label class="meet-check"><input type="checkbox" name="commentPhotoOk"><span>Die abgebildeten Personen sind mit der Veröffentlichung einverstanden.</span></label>' : ''}`;
+  }
+  document.addEventListener('click', e => {
+    const button = e.target.closest('[data-comment-remove]');
+    const form = button?.closest('[data-comment-form], [data-comment-edit]');
+    if (!form) return;
+    const refs = (commentImages.get(form) || []).filter((_, index) => index !== Number(button.dataset.commentRemove));
+    commentImages.set(form, refs);
+    form.querySelector('[data-comment-attachments]').innerHTML = commentAttachments(refs);
+  });
+  document.addEventListener('change', async e => {
+    if (!e.target.matches('[data-comment-upload]') || !e.target.files.length) return;
+    const form = e.target.closest('[data-comment-form], [data-comment-edit]');
+    const error = form.querySelector('.form-error');
+    const refs = (commentImages.get(form) || []).slice();
+    const files = [...e.target.files]; e.target.value = '';
+    if (refs.length + files.length > 3) { error.textContent = 'Pro Kommentar sind höchstens 3 Fotos möglich.'; return; }
+    const submit = form.querySelector('[type="submit"]'); submit.disabled = true; error.textContent = '';
+    try {
+      for (const file of files) {
+        const image = await ui().loadImage(file);
+        const dataUrl = ui().largeImage(image, 1600);
+        const ref = await ui().api.putMemberImage(dataUrl);
+        images[ref] = dataUrl; refs.push(ref);
+      }
+    } catch (err) { error.textContent = err.message; }
+    finally {
+      commentImages.set(form, refs);
+      if (form.isConnected) { form.querySelector('[data-comment-attachments]').innerHTML = commentAttachments(refs); submit.disabled = false; }
+    }
   });
   let postCache = {};
   async function feedSection(scope, opts = {}) {
@@ -1345,17 +1385,14 @@
     if (!editId && may.reason === 'rules') return openRules(scope);
     const existing = editId ? postCache[editId] : null;
     const draft = { title: existing ? (existing.title || '') : '', text: existing ? existing.text : '', images: existing ? (existing.images || []).filter(shownImage) : [], alsoTeams: existing ? (existing.alsoTeams || []) : [] };
-    let titleOpen = Boolean(draft.title);
     const myTeams = scope === 'club' ? (state.member.teams || []) : [];
-    const allTeams = () => [...new Map(((TFB.teams && TFB.teams.seasons) || []).flatMap((x) => x.teams)
-      .map((t) => [teamKey(t.name), t.name.replace(/\s*\(.*?\)/g, '')])).entries()].sort((a, b) => a[1].localeCompare(b[1], 'de'));
     const isTeam = scope.startsWith('team:');
     const render = () => {
       openSheet(`
         <form class="editor compose" data-compose novalidate>
           <h2>${existing ? 'Beitrag bearbeiten' : isTeam ? `${esc(chatText().teamLabel)} · ${esc(teamLabel(scope.slice(5)))}` : esc(chatText().feedTitle)}</h2>
           <textarea name="text" rows="5" maxlength="2000" placeholder="${isTeam ? 'Wie lief das Spiel? Was war los bei der Tour?' : 'Was gibt’s Neues im Club?'}">${esc(draft.text)}</textarea>
-          <details class="compose-heading" ${titleOpen ? 'open' : ''}><summary>${draft.title ? 'Überschrift' : 'Überschrift hinzufügen'}</summary><label class="field"><span>Überschrift (freiwillig)</span><input class="compose-title" name="title" maxlength="90" value="${esc(draft.title)}" placeholder="z. B. ${isTeam ? 'Auswärtssieg in Hennef' : 'Grillabend am Mittwoch'}"></label></details>
+          <label class="field compose-heading"><span>Überschrift (freiwillig)</span><input class="compose-title" name="title" maxlength="90" value="${esc(draft.title)}" placeholder="z. B. ${isTeam ? 'Auswärtssieg in Hennef' : 'Grillabend am Mittwoch'}"></label>
           <div class="compose-photos">
             ${draft.images.map((ref, i) => `<div class="gallery-thumb">${picture(ref, ref)}${frameButton(ref, true)}<button type="button" data-cremove="${i}" aria-label="Foto entfernen">×</button>
               <span class="thumb-move"><button type="button" data-cmove="${i}" data-dir="-1" ${i === 0 ? 'disabled' : ''} aria-label="Nach vorne">‹</button><button type="button" data-cmove="${i}" data-dir="1" ${i === draft.images.length - 1 ? 'disabled' : ''} aria-label="Nach hinten">›</button></span></div>`).join('')}
@@ -1363,21 +1400,19 @@
           </div>
           <p class="small muted">Bis zu 6 Fotos.</p>
           ${draft.images.length ? '<label class="meet-check"><input type="checkbox" name="photoOk" required><span>Die abgebildeten Personen sind mit der Veröffentlichung einverstanden.</span></label>' : ''}
-          ${scope === 'club' && (myTeams.length || state.member.isAdmin) ? `<div class="compose-teams">
-            ${[...new Set([...myTeams, ...draft.alsoTeams])].map((k) => `<label class="meet-check"><input type="checkbox" name="alsoTeam" value="${esc(k)}" ${draft.alsoTeams.includes(k) ? 'checked' : ''}><span>Auch in den <b>Insider News · ${esc(teamLabel(k))}</b> zeigen</span></label>`).join('')}
-            ${state.member.isAdmin ? `<label class="field compose-team-add"><span>Auch in einer anderen Mannschaft zeigen (Admin)</span>
-              <select data-addteam><option value="">Mannschaft wählen …</option>${allTeams().filter(([k]) => !myTeams.includes(k) && !draft.alsoTeams.includes(k)).map(([k, n]) => `<option value="${esc(k)}">${esc(n)}</option>`).join('')}</select></label>` : ''}
+          ${scope === 'club' ? `<div class="compose-teams"><p class="small muted">${myTeams.length > 1 ? 'Auch in meinen Mannschaften anzeigen' : 'Auch in meiner Mannschaft anzeigen'}</p>
+            ${myTeams.map(k => `<label class="meet-check"><input type="checkbox" name="alsoTeam" value="${esc(k)}" ${draft.alsoTeams.includes(k) ? 'checked' : ''}><span>${esc(teamLabel(k))}</span></label>`).join('')}
+            ${myTeams.length ? '' : '<p class="small muted">Deinem Konto ist noch keine Mannschaft zugeordnet.</p>'}
           </div>` : ''}
           <p class="form-error" role="alert"></p>
           <button type="submit" class="btn signal block big">${existing ? 'Speichern' : 'Veröffentlichen'}</button>
           <p class="fineprint">Öffentlich sichtbar mit deinem Namen${state.member.isMinor ? ' (Vorname und Anfangsbuchstabe)' : ''}.</p>
         </form>`);
       const form = document.querySelector('[data-compose]');
-      form.querySelector('.compose-heading').addEventListener('toggle', e => { titleOpen = e.target.open; });
       const keep = () => {
         draft.title = form.elements.title.value.trim();
         draft.text = form.elements.text.value;
-        if (myTeams.length) draft.alsoTeams = [...form.querySelectorAll('[name=alsoTeam]:checked')].map((x) => x.value);
+        draft.alsoTeams = [...draft.alsoTeams.filter(k => !myTeams.includes(k)), ...[...form.querySelectorAll('[name=alsoTeam]:checked')].map(input => input.value)];
       };
       form.addEventListener('click', (e) => {
         const rm = e.target.closest('[data-cremove]');
@@ -1386,7 +1421,6 @@
         if (mv) { keep(); const a = Number(mv.dataset.cmove); const b = a + Number(mv.dataset.dir); [draft.images[a], draft.images[b]] = [draft.images[b], draft.images[a]]; render(); }
       });
       form.addEventListener('change', async (e) => {
-        if (e.target.matches('[data-addteam]') && e.target.value) { keep(); draft.alsoTeams.push(e.target.value); render(); return; }
         if (!e.target.matches('[data-cphoto]') || !e.target.files.length) return;
         keep();
         const files = [...e.target.files];
@@ -2834,11 +2868,16 @@
       const { api, openSheet, closeSheet, toast } = ui();
       const comment = (await api.comments(el.dataset.post)).find(c => c.id === el.dataset.id && c.mine);
       if (!comment) return;
-      openSheet(`<form class="editor comment-edit-form" data-comment-edit><h2>Kommentar bearbeiten</h2><label class="field"><span>Dein Kommentar</span><textarea name="text" rows="4" maxlength="2000" required>${esc(comment.text)}</textarea></label><p class="form-error" role="alert"></p><button type="submit" class="btn signal block">Speichern</button></form>`);
+      openSheet(`<form class="editor comment-edit-form" data-comment-edit><h2>Kommentar bearbeiten</h2><label class="field"><span>Dein Kommentar</span><textarea name="text" rows="4" maxlength="2000">${esc(comment.text)}</textarea></label><div data-comment-attachments>${commentAttachments(comment.images || [])}</div><p class="form-error" role="alert"></p><button type="submit" class="btn signal block">Speichern</button></form>`);
       const form = document.querySelector('[data-comment-edit]');
+      commentImages.set(form, (comment.images || []).slice());
       form.addEventListener('submit', async e => {
         e.preventDefault(); const button = form.querySelector('[type="submit"]'); button.disabled = true;
-        try { await api.editComment(comment.id, form.elements.text.value); closeSheet(); await ui().renderView(); toast('Kommentar gespeichert', true); }
+        try {
+          const refs = commentImages.get(form) || [];
+          if (refs.length && !form.elements.commentPhotoOk?.checked) throw Error('Bitte bestätigen, dass die abgebildeten Personen einverstanden sind.');
+          await api.editComment(comment.id, form.elements.text.value, { images: refs }); closeSheet(); await ui().renderView(); toast('Kommentar gespeichert', true);
+        }
         catch (error) { form.querySelector('.form-error').textContent = error.message; button.disabled = false; }
       });
       form.elements.text.focus();
@@ -2847,6 +2886,10 @@
       if (!el.dataset.armed) { el.dataset.armed = '1'; el.textContent = 'Wirklich entfernen?'; return; }
       try { await ui().api.deleteComment(el.dataset.id); ui().toast('Kommentar entfernt', true); await ui().renderView(); }
       catch (error) { ui().toast(error.message); }
+    },
+    'comment-gallery': async (el) => {
+      const comment = (await ui().api.comments(el.dataset.post)).find(c => c.id === el.dataset.id);
+      if (comment) openGallery(comment.images || [], `${comment.author} · ${whenText(comment.createdAt)}`, false, Number(el.dataset.index));
     },
     'portrait-edit': (el) => openPortraitEditor(el.dataset.team),
     'post-open': (el) => openPost(el.dataset.id),

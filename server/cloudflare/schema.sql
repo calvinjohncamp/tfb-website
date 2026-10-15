@@ -19,6 +19,11 @@ CREATE TABLE IF NOT EXISTS members (
 );
 CREATE INDEX IF NOT EXISTS members_email ON members(email);
 CREATE INDEX IF NOT EXISTS members_number ON members(member_no);
+CREATE TABLE IF NOT EXISTS member_teams (
+  member_id TEXT NOT NULL REFERENCES members(id) ON DELETE CASCADE,
+  team_key TEXT NOT NULL,
+  PRIMARY KEY(member_id, team_key)
+);
 CREATE TABLE IF NOT EXISTS sessions (
   token_hash TEXT PRIMARY KEY,
   member_id TEXT NOT NULL REFERENCES members(id) ON DELETE CASCADE,
