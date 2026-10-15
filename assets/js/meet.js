@@ -440,6 +440,7 @@
           <small>${m.slots ? `${L.players.length} von ${m.slots}` : `${m.invitees.length} eingeladen`} · ${L.open.length} offen · ${L.no.length} abgesagt${L.ersatz.length ? ` · ${L.ersatz.length} Ersatz` : ''}</small></div>
         ${slotDots(m, L, names)}
       </section>
+      ${isOrg ? `<button type="button" class="btn primary block" data-action="meet-invite-more" data-id="${m.id}">Weitere Mitglieder einladen</button>` : ''}
       ${m.slots ? '<p class="small muted meet-rule">Wer zuerst zusagt, spielt. Spätere Zusagen kommen auf die Ersatzbank und rücken automatisch nach.</p>' : ''}
 
       <section class="card meet-table" aria-label="Teilnehmer">
@@ -483,6 +484,78 @@
           <button type="submit" class="btn">OK</button>
         </form>
       </section>`;
+  }
+
+  // Add invitees to this one meeting without changing existing responses or a series.
+  function openInviteMore(id) {
+    const meeting = meetById(id);
+    if (!me() || !meeting || meeting.createdBy !== me().id) return;
+    const { openSheet, closeSheet, icon } = ui();
+    const selected = new Map();
+    const mates = new Set(data.groups.filter(g => g.members.includes(me().id)).flatMap(g => everyone(g)));
+    let hits = new Map();
+    let searchVersion = 0;
+    openSheet(`
+      <form class="editor meet-editor" data-meet-invite-more>
+        <h2>Weitere Mitglieder einladen</h2>
+        <p class="muted">${esc(meeting.title)} · ${esc(shortDate(meeting.date))} · ${esc(meeting.time)} Uhr</p>
+        <p class="small muted">Die bisherigen Zusagen und Absagen bleiben erhalten. Die neuen Einladungen gelten nur für diesen Termin.</p>
+        <label class="field"><span>Mitglieder suchen</span><input name="search" autocomplete="off" placeholder="Mindestens 2 Zeichen"></label>
+        <div class="meet-suggest" data-suggest></div>
+        <div class="meet-chips" data-selected></div>
+        <p class="form-error" role="alert"></p>
+        <button type="submit" class="btn primary block big" disabled>Einladungen hinzufügen</button>
+      </form>`);
+    const form = document.querySelector('[data-meet-invite-more]');
+    const search = form.elements.search;
+    const error = form.querySelector('.form-error');
+    const suggestions = form.querySelector('[data-suggest]');
+    const renderSelected = () => {
+      form.querySelector('[data-selected]').innerHTML = [...selected].map(([memberId, name]) => `<span class="chip">${esc(name)}<button type="button" data-remove="${esc(memberId)}" aria-label="${esc(name)} entfernen">×</button></span>`).join('');
+      form.querySelector('[type="submit"]').disabled = selected.size === 0;
+    };
+    search.addEventListener('input', async () => {
+      const version = ++searchVersion;
+      suggestions.innerHTML = ''; error.textContent = ''; hits.clear();
+      if (search.value.trim().length < 2) return;
+      try {
+        const results = await ui().api.searchMembers(search.value);
+        if (version !== searchVersion || !form.isConnected) return;
+        hits = new Map(results.filter(h => !meeting.invitees.includes(h.id) && !selected.has(h.id) && (h.openInvites !== false || mates.has(h.id)))
+          .map(h => [h.id, `${h.firstName} ${h.lastName}`]));
+        suggestions.innerHTML = hits.size
+          ? [...hits].map(([memberId, name]) => `<button type="button" data-add="${esc(memberId)}">${icon.plus}<span>${esc(name)}</span></button>`).join('')
+          : '<p class="small muted">Keine weiteren passenden Mitglieder gefunden.</p>';
+      } catch (err) { if (version === searchVersion && form.isConnected) error.textContent = err.message; }
+    });
+    search.addEventListener('keydown', e => {
+      if (e.key !== 'Enter') return;
+      e.preventDefault(); form.querySelector('[data-add]')?.click();
+    });
+    form.addEventListener('click', e => {
+      const add = e.target.closest('[data-add]');
+      const remove = e.target.closest('[data-remove]');
+      if (add && hits.has(add.dataset.add)) {
+        selected.set(add.dataset.add, hits.get(add.dataset.add));
+        ++searchVersion; hits.clear(); search.value = ''; suggestions.innerHTML = '';
+        renderSelected(); search.focus();
+      } else if (remove) {
+        selected.delete(remove.dataset.remove); renderSelected();
+        search.dispatchEvent(new Event('input'));
+      }
+    });
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      const current = meetById(id);
+      if (!me() || !current || current.createdBy !== me().id) { error.textContent = 'Nur der Einladende kann weitere Mitglieder einladen.'; return; }
+      const fresh = [...selected.keys()].filter(memberId => !current.invitees.includes(memberId));
+      if (!fresh.length) { error.textContent = 'Bitte mindestens ein weiteres Mitglied auswählen.'; return; }
+      current.invitees.push(...fresh);
+      fresh.forEach(memberId => note(memberId, 'invite', current, me().id));
+      save(); closeSheet(); rerender();
+      ui().toast(`${fresh.length === 1 ? 'Eine weitere Einladung hinzugefügt' : `${fresh.length} weitere Einladungen hinzugefügt`}`, true);
+    });
+    search.focus();
   }
 
   // ---------- Neue Verabredung ----------
@@ -986,6 +1059,7 @@
   Object.assign(TFB.actions, {
     inbox: () => openInbox(),
     'meet-new': (el) => openCreate(el.dataset.kind || 'einzel'),
+    'meet-invite-more': (el) => openInviteMore(el.dataset.id),
     'meet-group': (el) => openGroup(el.dataset.id),
     'group-answer': (el) => openGroupAnswer(el.dataset.id),
     'meet-series': (el) => openSeries(el.dataset.id),
