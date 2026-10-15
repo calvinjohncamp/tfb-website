@@ -4,7 +4,7 @@ Für den schnellen Einstieg zuerst die kurze **[UEBERGABE.md](UEBERGABE.md)** le
 Diese Datei enthält alle Entscheidungen, Konzepte, offenen Punkte und den Verlauf.
 Neues bitte unten bei „Verlauf“ ergänzen.
 
-**Aktueller Stand 15.10.2026:** Strichlisten-Korrektur v197 auf Grundlage des
+**Aktueller Stand 15.10.2026:** Strichlisten-Korrektur v198 auf Grundlage des
 vom Nutzer bestätigten Vorführstands v196. Verbindlicher Kurzstand und Betriebsgrenzen stehen in
 [UEBERGABE.md](UEBERGABE.md); der Abschluss ist unten dokumentiert. Frühere
 Versions- und Veröffentlichungsaussagen sind historische Zwischenstände.
@@ -1415,3 +1415,16 @@ Dieser Abschluss betrifft nur Dokumentation, ohne erneute Code-Veröffentlichung
 Migration oder Änderung privater Daten. Die zentralen Dateien unter `00 START HIER`
 gehören zur separaten Padel-Anwendung und bleiben unverändert.
 Der Nutzer kündigt ein neues Thema für beide Projekte an; Inhalt noch offen.
+
+
+## Strichliste: Zentrierung und mobile Namensspalte – 15.10.2026 (v198)
+
+Der Nutzer beanstandet v197: Getränkestriche standen weiterhin linksbündig,
+auf Handybreite lagen Namen immer noch über den gesamten Strichspalten.
+Jetzt stehen alle Strichgruppen mittig unter ihren Überschriften. Auf schmalen
+Listen steht Nachname über Vorname links; fünf Kategorien bleiben daneben.
+Getränkebündel dürfen im eigenen Feld umbrechen, ohne horizontale Stauchung.
+Die mehrfachen CSS-Überlagerungen sind in einem Strichlistenblock zusammengeführt.
+15 Breiten von 320–1920px sowie Chat-/Namensregression erfolgreich geprüft;
+Aufnahmen bei 1440/700/430/390/320px angesehen. Quellstand 5dc6882,
+Cache tfb-kiosk-v198, Pages-Lauf 38774684777.
