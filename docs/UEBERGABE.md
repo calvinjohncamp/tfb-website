@@ -1,6 +1,6 @@
 # TFB – Übergabe für die nächste Sitzung
 
-**Aktueller Stand: 15.10.2026, Strichlisten-Feinschliff v200.** Grundlage ist der
+**Aktueller Stand: 15.10.2026, Vorführversion v201 mit Beispielabrechnungen.** Grundlage ist der
 vom Nutzer bestätigte Vorführstand v196 für die Vorstandspräsentation. Dies ist die aktuelle
 Arbeitsgrundlage, keine Freigabe für den produktiven Vereinsbetrieb.
 Ausführlicher Verlauf: [PROJEKTGEDAECHTNIS.md](PROJEKTGEDAECHTNIS.md).
@@ -10,8 +10,8 @@ Die folgende Zusammenfassung hat Vorrang vor den historischen Zwischenständen.
 
 - Website: https://joern-kaemper.de/ – DNS-Prüfung erfolgreich, HTTPS erzwungen.
   `www` zeigt per CNAME auf `calvinjohncamp.github.io`; Mail-Einträge bleiben erhalten.
-- Ausgelieferter Quellstand `9c08cc8`, Service-Worker `tfb-kiosk-v200`;
-  GitHub-Pages-Veröffentlichung erfolgreich (Workflow-Lauf `38775667650`).
+- Ausgelieferter Quellstand `a31c60b`, Service-Worker `tfb-kiosk-v201`;
+  GitHub-Pages-Veröffentlichung erfolgreich (Workflow-Lauf `38775995321`).
 - Repository `calvinjohncamp/tfb-website`, lokaler Projektordner `tfb-kiosk`.
   GitHub ist öffentlich; private Mitgliederdaten, Meldelisten, Sicherungen und
   Schlüssel gehören niemals in Git oder das Pages-Paket.
@@ -43,6 +43,15 @@ Die folgende Zusammenfassung hat Vorrang vor den historischen Zwischenständen.
   Namen/Spaltenüberschriften und Zeilendetails; Browseraufnahmen Desktop,
   700px, 430px, 390px, 320px visuell geprüft. Bestehender Browsertest
   `tools/test-browser-chat-recovery.mjs` ebenfalls erfolgreich.
+- Abrechnungs-Vorführung: In der eigenen Abrechnungsansicht von Admins werden
+  im Demo-Backend die beiden Vormonate mit 34,80 € bzw. 23,50 € ergänzt, als
+  „eingezogen“ und „Beispiel · fiktiver Betrag“. Nur Anzeige, keine Speicherung
+  der Beispiele, keine Änderung an laufenden Käufen. Bereits vorhandene eigene
+  Monatsabrechnungen haben Vorrang; andere Mitglieder erhalten keine Beispiele.
+  Nutzer betont ausdrücklich: veröffentlichte Website ist eine Vorführung,
+  der fertige Vereinsbetrieb ist noch nicht freigegeben.
+  Prüfung: `node tools/test-browser-statement-preview.mjs` erfolgreich;
+  Desktop und Handy visuell geprüft, auch 320px ohne horizontalen Überlauf.
 - Verabreden: Einladende können direkt im Spiel weitere Mitglieder einladen.
   Zusagen über die Spielerzahl hinaus erscheinen auf der sichtbaren Ersatzbank.
   Jeder Teilnehmer einschließlich Einladendem kann mit „Kann nicht“ später absagen,

@@ -4,7 +4,7 @@ Für den schnellen Einstieg zuerst die kurze **[UEBERGABE.md](UEBERGABE.md)** le
 Diese Datei enthält alle Entscheidungen, Konzepte, offenen Punkte und den Verlauf.
 Neues bitte unten bei „Verlauf“ ergänzen.
 
-**Aktueller Stand 15.10.2026:** Strichlisten-Feinschliff v200 auf Grundlage des
+**Aktueller Stand 15.10.2026:** Vorführversion v201 mit Beispielabrechnungen auf Grundlage des
 vom Nutzer bestätigten Vorführstands v196. Verbindlicher Kurzstand und Betriebsgrenzen stehen in
 [UEBERGABE.md](UEBERGABE.md); der Abschluss ist unten dokumentiert. Frühere
 Versions- und Veröffentlichungsaussagen sind historische Zwischenstände.
@@ -1446,3 +1446,16 @@ Kränzespalte mobil minimal verbreitert, übrige Spalten entsprechend angepasst;
 Namensspalte bleibt mindestens 76px breit. Layouttest auf allen 15 Breiten
 bestanden, kleinste Ansicht visuell geprüft. Quellstand 9c08cc8,
 Pages-Lauf 38775667650.
+
+
+## Zwei abgeschlossene Beispielabrechnungen – 15.10.2026 (v201)
+
+Nutzer wünscht für die Show zwei fiktive Monatsabrechnungen unter dem aktuellen
+Monat. Im Demo-Backend ergänzt myStatements für Admins zwei fehlende Vormonate
+mit 34,80 € und 23,50 €, Status eingezogen. Kleine Kennzeichnung als Beispiel
+mit fiktivem Betrag. Beispiele werden nicht gespeichert; aktuelle Monatskäufe
+und vorhandene Monatsabschlüsse bleiben unverändert. Normale Mitglieder sehen
+keine Admin-Beispiele. Browsertest prüft Beträge/Monate, wiederholten Aufruf,
+keine Speicherung, Vorrang vorhandener Daten, Trennung nach Mitglied sowie
+Desktop/Handy. Quellstand a31c60b, Pages-Lauf 38775995321.
+Der Nutzer betont: derzeit reine Vorführung, noch keine fertige Vereinsversion.
