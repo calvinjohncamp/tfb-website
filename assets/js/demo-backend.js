@@ -268,7 +268,7 @@
   }
   // Website-Inhalte (Home, Aktuell, Sport, Club) einmalig aus den Startinhalten anlegen.
   if (!db.site && TFB.siteSeed) {
-    db.site = clone(TFB.siteSeed);
+    db.site = clone(TFB.publicSite || TFB.siteSeed);
     save(db);
   }
   // Seite heißt (wieder) „Aktuell“ – Titel und Partner-Zeile angleichen, eigene Inhalte bleiben.

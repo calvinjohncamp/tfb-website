@@ -3,13 +3,18 @@
 Repository: https://github.com/calvinjohncamp/tfb-website · Zieladresse:
 https://joern-kaemper.de. Lokaler Arbeitsordner weiterhin `tfb-kiosk/`.
 
-Veröffentlichungsvorbereitung vom 15.10.2026, Cache `tfb-kiosk-v184`.
+Veröffentlichungsvorbereitung vom 15.10.2026, Cache `tfb-kiosk-v185`.
 Die Anwendung bleibt eine Demo mit gerätebezogener Browser-Speicherung.
 Im Browser bearbeitete Inhalte/Fotos werden durch einen Git-Push nicht übertragen.
-Vor der ersten Veröffentlichung müssen die gewünschten öffentlichen Inhalte und
-Bilder aus einer aktuellen Nutzersicherung gezielt übernommen werden. Ein frischer
-Browser zeigt sonst eine weitgehend leere Home-Seite. Vollständige Browsersicherungen
-mit Konten, Chats oder Mitgliederdaten dürfen nicht ins öffentliche Repository.
+Die öffentlichen Inhalte wurden aus der lokalen Sicherung vom 15.10.2026 um 06:12
+gezielt übernommen: sechs Seiten, öffentliche Mannschafts-/Geschichtsinhalte und
+99 unterschiedliche Bilddateien. `assets/data/public-content.js` und
+`assets/content/` versorgen neue Browser mit diesen Inhalten. Bestehende lokale
+Browserinhalte werden nicht überschrieben. Die vollständige Sicherung, Konten,
+Chats, Mitgliederlisten und Verabredungen sind nicht Teil dieser Übernahme.
+Der Exporter `tools/export-public-content.py` akzeptiert einen lokalen Sicherungspfad;
+die Sicherung selbst darf niemals ins öffentliche Repository kopiert werden.
+Prüfung des Ausschlusses privater Daten: `python3 -B tools/test-public-content.py`.
 
 ## GitHub Pages
 
