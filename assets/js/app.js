@@ -251,7 +251,7 @@
         </section>
         <form class="card" data-form="consent">
           <h2>Einmal kurz zustimmen</h2>
-          <p class="muted">Der Kiosk ersetzt unsere Strichliste auf Papier. Das bedeutet:</p>
+          <p class="muted">Der Kiosk ersetzt unsere bisherige Strichliste auf Papier. Das bedeutet:</p>
           <ul class="checklist">
             ${cfg.consentPoints.map((p) => `<li>${icon.check}<span>${esc(p)}</span></li>`).join('')}
           </ul>
