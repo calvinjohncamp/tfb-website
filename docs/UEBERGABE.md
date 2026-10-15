@@ -3,6 +3,19 @@
 **Zuerst lesen.** Ausführlicher Verlauf: [PROJEKTGEDAECHTNIS.md](PROJEKTGEDAECHTNIS.md).
 Diese Zusammenfassung hat Vorrang vor älteren Zwischenständen.
 
+## Kommentar-Vorführung 15.10.2026 (v194)
+
+Chat-Beiträge haben eine flache Kommentarebene in ihrer Einzelansicht; Einstieg
+über Sprechblase/Anzahl unter dem Beitrag. Nachricht zuerst, freiwillige
+Überschrift über aufklappbaren Link. Eigene Kommentare bearbeiten/löschen,
+Verwaltung kann andere entfernen. Neue Kommentare werden für den Beitragsautor
+je Beitrag in der Klingel gebündelt; eigener Text erzeugt keinen Hinweis.
+Gelesen-Status bleibt erhalten. Kommentare bleiben lokale Demo-Daten und gehören
+in den vollständigen privaten JSON-Export; kein Cloudflare-Kommentarserver und
+keine geräteübergreifende Zustellung. Späterer Vereinsbetrieb bevorzugt Supabase.
+Details/Abgrenzungen im Projektgedächtnis. Browserprüfung: Kommentare, Rechte,
+Moderation, Klingel, Persistenz, vorhandene Gruppenhinweise und Übersichten.
+
 ## Aktuelle Entscheidung 15.10.2026: Vorführung und Vereinsbetrieb
 
 Cloudflare/D1 bleibt für die Vorführung. Für den späteren Vereinsbetrieb ist

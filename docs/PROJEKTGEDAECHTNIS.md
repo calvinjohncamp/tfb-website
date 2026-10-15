@@ -1298,3 +1298,29 @@ Nach Löschen der Browserdaten fehlen drei eigene Chat-Beiträge. Die private
 Sicherung vom 15.10.2026 enthält sie mit acht Bildern und Mannschaftszuordnungen.
 Gezielte Ergänzung vorbereiten; keine vollständige Rücksetzung, keine Sicherung
 oder private Mitgliederliste ins öffentliche Repository oder Pages-Paket aufnehmen.
+
+## Kommentare und freiwillige Überschrift – 15.10.2026
+
+Vom Nutzer beauftragt: Nachrichtentext zuerst; Überschrift bleibt freiwillig und
+wird über „Überschrift hinzufügen“ aufgeklappt. Bestehende Überschriften erhalten.
+Ohne Überschrift verwendet die Beitragsübersicht einen Textanfang und durchsucht
+weiterhin den gesamten Beitrag.
+
+Eine flache Kommentarebene unter der vollständigen Chat-Beitragsansicht. In Feed
+und Übersicht nur Einstieg/Anzahl; unter dem Beitrag Sprechblase mit „Kommentieren“
+oder Kommentarzahl. Nur angemeldete, für den Bereich berechtigte Mitglieder dürfen
+schreiben; bisherige Regeln-/Elternfreigaben gelten weiter. Eigene Kommentare
+bearbeiten/löschen, Verwaltung kann andere entfernen. Text zunächst ohne Fotos,
+verschachtelte Antworten oder Emoji-Reaktionen. Kommentare öffentlich wie der
+zugehörige Beitrag; ausgeblendete Beiträge bleiben entsprechend geschützt.
+
+Klingel: neue Kommentare nur für den Beitragsautor, je Beitrag gebündelt,
+Selbstkommentare ausgenommen. Lesen/Entfernen dauerhaft gespeichert, neue spätere
+Kommentare erzeugen erneut einen Hinweis; Bearbeitung erzeugt keinen neuen Hinweis.
+Bestehende freiwillige Gruppenbeitrags-Hinweise bleiben separat. Abonnieren von
+Unterhaltungen und Handy-Push sind weiterhin spätere Optionen.
+
+Auch Kommentare und Gelesen-Status bleiben in der aktuellen Vorführung lokal.
+Sie sind Bestandteil der vollständigen privaten JSON-Sicherung; für Vereinsbetrieb
+zusammen mit Beiträgen/Postfach nach Supabase migrieren. Keine echte Online-
+Zustellung, kein E-Mail-Versand und keine Änderung der Padel-Anwendung.

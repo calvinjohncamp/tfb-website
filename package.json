@@ -8,6 +8,7 @@
     "test:browser:meet-invite-more": "node tools/test-browser-meet-invite-more.mjs",
     "test:browser:next-match": "node tools/test-browser-next-match.mjs",
     "test:browser:chat-notices": "node tools/test-browser-chat-notices.mjs",
+    "test:browser:comments": "node tools/test-browser-comments.mjs",
     "test:browser:design-preview": "node tools/test-browser-design-preview.mjs",
     "test:browser:overview": "node tools/test-browser-overview.mjs",
     "test:browser:gallery": "node tools/test-browser-gallery.mjs",

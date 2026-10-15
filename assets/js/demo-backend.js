@@ -450,7 +450,7 @@
     const acc = author ? accountOf(author.id) : null;
     const me = sessionMemberId();
     const meM = db.members.find((m) => m.id === me);
-    return { ...clone(p), author: displayName(author), avatar: author && photoAllowed(author, meM && meM.active ? 'members' : 'public') ? (acc && acc.avatar) || null : null,
+    return { ...clone(p), commentCount: (db.community.comments || []).filter(c => c.postId === p.id).length, author: displayName(author), avatar: author && photoAllowed(author, meM && meM.active ? 'members' : 'public') ? (acc && acc.avatar) || null : null,
       mine: p.authorId === me, canModerate: Boolean(meM && meM.isAdmin), team: teamOf(p.scope) };
   }
 
@@ -779,6 +779,72 @@
     },
 
     // ---------- Clubgeflüster & Insider News ----------
+    commentNotices() {
+      const member = db.members.find(m => m.id === sessionMemberId() && m.active);
+      if (!member) return [];
+      const seen = new Set(accountOf(member.id)?.commentRead || []);
+      const own = new Map(db.community.posts.filter(p => p.authorId === member.id && !p.hidden).map(p => [p.id, p]));
+      const grouped = new Map();
+      (db.community.comments || []).filter(c => own.has(c.postId) && c.authorId !== member.id && !seen.has(c.id)
+        && Date.parse(c.createdAt) >= Date.now() - 7 * DAY).sort((a, b) => b.createdAt.localeCompare(a.createdAt)).forEach(c => {
+          if (!grouped.has(c.postId)) grouped.set(c.postId, []);
+          grouped.get(c.postId).push(c);
+        });
+      return [...grouped].map(([postId, comments]) => ({ id: 'comments-' + postId, type: 'comment', postId,
+        from: comments[0].authorId, count: comments.length, snap: { title: own.get(postId).title || own.get(postId).text.slice(0, 80) || 'Dein Beitrag' },
+        extra: {}, at: Date.parse(comments[0].createdAt), read: false }));
+    },
+    readCommentPosts(postIds) {
+      const member = requireMember();
+      const own = new Set(db.community.posts.filter(p => p.authorId === member.id && postIds.includes(p.id)).map(p => p.id));
+      const comments = db.community.comments || [];
+      const existing = new Set(comments.map(c => c.id));
+      const acc = accountOf(member.id);
+      acc.commentRead = [...new Set([...(acc.commentRead || []), ...comments.filter(c => own.has(c.postId)).map(c => c.id)])].filter(id => existing.has(id));
+      if (!save(db)) throw Error('Speichern nicht möglich.');
+    },
+    async comments(postId) {
+      const post = db.community.posts.find(p => p.id === postId);
+      const member = db.members.find(m => m.id === sessionMemberId() && m.active);
+      if (!post || (post.hidden && !member?.isAdmin && post.authorId !== member?.id)) return [];
+      return (db.community.comments || []).filter(c => c.postId === postId).sort((a, b) => a.createdAt.localeCompare(b.createdAt)).map(c => ({
+        ...clone(c), author: displayName(db.members.find(m => m.id === c.authorId)), mine: c.authorId === member?.id, canModerate: Boolean(member?.isAdmin),
+      }));
+    },
+    async addComment(postId, text) {
+      const member = requireMember();
+      const post = db.community.posts.find(p => p.id === postId && !p.hidden);
+      if (!post) throw Error('Dieser Beitrag ist nicht mehr verfügbar.');
+      if (!mayWrite(member, post.scope).ok) throw Error('Bitte zuerst die Hinweise bestätigen oder die Mannschaftsberechtigung prüfen.');
+      const value = String(text || '').trim();
+      if (!value || value.length > 2000) throw Error('Bitte einen Kommentar mit höchstens 2000 Zeichen schreiben.');
+      const next = clone(db);
+      next.community.comments = [...(next.community.comments || []), { id: 'c-' + uid(), postId, authorId: member.id, text: value, createdAt: new Date().toISOString() }];
+      if (!save(next)) throw Error('Der Kommentar konnte nicht gespeichert werden.');
+      db = next; document.dispatchEvent(new Event('tfb-chat-updated'));
+    },
+    async editComment(id, text) {
+      const member = requireMember();
+      const next = clone(db);
+      const comment = (next.community.comments || []).find(c => c.id === id);
+      if (!comment || comment.authorId !== member.id) throw Error('Du kannst nur eigene Kommentare bearbeiten.');
+      const post = next.community.posts.find(p => p.id === comment.postId && !p.hidden);
+      if (!post) throw Error('Dieser Beitrag ist nicht mehr verfügbar.');
+      const value = String(text || '').trim();
+      if (!value || value.length > 2000) throw Error('Bitte einen Kommentar mit höchstens 2000 Zeichen schreiben.');
+      comment.text = value; comment.editedAt = new Date().toISOString();
+      if (!save(next)) throw Error('Der Kommentar konnte nicht gespeichert werden.');
+      db = next; document.dispatchEvent(new Event('tfb-chat-updated'));
+    },
+    async deleteComment(id) {
+      const member = requireMember();
+      const comment = (db.community.comments || []).find(c => c.id === id);
+      if (!comment || (comment.authorId !== member.id && !member.isAdmin)) throw Error('Diesen Kommentar kannst du nicht entfernen.');
+      const next = clone(db);
+      next.community.comments = next.community.comments.filter(c => c.id !== id);
+      if (!save(next)) throw Error('Der Kommentar konnte nicht entfernt werden.');
+      db = next; document.dispatchEvent(new Event('tfb-chat-updated'));
+    },
     chatNotices() {
       const member = db.members.find(m => m.id === sessionMemberId() && m.active);
       const acc = member && accountOf(member.id);
@@ -905,6 +971,7 @@
       const p = db.community.posts.find((x) => x.id === id);
       if (!p || (p.authorId !== member.id && !member.isAdmin)) throw new Error('Diesen Beitrag kannst du nicht löschen.');
       db.community.posts = db.community.posts.filter((x) => x.id !== id);
+      if (db.community.comments) db.community.comments = db.community.comments.filter(c => c.postId !== id);
       save(db);
       document.dispatchEvent(new Event('tfb-chat-updated'));
     },

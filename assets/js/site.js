@@ -1154,6 +1154,7 @@
         ${p.title ? `<h3 class="fpost-title">${esc(p.title)}</h3>` : ''}
         ${p.text ? `<div class="fpost-text">${postText(p.text)}</div>` : ''}
         ${imgs.length ? `<div class="message-collage n${imgs.length}">${imgs.map((ref, index) => `<button type="button" class="message-photo" data-action="post-gallery" data-id="${esc(p.id)}" data-index="${index}" aria-label="Foto ${index + 1} von ${imgs.length} ansehen">${picture(ref, ref, '')}</button>`).join('')}</div>` : ''}
+        <a class="post-comments-link" href="#chat/beitrag/${encodeURIComponent(p.id)}" data-action="post-comments" data-id="${esc(p.id)}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H5l-3 3V11.5A7.5 7.5 0 0 1 9.5 4h3a7.5 7.5 0 0 1 7.5 7.5Z"/></svg>${p.commentCount ? `${p.commentCount} ${p.commentCount === 1 ? 'Kommentar' : 'Kommentare'}` : 'Kommentieren'}</a>
         ${loggedIn ? `<footer class="fpost-tools">
           ${p.mine ? `<button type="button" data-action="post-edit" data-id="${esc(p.id)}">Bearbeiten</button>${p.fromClub ? '' : `<button type="button" data-action="post-delete" data-id="${esc(p.id)}">Löschen</button>`}` : ''}
           ${p.fromClub && (p.mine || p.canModerate) ? `<button type="button" data-action="post-unteam" data-id="${esc(p.id)}" data-team="${esc(p.shownIn)}">Aus dieser Mannschaft entfernen</button>` : ''}
@@ -1162,6 +1163,35 @@
         </footer>` : ''}
       </article>`;
   }
+  async function commentsMarkup(post) {
+    const { api, state } = ui();
+    const comments = await api.comments(post.id);
+    const may = state.member ? await api.canWrite(post.scope) : { reason: 'login' };
+    return `<section class="post-comments" id="post-comments" aria-label="Kommentare">
+      <h2>${comments.length ? `${comments.length} ${comments.length === 1 ? 'Kommentar' : 'Kommentare'}` : 'Kommentare'}</h2>
+      ${comments.length ? `<div class="comment-list">${comments.map(c => `<article class="comment" data-comment="${esc(c.id)}">
+        <header><b>${esc(c.author)}</b><small>${esc(whenText(c.createdAt))}${c.editedAt ? ' · bearbeitet' : ''}</small></header>
+        <div class="comment-text">${postText(c.text)}</div>
+        ${c.mine || c.canModerate ? `<footer>${c.mine ? `<button type="button" data-action="comment-edit" data-id="${esc(c.id)}" data-post="${esc(post.id)}">Bearbeiten</button>` : ''}<button type="button" data-action="comment-delete" data-id="${esc(c.id)}">${c.mine ? 'Löschen' : 'Entfernen (Verwaltung)'}</button></footer>` : ''}
+      </article>`).join('')}</div>` : '<p class="muted">Noch keine Kommentare. Schreib die erste Antwort.</p>'}
+      ${post.hidden ? '<p class="muted">Dieser Beitrag ist ausgeblendet. Neue Kommentare sind hier nicht möglich.</p>' : may.ok ? `<form data-comment-form="${esc(post.id)}" class="comment-form">
+        <label class="field"><span>Dein Kommentar</span><textarea name="text" rows="3" maxlength="2000" required placeholder="Dein Kommentar …"></textarea></label>
+        <p class="form-error" role="alert"></p><button type="submit" class="btn signal">Senden</button></form>`
+        : state.member ? may.reason === 'team' ? '<p class="muted">Hier kommentieren die Spieler dieser Mannschaft.</p>' : `<button type="button" class="btn" data-action="comment-unlock" data-id="${esc(post.id)}">${may.reason === 'parents' ? 'Einverständnis der Eltern hinterlegen' : 'Hinweise bestätigen und kommentieren'}</button>`
+        : '<button type="button" class="btn" data-action="login">Zum Kommentieren anmelden</button>'}
+    </section>`;
+  }
+  document.addEventListener('submit', async e => {
+    const form = e.target.closest('[data-comment-form]');
+    if (!form) return;
+    e.preventDefault();
+    const button = form.querySelector('[type="submit"]'); button.disabled = true;
+    try {
+      await ui().api.addComment(form.dataset.commentForm, form.elements.text.value);
+      await ui().renderView();
+      document.getElementById('post-comments')?.scrollIntoView({ block: 'start' });
+    } catch (error) { form.querySelector('.form-error').textContent = error.message; button.disabled = false; }
+  });
   let postCache = {};
   async function feedSection(scope, opts = {}) {
     const { api, state, icon } = ui();
@@ -1214,8 +1244,9 @@
           ${imgs.length ? `<span class="message-collage n${imgs.length}">${imgs.map(ref => `<span class="message-photo">${picture(ref, ref, '')}</span>`).join('')}</span>` : ''}
           <span class="mini-head"><span class="fpost-avatar">${p.avatar ? `<img src="${esc(p.avatar)}" alt="">` : esc(initialsOf(p.author))}</span>
             <span><b>${esc(p.author)}</b><small>${esc(whenText(p.createdAt))}</small></span></span>
-          <span class="mini-where">${p.title ? esc(p.title) : p.team ? `${esc(copy.teamLabel)} · ${esc(teamLabel(p.team))}` : esc(copy.feedTitle)}</span>
-          ${p.text ? `<span class="mini-text">${esc(p.text)}</span>` : ''}
+          <span class="mini-where${p.title ? '' : ' is-excerpt'}">${p.title ? esc(p.title) : p.text ? esc(p.text.slice(0, 140)) + (p.text.length > 140 ? '…' : '') : p.team ? `${esc(copy.teamLabel)} · ${esc(teamLabel(p.team))}` : esc(copy.feedTitle)}</span>
+          ${p.title && p.text ? `<span class="mini-text">${esc(p.text)}</span>` : ''}
+          ${p.commentCount ? `<span class="mini-comment-count">${p.commentCount} ${p.commentCount === 1 ? 'Kommentar' : 'Kommentare'}</span>` : ''}
         </button>`;
     };
     return `
@@ -1252,8 +1283,10 @@
       if (!p) return `${ui().viewHead('Chat', '', false)}<p class="muted">Dieser Beitrag ist nicht mehr verfügbar.</p>`;
       postCache[p.id] = p;
       if (ui().state.member) ui().api.readChatPosts([p.id]);
+      const comments = await commentsMarkup(p);
+      if (ui().state.member) ui().api.readCommentPosts([p.id]);
       setTimeout(() => TFB.inbox?.refresh(), 0);
-      return `${ui().viewHead('Chat', '', false)}<div class="chat-stream">${postHtml(p, Boolean(ui().state.member))}</div>`;
+      return `<header class="view-head"><div><h1>Chat</h1></div><a class="view-close" href="#chat" aria-label="Zurück zum Chat">${ui().icon.close}</a></header><div class="chat-stream">${postHtml(p, Boolean(ui().state.member))}${comments}</div>`;
     }
     if (location.hash.split('/')[1] === 'alle') return overviewView();
     await ensure();
@@ -1298,8 +1331,8 @@
   function openPost(id) {
     const p = postCache[id];
     if (!p) return;
-    ui().openSheet(`<div class="editor post-sheet">${postHtml(p, Boolean(ui().state.member))}</div>`);
-    if (ui().state.member) { ui().api.readChatPosts([p.id]); TFB.inbox?.refresh(); }
+    ui().closeSheet();
+    location.hash = '#chat/beitrag/' + encodeURIComponent(id);
   }
 
   // Schreiben: Hinweise (einmalig) → bei Jugendlichen Einverständnis der Eltern → Beitrag mit bis zu 6 Fotos
@@ -1312,6 +1345,7 @@
     if (!editId && may.reason === 'rules') return openRules(scope);
     const existing = editId ? postCache[editId] : null;
     const draft = { title: existing ? (existing.title || '') : '', text: existing ? existing.text : '', images: existing ? (existing.images || []).filter(shownImage) : [], alsoTeams: existing ? (existing.alsoTeams || []) : [] };
+    let titleOpen = Boolean(draft.title);
     const myTeams = scope === 'club' ? (state.member.teams || []) : [];
     const allTeams = () => [...new Map(((TFB.teams && TFB.teams.seasons) || []).flatMap((x) => x.teams)
       .map((t) => [teamKey(t.name), t.name.replace(/\s*\(.*?\)/g, '')])).entries()].sort((a, b) => a[1].localeCompare(b[1], 'de'));
@@ -1320,8 +1354,8 @@
       openSheet(`
         <form class="editor compose" data-compose novalidate>
           <h2>${existing ? 'Beitrag bearbeiten' : isTeam ? `${esc(chatText().teamLabel)} · ${esc(teamLabel(scope.slice(5)))}` : esc(chatText().feedTitle)}</h2>
-          <input class="compose-title" name="title" maxlength="90" value="${esc(draft.title)}" placeholder="Überschrift (freiwillig), z. B. ${isTeam ? 'Auswärtssieg in Hennef' : 'Grillabend am Mittwoch'}">
           <textarea name="text" rows="5" maxlength="2000" placeholder="${isTeam ? 'Wie lief das Spiel? Was war los bei der Tour?' : 'Was gibt’s Neues im Club?'}">${esc(draft.text)}</textarea>
+          <details class="compose-heading" ${titleOpen ? 'open' : ''}><summary>${draft.title ? 'Überschrift' : 'Überschrift hinzufügen'}</summary><label class="field"><span>Überschrift (freiwillig)</span><input class="compose-title" name="title" maxlength="90" value="${esc(draft.title)}" placeholder="z. B. ${isTeam ? 'Auswärtssieg in Hennef' : 'Grillabend am Mittwoch'}"></label></details>
           <div class="compose-photos">
             ${draft.images.map((ref, i) => `<div class="gallery-thumb">${picture(ref, ref)}${frameButton(ref, true)}<button type="button" data-cremove="${i}" aria-label="Foto entfernen">×</button>
               <span class="thumb-move"><button type="button" data-cmove="${i}" data-dir="-1" ${i === 0 ? 'disabled' : ''} aria-label="Nach vorne">‹</button><button type="button" data-cmove="${i}" data-dir="1" ${i === draft.images.length - 1 ? 'disabled' : ''} aria-label="Nach hinten">›</button></span></div>`).join('')}
@@ -1339,6 +1373,7 @@
           <p class="fineprint">Öffentlich sichtbar mit deinem Namen${state.member.isMinor ? ' (Vorname und Anfangsbuchstabe)' : ''}.</p>
         </form>`);
       const form = document.querySelector('[data-compose]');
+      form.querySelector('.compose-heading').addEventListener('toggle', e => { titleOpen = e.target.open; });
       const keep = () => {
         draft.title = form.elements.title.value.trim();
         draft.text = form.elements.text.value;
@@ -1384,7 +1419,7 @@
     };
     render();
   }
-  function openRules(scope) {
+  function openRules(scope, after) {
     const { openSheet, closeSheet, api } = ui();
     openSheet(`
       <form class="editor" data-rules novalidate>
@@ -1406,10 +1441,10 @@
       if (!form.elements.ok.checked) { form.querySelector('.form-error').textContent = 'Bitte kurz bestätigen.'; return; }
       ui().state.member = await api.acceptFeedRules();
       closeSheet();
-      openCompose(scope);
+      if (after) after(); else openCompose(scope);
     });
   }
-  function openParentConsent(scope) {
+  function openParentConsent(scope, after) {
     const { openSheet, closeSheet, api, state } = ui();
     openSheet(`
       <form class="editor" data-parents novalidate>
@@ -1430,7 +1465,7 @@
       try {
         ui().state.member = await api.setParentConsent(form.elements.parent.value);
         closeSheet();
-        openCompose(scope);
+        if (after) after(); else openCompose(scope);
       } catch (ex) { err.textContent = ex.message; }
     });
   }
@@ -2780,6 +2815,39 @@
       if (grid) grid.className = `page-grid news-dates show-${aktuellTab}`;
     },
     'post-new': (el) => openCompose(el.dataset.scope),
+    'post-comments': (el) => {
+      ui().closeSheet();
+      const hash = '#chat/beitrag/' + encodeURIComponent(el.dataset.id);
+      if (location.hash !== hash) location.hash = hash;
+      else { document.getElementById('post-comments')?.scrollIntoView({ block: 'start' }); document.querySelector('[data-comment-form] textarea')?.focus(); }
+    },
+    'comment-unlock': async (el) => {
+      const post = postCache[el.dataset.id];
+      if (!post) return;
+      const resume = () => TFB.actions['comment-unlock'](el);
+      const may = await ui().api.canWrite(post.scope);
+      if (may.reason === 'parents') return openParentConsent(post.scope, resume);
+      if (may.reason === 'rules') return openRules(post.scope, resume);
+      await ui().renderView(); document.querySelector('[data-comment-form] textarea')?.focus();
+    },
+    'comment-edit': async (el) => {
+      const { api, openSheet, closeSheet, toast } = ui();
+      const comment = (await api.comments(el.dataset.post)).find(c => c.id === el.dataset.id && c.mine);
+      if (!comment) return;
+      openSheet(`<form class="editor comment-edit-form" data-comment-edit><h2>Kommentar bearbeiten</h2><label class="field"><span>Dein Kommentar</span><textarea name="text" rows="4" maxlength="2000" required>${esc(comment.text)}</textarea></label><p class="form-error" role="alert"></p><button type="submit" class="btn signal block">Speichern</button></form>`);
+      const form = document.querySelector('[data-comment-edit]');
+      form.addEventListener('submit', async e => {
+        e.preventDefault(); const button = form.querySelector('[type="submit"]'); button.disabled = true;
+        try { await api.editComment(comment.id, form.elements.text.value); closeSheet(); await ui().renderView(); toast('Kommentar gespeichert', true); }
+        catch (error) { form.querySelector('.form-error').textContent = error.message; button.disabled = false; }
+      });
+      form.elements.text.focus();
+    },
+    'comment-delete': async (el) => {
+      if (!el.dataset.armed) { el.dataset.armed = '1'; el.textContent = 'Wirklich entfernen?'; return; }
+      try { await ui().api.deleteComment(el.dataset.id); ui().toast('Kommentar entfernt', true); await ui().renderView(); }
+      catch (error) { ui().toast(error.message); }
+    },
     'portrait-edit': (el) => openPortraitEditor(el.dataset.team),
     'post-open': (el) => openPost(el.dataset.id),
     'post-edit': (el) => { const p = postCache[el.dataset.id]; if (p) openCompose(p.scope, p.id); },

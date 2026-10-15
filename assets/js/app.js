@@ -953,8 +953,8 @@
 
           <h3 class="acct-section">Benachrichtigungen</h3>
           <label class="field"><span>Klingel</span><select name="groupChatNotices">
-            <option value="off" ${m.groupChatNotices ? '' : 'selected'}>Nur Einladungen</option>
-            <option value="on" ${m.groupChatNotices ? 'selected' : ''}>Einladungen und Gruppenbeiträge</option>
+            <option value="off" ${m.groupChatNotices ? '' : 'selected'}>Einladungen und Kommentare zu meinen Beiträgen</option>
+            <option value="on" ${m.groupChatNotices ? 'selected' : ''}>Zusätzlich neue Gruppenbeiträge</option>
           </select></label>
           <label class="acct-pref"><input type="checkbox" name="infoMails" ${m.infoMails !== false ? 'checked' : ''}>
             <span><strong>E-Mail-Benachrichtigungen vom Club</strong><em>Termine, Turniere, Platzsperrungen zusätzlich per E-Mail. In der App stehen sie ohnehin unter Aktuell und im Chat. Abrechnungen bekommst du unabhängig davon.</em></span></label>

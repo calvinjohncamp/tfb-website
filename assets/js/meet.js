@@ -124,7 +124,7 @@
       if (m.responses[p]) data.inbox[data.inbox.length - 1].read = true;   // schon beantwortet
     });
   }
-  const myInbox = () => (me() ? [...data.inbox.filter((n) => n.to === me().id), ...ui().api.chatNotices()].sort((a, b) => b.at - a.at) : []);
+  const myInbox = () => (me() ? [...data.inbox.filter((n) => n.to === me().id), ...ui().api.chatNotices(), ...(ui().api.commentNotices?.() || [])].sort((a, b) => b.at - a.at) : []);
   const unread = () => myInbox().filter((n) => !n.read).length;
   const bellSvg = '<svg viewBox="0 0 24 24"><path d="M6 16.5V11a6 6 0 0 1 12 0v5.5l1.5 2h-15z"/><path d="M10 20.5a2.2 2.2 0 0 0 4 0"/></svg>';
   function bellButton() {
@@ -823,6 +823,7 @@
       'group-complete': `<b>Alle haben bestätigt:</b> „${esc(n.snap.title)}“ ist komplett`,
       'group-joined': `<b>Du bist jetzt Mitglied</b> der Gruppe „${esc(n.snap.title)}“`,
       chat: `<b>${esc(who(n))}</b> · ${n.count === 1 ? 'Neuer Chat-Beitrag' : `${n.count} neue Chat-Beiträge`}`,
+      comment: `<b>${n.count === 1 ? 'Neuer Kommentar' : `${n.count} neue Kommentare`}</b> zu deinem Beitrag`,
     }[n.type] || esc(n.snap.title));
     const pending = (n) => {
       if (n.type === 'group-invite') { const g = group(n.groupId); return Boolean(g && (g.pending || []).includes(me().id)); }
@@ -835,12 +836,12 @@
         <h2>Postfach</h2>
         ${items.length ? `<div class="inbox-list">${items.map((n) => {
           const isGroup = n.type.startsWith('group-');
-          const gone = n.type === 'chat' ? false : isGroup ? !group(n.groupId) : !meetById(n.meetId);
+          const gone = n.type === 'chat' || n.type === 'comment' ? false : isGroup ? !group(n.groupId) : !meetById(n.meetId);
           const tag = pending(n) ? `<span class="meet-mine open">${isGroup ? 'Bestätigen' : 'Antworten'}</span>` : '';
           return `<div class="inbox-item ${n.read ? '' : 'unread'} ${gone ? 'gone' : ''}">
             <button type="button" class="inbox-open" data-open="${esc(n.id)}">
               <span class="inbox-dot" aria-hidden="true"></span>
-              <span class="inbox-text"><span>${text(n)}</span><small>${esc(n.type === 'chat' ? n.snap.title : isGroup ? 'Gruppe' : n.type === 'invite' || n.type === 'remind' || n.type === 'cancel' ? when(n) : `${n.snap.title} · ${when(n)}`)}${n.extra && n.extra.note ? ` · „${esc(n.extra.note)}“` : ''} · ${esc(ago(n.at))}</small></span>
+              <span class="inbox-text"><span>${text(n)}</span><small>${esc(n.type === 'chat' || n.type === 'comment' ? n.snap.title : isGroup ? 'Gruppe' : n.type === 'invite' || n.type === 'remind' || n.type === 'cancel' ? when(n) : `${n.snap.title} · ${when(n)}`)}${n.extra && n.extra.note ? ` · „${esc(n.extra.note)}“` : ''} · ${esc(ago(n.at))}</small></span>
               ${tag}
             </button>
             ${tag ? '' : `<button type="button" class="inbox-del" data-del="${esc(n.id)}" aria-label="Aus dem Postfach entfernen">${ui().icon.close}</button>`}
@@ -855,6 +856,8 @@
         const drop = del ? [del.dataset.del] : myInbox().filter((n) => !pending(n)).map((n) => n.id);
         const postIds = myInbox().filter(n => n.type === 'chat' && drop.includes(n.id)).flatMap(n => n.postIds);
         if (postIds.length) ui().api.readChatPosts(postIds);
+        const commentPosts = myInbox().filter(n => n.type === 'comment' && drop.includes(n.id)).map(n => n.postId);
+        if (commentPosts.length) ui().api.readCommentPosts(commentPosts);
         data.inbox = data.inbox.filter((n) => !drop.includes(n.id));
         save(); refreshBell(); openInbox(); return;
       }
@@ -862,7 +865,13 @@
       if (!it) return;
       const n = myInbox().find((x) => x.id === it.dataset.open);
       if (!n) return;
-      if (n.type === 'chat') { closeSheet(); location.hash = '#chat/beitrag/' + encodeURIComponent(n.postId); return; }
+      if (n.type === 'chat' || n.type === 'comment') {
+        if (n.type === 'comment') ui().api.readCommentPosts([n.postId]);
+        closeSheet(); refreshBell();
+        const hash = '#chat/beitrag/' + encodeURIComponent(n.postId);
+        if (location.hash === hash) ui().renderView(); else location.hash = hash;
+        return;
+      }
       if (!(n.type === 'invite' || n.type === 'group-invite') || !pending(n)) n.read = true;
       save(); refreshBell(); closeSheet();
       if (n.type === 'group-invite' && pending(n)) { if (!location.hash.startsWith('#treffen')) location.hash = '#treffen'; setTimeout(() => openGroupAnswer(n.groupId), 50); return; }
