@@ -6,6 +6,10 @@ _site/
 *.xls
 *.csv
 .env*
+.dev.vars*
+server/cloudflare/.wrangler/
+.private/
+__pycache__/
 
 # Spielermeldungen aus nuLiga (enthalten Namen) – nur lokal
 assets/data/rosters.js

@@ -1,0 +1,24 @@
+export const managementPage = `<!doctype html>
+<html lang="de"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TFB · Mitgliederzugang verwalten</title>
+<style>body{font:16px system-ui;max-width:700px;margin:40px auto;padding:20px;background:#faf9f6;color:#242421}label{display:block;margin:16px 0}input{display:block;padding:10px;width:95%;font:inherit}button{padding:12px;font:inherit;cursor:pointer}section{padding:20px;background:white;margin:20px 0;border:1px solid #ddd;border-radius:12px}pre{white-space:pre-wrap;overflow-wrap:anywhere}#notice{white-space:pre-wrap}li{margin:12px 0}.muted{color:#666}</style>
+<h1>TFB-Mitgliederzugang</h1><p class="muted">Verwaltung für den geschützten Zugang zur Website.</p>
+<p id="notice" role="status"></p>
+<section id="login"><h2>Anmelden</h2><form id="login-form"><label>E-Mail oder Mitgliedsnummer<input name="identifier" required autocomplete="username"></label><label>Passwort<input name="password" type="password" required autocomplete="current-password"></label><button>Anmelden</button></form>
+<details><summary>Einmalige Ersteinrichtung</summary><form id="setup-form">
+<label>Einrichtungsschlüssel<input name="setupToken" type="password" required autocomplete="off"></label>
+<label>Vorname<input name="firstName" required autocomplete="given-name"></label><label>Nachname<input name="lastName" required autocomplete="family-name"></label>
+<label>E-Mail<input name="email" type="email" required autocomplete="username"></label><label>Neues Passwort (mindestens 12 Zeichen)<input name="password" type="password" minlength="12" required autocomplete="new-password"></label><button>Verwaltung einrichten</button></form></details></section>
+<section id="admin" hidden><h2>Freischaltcode erstellen</h2><p>Suche das Mitglied, für das du den Zugang freigeben möchtest. Ein neuer Code ersetzt den vorherigen. Die Weitergabe erfolgt persönlich durch die Verwaltung.</p>
+<form id="search-form"><label>Name (mindestens 2 Zeichen)<input name="q" minlength="2" required autocomplete="off"></label><button>Suchen</button></form><ul id="results"></ul><pre id="code"></pre>
+<button id="logout">Abmelden</button></section>
+<script>
+let token=sessionStorage.getItem('tfb-admin-session')||'';
+const notice=document.getElementById('notice');
+async function call(path,data){const res=await fetch(path,{method:data===undefined?'GET':'POST',headers:{...(data===undefined?{}:{'Content-Type':'application/json'}),...(token?{'Authorization':'Bearer '+token}:{})},...(data===undefined?{}:{body:JSON.stringify(data)})});const value=await res.json();if(!res.ok)throw Error(value.error||'Anfrage fehlgeschlagen.');return value;}
+function show(member){document.getElementById('login').hidden=!!member;document.getElementById('admin').hidden=!member?.isAdmin;notice.textContent=member?(member.isAdmin?'Angemeldet als '+member.firstName+' '+member.lastName: 'Dieses Konto hat keine Verwaltungsrechte.'):'';}
+for(const [id,path] of [['login-form','/auth/login'],['setup-form','/setup']])document.getElementById(id).addEventListener('submit',async e=>{e.preventDefault();const button=e.target.querySelector('button');button.disabled=true;try{const result=await call(path,Object.fromEntries(new FormData(e.target)));token=result.token;sessionStorage.setItem('tfb-admin-session',token);e.target.reset();show(result.member);}catch(err){notice.textContent=err.message;}finally{button.disabled=false;}});
+document.getElementById('search-form').addEventListener('submit',async e=>{e.preventDefault();const list=document.getElementById('results');list.replaceChildren();document.getElementById('code').textContent='';try{const rows=await call('/members/search?q='+encodeURIComponent(new FormData(e.target).get('q')));for(const m of rows){const li=document.createElement('li'),button=document.createElement('button');button.textContent=m.firstName+' '+m.lastName+' – Code erstellen';button.onclick=async()=>{button.disabled=true;try{const r=await call('/admin/activation',{memberId:m.id});document.getElementById('code').textContent=m.firstName+' '+m.lastName+'\u005cnFreischaltcode: '+r.code+'\u005cnGültig bis: '+new Date(r.expiresAt).toLocaleString('de-DE');}catch(err){notice.textContent=err.message;}finally{button.disabled=false;}};li.append(button);list.append(li);}if(!rows.length)notice.textContent='Keine passenden Mitglieder gefunden. Die Liste wird über dein Website-Profil importiert.';}catch(err){notice.textContent=err.message;}});
+document.getElementById('logout').onclick=async()=>{try{await call('/auth/logout',{});}finally{token='';sessionStorage.removeItem('tfb-admin-session');document.getElementById('results').replaceChildren();document.getElementById('code').textContent='';show(null);}};
+if(token)call('/auth/session').then(r=>show(r.member)).catch(()=>{token='';sessionStorage.removeItem('tfb-admin-session');show(null);});
+</script></html>`;

@@ -1,0 +1,14 @@
+{
+  "name": "tfb-api",
+  "main": "worker.mjs",
+  "account_id": "ddaa9b6249d604142f268cb4b9c16d70",
+  "compatibility_date": "2026-10-15",
+  "workers_dev": true,
+  "rules": [{ "type": "Text", "globs": ["**/*.sql"], "fallthrough": true }],
+  "d1_databases": [{
+    "binding": "DB",
+    "database_name": "tfb-website",
+    "database_id": "89c7e329-d351-483b-8c55-f2c0ec87c42c"
+  }],
+  "observability": { "enabled": false }
+}

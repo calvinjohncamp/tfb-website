@@ -10,6 +10,13 @@ TFB.config = {
   // 'demo' = alle Daten bleiben auf diesem Gerät (bis Supabase verfügbar ist).
   backend: 'demo',
 
+  // Enable only after server setup, owner login and denied-access tests pass.
+  memberDirectory: {
+    enabled: false,
+    url: 'https://tfb-api.calvinjohncamp.workers.dev',
+    hosts: ['joern-kaemper.de', 'www.joern-kaemper.de', 'calvinjohncamp.github.io'],
+  },
+
   // Werbung für die Padel-Buchungs-App des Vereins (eigener Menüpunkt).
   padelUrl: 'https://padel-bielstein.de',
 

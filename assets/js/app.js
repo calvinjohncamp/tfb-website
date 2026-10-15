@@ -156,14 +156,14 @@
     if (s === 'email') {
       body = `
         <h2>Anmelden</h2>
-        <p class="muted">Mit der E-Mail-Adresse, die der Verein von dir hat.</p>
-        <label class="field"><span>E-Mail</span>
-          <input name="email" type="email" inputmode="email" autocomplete="email" required value="${esc(state.authEmail)}" placeholder="name@beispiel.de">
+        <p class="muted">${api.secureDirectory ? 'Mit deiner beim Verein hinterlegten E-Mail oder deiner Mitgliedsnummer.' : 'Mit der E-Mail-Adresse, die der Verein von dir hat.'}</p>
+        <label class="field"><span>${api.secureDirectory ? 'E-Mail oder Mitgliedsnummer' : 'E-Mail'}</span>
+          <input name="email" type="${api.secureDirectory ? 'text' : 'email'}" inputmode="${api.secureDirectory ? 'text' : 'email'}" autocomplete="username" required value="${esc(state.authEmail)}" placeholder="${api.secureDirectory ? 'E-Mail oder Mitgliedsnummer' : 'name@beispiel.de'}">
         </label>
         <button class="btn primary block" type="submit">Weiter</button>`;
     } else if (s === 'password') {
       body = `
-        <h2>Hallo ${esc(state.authFirstName)}!</h2>
+        <h2>${api.secureDirectory ? 'Anmelden' : `Hallo ${esc(state.authFirstName)}!`}</h2>
         <p class="muted">${esc(state.authEmail)}</p>
         <label class="field"><span>Passwort</span>
           ${pwInput('name="password" autocomplete="current-password" required autofocus')}
@@ -172,16 +172,18 @@
         <div class="auth-links">
           <button type="button" class="link" data-action="auth-back">Andere E-Mail</button>
           <button type="button" class="link" data-action="forgot">Passwort vergessen?</button>
+          ${api.secureDirectory ? '<button type="button" class="link" data-action="auth-activate">Ich habe einen Freischaltcode</button>' : ''}
         </div>`;
     } else if (s === 'create') {
       body = `
-        <h2>Willkommen, ${esc(state.authFirstName)}!</h2>
-        <p class="muted">Du stehst in der Mitgliederliste der ${esc(cfg.clubName)}. Leg einmalig ein Passwort fest – danach bleibst du auf diesem Handy angemeldet.</p>
+        <h2>${api.secureDirectory ? 'Zugang freischalten' : `Willkommen, ${esc(state.authFirstName)}!`}</h2>
+        <p class="muted">${api.secureDirectory ? 'Verwende deinen persönlichen Freischaltcode vom Verein und lege ein neues Passwort fest. Der Code ist nur einmal verwendbar.' : `Du stehst in der Mitgliederliste der ${esc(cfg.clubName)}. Leg einmalig ein Passwort fest – danach bleibst du auf diesem Handy angemeldet.`}</p>
+        ${api.secureDirectory ? '<label class="field"><span>Freischaltcode</span><input name="activationCode" autocomplete="one-time-code" required></label>' : ''}
         <label class="field"><span>Neues Passwort</span>
-          ${pwInput('name="password" autocomplete="new-password" minlength="8" required autofocus placeholder="mindestens 8 Zeichen"')}
+          ${pwInput(`name="password" autocomplete="new-password" minlength="${api.secureDirectory ? 12 : 8}" required autofocus placeholder="mindestens ${api.secureDirectory ? 12 : 8} Zeichen"`)}
         </label>
         <label class="field"><span>Passwort wiederholen</span>
-          ${pwInput('name="password2" autocomplete="new-password" minlength="8" required')}
+          ${pwInput(`name="password2" autocomplete="new-password" minlength="${api.secureDirectory ? 12 : 8}" required`)}
         </label>
         <button class="btn primary block" type="submit">Passwort festlegen</button>
         <div class="auth-links"><button type="button" class="link" data-action="auth-back">Andere E-Mail</button></div>`;
@@ -216,7 +218,7 @@
     try {
       if (state.authStep === 'email') {
         const email = String(data.get('email') || '').trim();
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error('Bitte eine gültige E-Mail-Adresse eingeben.');
+        if (api.secureDirectory ? !email || email.length > 160 || /[\u0000-\u001f]/.test(email) : !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error(api.secureDirectory ? 'Bitte E-Mail oder Mitgliedsnummer eingeben.' : 'Bitte eine gültige E-Mail-Adresse eingeben.');
         state.authEmail = email;
         const res = await api.lookupEmail(email);
         state.authFirstName = res.firstName || '';
@@ -227,9 +229,9 @@
         state.member = await api.signIn(state.authEmail, String(data.get('password') || ''));
       } else if (state.authStep === 'create') {
         const pw = String(data.get('password') || '');
-        if (pw.length < 8) throw new Error('Bitte mindestens 8 Zeichen verwenden.');
+        if (pw.length < (api.secureDirectory ? 12 : 8)) throw new Error(`Bitte mindestens ${api.secureDirectory ? 12 : 8} Zeichen verwenden.`);
         if (pw !== String(data.get('password2') || '')) throw new Error('Die beiden Passwörter sind nicht gleich.');
-        state.member = await api.createPassword(state.authEmail, pw);
+        state.member = await api.createPassword(state.authEmail, pw, String(data.get('activationCode') || '').trim());
       }
       state.authStep = 'email';
       render();
@@ -1268,8 +1270,9 @@
     else if (action === 'profile') openProfile();
     else if (action === 'close-sheet') closeSheet();
     else if (action === 'auth-back') { state.authStep = 'email'; showAuth(); }
+    else if (action === 'auth-activate') { state.authStep = 'create'; showAuth(); }
     else if (action === 'login') { if (currentView() === 'kiosk') renderView(); else location.hash = '#kiosk'; }
-    else if (action === 'forgot') toast('Passwort-Zurücksetzen per Mail kommt mit dem Echtbetrieb.');
+    else if (action === 'forgot') toast(api.secureDirectory ? 'Bitte beim Verein einen neuen persönlichen Freischaltcode anfordern. Damit kannst du ein neues Passwort festlegen.' : 'Passwort-Zurücksetzen per Mail kommt mit dem Echtbetrieb.');
     else if (action === 'demo-fill') {
       state.authEmail = api.demoLogin.email;
       state.authStep = 'email';

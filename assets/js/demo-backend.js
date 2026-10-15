@@ -683,6 +683,17 @@
     mode: 'demo',
     demoLogin: DEMO_LOGIN,
 
+    // UI bridge for a server-verified identity. No authorization relies on this
+    // local record: the protected directory independently verifies its token.
+    attachDirectoryMember(member) {
+      if (!member) { setSession(null); return null; }
+      const old = db.members.find(m => m.id === member.id);
+      if (old) Object.assign(old, member); else db.members.push({ ...member });
+      if (!accountOf(member.id)) db.accounts.push({ memberId: member.id, passwordHash: null });
+      save(db); setSession(member.id);
+      return publicMember(old || db.members.find(m => m.id === member.id));
+    },
+
     async session() {
       const id = sessionMemberId();
       const member = db.members.find((m) => m.id === id && m.active);

@@ -26,6 +26,8 @@ try {
     const db = JSON.parse(localStorage.getItem('tfb_kiosk_demo_v1'));
     db.accounts = [{ memberId: 'm-demo', consentVersion: TFB.config.consentVersion }];
     const refs = ['kai-eichmann', 'thomas-heine', 'katja-kuepper', 'katharina-pollmann', 'daniel-pollmann'].map(name => `assets/images/board/${name}.jpg`);
+    // Keep public editorial copy, but use only synthetic photo modules here.
+    for (const key of ['home', 'aktuell']) db.site.pages[key].blocks = db.site.pages[key].blocks.filter(b => !['gallery', 'collage'].includes(b.type));
     for (const key of ['home', 'aktuell']) for (const type of ['gallery', 'collage']) db.site.pages[key].blocks.push({
       id: type + '-' + key, type, title: 'Clubabend in Bildern', date: '2026-10-13',
       images: refs, text: 'Unser gemeinsamer Clubabend.\n\nEin zweiter Absatz bei den Fotos.', showText: true,
