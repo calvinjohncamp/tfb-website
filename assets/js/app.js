@@ -606,7 +606,7 @@
 
   // ---------- Strichliste ----------
   // Zuordnung der fünf Strichlistenspalten über den Bereich im Sortiment (demo-backend.js).
-  const TALLY_CATS = [['drinks', 'Getränke', 'Getränke'], ['kranz', 'Kranz', 'Kranz'], ['snacks', 'Snacks', 'Snacks'], ['spielbetrieb', 'Spielbetrieb', 'Spiel'], ['equipment', 'Equipment', 'Equip.']];
+  const TALLY_CATS = [['drinks', 'Getränke', 'Getränke'], ['kranz', 'Kränze', 'Kränze'], ['snacks', 'Snacks', 'Snacks'], ['spielbetrieb', 'Spielbetrieb', 'Spiel'], ['equipment', 'Equipment', 'Equip.']];
   async function tallyView() {
     const rows = await api.tally();
     const from = new Date(Date.now() - (cfg.tallyDays - 1) * 864e5);
