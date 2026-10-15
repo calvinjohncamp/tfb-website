@@ -1273,3 +1273,28 @@ Monatsabschluss.
   desselben Serientags und eigenes Wochentagsfeld in Details. Fokus-/Einladungs-/
   Galerie-/Übersichtstests positiv. Projektgedächtnis und Übergaben aktualisiert,
   kein Commit/Push/Deployment/neuer Tag/JSON-Export. Aktueller Abschnitt oben gilt.
+
+## Verbindliche Betriebsentscheidung 15.10.2026
+
+Für die Vorführung bleibt der vorhandene Cloudflare-Worker mit D1 für Anmeldung
+und geschützte Mitgliedersuche aktiv. Kiosk, Chat, Verabredungen und Postfächer
+bleiben bislang lokale Simulationen; Veröffentlichung allein macht sie nicht
+zu geräteübergreifenden Vereinsdaten.
+
+Für einen später vom Verein beschlossenen Echtbetrieb bevorzugt der Nutzer
+Supabase im Vereinsumfeld, weil Supabase bereits für die Padel-App vorhanden ist.
+Kein zusätzliches Cloudflare-Konto für den Verein planen. Vor der Umstellung
+Vereinsorganisation, separates Projekt und Zuständigkeiten prüfen; bestehende
+Padel-Daten/Anmeldung nicht nebenbei ändern. Noch keine Migration beauftragt.
+GitHub bleibt für Code/Website. Nachrichten bleiben im Klingel-Postfach ohne
+E-Mail-Zustellung; persönliche Freischaltcodes dienen derzeit der Zugangshilfe.
+
+Spieler einschließlich Einladender dürfen ihre Zusage später über „Kann nicht“
+ändern, bleiben unter „abgesagt“ sichtbar und geben ihren Platz an den ersten
+Ersatz weiter. Diese bestehende Funktion beibehalten. „Weitere Mitglieder einladen“
+in der Terminansicht ist vom Nutzer bestätigt.
+
+Nach Löschen der Browserdaten fehlen drei eigene Chat-Beiträge. Die private
+Sicherung vom 15.10.2026 enthält sie mit acht Bildern und Mannschaftszuordnungen.
+Gezielte Ergänzung vorbereiten; keine vollständige Rücksetzung, keine Sicherung
+oder private Mitgliederliste ins öffentliche Repository oder Pages-Paket aufnehmen.

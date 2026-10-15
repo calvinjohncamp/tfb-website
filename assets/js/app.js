@@ -626,7 +626,7 @@
           };
           return `
             <button type="button" class="paper-row tally-row ${r.isMe ? 'me' : ''} ${open ? 'open' : ''}" data-action="tally-row" data-key="${esc(key)}" aria-expanded="${open}">
-              <span class="paper-name">${esc(r.lastName)}, ${esc(r.firstName)}${r.isMe ? ' <em>du</em>' : ''}</span>
+              <span class="paper-name"><span class="paper-name-part">${esc(r.lastName)},</span> <span class="paper-name-part">${esc(r.firstName)}</span>${r.isMe ? ' <em>du</em>' : ''}</span>
               ${TALLY_CATS.map(([c]) => cell(c)).join('')}
               ${open ? `<span class="paper-detail">${detail}</span>` : ''}
             </button>`;
@@ -985,6 +985,7 @@
             <div class="admin-links">
               <button type="button" class="btn primary" data-action="backup-save">Inhalte sichern</button>
               <label class="btn">Sicherung laden<input type="file" accept=".json,application/json" data-backup-input hidden></label>
+              <label class="btn">Chat-Beiträge ergänzen<input type="file" accept=".json,application/json" data-chat-restore-input hidden></label>
             </div>
             ${TFB.autosave ? `<h3 class="font-group">Automatisch sichern</h3>${TFB.autosave.box()}` : ''}
           </section>
@@ -1221,6 +1222,19 @@
   }
 
   document.addEventListener('change', async (e) => {
+    if (e.target.matches('[data-chat-restore-input]') && e.target.files[0]) {
+      try {
+        const file = e.target.files[0]; e.target.value = '';
+        const data = JSON.parse(await file.text());
+        const plan = await api.restoreChatPosts(data);
+        if (!plan.added) { toast('Alle Beiträge sind bereits vorhanden. Es wurde nichts geändert.'); return; }
+        if (!confirm(`${plan.added} Chat-Beiträge mit ${plan.photos} Fotos ergänzen?\n\nVorhandene Beiträge und andere Daten bleiben erhalten. Die ergänzten Beiträge gehören zu deinem angemeldeten Konto; ihre Mannschaftszuordnungen bleiben bestehen.`)) return;
+        const result = await api.restoreChatPosts(data, { apply: true });
+        closeSheet(); location.hash = '#chat'; render();
+        toast(`${result.added} Chat-Beiträge wiederhergestellt`, true);
+      } catch (error) { toast(error.message || 'Die Chat-Beiträge konnten nicht geladen werden.'); }
+      return;
+    }
     if (e.target.matches('[data-backup-input]') && e.target.files[0]) {
       const file = e.target.files[0];
       e.target.value = '';

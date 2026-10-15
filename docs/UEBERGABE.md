@@ -3,6 +3,15 @@
 **Zuerst lesen.** Ausführlicher Verlauf: [PROJEKTGEDAECHTNIS.md](PROJEKTGEDAECHTNIS.md).
 Diese Zusammenfassung hat Vorrang vor älteren Zwischenständen.
 
+## Aktuelle Entscheidung 15.10.2026: Vorführung und Vereinsbetrieb
+
+Cloudflare/D1 bleibt für die Vorführung. Für den späteren Vereinsbetrieb ist
+Supabase im bereits vorhandenen Vereinsumfeld bevorzugt; kein zusätzliches
+Cloudflare-Vereinskonto planen. Noch keine Migration, Padel nicht verändern.
+Klingel-Postfach ohne E-Mail bleibt gewünscht. Details stehen am Ende des
+Projektgedächtnisses. Ältere Aussagen zu fehlender Veröffentlichung sind historisch:
+Die Website ist inzwischen unter https://joern-kaemper.de veröffentlicht.
+
 ## Kühle Welt als Standard, zwei Admin-Optionen (v183)
 
 Nutzer bevorzugt neue Typografie/Menü und aufgeräumten Kiosk; kühle Welt mit neuen

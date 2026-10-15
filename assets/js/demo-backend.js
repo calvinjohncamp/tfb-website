@@ -987,6 +987,47 @@
       validatePhotos(data);
       return data;
     },
+    // Add only recovered own posts and their photos; never replace the database.
+    async restoreChatPosts(data, { apply = false } = {}) {
+      const member = requireAdmin();
+      if (data?.format !== 'tfb-chat-wiederherstellung' || data.version !== 1 || !Array.isArray(data.posts)
+        || !data.posts.length || data.posts.length > 100 || !data.images || typeof data.images !== 'object') throw Error('Das ist keine Datei zur Chat-Wiederherstellung.');
+      const clean = data.posts.map(p => {
+        if (!p || typeof p.id !== 'string' || !p.id.startsWith('p-') || p.id.length > 160
+          || typeof p.text !== 'string' || p.text.length > 20000 || !Number.isFinite(Date.parse(p.createdAt))
+          || !(p.scope === 'club' || /^team:[a-z0-9-]{1,80}$/.test(p.scope))
+          || !Array.isArray(p.images) || p.images.length > 6 || !Array.isArray(p.alsoTeams || [])
+          || (p.alsoTeams || []).some(t => typeof t !== 'string' || !/^[a-z0-9-]{1,80}$/.test(t))) throw Error('Die Chat-Datei enthält einen ungültigen Beitrag.');
+        return { id: p.id, scope: p.scope, title: String(p.title || '').slice(0, 90), text: p.text,
+          createdAt: p.createdAt, ...(p.editedAt ? { editedAt: p.editedAt } : {}), authorId: member.id,
+          images: p.images.slice(), alsoTeams: (p.alsoTeams || []).slice() };
+      });
+      if (new Set(clean.map(p => p.id)).size !== clean.length) throw Error('Die Chat-Datei enthält doppelte Beiträge.');
+      const existing = new Set(db.community.posts.map(p => p.id));
+      const fresh = clean.filter(p => !existing.has(p.id));
+      const photos = new Map();
+      fresh.forEach(p => p.images.forEach(ref => {
+        if (typeof ref !== 'string' || !ref.startsWith('img:') || typeof data.images[ref] !== 'string'
+          || !/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(data.images[ref])) throw Error('In der Chat-Datei fehlt ein Foto oder es ist beschädigt.');
+        if (!photos.has(ref)) photos.set(ref, { id: 'img:' + uid(), data: data.images[ref] });
+      }));
+      const plan = { found: clean.length, added: fresh.length, skipped: clean.length - fresh.length, photos: photos.size };
+      if (!apply || !fresh.length) return plan;
+      await imageTask(imageDatabase(), 'readwrite', store => {
+        photos.forEach(photo => store.put(photo.data, photo.id)); return () => null;
+      });
+      try {
+        const next = clone(db);
+        fresh.forEach(p => { if (!next.community.posts.some(old => old.id === p.id)) next.community.posts.push({ ...p, images: p.images.map(ref => photos.get(ref).id) }); });
+        if (!save(next)) throw Error('Die Beiträge konnten nicht gespeichert werden. Bisherige Daten bleiben erhalten.');
+        db = next;
+      } catch (error) {
+        await imageTask(imageDatabase(), 'readwrite', store => { photos.forEach(photo => store.delete(photo.id)); return () => null; }).catch(() => {});
+        throw error;
+      }
+      document.dispatchEvent(new Event('tfb-chat-updated'));
+      return plan;
+    },
     async importAll(data) {
       const member = requireMember();
       if (!member.isAdmin) throw new Error('Nur Admins dürfen Sicherungen laden.');

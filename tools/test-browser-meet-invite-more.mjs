@@ -77,6 +77,23 @@ try {
   await page.screenshot({ path: '/tmp/tfb-invite-more-result.png' });
   await page.reload();
   await page.locator('[data-member="extra-two"] .meet-pill').getByText('Ersatz 1').waitFor();
+  // A player can change a previous yes to no; the first standby player moves up.
+  await page.evaluate(() => localStorage.setItem('tfb_kiosk_demo_session_v1', 'm4'));
+  await page.reload();
+  await page.waitForFunction(() => TFB.ui?.state.member?.id === 'm4');
+  await page.locator('[data-action="meet-answer"][data-answer="no"]').click();
+  await page.locator('.meet-row.no').filter({ hasText: '✗ abgesagt' }).first().waitFor();
+  const changed = await page.evaluate(() => JSON.parse(localStorage.getItem('tfb_meet_demo_v2')));
+  assert.equal(changed.meets[0].responses.m4.a, 'no');
+  assert.ok(changed.inbox.some(n => n.to === 'extra-two' && n.type === 'moved'));
+  // The organiser can also withdraw without cancelling the whole meeting.
+  await page.evaluate(() => localStorage.setItem('tfb_kiosk_demo_session_v1', 'm-demo'));
+  await page.reload();
+  await page.waitForFunction(() => TFB.ui?.state.member?.id === 'm-demo');
+  await page.locator('[data-action="meet-answer"][data-answer="no"]').click();
+  const withdrawn = await page.evaluate(() => JSON.parse(localStorage.getItem('tfb_meet_demo_v2')));
+  assert.equal(withdrawn.meets[0].responses['m-demo'].a, 'no');
+  assert.equal(withdrawn.meets.length, 1);
   // An invited member cannot access the organiser's add-invitees action.
   await page.evaluate(() => localStorage.setItem('tfb_kiosk_demo_session_v1', 'm4'));
   await page.reload();
