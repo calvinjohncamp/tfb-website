@@ -1,5 +1,10 @@
 # Geschütztes Mitgliederverzeichnis ohne Supabase
 
+Stand 15.10.2026: Worker online, Version `62b9877d-310b-4c93-8c49-4dda18f35d52`.
+Health-Check 200; anonyme Suche/Verwaltung 401; fremder Browser-Ursprung 403.
+Secrets ausschließlich im Worker und lokal unter `.private/`. Verwaltungskonto,
+geschützter Import und Einschaltung der Website-Anbindung stehen noch aus.
+
 Worker `tfb-api`, D1 `tfb-website`, Binding `DB`. Getrennt von den vorhandenen
 Folio- und Padel-Anwendungen. Die Datenbankkennung in `wrangler.jsonc` ist keine
 Zugangsberechtigung. Vollständige Mitgliederlisten, Konten, Freischaltcodes und
@@ -35,7 +40,7 @@ Cloudflare-Zugangsdaten gehören niemals in Git oder das Pages-Paket.
 ## Einrichtung
 
 1. Lokal mit Wrangler bei Cloudflare anmelden. Erforderliche OAuth-Rechte:
-   `account:read`, `user:read`, `workers:write`, `d1:write`.
+   `account:read`, `user:read`, `workers:write`, `workers_scripts:write`, `d1:write`.
 2. `wrangler deploy --config server/cloudflare/wrangler.jsonc` ersetzt nur
    den Platzhalter `tfb-api` und erhält das konfigurierte D1-Binding.
 3. Zwei zufällige Server-Secrets `PASSWORD_PEPPER` und `SETUP_TOKEN` setzen.
