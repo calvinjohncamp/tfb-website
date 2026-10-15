@@ -71,6 +71,13 @@ try {
       }) };
     }, file);
     assert.equal(restored.complete, true);
+    for (const post of file.posts) {
+      await page.evaluate(id => { location.hash = '#chat/beitrag/' + id; }, post.id);
+      await page.waitForFunction(({ id, count }) => {
+        const photos = document.querySelector(`[data-post="${id}"]`)?.querySelectorAll('.message-photo img');
+        return photos?.length === count && [...photos].every(img => img.complete && img.naturalWidth > 0);
+      }, { id: post.id, count: post.images.length });
+    }
     console.log('Private recovery file verified locally:', restored.result);
   }
   // The profile's targeted picker imports only the supplied posts after confirmation.
@@ -78,9 +85,14 @@ try {
   await page.locator('[data-action="profile"]').first().click();
   page.once('dialog', dialog => dialog.accept());
   await page.locator('[data-chat-restore-input]').setInputFiles({ name: 'Chat-Wiederherstellung.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify({
-    format: 'tfb-chat-wiederherstellung', version: 1, images: {}, posts: [{ id: 'p-ui-recovery', scope: 'club', title: 'Über Dateiauswahl', text: 'Ergänzung', images: [], alsoTeams: [], createdAt: '2026-10-12T10:00:00Z' }],
+    format: 'tfb-chat-wiederherstellung', version: 1,
+    images: { 'img:picker-photo': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jR1kAAAAASUVORK5CYII=' },
+    posts: [{ id: 'p-ui-recovery', scope: 'club', title: 'Über Dateiauswahl', text: 'Ergänzung', images: ['img:picker-photo'], alsoTeams: [], createdAt: '2026-10-12T10:00:00Z' }],
   })) });
   await page.waitForFunction(() => JSON.parse(localStorage.getItem('tfb_kiosk_demo_v1')).community.posts.some(p => p.id === 'p-ui-recovery'));
+  await page.evaluate(() => { location.hash = '#chat/beitrag/p-ui-recovery'; });
+  await page.locator('[data-post="p-ui-recovery"] .message-photo img').waitFor({ timeout: 5000 });
+  await page.waitForFunction(() => document.querySelector('[data-post="p-ui-recovery"] .message-photo img')?.naturalWidth > 0);
   // Names stay intact on phones, portrait tablets and narrow embedded columns.
   await page.evaluate(async () => {
     TFB.ui.state.member = await TFB.api.acceptConsent();

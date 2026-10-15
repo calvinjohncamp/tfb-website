@@ -8,6 +8,7 @@
   let site = null;          // Seiteninhalte
   let images = {};          // hochgeladene Fotos: { "img:<id>": dataUrl }
   let imagesLoaded = false;
+  let imagesRevision = -1;
   let editing = null;       // Seite, die gerade bearbeitet wird
   let detailEditing = false; // Thema wird direkt auf seiner Unterseite bearbeitet
   let preview = null;        // Live-Vorschau beim Bearbeiten eines Themas: { id, draft, tab }
@@ -70,7 +71,10 @@
   let boardPeople = [];
   async function ensure() {
     if (!site) { site = await ui().api.site(); TFB.refreshNav && TFB.refreshNav(); }
-    if (!imagesLoaded) { images = await ui().api.images(); imagesLoaded = true; }
+    const revision = TFB.imageRevision || 0;
+    if (!imagesLoaded || imagesRevision !== revision) {
+      images = await ui().api.images(); imagesLoaded = true; imagesRevision = revision;
+    }
     try { teamCounts = await ui().api.teamPostCounts(); } catch (_) { teamCounts = {}; }
     boardPeople = await ui().api.boardPeople();
   }

@@ -1025,6 +1025,7 @@
         await imageTask(imageDatabase(), 'readwrite', store => { photos.forEach(photo => store.delete(photo.id)); return () => null; }).catch(() => {});
         throw error;
       }
+      TFB.imageRevision = (TFB.imageRevision || 0) + 1;
       document.dispatchEvent(new Event('tfb-chat-updated'));
       return plan;
     },
