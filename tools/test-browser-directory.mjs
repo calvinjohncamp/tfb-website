@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { resolve, extname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 const { chromium } = await import(process.env.TFB_PLAYWRIGHT_MODULE || 'playwright');
-const apiBase='http://127.0.0.1:8791';
+const apiBase=process.env.TFB_TEST_API_URL || 'http://127.0.0.1:8791';
 const root=fileURLToPath(new URL('../',import.meta.url));
 async function call(path,data,token){const r=await fetch(apiBase+path,{method:'POST',headers:{'Content-Type':'application/json',Origin:'https://joern-kaemper.de',...(token?{Authorization:'Bearer '+token}:{})},body:JSON.stringify(data)});const body=await r.json();assert.equal(r.status,200,JSON.stringify(body));return body;}
 const admin=await call('/auth/login',{identifier:'runtime@example.invalid',password:'Runtime test password 123!'});

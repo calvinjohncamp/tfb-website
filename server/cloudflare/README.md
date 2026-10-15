@@ -2,8 +2,9 @@
 
 Stand 15.10.2026: Worker online, Version `62b9877d-310b-4c93-8c49-4dda18f35d52`.
 Health-Check 200; anonyme Suche/Verwaltung 401; fremder Browser-Ursprung 403.
-Secrets ausschließlich im Worker und lokal unter `.private/`. Verwaltungskonto,
-geschützter Import und Einschaltung der Website-Anbindung stehen noch aus.
+Secrets ausschließlich im Worker und lokal unter `.private/`. Verwaltungskonto
+eingerichtet; Website-Anbindung aktiviert, privater Mitgliederimport steht noch aus.
+Die Domain hat ein bis 13.01.2027 gültiges Zertifikat; HTTPS wird erzwungen.
 
 Worker `tfb-api`, D1 `tfb-website`, Binding `DB`. Getrennt von den vorhandenen
 Folio- und Padel-Anwendungen. Die Datenbankkennung in `wrangler.jsonc` ist keine
@@ -33,8 +34,9 @@ Cloudflare-Zugangsdaten gehören niemals in Git oder das Pages-Paket.
 - Kiosk, Chat, Verabredungen und Gruppen sind weiterhin lokale Simulationen.
   Die Authentifizierung ergänzt keine geräteübergreifende Zustellung.
   Websitebearbeitung und simulierte Abrechnungen sind noch kein Vereinsbetrieb.
-- Die Website-Schaltung bleibt `memberDirectory.enabled: false`, bis der
-  Onlinedienst getestet und das erste Verwaltungskonto eingerichtet ist.
+- Die Website-Schaltung ist für die öffentlichen Website-Hosts aktiviert.
+  Anfragen mit Zugangsdaten erfordern HTTPS. Bestätigte Verwaltungsrechte werden
+  im Profil angezeigt; die Demo-Ausblendung gilt dort nicht.
 - Vorhandene lokale Browserdaten werden nicht durch Cloud-Daten ersetzt.
 
 ## Einrichtung

@@ -7,12 +7,12 @@ TFB.config = {
   clubShort: 'TFB',
   appName: 'TF Bielstein',
 
-  // 'demo' = alle Daten bleiben auf diesem Gerät (bis Supabase verfügbar ist).
+  // Kiosk, Chat und Verabredungen bleiben lokal; Mitgliederzugang separat darunter.
   backend: 'demo',
 
   // Enable only after server setup, owner login and denied-access tests pass.
   memberDirectory: {
-    enabled: false,
+    enabled: true,
     url: 'https://tfb-api.calvinjohncamp.workers.dev',
     hosts: ['joern-kaemper.de', 'www.joern-kaemper.de', 'calvinjohncamp.github.io'],
   },

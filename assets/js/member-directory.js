@@ -10,6 +10,7 @@
   let verified = null;
   const base = cfg.url.replace(/\/$/, '');
   async function call(path, data) {
+    if (location.protocol !== 'https:') throw Error('Bitte öffne die Website über https://joern-kaemper.de, um dich sicher anzumelden.');
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 15000);
     try {
