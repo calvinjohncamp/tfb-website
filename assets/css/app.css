@@ -2130,30 +2130,44 @@ h1, h2, h3, .event h3, .feature-body h2, .story-head h1, .post-body h3 { -webkit
 .avatar-name { text-align: right; }
 .feed-sub { margin-top: 0; }
 
-/* ===== Strichliste in vier Spalten: Getränke · Kranz · Snacks · Equipment ===== */
-.tally-head, .paper-row.tally-row { grid-template-columns: minmax(0, 1fr) repeat(4, 44px); gap: 4px 8px; }
-.tally-head { display: grid; align-items: end; padding: 4px 16px 8px 66px; border-bottom: 1.5px solid #C9D6E0; }
-.tally-head span { min-width: 0; text-align: center; font-size: .55rem; font-weight: 800; letter-spacing: 0; text-transform: uppercase; color: var(--muted); }
-.tally-head .kranz { color: var(--signal); }
-.tally-head .full { display: none; }
-.tally-cell { display: flex; flex-wrap: wrap; justify-content: center; align-content: center; gap: 3px 5px; min-height: 26px; border-left: 1px dashed #DCE6EE; }
-.tally-cell .bundle { height: 20px; }
-.tally-cell.kranz .bundle { stroke: var(--signal); }
-.tally-cell em { font-style: normal; font-size: .72rem; font-weight: 800; color: var(--muted); align-self: center; }
-@media (min-width: 640px) {
-  .tally-head, .paper-row.tally-row { grid-template-columns: minmax(0, 1fr) repeat(4, 84px); gap: 4px 10px; }
-  .tally-head span { font-size: .66rem; }
-  .tally-head .full { display: inline; }
-  .tally-head .short { display: none; }
-  .tally-cell .bundle { height: 24px; }
+/* ===== Strichliste: gemeinsame Spalten für Namen, Überschriften und Striche ===== */
+.view[data-view="strichliste"] { container: tally / inline-size; }
+.tally-paper { background: linear-gradient(90deg, transparent 0 42px, rgba(196, 85, 58, .35) 42px 43.5px, transparent 43.5px), var(--paper); }
+.tally-head, .paper-row.tally-row {
+  display: grid; grid-template-columns: minmax(174px, 1fr) 128px repeat(4, minmax(36px, 76px));
+  gap: 4px 10px; padding-left: 56px; padding-right: 16px;
 }
-/* Handy: Name in eigener Zeile, darunter die vier Strichspalten */
-@media (max-width: 639px) {
-  .tally-head, .paper-row.tally-row { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 2px 0; }
-  .tally-head > span:first-child { display: none; }
-  .paper-row.tally-row .paper-name { grid-column: 1 / -1; overflow-wrap: normal; }
-  .paper-row.tally-row .tally-cell:nth-of-type(1) { border-left: 0; }
-  .tally-cell { min-height: 24px; }
+.tally-head { align-items: end; padding-top: 4px; padding-bottom: 8px; border-bottom: 1.5px solid #C9D6E0; }
+.tally-head > span { min-width: 0; text-align: center; font-size: .66rem; font-weight: 800; letter-spacing: 0; text-transform: uppercase; color: var(--muted); }
+.tally-head .kranz { color: var(--signal); }
+.tally-head .short { display: none; }
+.paper-row.tally-row .paper-name { display: flex; flex-wrap: wrap; align-items: center; gap: 2px .25em; min-width: 0; overflow-wrap: normal; word-break: normal; hyphens: none; }
+.paper-name-part { white-space: nowrap; }
+.tally-cell { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; align-content: center; gap: 3px 4px; min-width: 0; min-height: 26px; border-left: 1px dashed #DCE6EE; }
+.tally-cell .bundle { height: 24px; }
+.tally-cell.kranz .bundle { stroke: var(--signal); }
+.tally-cell em { font-style: normal; font-size: .68rem; font-weight: 800; color: var(--muted); }
+@container tally (max-width: 680px) {
+  .tally-head .full { display: none; }
+  .tally-head .short { display: inline; }
+}
+@container tally (max-width: 639px) {
+  .tally-paper { background: linear-gradient(90deg, transparent 0 6px, rgba(196, 85, 58, .35) 6px 7px, transparent 7px), var(--paper); }
+  .tally-head, .paper-row.tally-row {
+    grid-template-columns: minmax(76px, 1.4fr) minmax(60px, 1.2fr) repeat(4, minmax(26px, .55fr));
+    gap: 4px; padding-left: 14px; padding-right: 8px;
+  }
+  .tally-head > span { font-size: .6rem; }
+  .paper-row.tally-row .paper-name { flex-direction: column; align-items: flex-start; flex-wrap: nowrap; font-size: .85rem; gap: 2px; }
+  .paper-name-part { max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
+  .paper-name-comma { display: none; }
+  .paper-row.tally-row .paper-name em { margin-left: 0; font-size: .55rem; }
+  .tally-cell .bundle { height: 20px; }
+  .tally-paper .paper-empty { padding-left: 14px; }
+}
+@container tally (max-width: 310px) {
+  .tally-head > span { font-size: .5rem; }
+  .paper-row.tally-row .paper-name { font-size: .8rem; }
 }
 
 /* ===== Mannschaftsliste: Knopf „Mannschaftsporträt + News“ mittig zwischen Infos und Platz ===== */
@@ -2183,25 +2197,6 @@ h1, h2, h3, .event h3, .feature-body h2, .story-head h1, .post-body h3 { -webkit
   .portrait-cta-img { width: 180px; height: 120px; }
   .portrait-cta-body b { font-size: 1.7rem; }
 }
-/* Strichliste optimiert: Getränke-Spalte mit Platz für 15 Striche, schmalerer Rand links */
-.tally-paper { background: linear-gradient(90deg, transparent 0 34px, rgba(196, 85, 58, .35) 34px 35.5px, transparent 35.5px), var(--paper); }
-.tally-paper .paper-row, .tally-paper .tally-head { padding-left: 46px; padding-right: 12px; }
-.tally-head, .paper-row.tally-row { grid-template-columns: minmax(0, 1fr) 112px repeat(4, 40px); gap: 4px 6px; }
-.tally-cell.drinks { justify-content: flex-start; padding-left: 6px; }
-@media (max-width: 639px) {
-  .tally-head, .paper-row.tally-row { grid-template-columns: minmax(0, 2.2fr) repeat(4, minmax(0, 1fr)); gap: 2px 0; }
-  .tally-paper .paper-empty { padding-left: 46px; }
-}
-@media (min-width: 640px) {
-  .tally-head, .paper-row.tally-row { grid-template-columns: minmax(174px, 1fr) 128px repeat(4, minmax(36px, 76px)); gap: 4px 10px; }
-  .tally-paper .paper-row, .tally-paper .tally-head { padding-left: 56px; padding-right: 16px; }
-  .tally-paper { background: linear-gradient(90deg, transparent 0 42px, rgba(196, 85, 58, .35) 42px 43.5px, transparent 43.5px), var(--paper); }
-}
-.tally-cell.drinks { flex-wrap: nowrap; gap: 3px 4px; padding-left: 2px; }
-.tally-cell.drinks .bundle { flex-shrink: 1; min-width: 0; }
-.tally-cell.drinks em { font-size: .68rem; margin-left: 1px; }
-@media (max-width: 639px) { .tally-head, .paper-row.tally-row { grid-template-columns: minmax(0, 2.5fr) repeat(4, minmax(0, 1fr)); } }
-
 /* Partner-Logos um ein Drittel kleiner (Kacheln, Logos und Breite × 2/3) – auf allen Seiten */
 .pbsp-duo { max-width: 67%; gap: 8px; }
 .pbsp-tile { height: 69px; padding: 0 10px; border-radius: 11px; }
@@ -2560,24 +2555,6 @@ body.admin-hidden [data-action="post-hide"] { display: none !important; }
 .topnav .tab.external:hover { color: var(--ink); }
 /* Farben der Themen (Home-Bearbeiten) */
 .look-picker.color-mode .seg { margin-bottom: 10px; }
-
-/* Names wrap between surname and first name, never within either name. */
-.tally-paper { container: tally / inline-size; }
-.paper-row.tally-row .paper-name { display: flex; flex-wrap: wrap; align-items: center; gap: 2px .25em; overflow-wrap: normal; word-break: normal; hyphens: none; }
-.paper-name-part { white-space: nowrap; }
-@container tally (max-width: 680px) {
-  .tally-head .full { display: none; }
-  .tally-head .short { display: inline; }
-}
-@container tally (max-width: 360px) {
-  .tally-head span { font-size: .5rem; }
-}
-/* Only narrow lists need a separate name row; the desktop list is 760px wide. */
-@container tally (max-width: 639px) {
-  .tally-head, .paper-row.tally-row { grid-template-columns: minmax(0, 2.5fr) repeat(4, minmax(0, 1fr)); gap: 4px 0; }
-  .tally-head > span:first-child { display: none; }
-  .paper-row.tally-row .paper-name { grid-column: 1 / -1; }
-}
 
 /* A small entry below each post; the full conversation lives in its detail view. */
 .post-comments-link { display: inline-flex; gap: 7px; align-items: center; margin: 14px 0 4px; color: var(--muted); font-size: .85rem; font-weight: 700; text-decoration: none; }

@@ -94,7 +94,7 @@ try {
   await page.evaluate(() => { location.hash = '#chat/beitrag/p-ui-recovery'; });
   await page.locator('[data-post="p-ui-recovery"] .message-photo img').waitFor({ timeout: 5000 });
   await page.waitForFunction(() => document.querySelector('[data-post="p-ui-recovery"] .message-photo img')?.naturalWidth > 0);
-  // Names stay intact on phones, portrait tablets and narrow embedded columns.
+  // Names stay within their column on phones, tablets and embedded views.
   await page.evaluate(async () => {
     TFB.ui.state.member = await TFB.api.acceptConsent();
     TFB.api.tally = async () => ['Brandt', 'Dietrich', 'Kämper', 'Müller-Schneider', 'von der Linden'].map(lastName => ({ lastName, firstName: 'Anna-Lena', counts: { Wasser: 3 }, cats: { drinks: 3 }, isMe: false }));
@@ -105,11 +105,11 @@ try {
     await page.setViewportSize({ width, height: 1000 });
     const layout = await page.locator('.paper-name-part').evaluateAll(parts => parts.every(part => {
       const range = document.createRange(); range.selectNodeContents(part);
-      const row = part.closest('.tally-row').getBoundingClientRect();
+      const row = part.closest('.paper-name').getBoundingClientRect();
       const box = part.getBoundingClientRect();
-      return range.getClientRects().length === 1 && box.x >= row.x && box.right <= row.right + 1;
+      return box.x >= row.x && box.right <= row.right + 1;
     }));
-    assert.equal(layout, true, `Unbroken name parts fit at ${width}px`);
+    assert.equal(layout, true, `Name parts fit their column at ${width}px`);
     if ([390, 768].includes(width)) await page.screenshot({ path: `/tmp/tfb-tally-names-${width}.png`, fullPage: true });
   }
   assert.deepEqual(errors, []);

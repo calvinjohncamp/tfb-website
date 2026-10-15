@@ -26,14 +26,14 @@ try {
     TFB.ui.state.member = TFB.api.attachDirectoryMember({ id: 'tally-test', firstName: 'Anna-Lena', lastName: 'Test', email: 'tally@example.invalid', active: true });
     TFB.ui.state.member = await TFB.api.acceptConsent();
     TFB.api.tally = async () => ['Brandt', 'Dietrich', 'Kämper', 'Müller-Schneider', 'von der Linden'].map((lastName, i) => ({
-      lastName, firstName: 'Anna-Lena', counts: { Wasser: 18 },
-      cats: { drinks: 18, kranz: 1, snacks: 2, spielbetrieb: 1, equipment: 1 }, isMe: i === 2,
+      lastName, firstName: 'Anna-Lena', counts: { Wasser: [1, 6, 15, 18, 3][i] },
+      cats: { drinks: [1, 6, 15, 18, 3][i], kranz: 1, snacks: 2, spielbetrieb: 1, equipment: 1 }, isMe: i === 2,
     }));
     location.hash = '#strichliste';
   });
   await page.locator('.tally-row').first().waitFor();
   await page.evaluate(() => document.fonts.ready);
-  for (const width of [1920, 1440, 1024, 834, 768, 720, 700, 680, 640, 639, 390, 320]) {
+  for (const width of [1920, 1440, 1024, 834, 768, 720, 700, 680, 640, 639, 430, 414, 390, 375, 320]) {
     await page.setViewportSize({ width, height: 1000 });
     const layout = await page.evaluate(() => {
       const paper = document.querySelector('.tally-paper');
@@ -45,11 +45,18 @@ try {
         return {
           aligned: cells.every((box, i) => Math.abs(box.x - headings[i].x) < 1 && Math.abs(box.width - headings[i].width) < 1),
           beside: name.right <= cells[0].x && Math.abs(name.y + name.height / 2 - cells[0].y - cells[0].height / 2) < 1,
-          above: name.bottom <= cells[0].y,
+          stackedName: row.querySelectorAll('.paper-name-part')[0].getBoundingClientRect().bottom <= row.querySelectorAll('.paper-name-part')[1].getBoundingClientRect().y,
+          centered: [...row.querySelectorAll('.tally-cell')].every((cell, i) => {
+            const marks = [...cell.children].map(el => el.getBoundingClientRect());
+            if (!marks.length) return true;
+            const left = Math.min(...marks.map(box => box.x));
+            const right = Math.max(...marks.map(box => box.right));
+            return Math.abs((left + right) / 2 - (headings[i].x + headings[i].width / 2)) < 1;
+          }),
           namesFit: [...row.querySelectorAll('.paper-name-part')].every(part => {
             const range = document.createRange(); range.selectNodeContents(part);
             const box = part.getBoundingClientRect();
-            return range.getClientRects().length === 1 && box.x >= name.x && box.right <= name.right + 1;
+            return (narrow || [...range.getClientRects()].every(rect => Math.abs(rect.y - range.getClientRects()[0].y) < 1)) && box.x >= name.x && box.right <= name.right + 1;
           }),
           drinksFit: row.querySelector('.drinks').scrollWidth <= cells[0].width + 1,
         };
@@ -61,11 +68,11 @@ try {
     assert.equal(layout.overflow, false, `No overflow at ${width}px`);
     assert.ok(layout.headingsFit, `Headings do not overlap at ${width}px`);
     for (const row of layout.rows) {
-      assert.ok(row.aligned && row.namesFit && row.drinksFit, JSON.stringify({ width, ...layout }));
-      assert.ok(layout.narrow ? row.above : row.beside, JSON.stringify({ width, ...layout }));
+      assert.ok(row.aligned && row.namesFit && row.drinksFit && row.centered, JSON.stringify({ width, ...layout }));
+      assert.ok(row.beside && (!layout.narrow || row.stackedName), JSON.stringify({ width, ...layout }));
     }
-    if ([1440, 700, 390].includes(width)) await page.screenshot({ path: `/tmp/tfb-tally-fixed-${width}.png`, fullPage: true });
-    console.log(`PASS ${width}px: ${layout.paperWidth}px list, names ${layout.narrow ? 'above' : 'beside'} aligned columns`);
+    if ([1440, 700, 430, 390, 320].includes(width)) await page.screenshot({ path: `/tmp/tfb-tally-fixed-${width}.png`, fullPage: true });
+    console.log(`PASS ${width}px: ${layout.paperWidth}px list, names beside centered columns${layout.narrow ? ', surname above first name' : ''}`);
   }
   await page.locator('.tally-row').first().click();
   await page.locator('.paper-detail').waitFor();

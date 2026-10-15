@@ -606,7 +606,7 @@
 
   // ---------- Strichliste ----------
   // Zuordnung der fünf Strichlistenspalten über den Bereich im Sortiment (demo-backend.js).
-  const TALLY_CATS = [['drinks', 'Getränke', 'Getr.'], ['kranz', 'Kränze', 'Kränze'], ['snacks', 'Snacks', 'Snacks'], ['spielbetrieb', 'Spielbetrieb', 'Spiel'], ['equipment', 'Equipment', 'Equip.']];
+  const TALLY_CATS = [['drinks', 'Getränke', 'Getr.'], ['kranz', 'Kränze', 'Kr.'], ['snacks', 'Snacks', 'Snacks'], ['spielbetrieb', 'Spielbetrieb', 'Spiel'], ['equipment', 'Equipment', 'Equip.']];
   async function tallyView() {
     const rows = await api.tally();
     const from = new Date(Date.now() - (cfg.tallyDays - 1) * 864e5);
@@ -626,7 +626,7 @@
           };
           return `
             <button type="button" class="paper-row tally-row ${r.isMe ? 'me' : ''} ${open ? 'open' : ''}" data-action="tally-row" data-key="${esc(key)}" aria-expanded="${open}">
-              <span class="paper-name"><span class="paper-name-part">${esc(r.lastName)},</span> <span class="paper-name-part">${esc(r.firstName)}</span>${r.isMe ? ' <em>du</em>' : ''}</span>
+              <span class="paper-name"><span class="paper-name-part">${esc(r.lastName)}<span class="paper-name-comma">,</span></span> <span class="paper-name-part">${esc(r.firstName)}</span>${r.isMe ? ' <em>du</em>' : ''}</span>
               ${TALLY_CATS.map(([c]) => cell(c)).join('')}
               ${open ? `<span class="paper-detail">${detail}</span>` : ''}
             </button>`;
