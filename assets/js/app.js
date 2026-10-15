@@ -685,7 +685,7 @@
         <div class="section-head"><h2>Abgeschlossene Monate</h2></div>
         ${closed.length ? `<div class="card list">${closed.map((s) => `
           <div class="statement">
-            <div><strong>${esc(monthName(s.month))}</strong><span class="muted small">${strokesWord(s.itemCount)}</span></div>
+            <div><strong>${esc(monthName(s.month))}</strong><span class="muted small">${strokesWord(s.itemCount)}</span>${s.demo ? '<span class="muted small">Beispiel · fiktiver Betrag</span>' : ''}</div>
             <div class="statement-right">
               <b>${euro(s.totalCents)}</b>
               ${s.status === 'collected'

@@ -1436,9 +1436,20 @@
     // Abgeschlossene Monate (privat).
     async myStatements() {
       const member = requireMember();
-      return db.statements
-        .filter((s) => s.memberId === member.id)
-        .sort((a, b) => b.month.localeCompare(a.month));
+      const statements = db.statements.filter((s) => s.memberId === member.id);
+      // Show the existing completed-month design in the administrator's demo.
+      // These examples are read-only: never persist them or alter current purchases.
+      if (cfg.backend === 'demo' && member.isAdmin) {
+        const current = monthKey(new Date());
+        for (const [back, totalCents, itemCount] of [[1, 3480, 19], [2, 2350, 14]]) {
+          const month = previousMonthKey(current, back);
+          if (!statements.some(s => s.month === month)) statements.push({
+            id: `demo-statement-${member.id}-${month}`, memberId: member.id,
+            month, totalCents, itemCount, status: 'collected', demo: true,
+          });
+        }
+      }
+      return statements.sort((a, b) => b.month.localeCompare(a.month));
     },
 
     // Strichliste der letzten 7 Tage: nur Name und Anzahl je Artikel.
