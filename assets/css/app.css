@@ -2154,7 +2154,7 @@ h1, h2, h3, .event h3, .feature-body h2, .story-head h1, .post-body h3 { -webkit
 @container tally (max-width: 639px) {
   .tally-paper { background: linear-gradient(90deg, transparent 0 6px, rgba(196, 85, 58, .35) 6px 7px, transparent 7px), var(--paper); }
   .tally-head, .paper-row.tally-row {
-    grid-template-columns: minmax(74px, 1.35fr) minmax(60px, 1.2fr) minmax(30px, .65fr) repeat(3, minmax(26px, .55fr));
+    grid-template-columns: minmax(76px, 1.35fr) minmax(58px, 1.2fr) minmax(30px, .65fr) repeat(3, minmax(26px, .55fr));
     gap: 4px; padding-left: 14px; padding-right: 8px;
   }
   .tally-head > span { font-size: .6rem; }
