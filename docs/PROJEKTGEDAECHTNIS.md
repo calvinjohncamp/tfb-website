@@ -1354,3 +1354,14 @@ Antworten, Galerie, Entfernen/Ergänzen beim Bearbeiten und Einwilligung zur
 Veröffentlichung abgebildeter Personen. Textänderungen erhalten bestehende Bilder.
 Fotos liegen weiterhin lokal in IndexedDB und werden im vollständigen privaten
 JSON-Export mitgesichert. Vorhandene Beiträge/Kommentare werden nicht zurückgesetzt.
+
+## Roter Ball wiederhergestellt – 15.10.2026 (v196)
+
+Nutzer verlangt die alte Vorführfunktion auch mit Cloudflare-Anmeldung:
+Admin-Werkzeuge beim Laden ausgeblendet, Klick auf den roten Ball zeigt sie,
+erneuter Klick blendet sie aus. Ausnahme `api.secureDirectory` im UI-Getter
+entfernt. Die serverseitig geprüfte Rolle bleibt unverändert; der Schalter ist
+kein Rechtewechsel. Verwaltungsaktionen an fremden Beiträgen/Kommentaren folgen
+ebenfalls der gewählten Ansicht. Eigene Beiträge bleiben für Mitglieder bearbeitbar.
+Profil-Import/Sicherung zunächst über den Ball sichtbar machen. Regression deckt
+Home/Kiosk, Sitzungsauffrischung, Neuladen und normale Mitglieder ohne Adminrechte ab.

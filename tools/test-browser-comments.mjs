@@ -103,6 +103,7 @@ try {
   await page.waitForFunction(() => document.querySelectorAll('.comment').length === 4);
   // Admin can remove another person's comment, but cannot edit it.
   await page.evaluate(async () => { await useCommentMember('moderator', true); TFB.api.secureDirectory = true; await TFB.ui.renderView(); });
+  if (await page.evaluate(() => TFB.ui.state.member?.adminHidden)) await page.locator('.tfb-logo-ball').click();
   assert.equal(await page.locator('.comment [data-action="comment-edit"]').count(), 0);
   const modRemove = page.locator('.comment [data-action="comment-delete"]').first();
   await modRemove.click(); await modRemove.click();
@@ -137,6 +138,7 @@ try {
   await page.locator('.comment .message-collage.n2').waitFor();
   // Restore the test admin role display, which is normally supplied by the server.
   await page.evaluate(() => { TFB.api.secureDirectory = true; });
+  if (await page.evaluate(() => TFB.ui.state.member?.adminHidden)) await page.locator('.tfb-logo-ball').click();
   // Composer: heading stays visible; own teams only, no admin dropdown.
   await page.evaluate(() => { location.hash = '#chat'; });
   await page.locator('[data-action="post-new"]').first().click();

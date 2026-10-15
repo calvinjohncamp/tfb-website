@@ -35,8 +35,10 @@ Cloudflare-Zugangsdaten gehören niemals in Git oder das Pages-Paket.
   Die Authentifizierung ergänzt keine geräteübergreifende Zustellung.
   Websitebearbeitung und simulierte Abrechnungen sind noch kein Vereinsbetrieb.
 - Die Website-Schaltung ist für die öffentlichen Website-Hosts aktiviert.
-  Anfragen mit Zugangsdaten erfordern HTTPS. Bestätigte Verwaltungsrechte werden
-  im Profil angezeigt; die Demo-Ausblendung gilt dort nicht.
+  Anfragen mit Zugangsdaten erfordern HTTPS. In der Vorführung blendet der rote
+  Ball Admin-Werkzeuge auch bei geschützter Anmeldung ein/aus; nach Neuladen sind
+  sie ausgeblendet. Zum Importieren/Sichern zuerst über den Ball einblenden.
+  Diese Ansicht ändert keine serverseitigen Verwaltungsrechte.
 - Vorhandene lokale Browserdaten werden nicht durch Cloud-Daten ersetzt.
 
 ## Einrichtung

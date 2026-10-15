@@ -1143,6 +1143,7 @@
   const initialsOf = (name) => String(name || '?').split(' ').map((x) => x[0]).join('').slice(0, 2).toUpperCase();
 
   function postHtml(p, loggedIn) {
+    p = { ...p, canModerate: p.canModerate && Boolean(ui().state.member?.isAdmin) };
     const imgs = (p.images || []).filter(shownImage);
     return `
       <article class="fpost ${p.hidden ? 'is-hidden' : ''} ${p.teaser ? 'is-teaser' : ''}" data-post="${esc(p.id)}">
@@ -1173,7 +1174,7 @@
         <header><b>${esc(c.author)}</b><small>${esc(whenText(c.createdAt))}${c.editedAt ? ' · bearbeitet' : ''}</small></header>
         ${c.text ? `<div class="comment-text">${postText(c.text)}</div>` : ''}
         ${(c.images || []).length ? `<div class="message-collage n${c.images.length}">${c.images.map((ref, index) => `<button type="button" class="message-photo" data-action="comment-gallery" data-post="${esc(post.id)}" data-id="${esc(c.id)}" data-index="${index}" aria-label="Foto ${index + 1} von ${c.images.length} ansehen">${picture(ref, ref, '')}</button>`).join('')}</div>` : ''}
-        ${c.mine || c.canModerate ? `<footer>${c.mine ? `<button type="button" data-action="comment-edit" data-id="${esc(c.id)}" data-post="${esc(post.id)}">Bearbeiten</button>` : ''}<button type="button" data-action="comment-delete" data-id="${esc(c.id)}">${c.mine ? 'Löschen' : 'Entfernen (Verwaltung)'}</button></footer>` : ''}
+        ${c.mine || (c.canModerate && state.member?.isAdmin) ? `<footer>${c.mine ? `<button type="button" data-action="comment-edit" data-id="${esc(c.id)}" data-post="${esc(post.id)}">Bearbeiten</button>` : ''}<button type="button" data-action="comment-delete" data-id="${esc(c.id)}">${c.mine ? 'Löschen' : 'Entfernen (Verwaltung)'}</button></footer>` : ''}
       </article>`).join('')}</div>` : '<p class="muted">Noch keine Kommentare. Schreib die erste Antwort.</p>'}
       ${post.hidden ? '<p class="muted">Dieser Beitrag ist ausgeblendet. Neue Kommentare sind hier nicht möglich.</p>' : may.ok ? `<form data-comment-form="${esc(post.id)}" class="comment-form">
         <label class="field"><span>Dein Kommentar</span><textarea name="text" rows="3" maxlength="2000" placeholder="Dein Kommentar …"></textarea></label>

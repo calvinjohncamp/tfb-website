@@ -31,7 +31,7 @@
   Object.defineProperty(state, 'member', {
     enumerable: true,
     get() {
-      if (!rawMember || !rawMember.isAdmin || !hideAdmin || api.mode !== 'demo' || api.secureDirectory) return rawMember;
+      if (!rawMember || !rawMember.isAdmin || !hideAdmin || api.mode !== 'demo') return rawMember;
       if (!viewMember || viewMember._raw !== rawMember) {
         viewMember = { ...rawMember, isAdmin: false, adminHidden: true };
         Object.defineProperty(viewMember, '_raw', { value: rawMember });

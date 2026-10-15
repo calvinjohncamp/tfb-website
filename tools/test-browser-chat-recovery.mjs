@@ -82,6 +82,7 @@ try {
   }
   // The profile's targeted picker imports only the supplied posts after confirmation.
   await page.evaluate(() => { TFB.api.secureDirectory = true; });
+  if (await page.evaluate(() => TFB.ui.state.member?.adminHidden)) await page.locator('.tfb-logo-ball').click();
   await page.locator('[data-action="profile"]').first().click();
   page.once('dialog', dialog => dialog.accept());
   await page.locator('[data-chat-restore-input]').setInputFiles({ name: 'Chat-Wiederherstellung.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify({
