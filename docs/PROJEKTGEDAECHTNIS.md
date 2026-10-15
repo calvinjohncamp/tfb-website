@@ -4,7 +4,7 @@ Für den schnellen Einstieg zuerst die kurze **[UEBERGABE.md](UEBERGABE.md)** le
 Diese Datei enthält alle Entscheidungen, Konzepte, offenen Punkte und den Verlauf.
 Neues bitte unten bei „Verlauf“ ergänzen.
 
-**Aktueller Stand 15.10.2026:** Strichlisten-Korrektur v198 auf Grundlage des
+**Aktueller Stand 15.10.2026:** Strichlisten-Feinschliff v199 auf Grundlage des
 vom Nutzer bestätigten Vorführstands v196. Verbindlicher Kurzstand und Betriebsgrenzen stehen in
 [UEBERGABE.md](UEBERGABE.md); der Abschluss ist unten dokumentiert. Frühere
 Versions- und Veröffentlichungsaussagen sind historische Zwischenstände.
@@ -1428,3 +1428,12 @@ Die mehrfachen CSS-Überlagerungen sind in einem Strichlistenblock zusammengefü
 15 Breiten von 320–1920px sowie Chat-/Namensregression erfolgreich geprüft;
 Aufnahmen bei 1440/700/430/390/320px angesehen. Quellstand 5dc6882,
 Cache tfb-kiosk-v198, Pages-Lauf 38774684777.
+
+
+## Strichlisten-Feinschliff – 15.10.2026 (v199)
+
+Auf Nutzerwunsch Getränke auf allen Breiten ausgeschrieben, Kranz statt
+Kränze/Kr. und mobile Spielernamen um 2px vergrößert. Equipment bleibt
+mit Equip. als mobiler Kurzform erhalten. Zentrierung und Spaltenaufteilung
+bleiben bestehen. Layouttest auf 15 Displaybreiten erfolgreich, 390px und
+320px visuell geprüft. Quellstand 8fda7c8, Pages-Lauf 38775160695.
