@@ -32,7 +32,8 @@ Cloudflare-Zugangsdaten gehören niemals in Git oder das Pages-Paket.
 - D1-Datenbank und Servercode werden nicht an Websitebesucher ausgeliefert.
   CORS schränkt Browser-Ursprünge ein, ersetzt jedoch keine Authentifizierung.
 - Seit v203 sind Profilfoto, Kiosk-Striche und Chat/Kommentare/Anhänge zentral.
-  Verabredungen, Gruppen und Websitebearbeitung bleiben lokale Simulationen.
+  Seit v204 sind auch Verabredungen, Gruppen und Trainingsserien zentral.
+  Websitebearbeitung bleibt lokal.
   Die Kiosk-Vorführung ist weiterhin kein produktiver Abrechnungsbetrieb.
 - Die Website-Schaltung ist für die öffentlichen Website-Hosts aktiviert.
   Anfragen mit Zugangsdaten erfordern HTTPS. In der Vorführung blendet der rote
@@ -113,3 +114,23 @@ Testloader liest die tatsächlichen Quellen; `TFB_WORKER_BUNDLE` erlaubt alterna
 das Testen eines echten Wrangler-Dry-Run-Bundles. Zwei getrennte Browserprofile
 prüfen Anmeldung, eigene Datenübernahme, Foto, Bierdeckel, Chats/Kommentare,
 Aktualisierung, Wiederöffnung und wiederholte Speicheranfragen.
+
+
+## Ausbau v204: Gruppen, Verabredungen und Trainingsserien
+
+`meet-sync.mjs` verwendet die bestehenden App-Tabellen; eine weitere Schemaänderung
+ist nicht nötig. Gruppen und Serien gehören ihren Erstellern. Antworten sind
+getrennte Datensätze pro Mitglied, damit gleichzeitige Zusagen einander nicht
+überschreiben. Einladungsrechte werden auf dem Server geprüft. In der angemeldeten
+Vorführung werden keine Antworten anderer Mitglieder mehr simuliert.
+
+Der Server erzeugt fällige wöchentliche Termine beim Datenabgleich mit stabilen
+Kennungen. Abgesagte Termine werden nicht neu erzeugt. Das ist kein zeitgesteuerter
+E-Mail-Versand: Ohne aktive App erfolgt die Materialisierung beim nächsten Öffnen.
+Vorhandene eigene Gruppen, Serien, Verabredungen und ihre Antworten werden nach
+lokaler Sicherung automatisch übernommen. Bereits vorhandene Serverkennungen
+werden einschließlich Löschmarkierungen übersprungen.
+
+Prüfung: `node --test tools/test-meet-sync.mjs` und
+`node tools/test-browser-meet-sync.mjs`. Der Browsertest verwendet vier getrennte
+Profile mit synthetischen Daten für Desktop, iPad, iPhone und eine eingeladene Person.

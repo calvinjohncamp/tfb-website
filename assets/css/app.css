@@ -1215,6 +1215,8 @@ button.meet-row:hover { background: #FAF8F3; }
 .seg.meet-weekdays { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
 .seg.meet-weekdays button { min-width: 0; height: 38px; padding: 0; border-radius: 8px; font-size: .85rem; letter-spacing: 0; }
 .seg.meet-weekdays button:focus-visible { outline: 2px solid var(--signal); outline-offset: 2px; }
+.meet-editor .field-row { grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr); }
+.meet-editor .field, .meet-editor .field input, .meet-editor .field select { min-width: 0; }
 .inbox-btn { position: relative; width: 27px; height: 27px; border-radius: 50%; border: 0; background: #fff; box-shadow: 0 0 0 1.5px #E2DACB; display: grid; place-items: center; color: var(--ink); cursor: pointer; }
 .inbox-btn svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .inbox-btn.has { box-shadow: 0 0 0 1.5px var(--signal); color: var(--signal); }

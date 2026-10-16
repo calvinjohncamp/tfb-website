@@ -1,5 +1,6 @@
 // Authenticated, revision-checked demo data. No payment or SEPA processing.
 import catalog from './demo-catalog.json';
+import {meetingKinds,meetingProjection,validateMeetingOperation,materializeMeetings,berlinDay} from './meet-sync.mjs';
 const fail = (status, message) => { throw Object.assign(Error(message), {status}); };
 const digest = async value => [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value)))].map(b=>b.toString(16).padStart(2,'0')).join('');
 const key = r => `${r.kind}:${r.id}`;
@@ -28,7 +29,7 @@ export async function syncRevision(env,member) {
   const row=await env.DB.prepare('SELECT COUNT(*) n,COALESCE(SUM(revision),0) total FROM app_records').first();
   const members=await env.DB.prepare('SELECT COUNT(*) n,SUM(active) active,MAX(updated_at) updated FROM members').first();
   const teams=(await env.DB.prepare('SELECT team_key FROM member_teams WHERE member_id=? ORDER BY team_key').bind(member.id).all()).results.map(r=>r.team_key);
-  return `${row.n}:${row.total}:${member.updated_at}:${members.n}:${members.active}:${members.updated}:${teams.join(',')}`;
+  return `${row.n}:${row.total}:${member.updated_at}:${members.n}:${members.active}:${members.updated}:${teams.join(',')}:${berlinDay()}`;
 }
 export async function syncFaces(env,member,ids) {
   if(!Array.isArray(ids)||ids.length>100||ids.some(id=>typeof id!=='string'||id.length>120))fail(400,'Ungültige Profilabfrage.');
@@ -43,8 +44,9 @@ export async function syncPhoto(env,member,id) {
   return {image:row.value.avatarLarge||row.value.avatar};
 }
 export async function syncState(env, member) {
-  const revision=await syncRevision(env,member);
-  const c=await context(env,member);
+  let revision=await syncRevision(env,member),c=await context(env,member);
+  if(await materializeMeetings(env,c,member)){revision=await syncRevision(env,member);c=await context(env,member);}
+  const planning=meetingProjection(c,member);
   const posts=c.rows.filter(r=>r.kind==='post'&&c.canPost(r));
   const postIds=new Set(posts.map(r=>r.id));
   const comments=c.rows.filter(r=>r.kind==='comment'&&!r.deleted&&postIds.has(r.value.postId));
@@ -52,13 +54,14 @@ export async function syncState(env, member) {
   const own=c.rows.filter(r=>r.kind==='catalog'||r.owner_id===member.id&&(['account','item','media'].includes(r.kind)||r.deleted&&['post','comment'].includes(r.kind)));
   const media=c.rows.filter(r=>r.kind==='media'&&!r.deleted&&mediaIds.has(r.id)&&r.owner_id!==member.id);
   const people=(await env.DB.prepare('SELECT id,first_name,last_name FROM members WHERE active=1').all()).results;
-  const visibleIds=new Set([member.id,...posts.map(r=>r.owner_id),...comments.map(r=>r.owner_id)]);
+  const visibleIds=new Set([member.id,...planning.memberIds,...posts.map(r=>r.owner_id),...comments.map(r=>r.owner_id)]);
   const faces=c.rows.filter(r=>r.kind==='account'&&!r.deleted&&r.owner_id!==member.id&&r.value.avatar&&!r.value.photoPending&&visibleIds.has(r.owner_id)).map(r=>({id:r.owner_id,avatar:r.value.avatar,avatarRevision:r.value.avatarRevision}));
-  return {records:[...own,...posts,...comments,...media].map(({kind,id,owner_id,scope,revision,deleted,value})=>({kind,id,ownerId:owner_id,scope,revision,deleted:Boolean(deleted),value})),
-    members:people.filter(m=>visibleIds.has(m.id)).map(m=>({id:m.id,firstName:m.first_name,lastName:m.last_name,active:true})), faces,catalog:c.map.get('catalog:club')?.value||catalog,demo:true,revision};
+  return {records:[...own,...posts,...comments,...media,...planning.records].map(({kind,id,owner_id,scope,revision,deleted,value})=>({kind,id,ownerId:owner_id,scope,revision,deleted:Boolean(deleted),value})),
+    members:people.filter(m=>visibleIds.has(m.id)).map(m=>({id:m.id,firstName:m.first_name,lastName:m.last_name,active:true})), faces,catalog:c.map.get('catalog:club')?.value||catalog,demo:true,revision,meetProtocol:1,meetings:planning.data};
 }
 async function validate(env,member,c,op,all,importing) {
-  if(!['account','item','post','comment','media','catalog'].includes(op.kind)||typeof op.id!=='string'||!/^[\w:.-]{1,120}$/.test(op.id)||!Number.isSafeInteger(op.revision)||op.revision<0)fail(400,'Ungültiger Datensatz.');
+  if(!['account','item','post','comment','media','catalog',...meetingKinds].includes(op.kind)||typeof op.id!=='string'||!/^[\w:.-]{1,120}$/.test(op.id)||!Number.isSafeInteger(op.revision)||op.revision<0)fail(400,'Ungültiger Datensatz.');
+  if(meetingKinds.has(op.kind))return validateMeetingOperation(env,member,c,op,all,importing);
   const old=c.map.get(key(op));
   if(old&&old.owner_id!==member.id&&!(member.is_admin&&['post','comment','catalog'].includes(op.kind)))fail(403,'Dieser Datensatz gehört einem anderen Mitglied.');
   if((old?.revision||0)!==op.revision)fail(409,'Die Daten wurden auf einem anderen Gerät geändert. Bitte neu laden.');

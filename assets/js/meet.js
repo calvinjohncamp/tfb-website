@@ -47,7 +47,13 @@
 
   // ---------- Speicher ----------
   const load = () => { try { return JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (_) { return null; } };
-  const save = () => { prune(); try { localStorage.setItem(KEY, JSON.stringify(data)); } catch (_) {} };
+  const persist = () => { localStorage.setItem(KEY, JSON.stringify(data)); };
+  const save = async () => {
+    try {
+      if(TFB.api.centralSync&&ui()?.state.member)return await TFB.api.saveMeetSnapshot(JSON.parse(JSON.stringify(data)));
+      if(!TFB.api.centralSync)prune();persist();return true;
+    } catch(err) { const error=document.querySelector('#sheet-root .form-error');if(error)error.textContent=err.message;ui()?.toast?.(err.message);return false; }
+  };
   try { localStorage.removeItem('tfb_meet_demo_v1'); } catch (_) {}
   const isoDay = (d) => new Date(d.getTime() - d.getTimezoneOffset() * 6e4).toISOString().slice(0, 10);
   const today = () => isoDay(new Date());
@@ -61,7 +67,7 @@
     return addDays(today(), add);
   };
   const weekdayOf = (iso) => { const [y, m, d] = iso.split('-').map(Number); return new Date(y, m - 1, d).getDay(); };
-  const uid = (p = 'mt-') => p + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  const uid = (p = 'mt-') => p + (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2, 6));
   const ans = (a, minsAgo, note = '') => ({ a, at: Date.now() - minsAgo * 6e4, note });
 
   let data = load();
@@ -165,6 +171,7 @@
   // ---------- Regelmäßige Einladungen: Termine anlegen, sobald der Vorlauf erreicht ist ----------
   // Gibt die neu angelegten Termine zurück (Einladungen gehen dabei ins Postfach der Eingeladenen).
   function materialize() {
+    if(TFB.api.centralSync)return [];
     const created = [];
     const now = today();
     (data.series || []).forEach((s) => {
@@ -251,7 +258,7 @@
   };
 
   // Antwort setzen – mit Nachrück-Logik und Postfach-Einträgen.
-  function setAnswer(m, id, a, noteText, by) {
+  async function setAnswer(m, id, a, noteText, by) {
     const before = lineup(m);
     if (a) m.responses[id] = { a, at: Date.now(), note: noteText || '', ...(by ? { by } : {}) };
     else delete m.responses[id];
@@ -265,19 +272,20 @@
     }
     // Runde komplett → alle, die spielen
     if (after.full && !before.full) after.players.forEach((p) => note(p, 'full', m, null));
-    save();
+    if(!await save())return null;
     return after;
   }
 
   // Vorführung: Eingeladene antworten nach ein paar Sekunden von selbst.
   function simulateReplies(m, maxReplies = 99) {
+    if(TFB.api.centralSync)return;
     const ids = m.invitees.filter((id) => id !== me().id && !m.responses[id]).slice(0, maxReplies);
     ids.forEach((id, i) => {
-      setTimeout(() => {
+      setTimeout(async () => {
         const cur = meetById(m.id);
         if (!cur || cur.responses[id]) return;
         const yes = Math.random() < (cur.slots ? 0.65 : 0.75);
-        setAnswer(cur, id, yes ? 'yes' : 'no', yes ? NOTES[Math.floor(Math.random() * NOTES.length)] : '');
+        await setAnswer(cur, id, yes ? 'yes' : 'no', yes ? NOTES[Math.floor(Math.random() * NOTES.length)] : '');
         rerender();
       }, 2600 + i * 2300 + Math.random() * 1200);
     });
@@ -303,7 +311,7 @@
       .sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
     const waiting = mine.filter((m) => m.invitees.includes(me().id) && !m.responses[me().id]);
     const rest = mine.filter((m) => !waiting.includes(m));
-    const mySeries = (data.series || []).filter((s) => (s.createdBy === me().id || s.invitees.includes(me().id)));
+    const mySeries = (data.series || []).filter((s) => s.until >= today() && (s.createdBy === me().id || s.invitees.includes(me().id)));
     const allIds = [...new Set(mine.flatMap((m) => m.invitees).concat(mySeries.map((s) => s.createdBy)))];
     const names = await ui().api.memberNames(allIds);
     const myGroups = data.groups.filter((g) => g.members.includes(me().id));
@@ -335,7 +343,7 @@
         ${myGroups.map((g) => `<button type="button" class="meet-group" data-action="meet-group" data-id="${g.id}"><strong>${esc(g.name)}</strong><small>${everyone(g).length} ${everyone(g).length === 1 ? 'Mitglied' : 'Mitglieder'}${g.weekday != null ? ` · ${WD[g.weekday]} ${esc(g.time)}` : ''}</small>${(g.pending || []).length ? `<small class="meet-unconfirmed">${g.pending.length} unbestätigt</small>` : ''}</button>`).join('')}
         <button type="button" class="meet-group add" data-action="meet-group">${icon.plus}<strong>Gruppe anlegen</strong></button>
       </div>
-      <p class="fineprint">Vorführung: Die anderen antworten nach ein paar Sekunden von selbst. Neues landet im Postfach (Glocke oben) – ohne E-Mail und ohne Aufploppen.</p>
+      <p class="fineprint">${TFB.api.centralSync?'Gruppen, Trainingsserien und Antworten werden in deinem Konto gespeichert und auf deinen Geräten abgeglichen. Einladungen und Antworten stehen im Postfach.':'Vorführung: Die anderen antworten nach ein paar Sekunden von selbst. Neues landet im Postfach (Glocke oben) – ohne E-Mail und ohne Aufploppen.'}</p>
       ${ui().partnerSlot('treffen', 'Verabreden wird dir präsentiert von')}`;
   }
 
@@ -412,7 +420,7 @@
     // Wer die Seite öffnet, hat die Einträge zu diesem Termin gesehen
     let seen = false;
     data.inbox.filter((n) => n.to === me().id && n.meetId === m.id && !n.read && n.type !== 'invite').forEach((n) => { n.read = true; seen = true; });
-    if (seen) { save(); setTimeout(refreshBell, 0); }
+    if (seen) { if(!await save())return; setTimeout(refreshBell, 0); }
     const rows = [
       ...L.players.map((p) => [p, 'yes']), ...L.ersatz.map((p, i) => [p, 'ersatz', i + 1]),
       ...L.open.map((p) => [p, 'open']), ...L.no.map((p) => [p, 'no']),
@@ -544,7 +552,7 @@
         search.dispatchEvent(new Event('input'));
       }
     });
-    form.addEventListener('submit', e => {
+    form.addEventListener('submit', async e => {
       e.preventDefault();
       const current = meetById(id);
       if (!me() || !current || current.createdBy !== me().id) { error.textContent = 'Nur der Einladende kann weitere Mitglieder einladen.'; return; }
@@ -552,7 +560,7 @@
       if (!fresh.length) { error.textContent = 'Bitte mindestens ein weiteres Mitglied auswählen.'; return; }
       current.invitees.push(...fresh);
       fresh.forEach(memberId => note(memberId, 'invite', current, me().id));
-      save(); closeSheet(); rerender();
+      if(!await save())return; closeSheet(); rerender();
       ui().toast(`${fresh.length === 1 ? 'Eine weitere Einladung hinzugefügt' : `${fresh.length} weitere Einladungen hinzugefügt`}`, true);
     });
     search.focus();
@@ -716,7 +724,7 @@
           .filter((h) => !draft.invitees.includes(h.id) && (h.openInvites !== false || mates.has(h.id)))
           .map((h) => `<button type="button" data-add="${h.id}">${icon.plus}<span>${esc(h.firstName)} ${esc(h.lastName)}</span></button>`).join('');
       });
-      form.addEventListener('submit', (e) => {
+      form.addEventListener('submit', async (e) => {
         e.preventDefault();
         collect();
         const err = form.querySelector('.form-error');
@@ -728,23 +736,24 @@
         if (draft.weekly && (!draft.until || draft.until < draft.date)) { err.textContent = 'Das Ende muss nach dem ersten Termin liegen.'; return; }
         const base = { kind: draft.kind, groupId: draft.groupId, title: draft.title, time: draft.time, place: draft.place, note: draft.note, meetAt: draft.meetAt, departAt: draft.departAt,
           createdBy: me().id, invitees: draft.invitees, slots: draft.slots };
-        let target;
+        let target, message;
         if (draft.weekly) {
           const s = { id: uid('sr-'), ...base, from: draft.date, until: draft.until, leadDays: draft.leadDays, skipped: [], createdAt: new Date().toISOString() };
           data.series.push(s);
           const made = materialize();
           made.forEach((m) => simulateReplies(m));
           target = made[0] ? '#treffen/' + made[0].id : '#treffen';
-          ui().toast(made.length ? `Eingerichtet – die erste Einladung ist im Postfach von ${draft.invitees.length - 1} ${draft.invitees.length === 2 ? 'Person' : 'Personen'}` : `Eingerichtet – die erste Einladung geht am ${shortDate(addDays(draft.date, -draft.leadDays))} raus`, true);
+          message=TFB.api.centralSync?'Regelmäßige Einladung gespeichert':made.length ? `Eingerichtet – die erste Einladung ist im Postfach von ${draft.invitees.length - 1} ${draft.invitees.length === 2 ? 'Person' : 'Personen'}` : `Eingerichtet – die erste Einladung geht am ${shortDate(addDays(draft.date, -draft.leadDays))} raus`;
         } else {
           const meet = { id: uid(), ...base, date: draft.date, responses: { [me().id]: ans('yes', 0) }, createdAt: new Date().toISOString() };
           data.meets.push(meet);
           notifyInvite(meet);
           simulateReplies(meet);
           target = '#treffen/' + meet.id;
-          ui().toast(`Einladung im Postfach von ${draft.invitees.length - 1} ${draft.invitees.length === 2 ? 'Person' : 'Personen'}`, true);
+          message=`Einladung im Postfach von ${draft.invitees.length - 1} ${draft.invitees.length === 2 ? 'Person' : 'Personen'}`;
         }
-        save();
+        if(!await save())return;
+        ui().toast(message,true);
         closeSheet();
         location.hash = target;
         ui().renderView();
@@ -779,15 +788,15 @@
         <button type="button" class="link center danger-link" data-end>Regelmäßige Einladung beenden</button>
       </form>`);
     const form = document.querySelector('[data-series-form]');
-    form.addEventListener('submit', (e) => {
+    form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const until = form.elements.until.value;
       if (!until) { form.querySelector('.form-error').textContent = 'Bitte ein Enddatum wählen.'; return; }
       Object.assign(s, { time: form.elements.time.value, place: form.elements.place.value.trim() || s.place, until, leadDays: Number(form.elements.leadDays.value) || s.leadDays });
       materialize().forEach((m) => simulateReplies(m));
-      save(); closeSheet(); refreshBell(); ui().toast('Regelmäßige Einladung gespeichert', true); ui().renderView();
+      if(!await save())return; closeSheet(); refreshBell(); ui().toast('Regelmäßige Einladung gespeichert', true); ui().renderView();
     });
-    form.querySelector('[data-end]').addEventListener('click', (e) => {
+    form.querySelector('[data-end]').addEventListener('click', async (e) => {
       const b = e.currentTarget;
       if (!b.dataset.armed) { b.dataset.armed = '1'; b.textContent = 'Wirklich beenden? Kommende Termine werden abgesagt – nochmal tippen'; return; }
       data.series = data.series.filter((x) => x.id !== s.id);
@@ -795,7 +804,7 @@
         m.invitees.filter((p) => p !== m.createdBy).forEach((p) => note(p, 'cancel', m, m.createdBy));
       });
       data.meets = data.meets.filter((m) => !(m.seriesId === s.id && m.date >= today()));
-      save(); closeSheet(); ui().toast('Beendet – alle Eingeladenen haben es im Postfach', true);
+      if(!await save())return; closeSheet(); ui().toast('Beendet – alle Eingeladenen haben es im Postfach', true);
       location.hash = '#treffen'; ui().renderView();
     });
   }
@@ -859,7 +868,7 @@
         const commentPosts = myInbox().filter(n => n.type === 'comment' && drop.includes(n.id)).map(n => n.postId);
         if (commentPosts.length) await ui().api.readCommentPosts(commentPosts);
         data.inbox = data.inbox.filter((n) => !drop.includes(n.id));
-        save(); refreshBell(); openInbox(); return;
+        if(!await save())return; refreshBell(); openInbox(); return;
       }
       const it = e.target.closest('[data-open]');
       if (!it) return;
@@ -873,7 +882,7 @@
         return;
       }
       if (!(n.type === 'invite' || n.type === 'group-invite') || !pending(n)) n.read = true;
-      save(); refreshBell(); closeSheet();
+      if(!await save())return; refreshBell(); closeSheet();
       if (n.type === 'group-invite' && pending(n)) { if (!location.hash.startsWith('#treffen')) location.hash = '#treffen'; setTimeout(() => openGroupAnswer(n.groupId), 50); return; }
       if (n.type.startsWith('group-')) { location.hash = '#treffen'; return; }
       if (meetById(n.meetId)) location.hash = '#treffen/' + n.meetId;
@@ -889,7 +898,7 @@
     const g = groupId ? group(groupId) : null;
     if (g && g.createdBy !== me().id) return openGroupInfo(g);
     const draft = g ? { ...g, members: g.members.slice(), pending: (g.pending || []).slice() }
-      : { id: 'g-' + Date.now().toString(36), name: '', members: [me().id], pending: [], createdBy: me().id, weekday: 2, time: '19:00', place: PLACE };
+      : { id: uid('g-'), name: '', members: [me().id], pending: [], createdBy: me().id, weekday: 2, time: '19:00', place: PLACE };
     const everyone = () => [...draft.members, ...draft.pending];
     let names = await ui().api.memberNames(everyone());
     const render = () => {
@@ -926,7 +935,7 @@
         if (del) {
           if (!del.dataset.armed) { del.dataset.armed = '1'; del.textContent = 'Wirklich löschen? Nochmal tippen'; return; }
           data.groups = data.groups.filter((x) => x.id !== g.id);
-          save(); closeSheet(); ui().renderView(); return;
+          if(!await save())return; closeSheet(); ui().renderView(); return;
         }
         const rm = e.target.closest('[data-remove]');
         if (rm) {
@@ -956,7 +965,7 @@
           .filter((h) => !everyone().includes(h.id))
           .map((h) => `<button type="button" data-add="${h.id}">${icon.plus}<span>${esc(h.firstName)} ${esc(h.lastName)}</span></button>`).join('');
       });
-      form.addEventListener('submit', (e) => {
+      form.addEventListener('submit', async (e) => {
         e.preventDefault();
         collect();
         if (!draft.name) { form.querySelector('.form-error').textContent = 'Bitte einen Namen eingeben.'; return; }
@@ -965,7 +974,7 @@
         let target = g;
         if (g) Object.assign(g, draft); else { data.groups.push(draft); target = draft; }
         fresh.forEach((id) => groupNote(id, 'group-invite', target, me().id));
-        save(); closeSheet();
+        if(!await save())return; closeSheet();
         ui().toast(fresh.length ? `Gespeichert – ${fresh.length} ${fresh.length === 1 ? 'Einladung' : 'Einladungen'} im Postfach verschickt` : 'Gruppe gespeichert', true);
         simulateGroupReplies(target, fresh);
         ui().renderView();
@@ -986,11 +995,11 @@
         ${g.members.includes(me().id) ? '<button type="button" class="link center danger-link" data-leave>Gruppe verlassen</button>' : ''}
       </div>`);
     const leave = document.querySelector('[data-group-info] [data-leave]');
-    if (leave) leave.addEventListener('click', () => {
+    if (leave) leave.addEventListener('click', async () => {
       if (!leave.dataset.armed) { leave.dataset.armed = '1'; leave.textContent = 'Wirklich verlassen? Nochmal tippen'; return; }
       g.members = g.members.filter((i) => i !== me().id);
       groupNote(g.createdBy, 'group-left', g, me().id);
-      save(); closeSheet(); ui().toast('Du hast die Gruppe verlassen', true); ui().renderView();
+      if(!await save())return; closeSheet(); ui().toast('Du hast die Gruppe verlassen', true); ui().renderView();
     });
   }
 
@@ -1011,30 +1020,32 @@
           <button type="button" data-g="no">Nein danke</button>
         </div>
       </div>`);
-    document.querySelector('[data-group-answer]').addEventListener('click', (e) => {
+    document.querySelector('[data-group-answer]').addEventListener('click', async (e) => {
       const b = e.target.closest('[data-g]');
       if (!b) return;
-      answerGroup(g, me().id, b.dataset.g === 'yes');
+      if(!await answerGroup(g, me().id, b.dataset.g === 'yes'))return;
       closeSheet(); refreshBell();
       ui().toast(b.dataset.g === 'yes' ? `Willkommen in „${g.name}“` : 'Abgelehnt – der Ersteller weiß Bescheid', true);
       ui().renderView();
     });
   }
-  function answerGroup(g, id, yes) {
+  async function answerGroup(g, id, yes) {
     g.pending = (g.pending || []).filter((i) => i !== id);
     if (yes && !g.members.includes(id)) g.members.push(id);
     groupNote(g.createdBy, yes ? 'group-yes' : 'group-no', g, id);
     if (yes) groupNote(id, 'group-joined', g, g.createdBy);
     if (yes && !g.pending.length) groupNote(g.createdBy, 'group-complete', g, null);
-    save();
+    if(!await save())return false;
+    return true;
   }
   // Vorführung: Hinzugefügte bestätigen nach ein paar Sekunden von selbst.
   function simulateGroupReplies(g, ids) {
+    if(TFB.api.centralSync)return;
     ids.filter((id) => id !== me().id).forEach((id, i) => {
-      setTimeout(() => {
+      setTimeout(async () => {
         const cur = group(g.id);
         if (!cur || !(cur.pending || []).includes(id)) return;
-        answerGroup(cur, id, true);
+        await answerGroup(cur, id, true);
         rerender();
       }, 3000 + i * 2500 + Math.random() * 1500);
     });
@@ -1055,10 +1066,10 @@
         </div>
         ${r ? '<button type="button" class="link center" data-set="">Antwort zurücksetzen</button>' : ''}
       </div>`);
-    document.querySelector('.meet-proxy').addEventListener('click', (e) => {
+    document.querySelector('.meet-proxy').addEventListener('click', async (e) => {
       const b = e.target.closest('[data-set]');
       if (!b) return;
-      setAnswer(m, memberId, b.dataset.set || null, '', me().id);
+      if(!await setAnswer(m, memberId, b.dataset.set || null, '', me().id))return;
       closeSheet();
       ui().renderView();
     });
@@ -1073,12 +1084,13 @@
     'group-answer': (el) => openGroupAnswer(el.dataset.id),
     'meet-series': (el) => openSeries(el.dataset.id),
     'meet-proxy': (el) => openProxy(meetById(el.dataset.id), el.dataset.member),
-    'meet-answer': (el) => {
+    'meet-answer': async (el) => {
       const m = meetById(el.dataset.id);
       if (!m) return;
       const a = el.dataset.answer;
       const prev = m.responses[me().id];
-      const L = setAnswer(m, me().id, a, prev ? prev.note : '');
+      const L = await setAnswer(m, me().id, a, prev ? prev.note : '');
+      if(!L)return;
       if (a === 'yes') {
         const clash = data.meets.find((x) => x.id !== m.id && x.date === m.date && x.time === m.time && x.responses[me().id] && x.responses[me().id].a === 'yes');
         if (clash) ui().toast(`Achtung: Um ${m.time} hast du schon bei „${clash.title}“ zugesagt`);
@@ -1089,14 +1101,15 @@
     },
     'meet-remind': async (el) => {
       const m = meetById(el.dataset.id);
+      if(TFB.api.centralSync){try{await TFB.api.remindMeet(m.id);ui().toast('Erinnerung im Postfach hinterlegt',true);}catch(err){ui().toast(err.message);}return;}
       const L = lineup(m);
       const names = await ui().api.memberNames(L.open);
       L.open.forEach((p) => note(p, 'remind', m, me().id));
-      save();
+      if(!await save())return;
       ui().toast(`Erinnerung im Postfach von ${L.open.map((i) => firstName(names[i])).join(', ')}`, true);
       simulateReplies(m, 2);
     },
-    'meet-delete': (el) => {
+    'meet-delete': async (el) => {
       if (!el.dataset.armed) { el.dataset.armed = '1'; el.textContent = 'Wirklich? Nochmal tippen – alle bekommen es ins Postfach'; return; }
       const m = meetById(el.dataset.id);
       if (!m) return;
@@ -1104,12 +1117,12 @@
       if (s) s.skipped = [...(s.skipped || []), m.date];
       m.invitees.filter((p) => p !== m.createdBy).forEach((p) => note(p, 'cancel', m, m.createdBy));
       data.meets = data.meets.filter((x) => x.id !== m.id);
-      save();
+      if(!await save())return;
       ui().toast('Abgesagt – alle Eingeladenen haben es im Postfach', true);
       location.hash = '#treffen';
     },
   });
-  document.addEventListener('submit', (e) => {
+  document.addEventListener('submit', async (e) => {
     const f = e.target.closest('[data-meet-note]');
     if (!f) return;
     e.preventDefault();
@@ -1117,7 +1130,7 @@
     const r = m && m.responses[me().id];
     if (!r) { ui().toast('Bitte erst zu- oder absagen'); return; }
     r.note = f.elements.note.value.trim();
-    save();
+    if(!await save())return;
     ui().toast(r.note ? 'Notiz gespeichert' : 'Notiz entfernt', true);
     ui().renderView();
   });
@@ -1134,6 +1147,11 @@
       .sort((a, b) => a.start - b.start || a.meet.id.localeCompare(b.meet.id))
       .map(({ meet, team }) => ({ id: meet.id, title: meet.title, date: meet.date, time: meet.time, place: meet.place, missing: team.missing }))[0] || null;
   }
-  TFB.meet = { nextMatch, chatPeers: memberId => [...new Set(data.groups.filter(g => g.members.includes(memberId)).flatMap(g => g.members))] };
+  const snapshot=()=>JSON.parse(JSON.stringify(data));
+  function applySynced(next) {
+    const merge=(old,values)=>(values||[]).map(value=>{const found=(old||[]).find(x=>x.id===value.id);if(!found)return JSON.parse(JSON.stringify(value));for(const k of Object.keys(found))if(!(k in value))delete found[k];Object.assign(found,JSON.parse(JSON.stringify(value)));return found;});
+    data={groups:merge(data.groups,next.groups),series:merge(data.series,next.series),meets:merge(data.meets,next.meets),inbox:merge(data.inbox,next.inbox),noSampleGroups:true};persist();refreshBell();
+  }
+  TFB.meet = { snapshot, applySynced, nextMatch, chatPeers: memberId => [...new Set(data.groups.filter(g => g.members.includes(memberId)).flatMap(g => g.members))] };
   TFB.views.treffen = view;
 })();

@@ -6,7 +6,7 @@
   let member=null, state=null, publicMember=null, queue=Promise.resolve(), last=0, pending=null, generation=0;
   const id=()=>crypto.randomUUID(), key=r=>r.kind+':'+r.id;
   const writeNames=['saveCatalog','setAvatar','setPhotoPermissions','updateProfile','acceptConsent','acceptFeedRules','setParentConsent','addToTab','undo','addPost','editPost','deletePost','removePostFromTeam','hidePost','addComment','editComment','deleteComment','readChatPosts','readCommentPosts'];
-  const readNames=['posts','comments','teamPostCounts','myOpenMonth','myStatements'];
+  const readNames=['posts','comments','teamPostCounts','myOpenMonth','myStatements','tally'];
   for(const name of [...writeNames,...readNames,'images','putMemberImage'])local[name]=api[name].bind(api);
   function serial(fn) { const task=queue.then(fn,fn);queue=task.catch(()=>{});return task; }
   const storage=(mode,run)=>new Promise((resolve,reject)=>{
@@ -17,6 +17,12 @@
       tx.oncomplete=()=>{db.close();resolve(r?.result);};tx.onerror=tx.onabort=()=>{db.close();reject(Error('Die lokale Sicherung konnte nicht gespeichert werden.'));};};
   });
   async function archive() {
+    if(TFB.meet?.snapshot){
+      const original=await storage('readonly',s=>s.get('meet-original:'+member.id));
+      const current=TFB.meet.snapshot(), saved=original?.data||{groups:[],meets:[],series:[],inbox:[],noSampleGroups:true};
+      for(const name of ['groups','series','meets','inbox'])for(const value of current[name]||[])if(!saved[name].some(v=>v.id===value.id))saved[name].push(value);
+      await storage('readwrite',s=>s.put({data:saved,at:original?.at||new Date().toISOString()},'meet-original:'+member.id));
+    }
     if(await storage('readonly',s=>s.get(member.id)))return;
     const db=api.syncArchive(), images=await local.images({strict:true});
     await storage('readwrite',s=>s.put({db,images,at:new Date().toISOString()},member.id));
@@ -36,6 +42,7 @@
     const own=state.records.find(r=>r.kind==='account'&&r.id===member.id)?.value;
     if(own?.avatar)photoOwners.set(own.avatar,member.id);
     const m=await api.applySyncedData(state);
+    if(state.meetProtocol===1&&TFB.meet?.applySynced)TFB.meet.applySynced(state.meetings);
     publicMember=m;if(TFB.ui){TFB.ui.state.member=m;TFB.ui.state.catalog=state.catalog;TFB.ui.refreshAvatars?.();}
     api.syncError='';
     return m;
@@ -64,9 +71,11 @@
         await rememberPending(null);TFB.ui?.toast('Eine offene Änderung wurde auf einem anderen Gerät überholt. Bitte prüfe den aktuellen Stand.');
       }
     }
-    return refresh(true);
+    await refresh(true);
+    if(state.meetProtocol===1){const original=await storage('readonly',s=>s.get('meet-original:'+member.id));if(original)await importMeetingSnapshot(original.data);}
+    return publicMember;
   });
-  api.disconnectSync=()=>{generation++;if(state)api.clearSyncedData?.();member=null;state=null;publicMember=null;pending=null;last=0;photoOwners.clear();};
+  api.disconnectSync=()=>{generation++;if(state){api.clearSyncedData?.();TFB.meet?.applySynced?.({groups:[],meets:[],series:[],inbox:[],noSampleGroups:true});}member=null;state=null;publicMember=null;pending=null;last=0;photoOwners.clear();};
   api.centralSync=true;
   for(const name of writeNames)api[name]=(...args)=>serial(async()=>{
     if(!member)throw Error('Bitte zuerst anmelden.');
@@ -106,6 +115,67 @@
     if(!member)throw Error('Bitte zuerst anmelden.');
     const ref='img:'+id();await commit([{kind:'media',id:ref,revision:0,value:{data}}]);return ref;
   });
+  const pick=(v,fields)=>Object.fromEntries(fields.filter(k=>v[k]!==undefined).map(k=>[k,JSON.parse(JSON.stringify(v[k]))]));
+  const fields={group:['id','name','weekday','time','place','createdBy','members','pending'],
+    series:['id','kind','groupId','title','time','place','note','meetAt','departAt','createdBy','invitees','slots','from','until','leadDays','skipped','createdAt'],
+    meet:['id','kind','groupId','title','date','time','place','note','meetAt','departAt','createdBy','invitees','slots','seriesId','createdAt']};
+  function planningOperations(snapshot,importing=false) {
+    const records=new Map(state.records.map(r=>[key(r),r])),baseline=state.meetings,ops=[];
+    const collections={group:'groups',series:'series',meet:'meets'},fresh=new Set();
+    for(const [kind,collection] of Object.entries(collections)){
+      for(const value of snapshot[collection]||[]){
+        if(value.createdBy!==member.id)continue;
+        const r=records.get(kind+':'+value.id);if(importing&&r)continue;
+        const before=baseline[collection].find(v=>v.id===value.id);
+        const clean=pick(value,fields[kind]);
+        if(!before||JSON.stringify(clean)!==JSON.stringify(pick(before,fields[kind]))){
+          if(importing&&kind==='series')clean.reservedDates=(snapshot.meets||[]).filter(m=>m.seriesId===value.id).map(m=>m.date);
+          ops.push({kind,id:value.id,value:clean,revision:r?.revision||0});fresh.add(kind+':'+value.id);
+        }
+      }
+      if(!importing)for(const before of baseline[collection])if(before.createdBy===member.id&&!(snapshot[collection]||[]).some(v=>v.id===before.id))ops.push({kind,id:before.id,revision:records.get(kind+':'+before.id)?.revision||0,deleted:true});
+    }
+    for(const g of snapshot.groups||[])if(!importing&&g.createdBy!==member.id){
+      const before=baseline.groups.find(x=>x.id===g.id);if(!before)continue;
+      const status=g.members.includes(member.id)?'yes':(g.pending||[]).includes(member.id)?'pending':before.members.includes(member.id)?'left':'no';
+      const old=before.members.includes(member.id)?'yes':before.pending.includes(member.id)?'pending':'no';
+      if(status!==old&&status!=='pending'){const id=g.id+':'+member.id;ops.push({kind:'group-answer',id,revision:records.get('group-answer:'+id)?.revision||0,value:{groupId:g.id,status}});}
+    }
+    for(const m of snapshot.meets||[]){
+      if(importing&&!fresh.has('meet:'+m.id))continue;
+      const before=baseline.meets.find(x=>x.id===m.id),ids=new Set([...Object.keys(before?.responses||{}),...Object.keys(m.responses||{})]);
+      for(const target of ids){
+        if(target!==member.id&&m.createdBy!==member.id)continue;
+        const a=m.responses?.[target],old=before?.responses?.[target];if(JSON.stringify(a)===JSON.stringify(old))continue;
+        const id=m.id+':'+target;ops.push({kind:'meet-answer',id,revision:records.get('meet-answer:'+id)?.revision||0,value:{meetId:m.id,memberId:target,a:a?.a||null,at:a?.at,note:a?.note||'',by:a?.by}});
+      }
+    }
+    if(importing)for(const n of snapshot.inbox||[])if(n.to===member.id&&!records.has('meet-notice:'+n.id)&&(fresh.has('meet:'+n.meetId)||fresh.has('group:'+n.groupId)))ops.push({kind:'meet-notice',id:n.id,revision:0,value:n});
+    if(!importing){
+      const read=baseline.inbox.filter(n=>snapshot.inbox.some(x=>x.id===n.id&&x.read)&&!n.read).map(n=>n.id);
+      const dismissed=baseline.inbox.filter(n=>!snapshot.inbox.some(x=>x.id===n.id)).map(n=>n.id);
+      if(read.length||dismissed.length)ops.push({kind:'meet-inbox',id:member.id,revision:records.get('meet-inbox:'+member.id)?.revision||0,value:{read,dismissed}});
+    }
+    return ops;
+  }
+  async function importMeetingSnapshot(snapshot) {
+    const ops=planningOperations(snapshot,true);
+    // Definitions precede answers; imported series reserve historical dates so
+    // automatic generation cannot create duplicates during a resumed migration.
+    for(let i=0;i<ops.length;i+=6)await commit(ops.slice(i,i+6),true);
+    return publicMember;
+  }
+  api.saveMeetSnapshot=snapshot=>{
+    if(!member||state?.meetProtocol!==1)return Promise.reject(Error('Die zentrale Verabredung ist noch nicht verbunden. Bitte neu anmelden.'));
+    const operations=planningOperations(snapshot);
+    return serial(async()=>{try{await commit(operations);}catch(err){if(state.meetings)TFB.meet.applySynced(state.meetings);throw err;}return true;});
+  };
+  api.importMeetSync=()=>serial(async()=>{
+    if(!member||state?.meetProtocol!==1)throw Error('Bitte zuerst anmelden.');
+    const original=await storage('readonly',s=>s.get('meet-original:'+member.id));
+    if(original)await importMeetingSnapshot(original.data);return publicMember;
+  });
+  api.remindMeet=meetId=>serial(()=>commit([{kind:'meet-remind',id:'remind-'+id(),revision:0,value:{meetId}}]));
   api.syncMigrationPreview=async()=>{
     if(!member)throw Error('Bitte zuerst anmelden.');
     const backup=await storage('readonly',s=>s.get(member.id));
@@ -148,7 +218,7 @@
     return refresh(true);
   });
   async function poll(){
-    if(!member||document.hidden)return;
+    if(!member||document.hidden||document.querySelector('#sheet-root .editor'))return;
     try {const changed=await serial(async()=>{
       const revision=await call('/app/revision');
       if(state?.revision===revision.revision)return false;

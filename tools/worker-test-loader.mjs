@@ -3,6 +3,7 @@ import {readFileSync} from 'node:fs';
 const root=new URL('../server/cloudflare/',import.meta.url);
 const data=source=>'data:text/javascript;base64,'+Buffer.from(source).toString('base64');
 let sync=readFileSync(new URL('app-sync.mjs',root),'utf8').replace("import catalog from './demo-catalog.json';",'const catalog='+readFileSync(new URL('demo-catalog.json',root),'utf8')+';');
+sync=sync.replace("from './meet-sync.mjs'",'from '+JSON.stringify(data(readFileSync(new URL('meet-sync.mjs',root),'utf8'))));
 let source=readFileSync(new URL('worker.mjs',root),'utf8')
   .replace("import schema from './schema.sql';",'const schema='+JSON.stringify(readFileSync(new URL('schema.sql',root),'utf8'))+';')
   .replace("from './app-sync.mjs'",'from '+JSON.stringify(data(sync)))

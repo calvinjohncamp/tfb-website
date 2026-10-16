@@ -2,10 +2,10 @@ import {DatabaseSync} from 'node:sqlite';
 import assert from 'node:assert/strict';
 import worker from './worker-test-loader.mjs';
 class D1 {
-  constructor(){this.sqlite=new DatabaseSync(':memory:');}
+  constructor(){this.sqlite=new DatabaseSync(':memory:');this.pending=Promise.resolve();}
   async exec(sql){this.sqlite.exec(sql);}
   prepare(sql){const db=this.sqlite;let args=[];const q={bind(...v){args=v;return q;},async first(){return db.prepare(sql).get(...args)||null;},async all(){return {results:db.prepare(sql).all(...args)};},async run(){return {meta:{changes:Number(db.prepare(sql).run(...args).changes)}};}};return q;}
-  async batch(statements){this.sqlite.exec('BEGIN');try{const out=[];for(const q of statements)out.push(await q.run());this.sqlite.exec('COMMIT');return out;}catch(e){this.sqlite.exec('ROLLBACK');throw e;}}
+  batch(statements){const task=this.pending.then(async()=>{this.sqlite.exec('BEGIN');try{const out=[];for(const q of statements)out.push(await q.run());this.sqlite.exec('COMMIT');return out;}catch(e){this.sqlite.exec('ROLLBACK');throw e;}});this.pending=task.catch(()=>{});return task;}
 }
 export async function fixture(){
   const env={DB:new D1(),PASSWORD_PEPPER:'synthetic-pepper-'.repeat(4),SETUP_TOKEN:'x'.repeat(64)};
@@ -13,7 +13,7 @@ export async function fixture(){
   const setup=await call('/setup',{setupToken:env.SETUP_TOKEN,firstName:'Demo',lastName:'Owner',email:'test@example.invalid',password:'Synthetic password only 123!'});
   assert.equal(setup.status,200);const admin=setup.body.member,adminToken=setup.body.token;
   const otherId=crypto.randomUUID();
-  env.DB.sqlite.prepare("INSERT INTO members(id,first_name,last_name,email,updated_at) VALUES (?,'Other','Member','other@example.invalid',?)").run(otherId,Date.now());
+  env.DB.sqlite.prepare("INSERT INTO members(id,first_name,last_name,email,search_text,updated_at) VALUES (?,'Other','Member','other@example.invalid','other member other@example.invalid',?)").run(otherId,Date.now());
   const token='b'.repeat(64),hash=Buffer.from(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(token))).toString('hex');
   env.DB.sqlite.prepare('INSERT INTO sessions VALUES (?,?,?)').run(hash,otherId,Date.now()+100000);
   const commit=(ops,token=adminToken,extra={})=>{

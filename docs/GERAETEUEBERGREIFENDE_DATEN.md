@@ -1,4 +1,4 @@
-# Geräteübergreifende Vorführung – veröffentlicht, v203
+# Geräteübergreifende Vorführung – veröffentlicht, v204
 
 Stand 16.10.2026: Migration, Worker und Website v203 sind nach ausdrücklicher
 Nutzerfreigabe veröffentlicht. Die eigene Übernahme wurde durchgeführt und durch
@@ -70,8 +70,8 @@ Bedarf ihren jeweiligen bisherigen Browserbestand über dieselbe Vorschau.
 
 ## Abgrenzung
 
-Verabredungen, Gruppen, Websitebearbeitung und zentrale Monatsabschlüsse sind
-weiterhin nicht Teil dieses Abgleichs. Dafür sind eigene Serverfunktionen nötig.
+Websitebearbeitung und zentrale Monatsabschlüsse sind weiterhin nicht Teil dieses
+Abgleichs. Gruppen, Verabredungen und Trainingsserien sind seit v204 enthalten.
 Stammdatenänderungen an Name oder Login-E-Mail erfolgen über die Mitgliederverwaltung;
 private Einstellungen und Profilbild über den Account. Der Offlinebetrieb kann
 keinen aktuellen Serverstand garantieren; Fehler werden nicht als erfolgreiche
@@ -97,3 +97,29 @@ abgefangen; es werden keine produktiven Dienste oder echten Mitgliederdaten benu
 node --test tools/test-app-sync.mjs tools/test-cloudflare-directory.mjs
 node tools/test-browser-cloud-sync.mjs
 ```
+
+
+## Ergänzung v204: Planung auf allen Geräten
+
+Gruppen, Einzelverabredungen, wiederkehrendes Training und Teilnehmerantworten
+werden auch in der Vorführung zentral gespeichert. Nach der Anmeldung erhalten
+alle Geräte denselben berechtigten Datenbestand. Auf dem bisherigen Gerät werden
+eigene alte Planungseinträge automatisch aus dem zuvor privat gesicherten
+Browserbestand übernommen. Bereits zentrale Kennungen werden übersprungen, damit
+ein altes Gerät keine neueren Änderungen oder Löschungen zurücksetzt. Fremde
+Beispielgruppen und simulierte Verabredungen werden nicht importiert.
+
+Bestätigungen, Absagen, Notizen und der Lesestatus des Postfachs werden getrennt
+abgeglichen. Andere Mitglieder antworten in der angemeldeten Vorführung selbst;
+automatisch erfundene Zusagen sind deaktiviert. Wöchentliche Termine erzeugt der
+Server beim Öffnen oder Datenabgleich, sobald der Vorlauf erreicht ist. Es gibt
+keinen Hintergrundversand per E-Mail. Die Originaltermine bleiben erhalten und
+werden nicht doppelt erzeugt.
+
+Die Erweiterung verwendet die bereits vorhandenen App-Tabellen. Vor Veröffentlichung
+wurde die Live-Datenbank erneut privat exportiert und erfolgreich in SQLite
+wiederhergestellt (Integritätsprüfung erfolgreich, 308 Mitglieder erhalten).
+20 Server-/Anmeldetests bestehen auch gegen das echte Wrangler-Bundle. Der
+zusätzliche Browserlauf prüft alte Planungseinträge, eine neue Gruppe und eine
+Trainingsserie vom iPad, eine echte Bestätigung und Zusage eines zweiten Kontos,
+den Kaufabgleich auf iPhone/Desktop und die Wiederöffnung ohne Duplikate.
