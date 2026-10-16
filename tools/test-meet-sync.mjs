@@ -71,6 +71,11 @@ test('declining a group stops access and anonymous or deactivated sessions canno
  const f=await fixture();await f.commit([group(f)]);
  await f.commit([{kind:'group-answer',id:'group:'+f.otherId,revision:0,value:{groupId:'group',status:'no'}}],f.otherToken);
  assert.equal((await f.state(f.otherToken)).body.meetings.groups.length,0);
+ // An explicit new invitation must not reuse a previous decline.
+ assert.equal((await f.commit([{...group(f),revision:1}])).status,200);
+ assert.ok((await f.state(f.otherToken)).body.meetings.groups[0].pending.includes(f.otherId));
+ assert.equal((await f.commit([{kind:'group-answer',id:'group:'+f.otherId,revision:1,value:{groupId:'group',status:'yes'}}],f.otherToken)).status,200);
+ assert.ok((await f.state(f.otherToken)).body.meetings.groups[0].members.includes(f.otherId));
  assert.equal((await f.call('/app/state')).status,401);
  f.env.DB.sqlite.prepare('UPDATE members SET active=0 WHERE id=?').run(f.otherId);
  assert.equal((await f.state(f.otherToken)).status,401);

@@ -127,7 +127,7 @@ den Kaufabgleich auf iPhone/Desktop und die Wiederöffnung ohne Duplikate.
 
 ### Live-Prüfung am 16.10.2026
 
-Worker-Version `1e2e8945-d66f-47e5-80a2-0e8e82e1775d` ist veröffentlicht.
+Worker-Version `ec3b353d-216f-42ac-87ab-7881f9cb30c4` ist veröffentlicht.
 Website-v204 wurde über GitHub Actions (Lauf `38949186296`) erfolgreich bereitgestellt.
 Die anschließende Ergänzung v204.1 sichert den vollständigen Übernahmeplan vor der
 ersten Anfrage, sodass auch Antworten und Hinweise nach einem Verbindungsabbruch
@@ -141,3 +141,8 @@ Fotos, Bierdeckel und Chats) sind unverändert; die 308 Mitglieder sind erhalten
 Vorher-/Nachher-Exporte und Prüfbericht liegen ausschließlich in `.private/`.
 Insgesamt 73 Node-Tests, drei öffentliche Inhaltsprüfungen und die Browserprüfungen
 für Geräteabgleich, Wochentage, Nachladen von Eingeladenen und nächstes Match bestehen.
+
+Die abschließende Website-v204.1 ist mit Lauf `38949439692` erfolgreich veröffentlicht;
+die ausgelieferten Dateien wurden bytegenau gegen die geprüften Quellen verglichen.
+Eine zusätzliche Serverprüfung deckt eine erneute Gruppeneinladung nach früherer
+Absage ab: Die neue Einladung verlangt eine neue Bestätigung.

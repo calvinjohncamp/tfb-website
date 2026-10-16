@@ -77,7 +77,7 @@ export async function validateMeetingOperation(env,member,c,op,all,importing) {
       const members=importing?ids(v.members||[member.id]):(old?.value.members||[member.id]).filter(id=>requested.includes(id));
       if(!members.includes(member.id))members.unshift(member.id);
       const pending=requested.filter(id=>!members.includes(id)),inviteEpochs={};
-      for(const id of requested)inviteEpochs[id]=old&&everyone(old.value).includes(id)?old.value.inviteEpochs?.[id]||0:importing?0:(old?.revision||0)+1;
+      for(const id of requested)inviteEpochs[id]=old&&everyone(projectedGroup(c,old)).includes(id)?old.value.inviteEpochs?.[id]||0:importing?0:(old?.revision||0)+1;
       if(!Number.isInteger(v.weekday)||v.weekday<0||v.weekday>6)fail(400,'Trainingstag prüfen.');
       value={id:op.id,name:text(v.name,120),weekday:v.weekday,time:time(v.time),place:text(v.place||'',200),createdBy:member.id,members,pending,inviteEpochs};
       if(!value.name.trim())fail(400,'Bitte einen Gruppennamen eingeben.');
