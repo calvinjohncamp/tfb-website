@@ -151,3 +151,16 @@ bei laufender Vorschau auf `127.0.0.1:5180`.
    Monatsabschluss mit Export für den Kassenwart (Liste und SEPA-Datei)
 2. Supabase-Projekt (sobald ein freier Platz da ist) und Veröffentlichung
    unter einer Subdomain von joern-kaemper.de
+
+
+## Gestaltungsvorschlag v206
+
+Partnerflächen: auf iPhone/iPad zwei gleich breite Logos über die gesamte
+Inhaltsbreite, ab 1024 px zusammen über die halbe Inhaltsbreite. Die Flächen
+bleiben mit 78/86/90 px Höhe bewusst flach; Logos werden vollständig eingepasst.
+
+Navigation: bis 759 px zwei Zeilen (vier und drei Bereiche), ab 760 px eine
+Zeile. Auf kleinen Bildschirmen mindestens 44 px hohe Tippflächen, größere
+Schrift und mehr Abstand. Der aktive Bereich ist rot markiert; auf iPhone und
+iPad hochkant zusätzlich mit dezenter roter Fläche und Unterstreichung.
+Geprüft in beiden Farbwelten von 320 bis 1440 px, mit angemeldetem Testkonto.
