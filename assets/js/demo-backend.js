@@ -128,6 +128,8 @@
     try { localStorage.setItem(STORE_KEY, JSON.stringify(db)); return true; } catch (_) { return false; }
   }
   let db = load();
+  const syncedMediaVersions = new Map();
+  let syncedImageDatabase = null;
   // Ältere Demo-Stände bekommen das neue Sortiment, ohne Striche und Profilbilder zu verlieren.
   // Version 2 → 3: Kölsch-Kranz direkt hinter dem Kölsch ergänzen, eigene Änderungen bleiben.
   if (db.catalog && db.catalogVersion === 2) {
@@ -1532,10 +1534,13 @@
       next.community.posts=live.filter(r=>r.kind==='post').map(r=>r.value);
       next.community.comments=live.filter(r=>r.kind==='comment').map(r=>r.value);
       next.catalog=clone(state.catalog);
-      const media=live.filter(r=>r.kind==='media');
+      if(syncedImageDatabase!==imageDatabase()){syncedMediaVersions.clear();syncedImageDatabase=imageDatabase();}
+      const media=live.filter(r=>r.kind==='media'&&syncedMediaVersions.get(r.id)!==(r.revision??r.value.data));
       if(media.length)await imageTask(imageDatabase(),'readwrite',store=>{for(const r of media)store.put(r.value.data,r.id);return ()=>null;});
+      for(const r of media)syncedMediaVersions.set(r.id,r.revision??r.value.data);
       if(!save(next))throw Error('Der lokale Zwischenspeicher ist voll. Die Serverdaten bleiben erhalten.');
-      db=next; TFB.imageRevision=(TFB.imageRevision||0)+1;
+      db=next;
+      if(media.length)TFB.imageRevision=(TFB.imageRevision||0)+1;
       return publicMember(db.members.find(m=>m.id===member.id));
     },
     cacheSyncedFaces(faces) {
@@ -1558,6 +1563,7 @@
 
     async reloadLocalState() {
       db = load();
+      syncedMediaVersions.clear();
     },
 
     async resetDemo() {

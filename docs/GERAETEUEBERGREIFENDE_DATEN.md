@@ -146,3 +146,34 @@ Die abschließende Website-v204.1 ist mit Lauf `38949439692` erfolgreich veröff
 die ausgelieferten Dateien wurden bytegenau gegen die geprüften Quellen verglichen.
 Eine zusätzliche Serverprüfung deckt eine erneute Gruppeneinladung nach früherer
 Absage ab: Die neue Einladung verlangt eine neue Bestätigung.
+
+
+## v205: Schnellere Touch-Bedienung
+
+Profil, Kiosk und Listen lesen den bereits bestätigten lokalen Serverstand beim
+Öffnen sofort. Sie warten nicht mehr in der Schreibwarteschlange und laden beim
+Seitenwechsel nicht erneut sämtliche Chatbilder. Der Geräteabgleich läuft weiter
+alle zehn Sekunden und beim Zurückkehren. Schreibbestätigungen erfolgen weiterhin
+erst nach dem Servererfolg; Versionskonflikte und dauerhafte Wiederholungskennungen
+bleiben erhalten. Vor einer Änderung genügt bei unverändertem Stand die kleine
+Revisionsprüfung statt eines weiteren vollständigen Downloads.
+
+Bereits gelieferte Teilnehmernamen und Foto-Vorschauen werden wiederverwendet.
+Bei geändertem Serverstand wird der Fotocache neu aufgebaut; Originalfotos werden
+weiterhin geschützt beim Öffnen angefordert. Unveränderte Chatbilder werden nicht
+nochmals in IndexedDB geschrieben und lösen keine erneute Bildspeicher-Lektüre aus.
+Verspätete Seitenaufrufe können einen später gewählten Bildschirm nicht überschreiben.
+
+Auf Touch-Geräten entfällt die künstliche 480-ms-Verzögerung beim Bierdeckel.
+Bedienelemente verwenden `touch-action: manipulation`; Spezialgesten für Bildausschnitte
+und normale Vergrößerung bleiben erhalten. Der Schließenknopf hat dort 44 px,
+die Glocke eine vergrößerte unsichtbare Trefferfläche.
+
+`tools/test-browser-touch-performance.mjs` prüft echte Touch-Ereignisse in isolierten
+Chromium-Profilen mit 390 und 834 px und künstlich 250 ms API-Latenz. Vergleich vor/nach:
+Profil etwa 339 → 60–75 ms, Verabredungsübersicht etwa 338 → 70–85 ms. Dies sind lokale
+Testwerte und keine Messung auf einem physischen iPhone oder in iOS Safari.
+Geprüft sind auch schneller Seitenwechsel, direkte Bierdeckel-Navigation und kein
+erneutes Schreiben unveränderter Chatbilder nach einem Kauf. Der bestehende Zwei-
+und Vier-Profil-Test prüft weiterhin Datenübernahme, Fotos, Chats, Gruppen, Serien,
+Zusagen, Käufe, Wiederöffnung und unterbrochene Speichervorgänge.

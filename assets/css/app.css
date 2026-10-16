@@ -2584,3 +2584,10 @@ body.admin-hidden [data-action="post-hide"] { display: none !important; }
 .comment-photo-picker .gallery-thumb > button { position: absolute; right: 3px; top: 3px; border: 0; border-radius: 50%; width: 25px; height: 25px; background: var(--paper); cursor: pointer; }
 .comment-photo-picker .gallery-add { min-width: 110px; min-height: 74px; }
 .comment .message-collage { margin-top: 12px; }
+
+/* Native taps stay single-click actions; dragging and pinch zoom keep their own rules. */
+@media (pointer: coarse) {
+  a, button, input, select, textarea, summary, [role="button"] { touch-action: manipulation; }
+  .sheet-close { width: 44px; height: 44px; }
+  .inbox-btn::before { content: ""; position: absolute; inset: -9px; border-radius: 50%; }
+}

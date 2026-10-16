@@ -4,6 +4,7 @@
   "scripts": {
     "test:browser": "npm run test:browser:overview && npm run test:browser:gallery && npm run test:browser:backups",
     "test:browser:focus": "node tools/test-browser-focus.mjs",
+    "test:browser:touch-performance": "node tools/test-browser-touch-performance.mjs",
     "test:browser:meet-sync": "node tools/test-browser-meet-sync.mjs",
     "test:browser:meet-weekdays": "node tools/test-browser-meet-weekdays.mjs",
     "test:browser:meet-invite-more": "node tools/test-browser-meet-invite-more.mjs",

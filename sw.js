@@ -1,6 +1,6 @@
 // TFB-Kiosk – Service Worker.
 // Netz zuerst, damit Änderungen sofort ankommen; ohne Netz startet die App aus dem Zwischenspeicher.
-const CACHE = 'tfb-kiosk-v204-1';
+const CACHE = 'tfb-kiosk-v205';
 const SHELL = [
   './assets/js/member-directory.js', './assets/js/cloud-sync.js',
   './assets/data/public-content.js',
@@ -46,7 +46,7 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(
     // Revalidate documents and scripts so a reload sees changed consent/settings
     // even within GitHub Pages' ten-minute HTTP cache lifetime.
-    fetch(req, ['document', 'script'].includes(req.destination) ? { cache: 'no-cache' } : {})
+    fetch(req, ['document', 'script', 'style'].includes(req.destination) ? { cache: 'no-cache' } : {})
       .then((res) => {
         const copy = res.clone();
         caches.open(CACHE).then((cache) => cache.put(req, copy));

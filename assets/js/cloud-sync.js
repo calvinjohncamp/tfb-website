@@ -3,6 +3,7 @@
   if (!TFB.api.secureDirectory || !TFB.directoryCall) return;
   const api=TFB.api, call=TFB.directoryCall, local={};
   const photoOwners=new Map(), localOriginal=api.avatarOriginal.bind(api);
+  const nameLookup=api.memberNames.bind(api), knownFaces=new Map();
   let member=null, state=null, publicMember=null, queue=Promise.resolve(), last=0, pending=null, generation=0;
   const id=()=>crypto.randomUUID(), key=r=>r.kind+':'+r.id;
   const writeNames=['saveCatalog','setAvatar','setPhotoPermissions','updateProfile','acceptConsent','acceptFeedRules','setParentConsent','addToTab','undo','addPost','editPost','deletePost','removePostFromTeam','hidePost','addComment','editComment','deleteComment','readChatPosts','readCommentPosts'];
@@ -35,12 +36,22 @@
   async function refresh(force=false) {
     if(!member)return;
     if(!force&&Date.now()-last<5000)return;
-    const current=generation, next=await call('/app/state');
+    const current=generation;
+    if(!force&&state){
+      const marker=await call('/app/revision');
+      if(current!==generation||!member)throw Error('Die Anmeldung wurde inzwischen geändert.');
+      if(marker.revision===state.revision){last=Date.now();return publicMember;}
+    }
+    const next=await call('/app/state');
     if(current!==generation||!member)throw Error('Die Anmeldung wurde inzwischen geändert.');
     state=next;last=Date.now();
     for(const face of state.faces)photoOwners.set(face.avatar,face.id);
     const own=state.records.find(r=>r.kind==='account'&&r.id===member.id)?.value;
     if(own?.avatar)photoOwners.set(own.avatar,member.id);
+    knownFaces.clear();
+    for(const person of state.members)knownFaces.set(person.id,null);
+    for(const face of state.faces)knownFaces.set(face.id,face.avatar);
+    knownFaces.set(member.id,own?.avatar||null);
     const m=await api.applySyncedData(state);
     if(state.meetProtocol===1&&TFB.meet?.applySynced)TFB.meet.applySynced(state.meetings);
     publicMember=m;if(TFB.ui){TFB.ui.state.member=m;TFB.ui.state.catalog=state.catalog;TFB.ui.refreshAvatars?.();}
@@ -75,13 +86,13 @@
     if(state.meetProtocol===1){const original=await storage('readonly',s=>s.get('meet-original:'+member.id));if(original)await importMeetingSnapshot(original.data);}
     return publicMember;
   });
-  api.disconnectSync=()=>{generation++;if(state){api.clearSyncedData?.();TFB.meet?.applySynced?.({groups:[],meets:[],series:[],inbox:[],noSampleGroups:true});}member=null;state=null;publicMember=null;pending=null;last=0;photoOwners.clear();};
+  api.disconnectSync=()=>{generation++;if(state){api.clearSyncedData?.();TFB.meet?.applySynced?.({groups:[],meets:[],series:[],inbox:[],noSampleGroups:true});}member=null;state=null;publicMember=null;pending=null;last=0;photoOwners.clear();knownFaces.clear();};
   api.centralSync=true;
   for(const name of writeNames)api[name]=(...args)=>serial(async()=>{
     if(!member)throw Error('Bitte zuerst anmelden.');
     if(pending)throw Error('Die letzte Speicherung ist noch offen. Bitte die App neu öffnen.');
     if(name==='updateProfile'&&['firstName','lastName','email'].some(k=>args[0][k]!=null&&args[0][k]!==member[k]))throw Error('Änderungen an Name oder Anmelde-E-Mail bitte beim Verein vornehmen lassen.');
-    await refresh(true);
+    await refresh();
     const before=new Map(api.syncSnapshot().map(r=>[key(r),r]));
     let result;
     try {
@@ -96,16 +107,32 @@
       document.dispatchEvent(new Event('tfb-chat-updated'));return result;
     } catch(err){if(state)await api.applySyncedData(state).catch(()=>{});throw err;}
   });
-  for(const name of readNames)api[name]=(...args)=>serial(async()=>{
+  // Navigation reads the last confirmed cache immediately. Polling and writes
+  // update it independently, so a slow mobile request cannot block a tap.
+  for(const name of readNames)api[name]=async(...args)=>{
     if(!member)return name==='teamPostCounts'?{}:[];
-    await refresh();return local[name](...args);
-  });
-  api.memberAvatars=ids=>serial(async()=>{
+    return local[name](...args);
+  };
+  api.memberNames=async ids=>{
     if(!member)return {};
-    const faces=await call('/app/faces',{ids:[...new Set(ids)].slice(0,100)});
-    for(const face of faces)photoOwners.set(face.avatar,face.id);
-    return api.cacheSyncedFaces(faces);
-  });
+    const current=generation,result={},people=new Map((state?.members||[]).map(m=>[m.id,`${m.firstName} ${m.lastName}`.trim()]));
+    const missing=[];
+    for(const id of new Set(ids)){if(people.has(id))result[id]=people.get(id);else missing.push(id);}
+    if(missing.length)Object.assign(result,await nameLookup(missing));
+    return current===generation&&member?result:{};
+  };
+  api.memberAvatars=async ids=>{
+    if(!member)return {};
+    const current=generation,unique=[...new Set(ids)],missing=unique.filter(id=>!knownFaces.has(id));
+    for(let i=0;i<missing.length;i+=100){
+      const batch=missing.slice(i,i+100),faces=await call('/app/faces',{ids:batch});
+      if(current!==generation||!member)return {};
+      for(const id of batch)knownFaces.set(id,null);
+      for(const face of faces){photoOwners.set(face.avatar,face.id);knownFaces.set(face.id,face.avatar);}
+      if(faces.length)api.cacheSyncedFaces(faces);
+    }
+    return Object.fromEntries(unique.filter(id=>knownFaces.get(id)).map(id=>[id,knownFaces.get(id)]));
+  };
   api.avatarOriginal=async preview=>{
     const ownerId=photoOwners.get(preview);
     if(ownerId&&member){const result=await call('/app/photo',{id:ownerId});return result.image;}

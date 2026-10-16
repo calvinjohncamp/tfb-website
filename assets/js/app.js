@@ -400,7 +400,9 @@
     return `<section class="pbsp-slot" aria-label="Partner"><div class="pbsp-kicker">${esc(kicker)}</div><div class="pbsp-duo">${pair.map(tile).join('')}</div></section>`;
   }
 
+  let viewRender = 0;
   async function renderView(view = currentView()) {
+    const request = ++viewRender;
     TFB.designPreview?.apply();
     const $view = document.getElementById('view');
     if (!$view) return;
@@ -409,8 +411,13 @@
         if (!state.member) return showAuth();
         if (!state.member.hasConsent) { $view.innerHTML = consentMarkup(); return; }
         const body = view === 'kiosk' ? await kioskView() : view === 'strichliste' ? await tallyView() : await statementsView();
+        if(request!==viewRender)return;
         $view.innerHTML = body;
-      } else if (TFB.views && TFB.views[view]) $view.innerHTML = await TFB.views[view]();
+      } else if (TFB.views && TFB.views[view]) {
+        const body=await TFB.views[view]();
+        if(request!==viewRender)return;
+        $view.innerHTML=body;
+      }
       if (state.member?.isAdmin) {
         const edit = $view.querySelector('.view-close[data-action="site-edit"], .view-close[data-action="edit-start"], .view-close[data-action="feature-edit"], .view-close[data-action="album-edit"], .view-close[data-action="portrait-edit"], .view-close[data-action="chat-text-edit"]');
         if (edit) {
@@ -425,6 +432,7 @@
       }
       TFB.scrollToSiteContent?.();
     } catch (err) {
+      if(request!==viewRender)return;
       $view.innerHTML = `<div class="card error-card"><h2>Das hat nicht geklappt</h2><p>${esc(err.message)}</p></div>`;
     }
   }
@@ -1167,7 +1175,10 @@
   }
   function refreshAvatars() {
     const btn = document.querySelector('.topbar .avatar');
-    if (btn) btn.innerHTML = avatarFace(state.member);
+    if (btn) {
+      const face=avatarFace(state.member);
+      if(btn.innerHTML!==face)btn.innerHTML=face;
+    }
   }
 
   // Profilbild-Ausschnitt: Foto im Kreis verschieben und zoomen. Das Original bleibt unverändert,
@@ -1275,8 +1286,9 @@
       e.preventDefault();
       if (deckel.classList.contains('wobble')) return;
       const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if(reduce||window.matchMedia('(pointer: coarse)').matches){location.hash='#abrechnungen';return;}
       deckel.classList.add('wobble');
-      setTimeout(() => { location.hash = '#abrechnungen'; }, reduce ? 0 : 480);
+      setTimeout(() => { location.hash = '#abrechnungen'; }, 480);
       return;
     }
     const el = e.target.closest('[data-action]');
