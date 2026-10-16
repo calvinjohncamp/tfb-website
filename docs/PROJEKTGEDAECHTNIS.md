@@ -1494,3 +1494,25 @@ Datenbankmigration, kein Commit und keine Veröffentlichung ausgeführt. Online 
 v201 bis zur Freigabe. Releasefolge und Grenzen im Dokument
 GERAETEUEBERGREIFENDE_DATEN.md; historische Aussage „nicht implementiert“ im v202-
 Abschnitt ist durch diese lokale Vorbereitung überholt, nicht durch eine Livefreigabe.
+
+## 16.10.2026 – v203 freigegeben, veröffentlicht und Datenübernahme geprüft
+
+Nutzer hat Datenbankerweiterung, Server und Website ausdrücklich zur Veröffentlichung
+freigegeben und den Erhalt seiner bisherigen Daten verlangt. Vor Umstellung die
+bestehende Browser-Sicherungsfunktion verwendet und den vollständigen Export privat
+kopiert. D1 vor Migration exportiert, in SQLite wiederhergestellt, Integrität geprüft.
+Additive Migration erfolgreich. Worker-Version 26195ded-5951-4e21-b8cf-f1c170af1e09
+veröffentlicht; Health 200, anonyme neue Endpunkte 401.
+
+GitHub-Quellstand e775447 gepusht, Pages-Lauf 38945364365 erfolgreich. Live-Skripte
+und Service Worker v203 entsprechen bytegenau der geprüften lokalen Fassung.
+Eigene Browserdaten über die veröffentlichte Account-Vorschau übernommen. Danach
+D1 erneut privat gesichert/wiederhergestellt und Profilbildquellen, Chatbilddateien,
+Beitragstexte, Kommentare sowie Kioskeinträge exakt mit der Browsersicherung
+verglichen: alle Prüfungen erfolgreich; Mitgliederbestand vollständig erhalten.
+Große Profilbildansicht aus dem Live-Chat visuell bestätigt.
+
+Alle personenbezogenen Sicherungen und Vergleichsdaten ausschließlich in
+.private/release-v203/; nichts davon in Git oder Websitepaket aufgenommen.
+Safari-Daten nicht löschen. Die eigene Datenübernahme ist erledigt; am iPhone
+App neu öffnen und ggf. mit demselben Konto anmelden.

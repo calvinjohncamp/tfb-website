@@ -16,16 +16,19 @@ Der Exporter `tools/export-public-content.py` akzeptiert einen lokalen Sicherung
 die Sicherung selbst darf niemals ins öffentliche Repository kopiert werden.
 Prüfung des Ausschlusses privater Daten: `python3 -B tools/test-public-content.py`.
 
-## Lokal vorbereiteter Ausbau v203 (16.10.2026)
+## Veröffentlichter Stand v203 (16.10.2026)
 
-Profilfoto, Bierdeckel und Chats samt Kommentaren/Bildern sind für eine zentrale
-Speicherung am bestehenden geschützten Cloudflare-Server vorbereitet. Die
-Onlineversion v201 ist noch nicht umgestellt. Nach Anmeldung und beim erneuten
-Öffnen werden dann die Kontodaten geladen; offene Seiten prüfen Änderungen alle
-zehn Sekunden. Für vorhandene Browserdaten gibt es im Account eine Übernahme mit
-Vorschau. Verabredungen/Gruppen und Websitebearbeitung bleiben lokal.
-Einzelheiten, Datenübernahme und Reihenfolge der Veröffentlichung:
-[GERAETEUEBERGREIFENDE_DATEN.md](docs/GERAETEUEBERGREIFENDE_DATEN.md).
+Profilfoto, Bierdeckel und Chats samt Kommentaren/Bildern werden bei Anmeldung
+über den bestehenden geschützten Cloudflare-Server zentral gespeichert. Beim
+Wiederöffnen werden die Kontodaten geladen; offene Seiten prüfen Änderungen alle
+zehn Sekunden. Vorhandene Browserdaten können im Account mit Vorschau übernommen
+werden. Verabredungen/Gruppen und Websitebearbeitung bleiben lokal.
+
+Datenbankmigration und Worker sind veröffentlicht, GitHub Pages liefert v203
+(Quellstand `e775447`, erfolgreicher Lauf `38945364365`). Private Sicherungen
+wurden vor und nach der Datenübernahme geprüft und bleiben außerhalb von Git.
+Details: [GERAETEUEBERGREIFENDE_DATEN.md](docs/GERAETEUEBERGREIFENDE_DATEN.md).
+Die älteren Abschnitte zur rein lokalen Vorführung sind historische Entwicklungsstände.
 
 ## GitHub Pages
 

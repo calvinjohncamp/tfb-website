@@ -1,12 +1,34 @@
 # TFB – Übergabe für die nächste Sitzung
 
-**Aktueller Stand: 15.10.2026, Vorführversion v201 mit Beispielabrechnungen.** Grundlage ist der
-vom Nutzer bestätigte Vorführstand v196 für die Vorstandspräsentation. Dies ist die aktuelle
-Arbeitsgrundlage, keine Freigabe für den produktiven Vereinsbetrieb.
-Ausführlicher Verlauf: [PROJEKTGEDAECHTNIS.md](PROJEKTGEDAECHTNIS.md).
-Die folgende Zusammenfassung hat Vorrang vor den historischen Zwischenständen.
+**Aktueller Stand: 16.10.2026, veröffentlichte Vorführversion v203.**
+Datenbankerweiterung, Worker und Website wurden vom Nutzer ausdrücklich freigegeben
+und veröffentlicht. Profilfoto, Bierdeckel und Chats/Kommentare/Bildanhänge werden
+bei geschützter Anmeldung geräteübergreifend gespeichert. Der Kiosk bleibt eine
+Vorführung ohne produktive Abbuchung. Verabredungen/Gruppen und Websitebearbeitung
+bleiben lokal. Ausführlicher Verlauf: [PROJEKTGEDAECHTNIS.md](PROJEKTGEDAECHTNIS.md).
+Die folgende Zusammenfassung hat Vorrang vor historischen Zwischenständen.
 
-## Lokale Vorbereitung 16.10.2026: Synchronisierung v203
+## Veröffentlichung 16.10.2026 abgeschlossen
+
+- Additive Migration `0003-app-sync.sql` erfolgreich; vorhandene Mitglieder-/
+  Zugangstabellen erhalten. Private D1-Sicherung vor Migration wiederhergestellt
+  und auf Integrität geprüft.
+- Worker `26195ded-5951-4e21-b8cf-f1c170af1e09` online; neue Endpunkte verweigern
+  anonyme Foto-/App-Zugriffe mit 401. Health-Check 200.
+- Website-Quellstand `e775447`, Cache `tfb-kiosk-v203`, erfolgreicher Workflow
+  [38945364365](https://github.com/calvinjohncamp/tfb-website/actions/runs/38945364365).
+  Ausgelieferte Programmdateien bytegenau mit der lokalen Fassung verglichen.
+- Aktuellen Browserbestand vor Umstellung über die bestehende Sicherungsfunktion
+  exportiert und privat kopiert. Eigene Daten über die veröffentlichte Oberfläche
+  übernommen; zweite D1-Sicherung anschließend wiederhergestellt und Bilddateien,
+  Texte sowie Kioskeinträge mit der ersten Browsersicherung exakt verglichen.
+- Private Sicherungen, Vergleichsbericht und Bildschirmnachweis ausschließlich
+  unter `.private/release-v203/`, ignoriert von Git und Websitepaket.
+- Nutzer braucht am iPhone nur die App neu zu öffnen und sich ggf. mit demselben
+  Konto anzumelden. Safari-Daten nicht löschen. Die eigene Übernahme ist bereits
+  erledigt und darf nicht als noch offener Schritt dargestellt werden.
+
+## Umsetzung v203 (vor Veröffentlichung vorbereitet)
 
 - Profilbilder öffnen die gespeicherte große, unbeschnittene Quelle in Chat,
   Mannschaftsbeiträgen und Verabreden. Großbilder werden beim Anklicken geladen.
@@ -26,7 +48,7 @@ Die folgende Zusammenfassung hat Vorrang vor den historischen Zwischenständen.
 - Direkter HTML-/localhost-Vorführmodus bleibt lokal. Verabredungen/Gruppen und
   Websitebearbeitung werden mit diesem Ausbau noch nicht zentral gespeichert.
 - Neuer SQL-Bestand: `0003-app-sync.sql`, nur neue Tabellen. Worker muss vor der
-  Website aktualisiert werden. Ausgelieferter Stand bleibt bis zur Freigabe v201.
+  Website aktualisiert werden. Diese Reihenfolge wurde inzwischen abgeschlossen.
 - Veröffentlichungsschritte und genaue Grenzen:
   [GERAETEUEBERGREIFENDE_DATEN.md](GERAETEUEBERGREIFENDE_DATEN.md).
 
@@ -34,13 +56,13 @@ Die folgende Zusammenfassung hat Vorrang vor den historischen Zwischenständen.
 
 - Website: https://joern-kaemper.de/ – DNS-Prüfung erfolgreich, HTTPS erzwungen.
   `www` zeigt per CNAME auf `calvinjohncamp.github.io`; Mail-Einträge bleiben erhalten.
-- Ausgelieferter Quellstand `a31c60b`, Service-Worker `tfb-kiosk-v201`;
-  GitHub-Pages-Veröffentlichung erfolgreich (Workflow-Lauf `38775995321`).
+- Vorheriger Online-Stand: `a31c60b`, Cache `tfb-kiosk-v201`, Lauf `38775995321`.
+  Dieser wurde durch den oben dokumentierten Release v203 ersetzt.
 - Repository `calvinjohncamp/tfb-website`, lokaler Projektordner `tfb-kiosk`.
   GitHub ist öffentlich; private Mitgliederdaten, Meldelisten, Sicherungen und
   Schlüssel gehören niemals in Git oder das Pages-Paket.
 - Die separate Padel-App wird durch diesen Abschluss nicht verändert.
-  Ein neues gemeinsames Thema hat der Nutzer angekündigt, aber noch nicht benannt.
+  Das anschließende Thema Profilbilder und Synchronisierung ist oben dokumentiert.
 
 ## Bestätigte Bedienung und Funktionen
 

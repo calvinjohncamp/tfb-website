@@ -1,10 +1,12 @@
-# Geräteübergreifende Vorführung – lokal vorbereitet, v203
+# Geräteübergreifende Vorführung – veröffentlicht, v203
 
-Stand 16.10.2026. Die Onlineversion v201 hat eine zentrale Anmeldung, speichert
-Profilfoto, Bierdeckel und Chats aber im jeweiligen Browser. Safari-Cache-Löschen
-behebt diese Trennung nicht und kann lokale Daten verlieren lassen.
+Stand 16.10.2026: Migration, Worker und Website v203 sind nach ausdrücklicher
+Nutzerfreigabe veröffentlicht. Die eigene Übernahme wurde durchgeführt und durch
+Vergleich der privaten Sicherungen vor/nach der Umstellung geprüft. Profilbild,
+Chatbilder/-texte und Kioskeinträge sind erhalten. Die frühere Onlineversion v201
+hatte nur die Anmeldung zentralisiert. Safari-Cache-Löschen ist nicht erforderlich.
 
-## Vorbereitete Umsetzung
+## Umsetzung
 
 Der bestehende TFB-Cloudflare-Worker und D1 erhalten zusätzliche Tabellen über
 `server/cloudflare/migrations/0003-app-sync.sql`. Es wird kein anderes Projekt
@@ -62,7 +64,9 @@ Sicherung darf niemals in Git oder das öffentliche Websitepaket gelangen.
 5. Am bisherigen Browser anmelden und die eigene Übernahme prüfen/bestätigen;
    anschließend mit demselben Konto auf dem iPhone anmelden. Safari-Daten behalten.
 
-Noch kein produktiver Server oder Datenbestand wurde hierfür verändert.
+Diese Reihenfolge ist am 16.10.2026 für den bestehenden TFB-Server abgeschlossen.
+Die eigene Browserdatenübernahme ist erledigt. Andere Mitglieder übernehmen bei
+Bedarf ihren jeweiligen bisherigen Browserbestand über dieselbe Vorschau.
 
 ## Abgrenzung
 
@@ -79,7 +83,8 @@ Datenabfragen; die Vorführung lädt den sichtbaren Verlauf samt Anhängen zusam
 67 Node-Tests und drei Prüfungen zum öffentlichen Inhalt sind bestanden. Der
 Cloudflare-Worker wurde mit Wrangler als Dry-Run gebaut und die 14 Server-/
 Anmeldetests auch gegen das erzeugte Bundle ausgeführt. Der Zwei-Geräte-Test
-ist erfolgreich. Es wurde kein produktiver Dienst verändert.
+ist erfolgreich. Danach wurden die freigegebene Veröffentlichung und der
+Erhalt der bisherigen Daten separat auf der Live-Anwendung geprüft.
 
 Automatisierte SQLite-Tests prüfen Geräteübernahme, getrennte private Daten,
 Mannschaftsrechte, Kommentare/Bilder, Versionskonflikte, atomare Schreibvorgänge,

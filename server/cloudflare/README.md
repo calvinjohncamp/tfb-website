@@ -1,6 +1,6 @@
 # Geschütztes Mitgliederverzeichnis ohne Supabase
 
-Stand 15.10.2026: Worker online, Version `da44e29e-1844-48c0-99a7-da0f5a572d96`.
+Stand 16.10.2026: Worker online, Version `26195ded-5951-4e21-b8cf-f1c170af1e09`.
 Health-Check 200; anonyme Suche/Verwaltung 401; fremder Browser-Ursprung 403.
 Secrets ausschließlich im Worker und lokal unter `.private/`. Verwaltungskonto
 eingerichtet; Website-Anbindung aktiviert, geschützte Mitgliederliste geladen.
@@ -31,9 +31,9 @@ Cloudflare-Zugangsdaten gehören niemals in Git oder das Pages-Paket.
   Passwort, Aktivierung und Sitzungen. Ein bestehender Admin bleibt erhalten.
 - D1-Datenbank und Servercode werden nicht an Websitebesucher ausgeliefert.
   CORS schränkt Browser-Ursprünge ein, ersetzt jedoch keine Authentifizierung.
-- Kiosk, Chat, Verabredungen und Gruppen sind weiterhin lokale Simulationen.
-  Die Authentifizierung ergänzt keine geräteübergreifende Zustellung.
-  Websitebearbeitung und simulierte Abrechnungen sind noch kein Vereinsbetrieb.
+- Seit v203 sind Profilfoto, Kiosk-Striche und Chat/Kommentare/Anhänge zentral.
+  Verabredungen, Gruppen und Websitebearbeitung bleiben lokale Simulationen.
+  Die Kiosk-Vorführung ist weiterhin kein produktiver Abrechnungsbetrieb.
 - Die Website-Schaltung ist für die öffentlichen Website-Hosts aktiviert.
   Anfragen mit Zugangsdaten erfordern HTTPS. In der Vorführung blendet der rote
   Ball Admin-Werkzeuge auch bei geschützter Anmeldung ein/aus; nach Neuladen sind
@@ -98,13 +98,13 @@ neuen Mannschaftsmeldungen die private Relation aktualisieren; keine Zuordnung
 aus der Nachricht eines Mitglieds oder aus ausgewählten Beitragsempfängern ableiten.
 Für den Vereinsbetrieb diese Relation beim geplanten Supabase-Umzug übernehmen.
 
-## Lokal vorbereiteter Ausbau v203: App-Daten
+## Veröffentlichter Ausbau v203: App-Daten
 
 `app-sync.mjs` und additive Migration `0003-app-sync.sql` ergänzen zentrale
 Profile/Fotos, Vorführ-Kioskstriche, Chats/Kommentare/Anhänge und den Katalog.
-Noch nicht auf den bestehenden Worker/D1 veröffentlicht. Vor Website-v203 zuerst
-D1 sichern, Migration anwenden und Worker aktualisieren. Bestehende Tabellen und
-Mitgliederzugänge bleiben erhalten. Technischer Umfang, Übernahme vorhandener
+Am 16.10.2026 nach ausdrücklicher Freigabe veröffentlicht. Vor Website-v203
+wurde D1 gesichert, die Migration angewendet und der Worker aktualisiert.
+Bestehende Tabellen und Mitgliederzugänge blieben erhalten. Technischer Umfang, Übernahme vorhandener
 Browserdaten und Betriebsgrenzen:
 [GERAETEUEBERGREIFENDE_DATEN.md](../../docs/GERAETEUEBERGREIFENDE_DATEN.md).
 
