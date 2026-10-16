@@ -2611,7 +2611,7 @@ body.admin-hidden [data-action="post-hide"] { display: none !important; }
 .app .topbar .topnav .tab.active { color: var(--signal); }
 .app .topbar .topnav .tab:focus-visible { outline: 2px solid var(--signal); outline-offset: 3px; border-radius: 5px; }
 .app .topbar .topnav .tab:active { color: var(--signal); background: color-mix(in srgb, var(--signal) 12%, transparent); }
-@media (max-width: 1023px) {
+@media (max-width: 1023px), (pointer: coarse) and (orientation: portrait) {
   .app .topbar .topnav {
     display: grid; grid-template-columns: repeat(12, minmax(0, 1fr));
     gap: 6px; margin: 18px 0 0; padding: 0 0 6px; overflow: visible;
@@ -2629,7 +2629,17 @@ body.admin-hidden [data-action="post-hide"] { display: none !important; }
   }
   .app .topbar .topnav .tab.active::after { left: 16px; right: 16px; bottom: 3px; height: 3px; border-radius: 3px; }
 }
-@media (min-width: 760px) and (max-width: 1023px) {
+@media (min-width: 760px) and (max-width: 1023px), (min-width: 760px) and (pointer: coarse) and (orientation: portrait) {
   .app .topbar .topnav { grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 8px; }
   .app .topbar .topnav .tab, .app .topbar .topnav .tab:nth-child(n+5) { grid-column: auto; font-size: .86rem; letter-spacing: .045em; }
+}
+/* Auch ein großes iPad im Querformat behält zwei Partner über die volle Breite. */
+@media (min-width: 1024px) and (pointer: coarse) {
+  .pbsp-slot .pbsp-duo { width: 100%; }
+}
+
+/* Große iPads hochkant: Menü unter dem Logo statt in der Desktop-Kopfzeile. */
+@media (min-width: 1024px) and (pointer: coarse) and (orientation: portrait) {
+  .app .topbar { display: block; padding-bottom: 0; }
+  .app .topbar-row { display: flex; }
 }

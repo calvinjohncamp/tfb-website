@@ -156,7 +156,8 @@ bei laufender Vorschau auf `127.0.0.1:5180`.
 ## Gestaltungsvorschlag v206
 
 Partnerflächen: auf iPhone/iPad zwei gleich breite Logos über die gesamte
-Inhaltsbreite, ab 1024 px zusammen über die halbe Inhaltsbreite. Die Flächen
+Inhaltsbreite (auch auf großen iPads quer), auf dem Desktop ab 1024 px
+zusammen über die halbe Inhaltsbreite. Die Flächen
 bleiben mit 78/86/90 px Höhe bewusst flach; Logos werden vollständig eingepasst.
 
 Navigation: bis 759 px zwei Zeilen (vier und drei Bereiche), ab 760 px eine
