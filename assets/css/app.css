@@ -2594,16 +2594,16 @@ body.admin-hidden [data-action="post-hide"] { display: none !important; }
 
 /* Partnerflächen: zwei gleich breite Logos, sichtbar und bewusst flach. */
 .pbsp-slot .pbsp-duo { width: 100%; max-width: none; gap: 12px; margin-left: 0; margin-right: 0; }
-.pbsp-slot .pbsp-tile { height: 78px; padding: 12px 16px; border-radius: 10px; }
-.pbsp-slot .pbsp-tile img { width: 100%; height: 100%; max-width: 100%; max-height: 54px; object-fit: contain; }
+.pbsp-slot .pbsp-tile { height: 100px; padding: 12px 16px; border-radius: 10px; }
+.pbsp-slot .pbsp-tile img { width: 100%; height: 100%; max-width: 100%; max-height: 70px; object-fit: contain; }
 @media (min-width: 640px) {
-  .pbsp-slot .pbsp-tile { height: 86px; padding: 14px 22px; }
-  .pbsp-slot .pbsp-tile img { max-height: 56px; }
+  .pbsp-slot .pbsp-tile { height: 110px; padding: 14px 22px; }
+  .pbsp-slot .pbsp-tile img { max-height: 72px; }
 }
 @media (min-width: 1024px) {
   .pbsp-slot .pbsp-duo { width: 50%; gap: 16px; }
-  .pbsp-slot .pbsp-tile { height: 90px; padding: 14px 20px; }
-  .pbsp-slot .pbsp-tile img { max-height: 60px; }
+  .pbsp-slot .pbsp-tile { height: 115px; padding: 14px 20px; }
+  .pbsp-slot .pbsp-tile img { max-height: 77px; }
 }
 
 /* Eigenständige TFB-Navigation: klarer aktiver Bereich, mehr Platz für den Finger. */
@@ -2613,25 +2613,33 @@ body.admin-hidden [data-action="post-hide"] { display: none !important; }
 .app .topbar .topnav .tab:active { color: var(--signal); background: color-mix(in srgb, var(--signal) 12%, transparent); }
 @media (max-width: 1023px), (pointer: coarse) and (orientation: portrait) {
   .app .topbar .topnav {
-    display: grid; grid-template-columns: repeat(12, minmax(0, 1fr));
-    gap: 6px; margin: 18px 0 0; padding: 0 0 6px; overflow: visible;
+    display: flex; flex-wrap: nowrap; justify-content: space-between;
+    gap: 2px; margin: 18px 0 0; padding: 0 0 6px; overflow: visible;
   }
   .app .topbar .topnav .tab {
-    grid-column: span 3; min-width: 0; min-height: 44px; margin: 0;
-    padding: 10px 6px; border: 1px solid transparent; border-radius: 9px;
-    font-size: .8rem; letter-spacing: .055em; line-height: 1.2;
+    flex: 0 0 auto; min-width: 0; min-height: 44px; margin: 0;
+    padding: 10px 2px; border: 0; border-radius: 8px;
+    font-size: clamp(.66rem, 3.08vw, .75rem); letter-spacing: .025em; line-height: 1.2;
     font-weight: 700; color: var(--muted);
   }
-  .app .topbar .topnav .tab:nth-child(n+5) { grid-column: span 4; }
-  .app .topbar .topnav .tab.active {
-    color: var(--signal); border-color: color-mix(in srgb, var(--signal) 24%, transparent);
+  .app .topbar .topnav .tab:first-child { padding-left: 0; }
+  .app .topbar .topnav .tab:last-child { padding-right: 0; }
+  .app .topbar .topnav .tab::before {
+    content: ""; position: absolute; inset: 6px -3px;
+    border: 1px solid transparent; border-radius: 8px; pointer-events: none;
+  }
+  .app .topbar .topnav .tab.active, .app .topbar .topnav .tab:active {
+    color: var(--signal); background: transparent;
+  }
+  .app .topbar .topnav .tab.active::before {
+    border-color: color-mix(in srgb, var(--signal) 24%, transparent);
     background: color-mix(in srgb, var(--signal) 7%, transparent);
   }
-  .app .topbar .topnav .tab.active::after { left: 16px; right: 16px; bottom: 3px; height: 3px; border-radius: 3px; }
+  .app .topbar .topnav .tab.active::after { left: 6px; right: 6px; bottom: 9px; height: 2.25px; border-radius: 2px; }
 }
 @media (min-width: 760px) and (max-width: 1023px), (min-width: 760px) and (pointer: coarse) and (orientation: portrait) {
-  .app .topbar .topnav { grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 8px; }
-  .app .topbar .topnav .tab, .app .topbar .topnav .tab:nth-child(n+5) { grid-column: auto; font-size: .86rem; letter-spacing: .045em; }
+  .app .topbar .topnav { justify-content: space-between; gap: 8px; }
+  .app .topbar .topnav .tab { font-size: .86rem; letter-spacing: .045em; }
 }
 /* Auch ein großes iPad im Querformat behält zwei Partner über die volle Breite. */
 @media (min-width: 1024px) and (pointer: coarse) {
@@ -2642,4 +2650,9 @@ body.admin-hidden [data-action="post-hide"] { display: none !important; }
 @media (min-width: 1024px) and (pointer: coarse) and (orientation: portrait) {
   .app .topbar { display: block; padding-bottom: 0; }
   .app .topbar-row { display: flex; }
+}
+@media (max-width: 359px) {
+  .app .topbar .topnav { gap: 1px; }
+  .app .topbar .topnav .tab { padding-left: 1px; padding-right: 1px; }
+  .app .topbar .topnav .tab::before { left: 0; right: 0; }
 }

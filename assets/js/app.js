@@ -357,7 +357,7 @@
     { id: 'kiosk', label: 'Kiosk', target: '#kiosk' }, { id: 'chat', label: 'Chat', target: '#chat' },
     { id: 'aktuell', label: 'Aktuell', target: '#aktuell' }, { id: 'sport', label: 'Sport', target: '#sport' },
     { id: 'club', label: 'Club', target: '#club' },
-    ...(cfg.features && cfg.features.treffen ? [{ id: 'treffen', label: 'Verabreden', target: '#treffen' }] : []),
+    ...(cfg.features && cfg.features.treffen ? [{ id: 'treffen', label: 'Dating', target: '#treffen' }] : []),
     { id: 'padel', label: 'Padel', target: cfg.padelUrl },
   ];
   function navLinks(area) {
@@ -367,7 +367,8 @@
       if (/^https?:\/\//i.test(t)) return `<a href="${esc(t)}" class="tab external" target="_blank" rel="noopener" aria-label="${esc(it.label)} (öffnet in neuem Fenster)">${esc(it.label)}</a>`;
       const page = t.replace(/^#/, '').split('/')[0] || 'home';
       const on = page === area;
-      return `<a href="${esc(t || '#home')}" class="tab tab-${esc(page)} ${on ? 'active' : ''}" ${on ? 'aria-current="page"' : ''}>${esc(it.label)}</a>`;
+      const label=page==='treffen'&&it.label==='Verabreden'?'Dating':it.label;
+      return `<a href="${esc(t || '#home')}" class="tab tab-${esc(page)} ${on ? 'active' : ''}" ${on ? 'aria-current="page"' : ''}>${esc(label)}</a>`;
     }).join('');
   }
   TFB.defaultNav = defaultNav;

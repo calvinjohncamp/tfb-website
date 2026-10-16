@@ -153,15 +153,18 @@ bei laufender Vorschau auf `127.0.0.1:5180`.
    unter einer Subdomain von joern-kaemper.de
 
 
-## Gestaltungsvorschlag v206
+## Gestaltungsvorschlag v207
 
 Partnerflächen: auf iPhone/iPad zwei gleich breite Logos über die gesamte
-Inhaltsbreite (auch auf großen iPads quer), auf dem Desktop ab 1024 px
-zusammen über die halbe Inhaltsbreite. Die Flächen
-bleiben mit 78/86/90 px Höhe bewusst flach; Logos werden vollständig eingepasst.
+Inhaltsbreite (auch auf großen iPads quer), auf dem Desktop ab 1024 px zusammen
+über die halbe Inhaltsbreite. Die Höhen betragen jetzt 100/110/115 px, rund
+28 Prozent mehr als v206. Logos werden vollständig und unverzerrt eingepasst.
 
-Navigation: bis 759 px zwei Zeilen (vier und drei Bereiche), ab 760 px eine
-Zeile. Auf kleinen Bildschirmen mindestens 44 px hohe Tippflächen, größere
-Schrift und mehr Abstand. Der aktive Bereich ist rot markiert; auf iPhone und
-iPad hochkant zusätzlich mit dezenter roter Fläche und Unterstreichung.
+Navigation: alle sieben Bereiche stehen auch auf dem iPhone in einer Zeile.
+Der Menüname „Verabreden“ wird zu „Dating“, einschließlich bereits gespeicherter
+Standard-Menüeinträge. Individuell anders benannte Einträge bleiben erhalten.
+Auf dem iPad hochkant bleiben die größeren Schriften; die Außenkanten sind bündig
+und die Abstände gleichmäßig verteilt. Die dezente aktive Markierung ist nur
+32 px hoch, während die Tippfläche 44 px behält. Der rote Strich liegt näher am
+Begriff und ist mit 2,25 statt 3 px um 25 Prozent dünner.
 Geprüft in beiden Farbwelten von 320 bis 1440 px, mit angemeldetem Testkonto.
