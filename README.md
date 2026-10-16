@@ -3,32 +3,25 @@
 Repository: https://github.com/calvinjohncamp/tfb-website · Zieladresse:
 https://joern-kaemper.de. Lokaler Arbeitsordner weiterhin `tfb-kiosk/`.
 
-Veröffentlichungsvorbereitung vom 15.10.2026, Cache `tfb-kiosk-v185`.
-Die Anwendung bleibt eine Demo mit gerätebezogener Browser-Speicherung.
-Im Browser bearbeitete Inhalte/Fotos werden durch einen Git-Push nicht übertragen.
-Die öffentlichen Inhalte wurden aus der lokalen Sicherung vom 15.10.2026 um 06:12
-gezielt übernommen: sechs Seiten, öffentliche Mannschafts-/Geschichtsinhalte und
-99 unterschiedliche Bilddateien. `assets/data/public-content.js` und
-`assets/content/` versorgen neue Browser mit diesen Inhalten. Bestehende lokale
-Browserinhalte werden nicht überschrieben. Die vollständige Sicherung, Konten,
-Chats, Mitgliederlisten und Verabredungen sind nicht Teil dieser Übernahme.
-Der Exporter `tools/export-public-content.py` akzeptiert einen lokalen Sicherungspfad;
-die Sicherung selbst darf niemals ins öffentliche Repository kopiert werden.
-Prüfung des Ausschlusses privater Daten: `python3 -B tools/test-public-content.py`.
+## Eingefrorener Vorführstand v208 – 16.10.2026
 
-## Veröffentlichter Stand v203 (16.10.2026)
+Vom Nutzer bestätigter Stand, Tag `stand-2026-10-16-v208`, Website-Quellstand
+`4781aca`, Cache `tfb-kiosk-v208`. Website und geschützter TFB-Server sind veröffentlicht.
+Verbindliche Übergabe: [docs/UEBERGABE.md](docs/UEBERGABE.md), ausführlicher Verlauf:
+[docs/PROJEKTGEDAECHTNIS.md](docs/PROJEKTGEDAECHTNIS.md).
+Weitere Änderungen erst auf neuen Auftrag.
 
-Profilfoto, Bierdeckel und Chats samt Kommentaren/Bildern werden bei Anmeldung
-über den bestehenden geschützten Cloudflare-Server zentral gespeichert. Beim
-Wiederöffnen werden die Kontodaten geladen; offene Seiten prüfen Änderungen alle
-zehn Sekunden. Vorhandene Browserdaten können im Account mit Vorschau übernommen
-werden. Verabredungen/Gruppen und Websitebearbeitung bleiben lokal.
+Profilfoto, Bierdeckel, Chats/Kommentare/Anhänge, Gruppen, Verabredungen und
+Trainingsserien werden nach Anmeldung auf iPhone/iPad/Desktop zentral abgeglichen.
+Zentrale Speicherung gilt auch in der Vorführung; sie ist noch kein freigegebener
+Vereins-Abrechnungsbetrieb. Websitebearbeitung und direkter Datei-/localhost-Modus
+bleiben lokal. Details: [GERAETEUEBERGREIFENDE_DATEN.md](docs/GERAETEUEBERGREIFENDE_DATEN.md).
 
-Datenbankmigration und Worker sind veröffentlicht, GitHub Pages liefert v203
-(Quellstand `e775447`, erfolgreicher Lauf `38945364365`). Private Sicherungen
-wurden vor und nach der Datenübernahme geprüft und bleiben außerhalb von Git.
-Details: [GERAETEUEBERGREIFENDE_DATEN.md](docs/GERAETEUEBERGREIFENDE_DATEN.md).
-Die älteren Abschnitte zur rein lokalen Vorführung sind historische Entwicklungsstände.
+Öffentliche Websiteinhalte stammen aus dem gezielten Export in
+`assets/data/public-content.js` und `assets/content/`. Ein Git-Push überträgt
+keine privaten Browser-Sicherungen oder späteren lokalen CMS-Änderungen.
+Vollständige Browser-/D1-Sicherungen bleiben ausschließlich privat unter `.private/`.
+Neue D1-Sicherung zum Abschluss v208 erfolgreich wiederhergestellt und geprüft.
 
 ## GitHub Pages
 
@@ -37,8 +30,8 @@ Danach unter Actions den Ablauf **TFB-Website veröffentlichen** mit **Run workf
 auf `main` starten. Er veröffentlicht ausschließlich die geprüften Webdateien aus
 `tools/prepare-pages.py`. Dokumentation, Server, Werkzeuge und Sicherungen werden
 nicht in die Website übernommen. Weitere Veröffentlichungen werden ebenfalls
-bewusst per Knopf ausgelöst. Die Domain erst nach erfolgreicher GitHub-Vorschau
-unter Settings → Pages eintragen und bei IONOS verbinden.
+bewusst per Knopf ausgelöst. Die Domain ist bereits verbunden; für normale
+Website-Updates sind keine weiteren DNS-Änderungen erforderlich.
 
 Funktionsprüfungen: `node --test tools/test-backups.mjs tools/test-board-photos.mjs
 tools/test-catalog.mjs tools/test-home-features.mjs tools/test-photo-drop.mjs
@@ -59,18 +52,10 @@ Eigenständiges Projekt, strikt getrennt von Padel Bielstein.
 **Aktueller Stand, Entscheidungen und offene Punkte:** [`docs/PROJEKTGEDAECHTNIS.md`](docs/PROJEKTGEDAECHTNIS.md)
 Mitgliederdaten gehören niemals in dieses Repository.
 
-## Stand
+## Historischer Entwicklungsstand
 
-Lokaler Vorführstand vom 13.10.2026, Cache `tfb-kiosk-v183`: Desktop-Fokus,
-Galerien/Beitragsübersichten und Wochentagsauswahl für Einladungen. Öffentliche
-App-Installation zurückgestellt; kein F auf iPhone/iPad/Android. Letzte eingefrorene
-Git-Fassung weiterhin `stand-2026-10-12-v160`; spätere Änderungen uncommittet.
-Aktueller Einstieg: [`docs/UEBERGABE.md`](docs/UEBERGABE.md), ausführliches
-[`Projektgedächtnis`](docs/PROJEKTGEDAECHTNIS.md).
-
-Im Demo-Modus liegen alle Daten nur im Browser des Geräts. Die gesamte
-Datenhaltung läuft über `TFB.api` (`assets/js/demo-backend.js`); für Supabase
-wird nur diese Schicht ersetzt.
+Die nachfolgenden Beschreibungen dokumentieren frühere Entwicklungsphasen.
+Aktuell gilt ausschließlich der eingefrorene Stand v208 in der verlinkten Übergabe.
 
 ## Lokal starten
 
@@ -145,7 +130,7 @@ bei laufender Vorschau auf `127.0.0.1:5180`.
 | `tools/build-brand.sh` | Erzeugt Logo-Bausteine und App-Symbol aus dem Original |
 | `sw.js`, `manifest.webmanifest` | Installation als App |
 
-## Nächste Schritte
+## Historische Zukunftsideen – kein aktueller Arbeitsauftrag
 
 1. Admin-Bereich: Produkte und Gestaltung, Mitgliederliste per Excel-Upload,
    Monatsabschluss mit Export für den Kassenwart (Liste und SEPA-Datei)
@@ -153,12 +138,13 @@ bei laufender Vorschau auf `127.0.0.1:5180`.
    unter einer Subdomain von joern-kaemper.de
 
 
-## Gestaltungsvorschlag v207
+## Freigegebene Gestaltung v208
 
 Partnerflächen: auf iPhone/iPad zwei gleich breite Logos über die gesamte
 Inhaltsbreite (auch auf großen iPads quer), auf dem Desktop ab 1024 px zusammen
-über die halbe Inhaltsbreite. Die Höhen betragen jetzt 100/110/115 px, rund
-28 Prozent mehr als v206. Logos werden vollständig und unverzerrt eingepasst.
+über die halbe Inhaltsbreite. Höhen: iPhone 100 px, Desktop 115 px; iPad 132 px
+bzw. auf großen iPads 138 px, nochmals 20 Prozent mehr als v207. Logos bleiben mittig
+und unverzerrt eingepasst.
 
 Navigation: alle sieben Bereiche stehen auch auf dem iPhone in einer Zeile.
 Der Menüname „Verabreden“ wird zu „Dating“, einschließlich bereits gespeicherter

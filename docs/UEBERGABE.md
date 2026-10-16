@@ -1,5 +1,129 @@
 # TFB – Übergabe für die nächste Sitzung
 
+**Verbindlicher Stand: 16.10.2026, veröffentlichte Vorführversion v208.**
+Der Nutzer hat Gestaltung und Bedienung ausdrücklich bestätigt und das Einfrieren
+beauftragt. Letzte freigegebene Korrektur: ausschließlich die iPad-Partnerflächen
+bei gleicher Breite um 20 Prozent höher. Erst auf einen neuen Nutzerauftrag
+weiterentwickeln; ältere offene Listen nicht selbständig abarbeiten.
+
+Sicherungstag: `stand-2026-10-16-v208`. Website-Quellstand `4781aca`, Cache
+`tfb-kiosk-v208`; Dokumentationsabschluss ist ebenfalls im Sicherungstag enthalten.
+Dieser Kurzstand hat Vorrang vor allen historischen Abschnitten weiter unten.
+
+## Live-System und Projektgrenze
+
+- Website: [joern-kaemper.de](https://joern-kaemper.de/).
+- Repository: [calvinjohncamp/tfb-website](https://github.com/calvinjohncamp/tfb-website),
+  Arbeitsordner `tfb-kiosk/` innerhalb von `9. TFB-Website`. Der Elternordner enthält
+  auch eine getrennte Padel-Kopie und fremde Übergaben; diese nicht bearbeiten.
+- Website v208 veröffentlicht über
+  [Pages-Lauf 38957773956](https://github.com/calvinjohncamp/tfb-website/actions/runs/38957773956).
+  Ausgelieferte CSS-Datei und Service Worker bytegenau mit den geprüften Quellen verglichen.
+- Cloudflare-Worker `tfb-api`, Version `ec3b353d-216f-42ac-87ab-7881f9cb30c4`,
+  D1 `tfb-website`. Diese iPad-/Gestaltungsabschlüsse ändern weder Worker noch Schema.
+  Nur bestehende TFB-Dienste verwenden; Padel bleibt ein separates System.
+
+## Bestätigte Gestaltung und Bedienung
+
+- Kühle Welt als Standard, warme Alternative erhalten. Signature-Rot `#C4553A`.
+- Alle sieben Menüpunkte in einer Zeile, auch auf dem iPhone: Kiosk, Chat, Aktuell,
+  Sport, Club, Dating, Padel. Keine zweizeilige Navigation. „Dating“ ersetzt den
+  bisherigen Standard-Menünamen „Verabreden“; die Route bleibt `#treffen`.
+- iPhone etwas kleinere, gut lesbare Schrift; iPad hochkant größere Schrift,
+  erste/letzte Beschriftung bündig zu den Inhaltskanten, gleichmäßige Abstände.
+- Dezente rote aktive Pill, optisch 32 px hoch bei 44 px Tippfläche. Strich näher
+  am Begriff, 2,25 statt 3 px. Auf Desktop bleibt die ruhige einzeilige Kopfzeile.
+- Partner: zwei gleich breite, mittig eingepasste Logos. Auf iPhone/iPad zusammen
+  volle Inhaltsbreite, auf Desktop ab 1024 px zusammen halbe Inhaltsbreite.
+  iPhone 100 px Höhe, Desktop 115 px. Tablet mit primärer Touch-Bedienung und
+  mindestens 640 × 640 CSS-Pixeln: 132 px statt 110, ab 1024 px Breite 138 statt
+  115 px. Das sind jeweils exakt 20 Prozent mehr Höhe; Breiten und Logo-Zentrierung
+  bleiben erhalten. iPhone quer und Desktop bekommen diese zusätzliche Erhöhung nicht.
+- Roter Ball schaltet vorhandene Admin-Werkzeuge ein/aus; nach Neuladen ausgeblendet.
+  Desktop-Fokus über F bleibt auf primäre Maus/Trackpad-Bedienung beschränkt.
+- Touch-Optimierung v205 beibehalten: Ansichten lesen bestätigten Cache sofort,
+  keine vollständigen Chat-/Bildabfragen bei jedem Seitenwechsel; bekannte Namen/
+  Vorschaubilder wiederverwenden, unveränderte Chatbilder nicht erneut schreiben.
+  Verspätete Ansichten überschreiben keine später gewählte Seite. Auf Touch entfällt
+  die künstliche 480-ms-Bierdeckel-Wartezeit. Nutzer bestätigt die flüssigere Bedienung.
+
+## Zentral gespeicherte Vorführdaten
+
+- Anmeldung, Profilfoto, Kiosk-Einträge, Chatbeiträge/Kommentare/Anhänge und Katalog
+  sind seit v203 zentral. Seit v204 zusätzlich Gruppen, Verabredungen, wöchentliche
+  Trainingsserien, Teilnehmerantworten und Postfach-Lesestatus.
+- Gleicher Account auf iPhone/iPad/Desktop lädt denselben berechtigten Datenbestand.
+  Eigene frühere Daten wurden übernommen und anhand privater Sicherungen auf Erhalt
+  geprüft. Diese Wiederherstellung ist erledigt, nicht als neue offene Aufgabe ausgeben.
+- Geöffnete Apps prüfen alle zehn Sekunden einen Änderungsmarker und beim Zurückkehren.
+  Schreibbestätigung erst nach Servererfolg; Revisionen und dauerhafte Vorgangskennungen
+  schützen vor Überschreiben und Duplikaten. Unterbrochene Übernahmen werden fortgesetzt.
+- Teilnehmer antworten im zentral angemeldeten Modus selbst; keine erfundenen Zusagen.
+  Wöchentliche Termine materialisieren beim Öffnen/Abgleich, nicht über einen Cronjob
+  oder E-Mail-Versand. Abgesagte Termine werden nicht neu erzeugt.
+- Original-Profilbilder öffnen unbeschnitten in hoher gespeicherter Auflösung;
+  Vorschau und große Quelle bleiben getrennt. Fotozugriffe bleiben serverseitig geprüft.
+- Details und Betriebsgrenzen: [GERAETEUEBERGREIFENDE_DATEN.md](GERAETEUEBERGREIFENDE_DATEN.md).
+
+## Sicherungen und Wiederherstellung
+
+- Private Browser-/D1-Sicherungen und Erhaltungsvergleiche liegen ausschließlich unter
+  `.private/release-v203/` und `.private/release-v204/`. Fotos, Chats, Kioskeinträge
+  sowie ursprüngliche Planungsfelder und Antworten wurden damals exakt verglichen.
+- Zum Einfrieren neuer D1-Export `.private/release-v208/d1-frozen-2026-10-16.sql`,
+  in SQLite wiederhergestellt und `PRAGMA integrity_check` erfolgreich geprüft.
+  Prüfbericht und Bildschirmvorschauen liegen im selben privaten Ordner.
+- Zusätzliche Quellstand-Sicherung als geprüftes Git-Bundle:
+  `.private/release-v208/tfb-website-stand-2026-10-16-v208.bundle`.
+  Sie enthält den Sicherungstag einschließlich Dokumentationsabschluss, keine lokalen Browserdaten.
+- Eine Datenbanksicherung enthält keine browserlokalen Website-Editor-Entwürfe.
+  Diese weiterhin bei Bedarf über die vorhandene vollständige Browser-Sicherung sichern.
+- Browserdaten/Safari-Cache niemals als vermeintliche Reparatur löschen. Neue Website-
+  Fassung durch vollständiges Schließen und Wiederöffnen der App laden.
+- Private Exporte, Mitgliederdaten und Zugangsschlüssel niemals committen/veröffentlichen.
+  `tools/prepare-pages.py` veröffentlicht nur öffentliche Webdateien und schließt
+  Server, Dokumentation, Werkzeuge und Sicherungen aus.
+- Zum Quellvergleich den Git-Tag verwenden; eine spätere Wiederherstellung der
+  Datenbank ist ein eigener Auftrag. Kein pauschales `git reset --hard`, kein
+  Zurückspielen alter Browserdaten über neuere zentrale Daten.
+
+## Prüfung und nächste Sitzung
+
+- Abschluss v208: isolierte Chromium-Ansichten mit Testkonto, beide Farbwelten,
+  acht Breiten von 320 bis 1440 px einschließlich großem iPad hochkant und quer.
+  Eine Menüzeile, bündige Kanten, keine Überlappung/Überbreite, Partnerbreiten,
+  exakte Tablet-Höhen und mittige Logos erfolgreich geprüft. Drei Prüfungen des
+  öffentlichen Pakets und `git diff --check` erfolgreich.
+- Letzter Funktionsstand v207: Farbwelt-Browsertest und Touch-Performance-Test
+  erfolgreich (Profil/Verabredungen etwa 60–75 ms bei künstlicher API-Latenz).
+  Zuvor v205: 73 Node-Tests, Zwei-/Vier-Profil-Synchronisierung, Sicherungen,
+  Gruppen/Serien/Zusagen/Käufe und unterbrochene Speicherung geprüft.
+  Diese Funktionsprüfungen wurden für die reine iPad-Höhenänderung nicht alle wiederholt.
+- Der Nutzer hat iPhone-Bedienung und Gestaltung praktisch bestätigt. Automatisierte
+  Größenprüfungen sind keine vollständige physische iOS-Geräteabnahme. Weitere
+  Detailbeobachtungen des Nutzers erst auf neuen Auftrag bearbeiten.
+- Website bleibt eine Vorführung. Produktive Abbuchung/SEPA, zentrale Monatsabschlüsse,
+  E-Mail/Push-Zustellung und fertiger Vereinsbetrieb sind nicht freigegeben.
+  Website-Editor/CMS und direkter Datei-/localhost-Modus bleiben lokal.
+- Möglicher späterer Vereinsumzug zu Supabase ist eine getrennte Entscheidung;
+  keine Zusammenlegung mit Padel eigenständig beginnen. Digitale Aufnahme bleibt
+  ein separater vorbereiteter Dienst, kein durch diesen Abschluss gestarteter Versand.
+- Für Nachprüfungen: `node tools/test-browser-touch-performance.mjs`,
+  `node tools/test-browser-meet-sync.mjs`, `node tools/test-browser-cloud-sync.mjs`,
+  `node --test tools/test-app-sync.mjs tools/test-meet-sync.mjs tools/test-cloudflare-directory.mjs`
+  bzw. gezielt die jeweils betroffenen Tests. `python3 tools/test-public-content.py` vor Veröffentlichung.
+  Browser-Tests verwenden isolierte synthetische Daten, keine privaten Chrome-Sitzungen.
+
+## Freigabestand
+
+Stand eingefroren. Neue Änderungen, Veröffentlichungen oder Migrationen erst auf
+neuen konkreten Nutzerauftrag. Bestehende Daten und lokale Nutzeränderungen erhalten.
+
+## Historischer Stand bis v203 – nur Verlauf
+
+Die folgenden Aussagen gelten ausschließlich für ihren damaligen Zeitpunkt.
+Maßgeblich ist der Abschluss v208 oben.
+
 **Aktueller Stand: 16.10.2026, veröffentlichte Vorführversion v203.**
 Datenbankerweiterung, Worker und Website wurden vom Nutzer ausdrücklich freigegeben
 und veröffentlicht. Profilfoto, Bierdeckel und Chats/Kommentare/Bildanhänge werden

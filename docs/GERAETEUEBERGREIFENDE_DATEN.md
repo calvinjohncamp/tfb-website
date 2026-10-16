@@ -1,6 +1,10 @@
-# Geräteübergreifende Vorführung – veröffentlicht, v204.1
+# Geräteübergreifende Vorführung – eingefrorener Live-Stand v208
 
-Stand 16.10.2026: Migration, Worker und Website v203 sind nach ausdrücklicher
+Aktueller Stand 16.10.2026: v208 ist eingefroren; Profil/Kiosk/Chats seit v203,
+Planung seit v204 zentral, Touch-Optimierung seit v205. Maßgebliche Übergabe:
+[UEBERGABE.md](UEBERGABE.md). Der folgende Abschnitt beschreibt den ersten Ausbau.
+
+Migration, Worker und Website v203 sind nach ausdrücklicher
 Nutzerfreigabe veröffentlicht. Die eigene Übernahme wurde durchgeführt und durch
 Vergleich der privaten Sicherungen vor/nach der Umstellung geprüft. Profilbild,
 Chatbilder/-texte und Kioskeinträge sind erhalten. Die frühere Onlineversion v201
@@ -177,3 +181,13 @@ Geprüft sind auch schneller Seitenwechsel, direkte Bierdeckel-Navigation und ke
 erneutes Schreiben unveränderter Chatbilder nach einem Kauf. Der bestehende Zwei-
 und Vier-Profil-Test prüft weiterhin Datenübernahme, Fotos, Chats, Gruppen, Serien,
 Zusagen, Käufe, Wiederöffnung und unterbrochene Speichervorgänge.
+
+
+## Eingefrorener Abschluss v208
+
+Am 16.10.2026 vom Nutzer bestätigt. Quellstand 4781aca, Tag
+`stand-2026-10-16-v208`, Cache `tfb-kiosk-v208`. Letzte Änderung ausschließlich
+20 Prozent höhere iPad-Partnerflächen; keine weitere Schema- oder Workeränderung.
+Aktueller privater D1-Export unter `.private/release-v208/` wurde in SQLite
+wiederhergestellt, Integritätsprüfung erfolgreich. Browserlokale CMS-Entwürfe
+sind davon nicht umfasst; bestehende Browser-Sicherungsfunktion weiterhin erhalten.

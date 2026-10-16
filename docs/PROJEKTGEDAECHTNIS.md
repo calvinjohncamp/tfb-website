@@ -4,10 +4,19 @@ Für den schnellen Einstieg zuerst die kurze **[UEBERGABE.md](UEBERGABE.md)** le
 Diese Datei enthält alle Entscheidungen, Konzepte, offenen Punkte und den Verlauf.
 Neues bitte unten bei „Verlauf“ ergänzen.
 
-**Aktueller Stand 15.10.2026:** Vorführversion v201 mit Beispielabrechnungen auf Grundlage des
-vom Nutzer bestätigten Vorführstands v196. Verbindlicher Kurzstand und Betriebsgrenzen stehen in
-[UEBERGABE.md](UEBERGABE.md); der Abschluss ist unten dokumentiert. Frühere
-Versions- und Veröffentlichungsaussagen sind historische Zwischenstände.
+**Verbindlicher Stand: 16.10.2026, veröffentlichte Vorführversion v208.**
+Der Nutzer hat Gestaltung und Bedienung ausdrücklich bestätigt und das Einfrieren
+beauftragt. Letzte freigegebene Korrektur: ausschließlich die iPad-Partnerflächen
+bei gleicher Breite um 20 Prozent höher. Erst auf einen neuen Nutzerauftrag
+weiterentwickeln; ältere offene Listen nicht selbständig abarbeiten.
+
+Sicherungstag: `stand-2026-10-16-v208`. Website-Quellstand `4781aca`, Cache
+`tfb-kiosk-v208`; Dokumentationsabschluss ist ebenfalls im Sicherungstag enthalten.
+Dieser Kurzstand hat Vorrang vor allen historischen Abschnitten weiter unten.
+
+Aktuelle Gestaltung, Live-System, Sicherungen, Grenzen und Prüfungen stehen kompakt
+in [UEBERGABE.md](UEBERGABE.md). Historische Aussagen wie „nur lokal“, „nicht
+veröffentlicht“ oder „Verabredungen noch nicht zentral“ sind durch v203/v204 überholt.
 
 ## Entscheidung: Kühle Welt voreingestellt (v183)
 
@@ -1516,3 +1525,44 @@ Alle personenbezogenen Sicherungen und Vergleichsdaten ausschließlich in
 .private/release-v203/; nichts davon in Git oder Websitepaket aufgenommen.
 Safari-Daten nicht löschen. Die eigene Datenübernahme ist erledigt; am iPhone
 App neu öffnen und ggf. mit demselben Konto anmelden.
+
+
+## 16.10.2026 – zentraler Planungsabgleich v204 und Wiederherstellung
+
+Gruppen, Verabredungen, regelmäßiges Training und Teilnehmerantworten auf ausdrücklichen
+Nutzerwunsch zentralisiert. Eigene ursprüngliche Planung aus dem vorher gesicherten
+Browserbestand übernommen. Private D1-Vorher-/Nachher-Exporte und Feld-/Antwortvergleich
+bestätigen Erhalt; bestehende Profile, Fotos, Kiosk-Einträge und Chats unverändert.
+Getrennte Antwortdatensätze, Rechteprüfung, abgesicherte Einladungsbestätigungen,
+deterministische Serientermine und fortsetzbarer Import ohne doppelte Einträge.
+Kein zusätzlicher Schemawechsel, vorhandene App-Tabellen genutzt. Details und private
+Nachweisorte in GERAETEUEBERGREIFENDE_DATEN.md; keine Personendaten hier ablegen.
+
+## 16.10.2026 – Touch-Reaktion v205, vom Nutzer bestätigt
+
+Nutzer meldet träge Buttons/Seitenwechsel am iPhone. Vollständige Serverabfragen
+vom Öffnen der Ansichten entkoppelt; bestätigten Cache und vorhandene Namen/Fotos
+wiederverwenden. Unveränderte Medien nicht erneut schreiben, spätere Seitenwahl vor
+alten Antworten schützen, künstliche 480-ms-Touch-Verzögerung am Bierdeckel entfernt.
+Im synthetischen Test bei 250 ms API-Latenz etwa 340 → 70 ms beim Öffnen von Profil/
+Verabredungsübersicht. Datenabgleich und sichere Schreibbestätigung bleiben erhalten.
+Nutzer bestätigt ausdrücklich „viel eleganter und smoother“.
+
+## 16.10.2026 – Gestaltung v206/v207 und bestätigter Abschluss v208
+
+Padel nur als gestalterische Referenz gelesen. Partnerpaare auf Mobilgeräten über
+volle Inhaltsbreite, am Desktop gemeinsam über halbe Inhaltsbreite. Erster Vorschlag
+mit zwei Menüzeilen am iPhone vom Nutzer korrigiert: endgültig alle sieben Bereiche
+in einer Zeile, Dating statt Verabreden, flachere rote aktive Pill und näherer,
+25 Prozent dünnerer Strich. Größere Tablet-Schrift und bündige gleichmäßige Verteilung.
+Partnerflächen in v207 rund 28 Prozent höher. Beide Farbwelten erhalten.
+
+Nutzer bestätigt diesen Stand ausdrücklich („sehr guten Stand erreicht“) und beauftragt
+Einfrieren/Projektgedächtnis/Übergabe. Einzige weitere Korrektur v208: iPad-Flächen bei
+unveränderten Breiten nochmals exakt 20 Prozent höher (110 → 132, 115 → 138 px).
+Logo-Größe/Contain-Darstellung mittig erhalten; iPhone und Desktop bleiben bei 100/115 px.
+Auf Tablet-Ansichten mit primärem Touch und mindestens 640 × 640 CSS-Pixeln begrenzt.
+Quellstand 4781aca, Cache tfb-kiosk-v208, Pages-Lauf 38957773956. Abschließend ausgelieferte
+Dateien geprüft; aktueller privater D1-Export erfolgreich in SQLite wiederhergestellt.
+Quellstand und Dokumentationsabschluss über Tag stand-2026-10-16-v208 eingefroren.
+Ab jetzt nur auf neuen Auftrag weiterarbeiten; die alte offene Liste ist keine Freigabe.

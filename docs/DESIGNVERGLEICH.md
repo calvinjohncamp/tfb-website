@@ -1,8 +1,10 @@
 # TFB: Kühle Welt und Warme Welt
 
-Lokaler Stand vom 13.10.2026, Cache v183. Nutzer entscheidet sich für die neue
-kühle Welt als Voreinstellung. Warme Originalwelt bleibt auswählbare Alternative.
-Kein zweiter Datenbestand und keine Veröffentlichung.
+Veröffentlichter, bestätigter und eingefrorener Stand vom 16.10.2026, Cache v208.
+Kühle Welt ist Voreinstellung, warme Originalwelt bleibt auswählbare Alternative.
+Ein gemeinsamer Datenbestand; aktuelle Navigation und Partnermaße in
+[UEBERGABE.md](UEBERGABE.md). Die folgende Recherche dokumentiert den Ursprung des
+Designvergleichs, keine noch ausstehende Design- oder Veröffentlichungsentscheidung.
 
 ## Referenz und Schriften
 
