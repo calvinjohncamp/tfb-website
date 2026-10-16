@@ -9,13 +9,14 @@ import {fixture} from './app-sync-fixture.mjs';
 import worker from './worker-test-loader.mjs';
 const f=await fixture(), root=fileURLToPath(new URL('../',import.meta.url));
 const browser=await chromium.launch({headless:true,...(process.env.TFB_CHROME_PATH?{executablePath:process.env.TFB_CHROME_PATH}:{})});
-let interrupted=false;
+let interrupted=false,importRequests=0;
 const errors=[];
 async function device(width=1100){
   const ctx=await browser.newContext({serviceWorkers:'block',viewport:{width,height:900}});
   await ctx.route('**/*',async route=>{
     const r=route.request(),url=new URL(r.url());
     if(url.hostname==='tfb-api.calvinjohncamp.workers.dev'){
+      if(interrupted==='secondImport'&&url.pathname==='/app/commit'&&++importRequests===2){await route.abort('failed');return;}
       if(interrupted==='before'&&url.pathname==='/app/commit'){await route.abort('failed');return;}
       const response=await worker.fetch(new Request('https://tfb-api.test'+url.pathname+url.search,{method:r.method(),headers:{...r.headers(),'CF-Connecting-IP':'192.0.2.5'},...(r.postData()?{body:r.postData()}: {})}),f.env);
       if(interrupted==='after'&&url.pathname==='/app/commit'){await route.abort('failed');return;}
@@ -40,10 +41,15 @@ try {
   const group={id:'legacy-group',name:'Bisherige Trainingsgruppe',createdBy:owner,members:[owner,other],pending:[],weekday:3,time:'18:00',place:'Platz 2'};
   const series={id:'legacy-series',kind:'training',groupId:group.id,title:'Bisheriges wöchentliches Training',time:'18:00',place:'Platz 2',note:'Erhalten',createdBy:owner,invitees:[owner,other],slots:null,from:date,until,leadDays:3,skipped:[]};
   const meet={id:'legacy-meeting',...series,seriesId:series.id,date,responses:{[owner]:{a:'yes',at:Date.now()-60000,note:''},[other]:{a:'no',at:Date.now()-30000,note:'Originalnotiz'}}};
-  localStorage.setItem('tfb_meet_demo_v2',JSON.stringify({groups:[group],series:[series],meets:[meet],inbox:[],noSampleGroups:true}));
+  localStorage.setItem('tfb_meet_demo_v2',JSON.stringify({groups:[group],series:[series],meets:[meet],inbox:[1,2,3].map(n=>({id:`legacy-notice-${n}`,to:owner,type:"yes",from:other,meetId:meet.id,snap:{title:meet.title,date,time:meet.time},at:Date.now()-n*60000,read:false})),noSampleGroups:true}));
  },{owner:f.admin.id,other:f.otherId,date:future(1),until:future(29)});
  await desktop.page.reload();await desktop.page.waitForFunction(()=>TFB.ui&&TFB.meet);
- await login(desktop.page);await login(tablet.page);await login(phone.page);
+ interrupted='secondImport';
+ await assert.rejects(()=>login(desktop.page));
+ interrupted=false;
+ await desktop.page.reload();await desktop.page.waitForFunction(()=>TFB.ui?.state.member);
+ assert.equal(f.env.DB.sqlite.prepare("SELECT COUNT(*) AS n FROM app_records WHERE kind='meet-notice' AND id LIKE 'legacy-notice-%'").get().n,3,'Interrupted migration resumes remaining notices');
+ await login(tablet.page);await login(phone.page);
  for(const d of [desktop,tablet,phone]){
   await d.page.evaluate(()=>{location.hash='#treffen';});
   await d.page.waitForSelector('[data-action="meet-group"][data-id="legacy-group"]');

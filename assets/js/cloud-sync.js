@@ -159,10 +159,16 @@
     return ops;
   }
   async function importMeetingSnapshot(snapshot) {
-    const ops=planningOperations(snapshot,true);
+    const archiveKey='meet-import:'+member.id;
+    const unfinished=await storage('readonly',s=>s.get(archiveKey));
+    let ops=unfinished?.length?unfinished:planningOperations(snapshot,true);
+    // Keep the whole migration plan before the first request. After a reload,
+    // skip already committed IDs, but still import missing replies and notices.
+    ops=ops.filter(op=>!state.records.some(r=>key(r)===key(op)));
+    await storage('readwrite',s=>s.put(ops,archiveKey));
     // Definitions precede answers; imported series reserve historical dates so
     // automatic generation cannot create duplicates during a resumed migration.
-    for(let i=0;i<ops.length;i+=6)await commit(ops.slice(i,i+6),true);
+    while(ops.length){await commit(ops.slice(0,6),true);ops=ops.slice(6);await storage('readwrite',s=>s.put(ops,archiveKey));}
     return publicMember;
   }
   api.saveMeetSnapshot=snapshot=>{

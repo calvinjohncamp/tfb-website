@@ -1,4 +1,4 @@
-# Geräteübergreifende Vorführung – veröffentlicht, v204
+# Geräteübergreifende Vorführung – veröffentlicht, v204.1
 
 Stand 16.10.2026: Migration, Worker und Website v203 sind nach ausdrücklicher
 Nutzerfreigabe veröffentlicht. Die eigene Übernahme wurde durchgeführt und durch
@@ -123,3 +123,21 @@ wiederhergestellt (Integritätsprüfung erfolgreich, 308 Mitglieder erhalten).
 zusätzliche Browserlauf prüft alte Planungseinträge, eine neue Gruppe und eine
 Trainingsserie vom iPad, eine echte Bestätigung und Zusage eines zweiten Kontos,
 den Kaufabgleich auf iPhone/Desktop und die Wiederöffnung ohne Duplikate.
+
+
+### Live-Prüfung am 16.10.2026
+
+Worker-Version `1e2e8945-d66f-47e5-80a2-0e8e82e1775d` ist veröffentlicht.
+Website-v204 wurde über GitHub Actions (Lauf `38949186296`) erfolgreich bereitgestellt.
+Die anschließende Ergänzung v204.1 sichert den vollständigen Übernahmeplan vor der
+ersten Anfrage, sodass auch Antworten und Hinweise nach einem Verbindungsabbruch
+vollständig nachgeladen werden. Dieser Fall ist im Vier-Profil-Browsertest geprüft.
+
+Die eigene frühere Gruppe, Trainingsserie und Einzelverabredung sind wieder auf
+der Live-Seite sichtbar. Ein privater Vergleich der ursprünglichen Browser-Sicherung
+mit dem neuen D1-Export bestätigt sämtliche ursprünglichen Planungsfelder und
+Teilnehmerantworten. Alle bereits zentral vorhandenen Datensätze (einschließlich
+Fotos, Bierdeckel und Chats) sind unverändert; die 308 Mitglieder sind erhalten.
+Vorher-/Nachher-Exporte und Prüfbericht liegen ausschließlich in `.private/`.
+Insgesamt 73 Node-Tests, drei öffentliche Inhaltsprüfungen und die Browserprüfungen
+für Geräteabgleich, Wochentage, Nachladen von Eingeladenen und nächstes Match bestehen.
