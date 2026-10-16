@@ -2656,3 +2656,11 @@ body.admin-hidden [data-action="post-hide"] { display: none !important; }
   .app .topbar .topnav .tab { padding-left: 1px; padding-right: 1px; }
   .app .topbar .topnav .tab::before { left: 0; right: 0; }
 }
+
+/* Freigegebener Abschluss: iPad-Partnerflächen bei gleicher Breite 20 % höher. */
+@media (min-width: 640px) and (min-height: 640px) and (pointer: coarse) {
+  .pbsp-slot .pbsp-tile { height: 132px; }
+}
+@media (min-width: 1024px) and (min-height: 640px) and (pointer: coarse) {
+  .pbsp-slot .pbsp-tile { height: 138px; }
+}
