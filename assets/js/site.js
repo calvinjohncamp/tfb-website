@@ -1323,9 +1323,9 @@
       const p = posts.find(p => p.id === decodeURIComponent(postId || ''));
       if (!p) return `${ui().viewHead('Chat', '', false)}<p class="muted">Dieser Beitrag ist nicht mehr verfügbar.</p>`;
       postCache[p.id] = p;
-      if (ui().state.member) ui().api.readChatPosts([p.id]);
+      if (ui().state.member) await ui().api.readChatPosts([p.id]);
       const comments = await commentsMarkup(p);
-      if (ui().state.member) ui().api.readCommentPosts([p.id]);
+      if (ui().state.member) await ui().api.readCommentPosts([p.id]);
       setTimeout(() => TFB.inbox?.refresh(), 0);
       return `<header class="view-head"><div><h1>Chat</h1></div><a class="view-close" href="#chat" aria-label="Zurück zum Chat">${ui().icon.close}</a></header><div class="chat-stream">${postHtml(p, Boolean(ui().state.member))}${comments}</div>`;
     }

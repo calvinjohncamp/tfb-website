@@ -10,14 +10,21 @@
     if (control && !control.matches('.feature-hit, .team-row, .portrait-cta, .meet-row, [data-action="post-open"]')) return null;
     return img;
   }
-  function open(event) {
+  let request = 0;
+  async function open(event) {
     if (event.type === 'keydown' && !['Enter', ' '].includes(event.key)) return;
     const img = photo(event.target);
     const src = img?.getAttribute('src');
     if (!src || !TFB.ui?.openLightbox) return;
     event.preventDefault();
     event.stopImmediatePropagation();
-    TFB.ui.openLightbox(src, img.getAttribute('alt') || 'Foto');
+    const ticket = ++request;
+    try {
+      const original = TFB.ui.api?.avatarOriginal ? await TFB.ui.api.avatarOriginal(src) : src;
+      if (ticket !== request) return;
+      if (!original) { TFB.ui.toast?.('Dieses Profilbild ist nicht mehr freigegeben.'); return; }
+      TFB.ui.openLightbox(original, img.getAttribute('alt') || 'Profilbild');
+    } catch (err) { TFB.ui.toast?.(err.message || 'Das Foto konnte nicht geladen werden.'); }
   }
   function labelPhotos() {
     document.querySelectorAll(selector).forEach(img => {

@@ -1,5 +1,6 @@
 // TFB: protected member directory. Invitations/Kiosk remain a local simulation.
 import schema from './schema.sql';
+import {syncState, syncCommit, syncRevision, syncFaces, syncPhoto} from './app-sync.mjs';
 import { managementPage } from './management.mjs';
 
 const ORIGINS = new Set(['https://joern-kaemper.de', 'https://www.joern-kaemper.de', 'https://calvinjohncamp.github.io']);
@@ -32,7 +33,7 @@ async function publicMember(env, m) {
   return { id: m.id, memberNo: m.member_no, firstName: m.first_name, lastName: m.last_name,
     email: m.email, isAdmin: Boolean(m.is_admin), active: true, teams };
 }
-async function body(request) {
+async function body(request, maxBytes = 1024 * 1024) {
   if (!/^application\/json(?:;|$)/i.test(request.headers.get('Content-Type') || '')) fail(415, 'Bitte JSON-Daten senden.');
   const reader = request.body?.getReader();
   if (!reader) fail(400, 'Angaben fehlen.');
@@ -40,7 +41,7 @@ async function body(request) {
   for (;;) {
     const { done, value } = await reader.read(); if (done) break;
     size += value.byteLength;
-    if (size > 1024 * 1024) { await reader.cancel(); fail(413, 'Die Anfrage ist zu groß.'); }
+    if (size > maxBytes) { await reader.cancel(); fail(413, 'Die Anfrage ist zu groß.'); }
     chunks.push(value);
   }
   const bytes = new Uint8Array(size); let offset = 0;
@@ -191,7 +192,12 @@ async function route(request, env, url) {
     return createSession(env, result);
   }
   const { member, tokenHash } = await authenticated(request, env, path.startsWith('/admin/'));
-  await rate(env, request, 'directory', member.is_admin ? 600 : 120);
+  await rate(env, request, 'directory', member.is_admin ? 3000 : 1800);
+  if (request.method === 'GET' && path === '/app/revision') return {revision:await syncRevision(env,member)};
+  if (request.method === 'POST' && path === '/app/photo') return syncPhoto(env,member,(await body(request)).id);
+  if (request.method === 'POST' && path === '/app/faces') return syncFaces(env,member,(await body(request)).ids);
+  if (request.method === 'GET' && path === '/app/state') return syncState(env,member);
+  if (request.method === 'POST' && path === '/app/commit') return syncCommit(env,member,await body(request,8*1024*1024));
   if (request.method === 'GET' && path === '/auth/session') return { member: await publicMember(env, member) };
   if (request.method === 'POST' && path === '/auth/logout') {
     await env.DB.prepare('DELETE FROM sessions WHERE token_hash=?').bind(tokenHash).run(); return { ok: true };

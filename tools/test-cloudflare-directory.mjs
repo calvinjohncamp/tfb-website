@@ -1,12 +1,7 @@
 import { DatabaseSync } from 'node:sqlite';
-import { pathToFileURL } from 'node:url';
-import { readFileSync } from 'node:fs';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-const bundleUrl=pathToFileURL(process.env.TFB_WORKER_BUNDLE || '/tmp/tfb-worker-bundle/worker.js');
-const bundled=readFileSync(bundleUrl,'utf8').replace(/import (\w+) from ["']([^"']+\.sql)["'];/g,
-  (_,name,path)=>`const ${name} = ${JSON.stringify(readFileSync(new URL(path,bundleUrl),'utf8'))};`);
-const { default: worker } = await import('data:text/javascript;base64,'+Buffer.from(bundled).toString('base64'));
+import worker from './worker-test-loader.mjs';
 
 // Real SQLite, with only D1's asynchronous wrapper emulated. No private data.
 class D1 {

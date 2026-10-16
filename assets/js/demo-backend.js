@@ -1264,6 +1264,16 @@
       requireMember();
       return Object.fromEntries(db.members.filter((m) => ids.includes(m.id)).map((m) => [m.id, `${m.firstName} ${m.lastName}`]));
     },
+    // Resolve a visible thumbnail lazily: keep large images out of lists/DOM.
+    async avatarOriginal(preview) {
+      const owners = db.members.filter(m => accountOf(m.id)?.avatar === preview);
+      if (!owners.length) return preview;
+      const me = db.members.find(m => m.id === sessionMemberId() && m.active);
+      const member = owners.find(m => m.active && (m.id === me?.id || photoAllowed(m, me ? 'members' : 'public')));
+      if (!member) return null;
+      const account = accountOf(member.id);
+      return account.avatarLarge || account.avatar;
+    },
     // Kleine Profilbilder (nur von Mitgliedern, die eins hochgeladen haben).
     async memberAvatars(ids) {
       requireMember();
@@ -1484,6 +1494,66 @@
         })
         .filter(Boolean)
         .sort((a, b) => a.lastName.localeCompare(b.lastName, 'de') || a.firstName.localeCompare(b.firstName, 'de'));
+    },
+
+    // Private bridge for the authenticated synchronization adapter. Browser caches
+    // never authorize a server write; the worker independently checks every record.
+    syncSnapshot(memberId = sessionMemberId()) {
+      const account = accountOf(memberId) || {};
+      const fields = ['phone','infoMails','openInvites','groupChatNotices','chatNoticesSince','chatNoticeRead','commentRead','feedRules','parentConsent','consentVersion','consentedAt','avatar','avatarLarge','avatarRevision','photoPublic','photoEvents','photoPending','photoConsentAt','photoConsentVersion'];
+      return [
+        {kind:'catalog',id:'club',value:clone(db.catalog)},
+        {kind:'account',id:memberId,value:Object.fromEntries(fields.filter(k=>account[k]!==undefined).map(k=>[k,clone(account[k])]))},
+        ...db.items.filter(i=>i.memberId===memberId).map(i=>({kind:'item',id:i.id,value:clone(i)})),
+        ...db.community.posts.map(p=>({kind:'post',id:p.id,value:clone(p)})),
+        ...(db.community.comments||[]).map(c=>({kind:'comment',id:c.id,value:clone(c)})),
+      ];
+    },
+    async applySyncedData(state) {
+      const member = requireMember();
+      const next = clone(db), live = state.records.filter(r=>!r.deleted);
+      for (const m of state.members) {
+        const found=next.members.find(x=>x.id===m.id);
+        if(found) Object.assign(found,m); else next.members.push(m);
+      }
+      const own=live.find(r=>r.kind==='account'&&r.id===member.id)?.value||{};
+      next.accounts=next.accounts.filter(a=>a.memberId!==member.id);
+      next.accounts.push({...own,memberId:member.id});
+      for(const face of state.faces) {
+        if(face.id===member.id)continue;
+        const a=next.accounts.find(a=>a.memberId===face.id);
+        if(a)Object.assign(a,face,{avatarLarge:null});else next.accounts.push({...face,avatarLarge:null,memberId:face.id});
+      }
+      // Remove revoked foreign photos from the cache as well.
+      for(const a of next.accounts)if(a.memberId!==member.id&&!state.faces.some(f=>f.id===a.memberId)){
+        a.avatar=null;a.avatarLarge=null;
+      }
+      next.items=next.items.filter(i=>i.memberId!==member.id).concat(live.filter(r=>r.kind==='item').map(r=>r.value));
+      next.community.posts=live.filter(r=>r.kind==='post').map(r=>r.value);
+      next.community.comments=live.filter(r=>r.kind==='comment').map(r=>r.value);
+      next.catalog=clone(state.catalog);
+      const media=live.filter(r=>r.kind==='media');
+      if(media.length)await imageTask(imageDatabase(),'readwrite',store=>{for(const r of media)store.put(r.value.data,r.id);return ()=>null;});
+      if(!save(next))throw Error('Der lokale Zwischenspeicher ist voll. Die Serverdaten bleiben erhalten.');
+      db=next; TFB.imageRevision=(TFB.imageRevision||0)+1;
+      return publicMember(db.members.find(m=>m.id===member.id));
+    },
+    cacheSyncedFaces(faces) {
+      for(const face of faces) {
+        if(!db.members.some(m=>m.id===face.id))db.members.push({id:face.id,firstName:face.firstName,lastName:face.lastName,active:true});
+        const a=accountOf(face.id);
+        if(a)Object.assign(a,face,{avatarLarge:null});else db.accounts.push({...face,avatarLarge:null,memberId:face.id});
+      }
+      save(db);return Object.fromEntries(faces.map(f=>[f.id,f.avatar]));
+    },
+    syncArchive() { return clone(db); },
+    clearSyncedData() {
+      const id=sessionMemberId();
+      db.community.posts=[];db.community.comments=[];
+      db.items=db.items.filter(i=>i.memberId!==id);
+      db.accounts=db.accounts.filter(a=>a.memberId!==id);
+      for(const a of db.accounts){a.avatar=null;a.avatarLarge=null;}
+      save(db);
     },
 
     async reloadLocalState() {

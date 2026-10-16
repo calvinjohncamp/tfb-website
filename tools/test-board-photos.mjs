@@ -171,3 +171,23 @@ test('stored linkage survives restart and reflects a renamed member', async () =
   assert.equal((await restarted.boardPeople())[0].name, 'Neuer Name Becker');
   assert.equal((await restarted.boardMembers(['m1']))[0].firstName, 'Neuer Name');
 });
+
+test('all thumbnail viewers resolve the uncropped source with the same photo permissions', async () => {
+  const { api, login } = setup();
+  const original = image + '#portrait-original';
+  login('m1');
+  await api.setAvatar(image, original);
+  assert.equal(await api.avatarOriginal(image), original);
+  login('m-demo');
+  assert.equal(await api.avatarOriginal(image), original);
+  login(null);
+  assert.equal(await api.avatarOriginal(image), null);
+  login('m1');
+  await api.setPhotoPermissions({ publicAvatar: true });
+  login(null);
+  assert.equal(await api.avatarOriginal(image), original);
+  assert.equal(await api.avatarOriginal('assets/team.jpg'), 'assets/team.jpg');
+  login('m1');
+  await api.setAvatar(image); // Old uploads with no separate original still work.
+  assert.equal(await api.avatarOriginal(image), image);
+});

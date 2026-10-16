@@ -97,3 +97,19 @@ Nicht eindeutige Namen nicht automatisch zuordnen. Bei neuen Mitgliedern oder
 neuen Mannschaftsmeldungen die private Relation aktualisieren; keine Zuordnung
 aus der Nachricht eines Mitglieds oder aus ausgewählten Beitragsempfängern ableiten.
 Für den Vereinsbetrieb diese Relation beim geplanten Supabase-Umzug übernehmen.
+
+## Lokal vorbereiteter Ausbau v203: App-Daten
+
+`app-sync.mjs` und additive Migration `0003-app-sync.sql` ergänzen zentrale
+Profile/Fotos, Vorführ-Kioskstriche, Chats/Kommentare/Anhänge und den Katalog.
+Noch nicht auf den bestehenden Worker/D1 veröffentlicht. Vor Website-v203 zuerst
+D1 sichern, Migration anwenden und Worker aktualisieren. Bestehende Tabellen und
+Mitgliederzugänge bleiben erhalten. Technischer Umfang, Übernahme vorhandener
+Browserdaten und Betriebsgrenzen:
+[GERAETEUEBERGREIFENDE_DATEN.md](../../docs/GERAETEUEBERGREIFENDE_DATEN.md).
+
+Tests sind auch ohne vorab erzeugtes Wrangler-Bundle möglich. Der gemeinsame
+Testloader liest die tatsächlichen Quellen; `TFB_WORKER_BUNDLE` erlaubt alternativ
+das Testen eines echten Wrangler-Dry-Run-Bundles. Zwei getrennte Browserprofile
+prüfen Anmeldung, eigene Datenübernahme, Foto, Bierdeckel, Chats/Kommentare,
+Aktualisierung, Wiederöffnung und wiederholte Speicheranfragen.

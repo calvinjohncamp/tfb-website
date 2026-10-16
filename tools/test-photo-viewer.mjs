@@ -62,3 +62,24 @@ test('fullscreen viewer closes by X, backdrop and Escape, keeps image clicks ope
   keydown({key:'Escape',preventDefault(){},stopImmediatePropagation(){}});
   assert.equal(box,null); assert.ok(keys.has('no-scroll')); assert.equal(keydown,null);
 });
+
+test('thumbnail click loads its large source and never opens a revoked photo', async () => {
+  const handlers = {}, opened = [], messages = [];
+  let original = 'portrait-original.jpg';
+  const img = {closest(selector) { return selector.startsWith('img[') ? this : null; },
+    getAttribute: key => ({src: 'square-thumbnail.jpg', alt: 'Anna'})[key],
+    setAttribute() {}, classList: {add() {}}};
+  const context = {TFB: {ui: {api: {avatarOriginal: async src => {
+    assert.equal(src, 'square-thumbnail.jpg'); return original;
+  }}, openLightbox: (...args) => opened.push(args), toast: message => messages.push(message)}},
+    document: {body: {}, querySelectorAll: () => [img], addEventListener: (type, fn) => handlers[type] = fn},
+    MutationObserver: class {observe() {}}};
+  vm.runInNewContext(readFileSync(new URL('assets/js/photo-viewer.js', root), 'utf8'), context);
+  const event = {type: 'click', target: img, preventDefault() {}, stopImmediatePropagation() {}};
+  await handlers.click(event);
+  assert.deepEqual(opened, [['portrait-original.jpg', 'Anna']]);
+  original = null;
+  await handlers.click(event);
+  assert.equal(opened.length, 1);
+  assert.match(messages[0], /nicht mehr freigegeben/);
+});

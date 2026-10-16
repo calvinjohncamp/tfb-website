@@ -6,6 +6,30 @@ Arbeitsgrundlage, keine Freigabe für den produktiven Vereinsbetrieb.
 Ausführlicher Verlauf: [PROJEKTGEDAECHTNIS.md](PROJEKTGEDAECHTNIS.md).
 Die folgende Zusammenfassung hat Vorrang vor den historischen Zwischenständen.
 
+## Lokale Vorbereitung 16.10.2026: Synchronisierung v203
+
+- Profilbilder öffnen die gespeicherte große, unbeschnittene Quelle in Chat,
+  Mannschaftsbeiträgen und Verabreden. Großbilder werden beim Anklicken geladen.
+- `cloud-sync.js` ergänzt die vorhandene Cloudflare-Anmeldung: Profilfoto,
+  Kiosk-Striche, Chats samt Kommentaren/Anhängen und Kiosk-Sortiment werden
+  zentral gespeichert. Server prüft Sitzung, Eigentum und Mannschaftsrechte.
+- Änderungen verwenden Versionsprüfungen und eine wiederholbare Vorgangskennung.
+  Ein lokales IndexedDB-Protokoll erhält unterbrochene Speicherungen. Beim
+  Wiederöffnen wird derselbe Vorgang wiederholt, ohne doppelte Striche/Beiträge.
+- Vor dem ersten Serverabgleich wird der bisherige Browserbestand samt Bildern
+  in einer separaten lokalen IndexedDB gesichert. Account → „Bisherige Browserdaten
+  übernehmen“ zeigt eine Vorschau und übernimmt eigene Daten nach Bestätigung.
+  Admins können dabei ausdrücklich eigene Inhalte des alten m-demo-Kontos zuordnen.
+- Geöffnete Seiten prüfen alle zehn Sekunden einen kleinen Änderungsmarker;
+  bei Änderungen wird aktualisiert. Rückkehr zur App stößt ebenfalls einen
+  Abgleich an. Ein offener Editor wird nicht neu gerendert.
+- Direkter HTML-/localhost-Vorführmodus bleibt lokal. Verabredungen/Gruppen und
+  Websitebearbeitung werden mit diesem Ausbau noch nicht zentral gespeichert.
+- Neuer SQL-Bestand: `0003-app-sync.sql`, nur neue Tabellen. Worker muss vor der
+  Website aktualisiert werden. Ausgelieferter Stand bleibt bis zur Freigabe v201.
+- Veröffentlichungsschritte und genaue Grenzen:
+  [GERAETEUEBERGREIFENDE_DATEN.md](GERAETEUEBERGREIFENDE_DATEN.md).
+
 ## Veröffentlichung und Projektgrenze
 
 - Website: https://joern-kaemper.de/ – DNS-Prüfung erfolgreich, HTTPS erzwungen.

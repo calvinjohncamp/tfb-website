@@ -15,6 +15,8 @@ ASSET_TYPES = {'.js', '.css', '.png', '.jpg', '.jpeg', '.svg', '.webp', '.gif',
 
 tracked = subprocess.check_output(
     ['git', 'ls-files', '-z'], cwd=ROOT).decode().split('\0')
+# Explicit public startup asset, including during local release preparation.
+tracked = sorted(set(tracked) | {'assets/js/cloud-sync.js'})
 selected = []
 for name in tracked:
     path = Path(name)

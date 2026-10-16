@@ -850,14 +850,14 @@
         ${items.some((n) => !pending(n)) ? '<button type="button" class="link center" data-clear>Alle Hinweise entfernen</button><p class="small muted center">Offene Einladungen bleiben, bis du geantwortet hast. Hinweise verschwinden sonst nach 7 Tagen von selbst.</p>' : ''}
       </div>`);
     const root = document.querySelector('.inbox-sheet');
-    root.addEventListener('click', (e) => {
+    root.addEventListener('click', async (e) => {
       const del = e.target.closest('[data-del]');
       if (del || e.target.closest('[data-clear]')) {
         const drop = del ? [del.dataset.del] : myInbox().filter((n) => !pending(n)).map((n) => n.id);
         const postIds = myInbox().filter(n => n.type === 'chat' && drop.includes(n.id)).flatMap(n => n.postIds);
-        if (postIds.length) ui().api.readChatPosts(postIds);
+        if (postIds.length) await ui().api.readChatPosts(postIds);
         const commentPosts = myInbox().filter(n => n.type === 'comment' && drop.includes(n.id)).map(n => n.postId);
-        if (commentPosts.length) ui().api.readCommentPosts(commentPosts);
+        if (commentPosts.length) await ui().api.readCommentPosts(commentPosts);
         data.inbox = data.inbox.filter((n) => !drop.includes(n.id));
         save(); refreshBell(); openInbox(); return;
       }
@@ -866,7 +866,7 @@
       const n = myInbox().find((x) => x.id === it.dataset.open);
       if (!n) return;
       if (n.type === 'chat' || n.type === 'comment') {
-        if (n.type === 'comment') ui().api.readCommentPosts([n.postId]);
+        if (n.type === 'comment') await ui().api.readCommentPosts([n.postId]);
         closeSheet(); refreshBell();
         const hash = '#chat/beitrag/' + encodeURIComponent(n.postId);
         if (location.hash === hash) ui().renderView(); else location.hash = hash;

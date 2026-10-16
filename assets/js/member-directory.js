@@ -23,7 +23,7 @@
       const value = await response.json();
       if (!response.ok) {
         if (response.status === 401) clear();
-        throw Error(value.error || 'Der Mitgliederzugang ist gerade nicht erreichbar.');
+        throw Object.assign(Error(value.error || 'Der Mitgliederzugang ist gerade nicht erreichbar.'),{status:response.status});
       }
       return value;
     } catch (err) {
@@ -31,13 +31,15 @@
       throw err;
     } finally { clearTimeout(timeout); }
   }
+  TFB.directoryCall = call;
   function clear() {
-    token = ''; verified = null; sessionStorage.removeItem(KEY);
+    token = ''; verified = null; sessionStorage.removeItem(KEY); api.disconnectSync?.();
     api.attachDirectoryMember(null);
   }
   async function accept(result) {
     token = result.token; sessionStorage.setItem(KEY, token); verified = result.member;
-    return api.attachDirectoryMember(verified);
+    const member = api.attachDirectoryMember(verified);
+    return api.connectSync ? api.connectSync(member) : member;
   }
   api.secureDirectory = true;
   api.lookupEmail = async () => ({ known: true, hasPassword: true }); // Never disclose membership before login.
@@ -45,7 +47,7 @@
   api.createPassword = async (identifier, password, code) => accept(await call('/auth/activate', { identifier, password, code }));
   api.session = async () => {
     if (!token) { clear(); return null; }
-    try { const result=await call('/auth/session'); verified=result.member; return api.attachDirectoryMember(verified); }
+    try { const result=await call('/auth/session'); verified=result.member; const member=api.attachDirectoryMember(verified); return api.connectSync ? await api.connectSync(member) : member; }
     catch { api.attachDirectoryMember(null); return null; }
   };
   api.signOut = async () => { try { if(token) await call('/auth/logout', {}); } finally { clear(); await local.signOut(); } };

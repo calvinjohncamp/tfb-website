@@ -16,6 +16,17 @@ Der Exporter `tools/export-public-content.py` akzeptiert einen lokalen Sicherung
 die Sicherung selbst darf niemals ins öffentliche Repository kopiert werden.
 Prüfung des Ausschlusses privater Daten: `python3 -B tools/test-public-content.py`.
 
+## Lokal vorbereiteter Ausbau v203 (16.10.2026)
+
+Profilfoto, Bierdeckel und Chats samt Kommentaren/Bildern sind für eine zentrale
+Speicherung am bestehenden geschützten Cloudflare-Server vorbereitet. Die
+Onlineversion v201 ist noch nicht umgestellt. Nach Anmeldung und beim erneuten
+Öffnen werden dann die Kontodaten geladen; offene Seiten prüfen Änderungen alle
+zehn Sekunden. Für vorhandene Browserdaten gibt es im Account eine Übernahme mit
+Vorschau. Verabredungen/Gruppen und Websitebearbeitung bleiben lokal.
+Einzelheiten, Datenübernahme und Reihenfolge der Veröffentlichung:
+[GERAETEUEBERGREIFENDE_DATEN.md](docs/GERAETEUEBERGREIFENDE_DATEN.md).
+
 ## GitHub Pages
 
 Unter Settings → Pages → Build and deployment die Source **GitHub Actions** wählen.

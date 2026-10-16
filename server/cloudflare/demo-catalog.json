@@ -1,0 +1,368 @@
+{
+  "sections": [
+    {
+      "id": "alkoholfrei",
+      "title": "Alkoholfreie Getränke",
+      "note": "",
+      "status": "open"
+    },
+    {
+      "id": "bier",
+      "title": "Bier",
+      "note": "",
+      "status": "open"
+    },
+    {
+      "id": "aperitif",
+      "title": "Aperol & Wein",
+      "note": "",
+      "status": "open"
+    },
+    {
+      "id": "spezialitaeten",
+      "title": "Spezialitäten",
+      "note": "",
+      "status": "open"
+    },
+    {
+      "id": "spielbetrieb",
+      "title": "Spielbetrieb",
+      "note": "",
+      "status": "open"
+    },
+    {
+      "id": "snacks",
+      "title": "Snacks",
+      "note": "",
+      "status": "open"
+    },
+    {
+      "id": "shop",
+      "title": "Vereinsshop",
+      "note": "Bälle, Griffbänder und Vereinskleidung – bald direkt hier.",
+      "status": "soon"
+    }
+  ],
+  "products": [
+    {
+      "active": true,
+      "id": "gerolsteiner",
+      "section": "alkoholfrei",
+      "name": "Wasser",
+      "detail": "Flasche · 0,25 l",
+      "price": 150,
+      "art": "gerolsteiner",
+      "color": "#CFE6E0"
+    },
+    {
+      "active": true,
+      "id": "apfelschorle",
+      "section": "alkoholfrei",
+      "name": "Apfelschorle",
+      "detail": "Flasche · 0,25 l",
+      "price": 150,
+      "art": "apfelschorle",
+      "color": "#DDBB54"
+    },
+    {
+      "active": true,
+      "id": "coca-cola",
+      "section": "alkoholfrei",
+      "name": "Cola",
+      "detail": "Flasche · 0,25 l",
+      "price": 150,
+      "art": "cola",
+      "color": "#B7282E"
+    },
+    {
+      "active": true,
+      "id": "fanta",
+      "section": "alkoholfrei",
+      "name": "Fanta",
+      "detail": "Flasche · 0,25 l",
+      "price": 150,
+      "art": "cola",
+      "color": "#F08A24"
+    },
+    {
+      "active": true,
+      "id": "fassbrause",
+      "section": "alkoholfrei",
+      "name": "Fassbrause",
+      "detail": "Flasche · 0,33 l",
+      "price": 210,
+      "art": "fassbrause",
+      "color": "#B6C85D"
+    },
+    {
+      "active": true,
+      "id": "sportsfreund",
+      "section": "alkoholfrei",
+      "name": "Sportsfreund",
+      "detail": "Flasche · 0,33 l",
+      "price": 210,
+      "art": "sportsfreund",
+      "color": "#5A2A1A"
+    },
+    {
+      "active": true,
+      "id": "malzbier",
+      "section": "alkoholfrei",
+      "name": "Malzbier",
+      "detail": "Flasche · 0,33 l",
+      "price": 210,
+      "art": "malz",
+      "color": "#3B2314"
+    },
+    {
+      "active": true,
+      "id": "koelsch-flasche",
+      "section": "bier",
+      "name": "Zunftkölsch · Flasche",
+      "detail": "0,33 l",
+      "price": 220,
+      "art": "koelsch-flasche",
+      "color": "#E9B949"
+    },
+    {
+      "active": true,
+      "id": "koelsch",
+      "section": "bier",
+      "name": "Zunftkölsch · Glas",
+      "detail": "0,2 l",
+      "price": 180,
+      "art": "stange",
+      "color": "#E9B949"
+    },
+    {
+      "active": true,
+      "id": "koelsch-kranz",
+      "section": "bier",
+      "name": "Zunftkölsch · Kranz",
+      "detail": "9 Kölsch · je 0,2 l",
+      "price": 1450,
+      "art": "kranz",
+      "color": "#E9B949"
+    },
+    {
+      "active": true,
+      "id": "weissbier",
+      "section": "bier",
+      "name": "Weizen",
+      "detail": "Flasche · 0,5 l",
+      "price": 350,
+      "art": "weizen-flasche",
+      "color": "#D88A2E"
+    },
+    {
+      "active": true,
+      "id": "radler",
+      "section": "bier",
+      "name": "Radler",
+      "detail": "Flasche · 0,33 l",
+      "price": 210,
+      "art": "radler",
+      "color": "#E9CD70"
+    },
+    {
+      "active": true,
+      "id": "aperol",
+      "section": "aperitif",
+      "name": "Aperol",
+      "detail": "Büchse · 0,25 l",
+      "price": 350,
+      "art": "aperol",
+      "color": "#F27736"
+    },
+    {
+      "active": true,
+      "id": "grauburgunder",
+      "section": "aperitif",
+      "name": "Grauburgunder Wein",
+      "detail": "Flasche · 0,75 l",
+      "price": 1000,
+      "art": "wein",
+      "color": "#8FA86D"
+    },
+    {
+      "active": true,
+      "id": "bockwurst",
+      "section": "spezialitaeten",
+      "name": "Bockwurst mit Brot",
+      "detail": "Eine Portion",
+      "price": 250,
+      "art": "wurst-brot",
+      "color": "#B5462F"
+    },
+    {
+      "active": true,
+      "id": "grillwurst",
+      "section": "spezialitaeten",
+      "name": "Grillwurst mit Brot",
+      "detail": "Eine Portion",
+      "price": 300,
+      "art": "grillwurst-brot",
+      "color": "#C68C50"
+    },
+    {
+      "active": true,
+      "id": "grillfleisch",
+      "section": "spezialitaeten",
+      "name": "Grillfleisch mit Brot",
+      "detail": "Eine Portion",
+      "price": 400,
+      "art": "grillfleisch",
+      "color": "#A75A49"
+    },
+    {
+      "active": true,
+      "id": "flutlicht",
+      "section": "spielbetrieb",
+      "name": "Flutlicht (1 h)",
+      "detail": "Eine Stunde",
+      "price": 500,
+      "art": "flutlicht",
+      "color": "#E9C857"
+    },
+    {
+      "active": true,
+      "id": "gastspieler",
+      "section": "spielbetrieb",
+      "name": "Gastspieler",
+      "detail": "Eine Stunde",
+      "price": 800,
+      "art": "tennisspieler",
+      "color": "#558D83"
+    },
+    {
+      "active": true,
+      "id": "snickers",
+      "section": "snacks",
+      "name": "Snickers",
+      "detail": "Und der Hunger ist gegessen.",
+      "price": 100,
+      "art": "snickers",
+      "color": "#5A3825"
+    },
+    {
+      "active": true,
+      "id": "mars",
+      "section": "snacks",
+      "name": "Mars",
+      "detail": "… macht mobil.",
+      "price": 100,
+      "art": "mars",
+      "color": "#C8202F"
+    },
+    {
+      "active": true,
+      "id": "hanuta",
+      "section": "snacks",
+      "name": "Hanuta",
+      "detail": "Quadratisch, praktisch, für dich gebacken.",
+      "price": 100,
+      "art": "wafer",
+      "color": "#1E4FA0"
+    },
+    {
+      "active": true,
+      "id": "pringles",
+      "section": "snacks",
+      "name": "Pringles",
+      "detail": "Heute schon gepoppt?",
+      "price": 300,
+      "art": "tube",
+      "color": "#C8202F"
+    },
+    {
+      "active": true,
+      "id": "chipsfrisch",
+      "section": "snacks",
+      "name": "Chipsfrisch",
+      "detail": "Ungarisch. Oft kopiert, nie erreicht.",
+      "price": 250,
+      "art": "bag",
+      "color": "#E07A2F"
+    },
+    {
+      "active": true,
+      "id": "haribo",
+      "section": "snacks",
+      "name": "Haribo Colorado",
+      "detail": "Süße Evergreens.",
+      "price": 250,
+      "art": "bear",
+      "color": "#E8B22B"
+    },
+    {
+      "active": true,
+      "id": "cornetto",
+      "section": "snacks",
+      "name": "Cornetto",
+      "detail": "Vanille-Nuss. So schmeckt der Sommer.",
+      "price": 300,
+      "art": "cone",
+      "color": "#D9A066"
+    },
+    {
+      "active": true,
+      "id": "baelle",
+      "section": "shop",
+      "name": "Tennisbälle",
+      "detail": "4er-Dose",
+      "price": 1200,
+      "art": "ball",
+      "color": "#F2D21B"
+    },
+    {
+      "active": true,
+      "id": "padelbaelle",
+      "section": "shop",
+      "name": "Padelbälle",
+      "detail": "3er-Dose",
+      "price": 900,
+      "art": "ball",
+      "color": "#F08A24"
+    },
+    {
+      "active": true,
+      "id": "padel-schlaeger",
+      "section": "shop",
+      "name": "Padel-Schläger",
+      "detail": "HEAD Speed Pro",
+      "price": 15900,
+      "art": "padel",
+      "color": "#C4553A"
+    },
+    {
+      "active": true,
+      "id": "griffband",
+      "section": "shop",
+      "name": "Overgrip",
+      "detail": "3er-Pack",
+      "price": 900,
+      "art": "grip",
+      "color": "#F4F1EA"
+    },
+    {
+      "active": true,
+      "id": "shirt",
+      "section": "shop",
+      "name": "Vereinsshirt",
+      "detail": "Mit TFB-Logo",
+      "price": 2500,
+      "art": "shirt",
+      "color": "#2A2D2E"
+    },
+    {
+      "active": true,
+      "id": "cap",
+      "section": "shop",
+      "name": "Vereinscap",
+      "detail": "Basecap mit TFB-Logo",
+      "price": 1800,
+      "art": "cap",
+      "color": "#1F2A44"
+    }
+  ]
+}

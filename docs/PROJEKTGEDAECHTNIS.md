@@ -1459,3 +1459,38 @@ keine Admin-Beispiele. Browsertest prüft Beträge/Monate, wiederholten Aufruf,
 keine Speicherung, Vorrang vorhandener Daten, Trennung nach Mitglied sowie
 Desktop/Handy. Quellstand a31c60b, Pages-Lauf 38775995321.
 Der Nutzer betont: derzeit reine Vorführung, noch keine fertige Vereinsversion.
+
+## 16.10.2026 – Profilbilder v202 lokal vorbereitet
+
+Kleine Profilbilder in Chat, Mannschaftsbeiträgen und Verabreden verwenden beim
+Öffnen jetzt die gespeicherte große Quelle im ursprünglichen Seitenverhältnis.
+Gemeinsamer Viewer löst diese Quelle erst beim Klick auf; Freigaben werden erneut
+geprüft. Account erklärt die bisherige Speicherung nur im jeweiligen Browser.
+42 Node-Tests und Chromium-Test mit synthetischem Hochformat auf Desktop/390px
+bestanden. Keine echten Nutzerfotos oder Browserbestände verändert. Noch nicht
+committet/veröffentlicht; Online-Stand bleibt v201. Geräteübernahme von Profilfoto
+und Bierdeckel fehlt weiterhin, obwohl die Anmeldung zentral ist. Konkreter Ausbau
+im Dokument GERAETEUEBERGREIFENDE_DATEN.md; keine Synchronisierung behaupten.
+
+## 16.10.2026 – Ergänzung: zentrale Vorführung v203 vorbereitet
+
+Nutzer ergänzt ausdrücklich geräteübergreifende Chats und automatisches Laden des
+Profilfotos beim Anmelden/erneuten Öffnen der iPhone-App. Ursache ist lokale
+Datenhaltung trotz zentraler Anmeldung; Safari-Cache nicht löschen.
+
+Worker + D1 additiv erweitert: zentrale Profile, einzelne Vorführ-Striche,
+Chatbeiträge/Kommentare/Anhänge und verwaltetes Sortiment. Revisionen, atomare
+Schreibvorgänge und Vorgangskennungen schützen vor Überschreiben/Duplikaten.
+Client gleicht nach Anmeldung/erneutem Öffnen und alle zehn Sekunden ab; Bilder
+werden für die Profil-Großansicht erst bei Bedarf geladen. Unterbrochene
+Vorgänge und die ursprünglichen Browserdaten bleiben lokal in separater IndexedDB.
+Account bietet Übernahme mit Vorschau, einschließlich ausdrücklich zu bestätigender
+Zuordnung eigener m-demo-Inhalte für Verwaltungskonten. Keine automatische
+Veröffentlichung privater Sicherungen oder Änderung der Padel-Anwendung.
+
+SQLite- und Zwei-Browser-Tests mit synthetischen Daten erfolgreich, einschließlich
+verlorener Serverantwort und Neustart ohne doppelten Strich. Keine produktive
+Datenbankmigration, kein Commit und keine Veröffentlichung ausgeführt. Online bleibt
+v201 bis zur Freigabe. Releasefolge und Grenzen im Dokument
+GERAETEUEBERGREIFENDE_DATEN.md; historische Aussage „nicht implementiert“ im v202-
+Abschnitt ist durch diese lokale Vorbereitung überholt, nicht durch eine Livefreigabe.
