@@ -135,3 +135,11 @@ button.tfb-splash-ball .tfb-logo-ball { width:100%; height:100%; display:block; 
 .partner-admin-visibility table{width:100%;border-collapse:collapse;font-size:13px;margin:16px 0}
 .partner-admin-visibility th,.partner-admin-visibility td{text-align:left;padding:12px 10px;border-bottom:1px solid var(--line);vertical-align:top}
 .partner-admin-visibility th{font-weight:600;color:var(--muted)}
+
+/* Small monochrome controls, grouped with the text they show or hide. */
+[data-editor="splash"] .splash-editor-check{display:flex;align-items:center;gap:10px;min-height:44px;font-size:13px;line-height:1.4;cursor:pointer}
+[data-editor="splash"] .splash-editor-check input{appearance:none;-webkit-appearance:none;display:grid;place-content:center;flex:0 0 16px;width:16px;height:16px;margin:0;padding:0;border:1px solid #171717;border-radius:0;background:#f7f7f7;cursor:pointer}
+[data-editor="splash"] .splash-editor-check input::before{content:"";width:4px;height:8px;border:solid #171717;border-width:0 2px 2px 0;transform:translateY(-1px) rotate(45deg);visibility:hidden}
+[data-editor="splash"] .splash-editor-check input:checked::before{visibility:visible}
+[data-editor="splash"] .splash-editor-check input:focus-visible{outline:2px solid #171717;outline-offset:3px}
+[data-editor="splash"] .splash-editor-field:has(.splash-editor-check) .field{margin-bottom:0}

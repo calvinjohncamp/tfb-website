@@ -1841,3 +1841,13 @@ statt sie beim späteren Speichern auf Standard zurückzusetzen. Versionsprüfun
 Backend- und Browserprüfungen erfolgreich: Ausblenden beider Zeilen, Wiedereinblenden,
 Textänderung und Sichtbarkeit in einem anderen Browserprofil; übrige Partnerpflege,
 Zahlungen, CSV und responsive Ansichten weiterhin geprüft. Cache tfb-kiosk-v213.
+
+## 17.10.2026 · v214 – dezente Splash-Auswahlfelder direkt am Text
+
+Die drei Splash-Schalter als kleine quadratische Auswahlfelder mit schwarzem
+Rahmen und schwarzem Häkchen auf hellem Grund gestaltet. Native Formularfelder
+bleiben per Tastatur und Beschriftung bedienbar, mit sichtbarem Fokus und großer
+Klickfläche. „Einstiegsseite anzeigen“ steht weiterhin am Anfang. Die Optionen
+für die kleine Zeile über der Überschrift und unter dem Einstiegsbutton stehen
+jeweils direkt unter ihrem Textfeld. Speicherlogik und Inhalte unverändert;
+Messung bleibt ausgeschaltet. Cache tfb-kiosk-v214.
