@@ -10,7 +10,7 @@ ENTRY_FILES = {
     'index.html', 'praesentation.html', 'mitgliedschaft-bestaetigen.html',
     'manifest.webmanifest', 'sw.js',
 }
-ASSET_TYPES = {'.js', '.css', '.png', '.jpg', '.jpeg', '.svg', '.webp', '.gif',
+ASSET_TYPES = {'.js', '.css', '.png', '.jpg', '.jpeg', '.svg', '.webp', '.gif', '.pdf',
                '.ico', '.ttf', '.woff', '.woff2', '.txt', '.zip', '.cmd'}
 
 tracked = subprocess.check_output(

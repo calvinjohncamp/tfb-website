@@ -1,6 +1,12 @@
 # TFB-Kiosk – Projektgedächtnis und Übergabe
 
-## Verbindlicher Kurzstand – 17.10.2026 · live v221
+## Verbindlicher Kurzstand – 17.10.2026 · v221 plus Präsentationslink v222
+
+**Aktuelle Ergänzung v222:** E-Mail-Muster zur Mitgliedsanmeldung als PDF
+auf der Club-Seite rechts neben den bestehenden Aktionen verfügbar. Einseitige
+Präsentationsansicht mit fiktiven Daten, Logo, Website-Farben/-Schriften und
+Musterhinweis. Details in [MAILKONZEPT.md](MAILKONZEPT.md). Cache v222;
+keine Versandaktivierung, sonstiger bestätigter Produktstand v221 bleibt Basis.
 
 Der Nutzer hat Gestaltung und Bedienung ausdrücklich bestätigt und diesen Stand
 zur Dokumentation freigegeben. Maßgeblich für die nächste Sitzung ist die aktuelle
@@ -11,7 +17,8 @@ selbständig abarbeiten. Keine zusätzliche Betriebsfreigabe oder Datenrücksetz
 - Live: [joern-kaemper.de](https://joern-kaemper.de/), Quellstand
   `ed9d9db712e4028e6e707397d927953970921c12`, Cache `tfb-kiosk-v221`.
   Veröffentlichung [39002979284](https://github.com/calvinjohncamp/tfb-website/actions/runs/39002979284)
-  erfolgreich und ausgelieferte Dateien geprüft. Dieser Abschluss ändert nur Dokumentation.
+  erfolgreich und ausgelieferte Dateien geprüft. Aktuelle Ergänzung v222 ergänzt
+  ausschließlich Präsentations-PDF und Club-Link; Basisangaben beziehen sich auf v221.
 - Finales App-Symbol: **großes dunkles TFB ohne Ball/Unterzeile auf hellem Grund**;
   Schrift rund 18 % größer. Website-Farben exakt: #EFEFEF / #171717, automatisch
   aus CSS übernommen. Website und Splash behalten den roten Ball #C4553A.
@@ -1964,3 +1971,39 @@ Dokumentiert: Live-Commit/Workflow/Cache, exakte Icon-Farben, Navigation/Splash,
 Partnerpflege und deaktivierte 0,5-Sekunden-Messung, dreistufige Zukunftsplanung,
 Flyer-Wiederherstellung und offene Weihnachtsdatumsabweichung. Keine Website-
 oder Datenbankänderung, keine Messaktivierung und kein neuer Sicherungstag.
+
+## 17.10.2026 · Erster Mailentwurf zur Mitgliedsanmeldung
+
+Nutzer verlangt nur eine automatische E-Mail-Art bei TFB: Mitgliedsanmeldung;
+alle sonstigen Hinweise/Benachrichtigungen in die App-Klingel. Keine Padel-artige
+Mailstrecke zur Partner-Sichtbarkeit. Padel-Quellen bookingMailHtml im Stripe-
+Webhook, Meetup-Mails und Auth-Mailkonfiguration im benachbarten Projekt studiert.
+Markenkopf, Inhaltskarte, klare Aktion und Abstände übernommen, mit TFB-Logo samt
+rotem Ball, #EFEFEF/#171717/#C4553A und Bricolage/DM Sans (Arial-Fallback).
+
+Lokaler Entwurf mit Betreff, HTML-/Textvorlage, PNG-Logo und Desktop-/Mobilvorschau.
+Erstmail bestätigt Antragseingang und bietet Bestätigungsbutton; keine Behauptung
+bereits erfolgter Aufnahme. Fiktive Daten, kein echter Bestätigungslink und keine
+Mail versendet. Browserlayout 320–860px plus Fontfallback geprüft und visuell
+kontrolliert; echte Mailclientprüfung erst vor späterer Versandfreigabe.
+
+Neue Vorgabe in MAILKONZEPT.md, Übergabe und Aufnahme-Doku festgehalten. Bestehender
+membership_server.py-Prototyp erzeugt noch mehrere Folge-/Mandats-/Vereinsmails;
+keine stille Änderung seiner Abläufe. Spätere eigene Umsetzung muss diese auf
+Klingelmeldungen umstellen und Sonderfälle abstimmen. Keine Live-Veröffentlichung,
+keine SMTP-/Datenbankkonfiguration geändert; Website bleibt bestätigte v221.
+
+## 17.10.2026 · v222 – Präsentations-PDF der Mitgliedsanmeldungs-Mail
+
+Nutzer bestätigt Mailentwurf und beauftragt einen PDF-Link rechts außen neben
+Beiträgen und Anmeldeformular auf der Club-Seite. Einseitige A4-PDF aus der
+fertigen Vorschau erzeugt, Schriften/Logo eingebettet, dezenter Musterhinweis,
+fiktive Daten und kein echter Bestätigungslink. PDF gerendert und visuell geprüft.
+Responsive Textlink öffnet neuen Tab, PDF in öffentlichem assets/docs und
+Offline-Shell. Build veröffentlicht .pdf nur innerhalb öffentlicher Assets;
+Vorlagen, Werkzeuge, Dokumentation und private Daten bleiben ausgeschlossen.
+Keine echte Mail und keine Änderung der Aufnahme-/Klingel-/Versandlogik.
+Zusätzlich bei der Mobilprüfung gefundenen 320px-Menüüberlauf in der warmen
+Welt durch Verzicht auf Buchstabensperrung unter 360px beseitigt. Link in beiden
+Farbwelten und 320/390/834/1194/1440px geprüft, rechtsbündig auf Desktop und PDF
+öffnet per Klick in neuem Tab. 24 bestehende Seitentests erfolgreich.

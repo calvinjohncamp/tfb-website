@@ -536,7 +536,7 @@
       case 'facts':
         return `<section class="block-facts">${(b.items || []).map((f) => `<div><b>${esc(f.value)}</b><span>${esc(f.label)}</span></div>`).join('')}</section>`;
       case 'button': {
-        if (b.id === 'v-mitglied-btn' || b.url === '#aufnahme') return `<div class="block-button membership-actions"><button type="button" class="btn membership-fees-button" data-action="membership-fees">Mitgliedsbeiträge</button><button type="button" class="btn membership-apply-button" data-action="membership-open">${esc(b.label || 'Zum Anmeldeformular')}</button>${b.note ? `<p class="membership-benefit">${esc(b.note)}</p>` : ''}</div>`;
+        if (b.id === 'v-mitglied-btn' || b.url === '#aufnahme') return `<div class="block-button membership-actions"><button type="button" class="btn membership-fees-button" data-action="membership-fees">Mitgliedsbeiträge</button><button type="button" class="btn membership-apply-button" data-action="membership-open">${esc(b.label || 'Zum Anmeldeformular')}</button>${b.note ? `<p class="membership-benefit">${esc(b.note)}</p>` : ''}<a class="membership-mail-preview" href="assets/docs/tfb-mitgliedsanmeldung-muster.pdf" target="_blank" rel="noopener" aria-label="Muster der E-Mail-Bestätigung als PDF in neuem Tab öffnen">E-Mail-Bestätigung (PDF)&nbsp;↗</a></div>`;
         const ext = /^https?:/i.test(b.url || '');
         return `<p class="block-button"><a class="btn primary" href="${esc(b.url || '#')}" ${ext ? 'target="_blank" rel="noopener"' : ''}>${esc(b.label || 'Mehr')}${ext ? ' ↗' : ''}</a></p>`;
       }

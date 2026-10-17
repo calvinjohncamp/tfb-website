@@ -1,11 +1,23 @@
 # Digitale Aufnahme
 
+## Neuer Mail-Entwurf und geänderte Vorgabe – 17.10.2026
+
+Nur die Mitgliedsanmeldung soll eine automatische E-Mail auslösen. Alle übrigen
+Benachrichtigungen gehören in die App-Klingel. Erster Gestaltungsentwurf mit
+vollständigem TFB-Logo, Originalfarben, Bricolage/DM Sans und Arial-Fallback:
+[MAILKONZEPT.md](MAILKONZEPT.md). Noch kein Versand und keine Live-Anbindung.
+
+Der unten dokumentierte alte Prototyp erzeugt noch mehrere Mails (Bestätigung,
+gegebenenfalls Mandat, Vorstand und Antragszusammenfassung). Diese Logik ist vor
+einer späteren Aktivierung an die neue Vorgabe anzupassen. Der folgende Ablauf
+beschreibt den bisherigen Entwicklungsstand, nicht das freigegebene Mailkonzept.
+
 Der Club-Button öffnet ein Formular ohne Anmeldung. In der lokalen HTML-Vorschau
 werden keine Antragsdaten gespeichert oder versendet. Der Bestätigungsschritt ist
 dort ausdrücklich eine Simulation. Die Demo-Mitgliederverwaltung erhält keine
 Antragsdaten. Echte Mitgliedschaften werden nicht automatisch angelegt.
 
-## Fertiger Ablauf
+## Bisheriger technischer Ablauf
 
 1. Formular mit Mitgliedsdaten, aktiv/passiv, Bankverbindung und Erklärungen, ohne Fotoeinwilligung.
 2. Bei Minderjährigen: Sorgeberechtigte Person mit Vertretungserklärung.

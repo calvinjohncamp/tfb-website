@@ -1,6 +1,6 @@
-# Geräteübergreifende Vorführung – aktueller Live-Stand v221
+# Geräteübergreifende Vorführung – aktueller Live-Stand v222
 
-Aktueller bestätigter Stand 17.10.2026: Website v221, Profil/Kiosk/Chats seit v203,
+Aktueller bestätigter Stand 17.10.2026: Website v222 (Präsentations-PDF), Profil/Kiosk/Chats seit v203,
 Planung seit v204 zentral, Touch-Optimierung seit v205. Seit v210 sind auch
 TFB-Partnerpflege und Splash-Texte zentral, einschließlich Jahreszahlungen und
 unabhängiger Schalter für die kleinen Splash-Zeilen. Übrige redaktionelle Seiten

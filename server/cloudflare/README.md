@@ -1,11 +1,11 @@
 # Geschütztes Mitgliederverzeichnis ohne Supabase
 
 
-## Aktueller Betriebsstand – 17.10.2026 · Website v221
+## Aktueller Betriebsstand – 17.10.2026 · Website v222
 
 Zuletzt veröffentlichter Worker `f2973171-e161-4b08-a74e-0f240c3e58a1` (v213),
 Deploymentnachweis `.private/release-v213/worker-deploy.log`. Seitdem nur Website-
-Feinschliffe bis v221, keine erneute Worker-/Datenbankänderung. Aktuelle Freigaben
+Feinschliffe bis v222, keine erneute Worker-/Datenbankänderung. Aktuelle Freigaben
 und Live-Quellstand in [UEBERGABE.md](../../docs/UEBERGABE.md).
 
 Partnerpflege und Splash-Texte seit v210 zentral; Migration 0005 eingespielt.

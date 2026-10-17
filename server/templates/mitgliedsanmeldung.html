@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta name="supported-color-schemes" content="light">
+  <title>Dein Mitgliedsantrag · Tennisfreunde Bielstein</title>
+  <style>
+    @font-face{font-family:'TFB DM Sans';src:url('{{assets_base}}/assets/fonts/editorial/dm-sans.ttf') format('truetype');font-style:normal;font-weight:100 1000}
+    @font-face{font-family:'TFB Bricolage';src:url('{{assets_base}}/assets/fonts/editorial/bricolage-grotesque.ttf') format('truetype');font-style:normal;font-weight:200 800}
+    html,body{margin:0!important;padding:0!important;width:100%!important;background:#EFEFEF}
+    table{border-collapse:collapse;mso-table-lspace:0;mso-table-rspace:0}
+    a{color:#C4553A}
+    img{border:0;outline:none;text-decoration:none}
+    @media only screen and (max-width:600px){
+      .outer{padding:16px 12px!important}
+      .mail-pad{padding-left:26px!important;padding-right:26px!important}
+      .mail-title{font-size:34px!important;line-height:1.12!important}
+      .mail-logo{width:205px!important;height:auto!important}
+      .details-label{width:88px!important}
+    }
+    @media only screen and (max-width:360px){
+      .mail-pad{padding-left:20px!important;padding-right:20px!important}
+      .mail-title{font-size:30px!important}
+    }
+  </style>
+  <!--[if mso]><style>body,table,td,a,p,h1{font-family:Arial,sans-serif!important}</style><![endif]-->
+</head>
+<body style="margin:0;padding:0;background:#EFEFEF;color:#171717;font-family:'TFB DM Sans',Arial,sans-serif;-webkit-text-size-adjust:100%;">
+  <div style="display:none;font-size:1px;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;mso-hide:all;">Dein Antrag ist angekommen. Bitte bestätige ihn – alles Weitere später über die Klingel in der App.</div>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#EFEFEF">
+    <tr><td class="outer" align="center" style="padding:32px 16px;">
+      <!--[if mso]><table role="presentation" width="620"><tr><td><![endif]-->
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:620px;">
+        <tr><td class="mail-pad" style="padding:28px 40px 24px;background:#EFEFEF;">
+          <img class="mail-logo" src="{{logo_url}}" alt="TFB · Tennisfreunde Bielstein" width="228" height="102" style="display:block;width:228px;max-width:100%;height:auto;">
+        </td></tr>
+        <tr><td style="background:#F9F9F9;border:1px solid #D7D7D7;border-top:3px solid #C4553A;border-radius:0 0 10px 10px;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+            <tr><td class="mail-pad" style="padding:32px 40px 0;">
+              <p style="margin:0 0 14px;color:#686868;font-size:11px;line-height:1.5;font-weight:700;letter-spacing:2px;text-transform:uppercase;">Deine Mitgliedsanmeldung</p>
+              <h1 class="mail-title" style="margin:0 0 26px;font-family:'TFB Bricolage','TFB DM Sans',Arial,sans-serif;font-size:43px;line-height:1.08;font-weight:750;letter-spacing:-1.2px;color:#171717;">Schön, dass du<br>mitspielen möchtest.</h1>
+              <p style="margin:0 0 12px;font-size:16px;line-height:1.65;">Hallo {{first_name}},</p>
+              <p style="margin:0 0 24px;font-size:16px;line-height:1.65;">dein Antrag auf Mitgliedschaft bei den Tennisfreunden Bielstein ist bei uns angekommen. Bitte bestätige ihn noch mit einem Klick.</p>
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                <tr><td align="center" bgcolor="#C4553A" style="border-radius:6px;mso-padding-alt:16px 24px;">
+                  <a href="{{confirmation_url}}" style="display:block;padding:16px 24px;font-family:'TFB DM Sans',Arial,sans-serif;font-size:16px;line-height:1.4;font-weight:700;color:#FFFFFF;text-align:center;text-decoration:none;border-radius:6px;">Antrag bestätigen&nbsp; &rarr;</a>
+                </td></tr>
+              </table>
+              <p style="margin:10px 0 26px;color:#686868;font-size:12px;line-height:1.5;text-align:center;">Dein Bestätigungslink ist 48 Stunden gültig.</p>
+            </td></tr>
+            <tr><td class="mail-pad" style="padding:0 40px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-top:1px solid #D7D7D7;border-bottom:1px solid #D7D7D7;">
+                <tr><td colspan="2" style="padding:17px 0 9px;font-size:11px;line-height:1.5;font-weight:700;letter-spacing:1.5px;color:#686868;">DEIN ANTRAG IM ÜBERBLICK</td></tr>
+                <tr><td class="details-label" width="120" valign="top" style="padding:4px 14px 4px 0;color:#686868;font-size:14px;line-height:1.6;">Für</td><td valign="top" style="padding:4px 0;font-size:14px;line-height:1.6;font-weight:600;word-break:break-word;">{{applicant_name}}</td></tr>
+                <tr><td class="details-label" width="120" valign="top" style="padding:4px 14px 17px 0;color:#686868;font-size:14px;line-height:1.6;">Mitgliedschaft</td><td valign="top" style="padding:4px 0 17px;font-size:14px;line-height:1.6;">{{membership_label}}</td></tr>
+              </table>
+            </td></tr>
+            <tr><td class="mail-pad" style="padding:23px 40px 0;">
+              <p style="margin:0 0 8px;font-size:16px;line-height:1.5;font-weight:700;">So geht es weiter</p>
+              <p style="margin:0 0 22px;font-size:15px;line-height:1.65;color:#686868;">Nach deiner Bestätigung prüft der Vorstand deinen Antrag. Diese E-Mail ist noch keine Aufnahmebestätigung.</p>
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#EFEFEF" style="border-radius:6px;">
+                <tr><td style="padding:17px 19px;">
+                  <p style="margin:0 0 6px;font-size:15px;line-height:1.5;font-weight:700;color:#171717;">Alles Weitere in der App.</p>
+                  <p style="margin:0;font-size:14px;line-height:1.6;color:#686868;">Sobald dein Zugang freigeschaltet ist, erhältst du weitere Benachrichtigungen direkt über die Klingel in der App.</p>
+                </td></tr>
+              </table>
+              <p style="margin:24px 0 0;font-size:15px;line-height:1.7;">Wir freuen uns auf dich.<br><strong style="font-weight:700;">Deine Tennisfreunde Bielstein</strong></p>
+            </td></tr>
+            <tr><td class="mail-pad" style="padding:26px 40px 30px;">
+              <p style="margin:0;color:#686868;font-size:12px;line-height:1.6;">Du hast diesen Antrag nicht gestellt? Dann ignoriere diese E-Mail. Ohne deine Bestätigung wird der Antrag nicht zur Aufnahmeprüfung vorgelegt.</p>
+            </td></tr>
+          </table>
+        </td></tr>
+        <tr><td class="mail-pad" align="center" style="padding:22px 40px 8px;">
+          <p style="margin:0 0 5px;color:#686868;font-size:12px;line-height:1.7;">Tennisfreunde Bielstein e. V.</p>
+          <p style="margin:0;color:#686868;font-size:12px;line-height:1.7;"><a href="mailto:info@tfbielstein.de" style="color:#686868;text-decoration:underline;">info@tfbielstein.de</a></p>
+        </td></tr>
+      </table>
+      <!--[if mso]></td></tr></table><![endif]-->
+    </td></tr>
+  </table>
+</body>
+</html>

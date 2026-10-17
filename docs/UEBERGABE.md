@@ -1,6 +1,19 @@
 # TFB – Übergabe für die nächste Sitzung
 
-## Verbindlicher aktueller Stand: live v221 – 17.10.2026
+## Aktuelle Ergänzung v222 – E-Mail-Muster auf Club-Seite
+
+E-Mail-Entwurf zur Mitgliedsanmeldung als einseitige PDF in der Club-Seite
+verlinkt: rechts außen im Bereich Mitglied werden, „E-Mail-Bestätigung (PDF)“.
+Öffnet in neuem Tab, auf Mobilgeräten umbruchfähig und offline verfügbar.
+PDF trägt einen kleinen Präsentationsmuster-Hinweis und fiktive Beispieldaten.
+Vollständiges Logo mit rotem Ball und Website-Schriften/Farben; Formular und
+Versand bleiben unverändert. Mailregel: nur Mitgliedsanmeldung per E-Mail,
+sonstige Hinweise in die App-Klingel. Bisherigen mehrstufigen Aufnahme-Prototyp
+vor späterer Anbindung gesondert umstellen. Details/Vorschauen:
+[MAILKONZEPT.md](MAILKONZEPT.md). Cache `tfb-kiosk-v222`, übriger bestätigter
+Produktstand v221 unverändert; folgende Freigabe dokumentiert diese Basis.
+
+## Bestätigte Basis v221, ergänzt durch v222 – 17.10.2026
 
 Der Nutzer hat den aktuellen Auftritt und die Bedienung ausdrücklich bestätigt
 („Sehr schön, gefällt mir alles gut“) und die Aktualisierung der Dokumentation
@@ -10,8 +23,8 @@ selbständig abarbeiten. Kein neuer Datenbank-Rollback oder Betriebsstart beauft
 
 - Website: [joern-kaemper.de](https://joern-kaemper.de/).
 - Repository: `calvinjohncamp/tfb-website`, lokaler Ordner `tfb-kiosk/`.
-- Veröffentlichter Website-Quellstand: `ed9d9db712e4028e6e707397d927953970921c12`.
-- Cache: `tfb-kiosk-v221`; danach nur Dokumentationsabschluss, keine neue Websiteversion.
+- Veröffentlichter Basis-Quellstand v221: `ed9d9db712e4028e6e707397d927953970921c12`.
+- Basis-Cache `tfb-kiosk-v221`; aktuelle PDF-Ergänzung mit `tfb-kiosk-v222`.
 - Erfolgreiche Veröffentlichung: [Workflow 39002979284](https://github.com/calvinjohncamp/tfb-website/actions/runs/39002979284).
 - Zuletzt veröffentlichter Worker: `f2973171-e161-4b08-a74e-0f240c3e58a1`
   (v213; Nachweis `.private/release-v213/worker-deploy.log`). Keine spätere

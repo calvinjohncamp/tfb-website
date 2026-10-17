@@ -788,6 +788,8 @@ button.shop-card { border: 0; text-align: left; font: inherit; }
 .membership-actions .btn:hover { filter: brightness(1.08); }
 .membership-actions .btn { white-space: normal; text-align: center; }
 .membership-benefit { flex: 1 1 230px; max-width: 420px; margin: 0; font-size: .85rem; line-height: 1.5; color: var(--muted); }
+.membership-mail-preview { margin-left: auto; display: inline-flex; align-items: center; min-height: 44px; font-size: .85rem; line-height: 1.5; color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+.membership-mail-preview:hover { color: var(--signal); }
 .membership-fees h2 { padding-right: 32px; margin-bottom: 8px; }
 .fees-eyebrow { color: var(--signal); font-size: .78rem; font-weight: 800; margin: 0 0 8px; }
 .fees-intro { color: var(--muted); margin: 0 0 24px; }
@@ -805,6 +807,7 @@ button.shop-card { border: 0; text-align: left; font: inherit; }
 .fees-notes p { margin: 8px 0; }
 @media (max-width: 480px) {
   .membership-actions .btn { flex: 1 1 100%; }
+  .membership-mail-preview { margin-left: 0; }
   .membership-fees dl > div { gap: 10px; }
 }
 
@@ -2651,7 +2654,7 @@ body.admin-hidden [data-action="post-hide"] { display: none !important; }
 }
 @media (max-width: 359px) {
   .app .topbar .topnav { gap: 1px; }
-  .app .topbar .topnav .tab { padding-left: 1px; padding-right: 1px; }
+  .app .topbar .topnav .tab { padding-left: 1px; padding-right: 1px; letter-spacing: 0; }
   .app .topbar .topnav .tab::before { left: 0; right: 0; }
 }
 

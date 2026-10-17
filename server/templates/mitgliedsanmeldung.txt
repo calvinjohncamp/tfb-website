@@ -1,0 +1,25 @@
+Hallo {{first_name}},
+
+schön, dass du mitspielen möchtest.
+
+Dein Antrag auf Mitgliedschaft bei den Tennisfreunden Bielstein ist bei uns angekommen. Bitte bestätige ihn noch mit einem Klick:
+
+{{confirmation_url}}
+
+Der Link ist 48 Stunden gültig.
+
+Dein Antrag im Überblick
+Für: {{applicant_name}}
+Mitgliedschaft: {{membership_label}}
+
+Nach deiner Bestätigung prüft der Vorstand deinen Antrag. Diese E-Mail ist noch keine Aufnahmebestätigung.
+
+Alles Weitere in der App: Sobald dein Zugang freigeschaltet ist, erhältst du weitere Benachrichtigungen direkt über die Klingel in der App.
+
+Wir freuen uns auf dich.
+Deine Tennisfreunde Bielstein
+
+Du hast diesen Antrag nicht gestellt? Dann ignoriere diese E-Mail. Ohne deine Bestätigung wird der Antrag nicht zur Aufnahmeprüfung vorgelegt.
+
+Tennisfreunde Bielstein e. V.
+info@tfbielstein.de

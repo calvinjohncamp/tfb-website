@@ -1,6 +1,13 @@
 # TFB-Website
 
 
+## Aktuelle Ergänzung v222 – Präsentations-PDF
+
+Club → Mitglied werden → rechts „E-Mail-Bestätigung (PDF)“. Einseitiges Muster
+mit vollständigem TFB-Logo, Website-Schriften/-Farben und fiktiven Daten; neuer
+Tab und Offline-Verfügbarkeit. Kein Mailversand aktiviert. Cache v222, sonstiger
+bestätigter Stand v221. Entwurf/Versandvorgabe: [MAILKONZEPT.md](docs/MAILKONZEPT.md).
+
 ## Aktueller freigegebener Live-Stand v221 – 17.10.2026
 
 Nutzer bestätigt den Gesamtstand. Verbindlicher Einstieg:

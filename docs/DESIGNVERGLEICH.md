@@ -1,7 +1,7 @@
 # TFB: Kühle Welt und Warme Welt
 
 
-Aktueller bestätigter Live-Stand 17.10.2026, Cache v221. Kühle Welt ist Standard,
+Aktueller bestätigter Live-Stand 17.10.2026, Cache v222 (Club-PDF-Ergänzung). Kühle Welt ist Standard,
 warme Welt bleibt lokale Alternative; beide nutzen denselben Inhaltsbestand.
 Maßgeblich ist die [aktuelle Übergabe](UEBERGABE.md). Frühere Veröffentlichungs-
 und Experimenthinweise weiter unten sind historische Recherche.
