@@ -1863,3 +1863,11 @@ Die spätere Messung startet erst auf der Zielseite, ohne die alte Ansicht beim
 Schließen zusätzlich zu zählen. Messung bleibt ausgeschaltet. Cache v215.
 Regression im isolierten Browser: Smartphone-, Tablet- und Desktopgrößen,
 Einstieg von Kiosk, Club, Partnerverwaltung und Home sowie Reload auf #kiosk.
+
+## 17.10.2026 · v216 – Menü Dating 2.0, Seitenüberschrift Verabreden
+
+Menüpunkt und Auswertungsbezeichnung heißen Dating 2.0. Ältere gespeicherte
+Standard-Menübezeichnungen „Dating“ und „Verabreden“ werden ebenfalls entsprechend
+angezeigt; individuell benannte Menüpunkte bleiben möglich. Seitenüberschrift
+für angemeldete und nicht angemeldete Besucher heißt Verabreden. Route #treffen
+und Funktionalität unverändert. Cache v216.

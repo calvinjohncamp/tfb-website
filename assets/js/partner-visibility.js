@@ -6,7 +6,7 @@
   const SESSION='tfb_splash_visit_v1';
   let settings={...defaults}, previewSettings=null, splash=null, started=false, active=null, observer=null, timers=new Map(), candidates=new Set();
   let queue=[], sending=false, flushTimer=null, retryTimer=null, failures=0, report=null, year=new Date().toLocaleDateString('sv-SE',{timeZone:'Europe/Berlin'}).slice(0,4);
-  const pageNames={splash:'Einstiegsseite',home:'Home','home-detail':'Home · Themen','home-fotos':'Home · Fotos','home-alle':'Home · Übersicht',aktuell:'Aktuell','aktuell-detail':'Aktuell · Details','aktuell-alle':'Aktuell · Übersicht',chat:'Chat','chat-detail':'Chat · Details',sport:'Sport','sport-training':'Training',team:'Mannschaften',club:'Club','club-detail':'Club · Details',treffen:'Dating','treffen-detail':'Dating · Details',kiosk:'Kiosk',strichliste:'Strichliste',abrechnungen:'Abrechnungen',impressum:'Impressum',satzung:'Satzung'};
+  const pageNames={splash:'Einstiegsseite',home:'Home','home-detail':'Home · Themen','home-fotos':'Home · Fotos','home-alle':'Home · Übersicht',aktuell:'Aktuell','aktuell-detail':'Aktuell · Details','aktuell-alle':'Aktuell · Übersicht',chat:'Chat','chat-detail':'Chat · Details',sport:'Sport','sport-training':'Training',team:'Mannschaften',club:'Club','club-detail':'Club · Details',treffen:'Dating 2.0','treffen-detail':'Dating 2.0 · Details',kiosk:'Kiosk',strichliste:'Strichliste',abrechnungen:'Abrechnungen',impressum:'Impressum',satzung:'Satzung'};
   function pageKey() {
     const [view,detail]=location.hash.slice(1).split('/');
     const key=({verein:'club',gefluester:'chat'})[view]||view||'home';

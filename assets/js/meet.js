@@ -296,7 +296,7 @@
     const { state, icon } = ui();
     if (!state.member) {
       return `
-        ${ui().viewHead('Dating 2.0', 'Einzel, Doppel, Training – wer ist dabei?', false)}
+        ${ui().viewHead('Verabreden', 'Einzel, Doppel, Training – wer ist dabei?', false)}
         <section class="card meet-login"><p>Zum Verabreden bitte einmal anmelden – danach bleibt dein Handy angemeldet.</p>
         <button type="button" class="btn primary" data-action="login">Anmelden</button></section>
         ${ui().partnerSlot('treffen', 'Verabreden wird dir präsentiert von')}`;
@@ -318,7 +318,7 @@
     const groupAsks = data.groups.filter((g) => (g.pending || []).includes(me().id));
     const gNames = await ui().api.memberNames(groupAsks.map((g) => g.createdBy));
     return `
-      ${ui().viewHead('Dating 2.0', 'Einzel, Doppel, Training – wer ist dabei?', false)}
+      ${ui().viewHead('Verabreden', 'Einzel, Doppel, Training – wer ist dabei?', false)}
       <section class="meet-new-row">
         ${Object.entries(KINDS).map(([k, v]) => `
           <button type="button" class="meet-kind-tile" data-action="meet-new" data-kind="${k}">
