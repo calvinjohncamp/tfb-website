@@ -137,7 +137,7 @@
   function csv(){if(!admin()||!report)return;const cell=v=>'"'+String(v??'').replace(/^[=+@-]/,"'$&").replace(/"/g,'""')+'"';const names=new Map(report.partners.map(p=>[p.id,p.name]));const rows=[['Quelle','Jahr','Messbeginn','Tag','Seite','Partner-ID','Partner','Platz','Kennzahl','Anzahl'],...report.rows.map(r=>['TFB',report.year,report.startedAt||'',r.day,pageNames[r.page]||r.page,r.partner,names.get(r.partner)||'',r.slot,r.kind,r.total])];const blob=new Blob(['\uFEFF'+rows.map(r=>r.map(cell).join(';')).join('\r\n')],{type:'text/csv;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`TFB-Partner-Sichtbarkeit-${report.year}.csv`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);}
   TFB.views=TFB.views||{};TFB.views.partnerzahlen=reportView;
   TFB.actions=TFB.actions||{};Object.assign(TFB.actions,{
-    'splash-enter':()=>{hide();if(['partnerzahlen','partner'].includes(ui().currentView()))location.hash='#home';else document.querySelector('#view h1')?.focus?.();},
+    'splash-enter':()=>{hide(false);if(location.hash!=='#home')location.hash='#home';else{window.scrollTo(0,0);rendered();document.querySelector('#view h1')?.focus?.();}},
     'splash-open':()=>{ui().closeSheet();show(true);},
     'splash-edit':edit,
     'partner-report':()=>{if(!admin())return;hide(false);if(location.hash==='#partner')ui().renderView('partner');else location.hash='#partner';},

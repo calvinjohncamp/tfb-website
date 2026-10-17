@@ -53,6 +53,28 @@ try{
  await page.screenshot({path:'/tmp/tfb-partner-admin-v210.png',fullPage:true});
  const download=page.waitForEvent('download');await page.locator('[data-action="partner-admin-export"]').click();assert.match((await download).suggestedFilename(),/TFB-Partner-2027/);
  await page.locator('[data-action="splash-open"]').click();await page.waitForSelector('[data-action="splash-edit"]');await page.locator('[data-action="splash-edit"]').click();await page.locator('[name="headline"]').fill('Hier ist TFB');await page.locator('[name="eyebrowEnabled"]').uncheck();await page.locator('[name="footEnabled"]').uncheck();await page.locator('[name="eyebrowText"]').fill('Unser Verein');await page.locator('[data-editor="splash"] [type="submit"]').click();await page.waitForFunction(()=>!document.querySelector('#sheet-root.open'));
+ // Entry always returns Home, including a restored Kiosk route and admin re-entry.
+ for(const [width,height] of [[320,740],[390,844],[834,1194],[1194,834],[1440,1100]]){
+  await page.setViewportSize({width,height});
+  for(const previous of ['#kiosk','#club','#partner','#home']){
+   await page.evaluate(hash=>{location.hash=hash;},previous);
+   await page.waitForFunction(hash=>document.querySelector('#view').dataset.view===hash.slice(1),previous);
+   await page.evaluate(()=>TFB.partnerVisibility.show(true));
+   await page.locator('[data-action="splash-enter"]').click();
+   await page.waitForFunction(()=>location.hash==='#home'&&document.querySelector('#view').dataset.view==='home'&&document.querySelector('#tfb-splash').hidden);
+   await page.waitForSelector('#view .pbsp-duo');
+  }
+ }
+ await page.evaluate(()=>{location.hash='#kiosk';});
+ // Simulate an expired Splash visit on reload; pagehide normally renews it.
+ await page.addInitScript(()=>sessionStorage.removeItem('tfb_splash_visit_v1'));
+ await page.waitForFunction(()=>document.querySelector('#view').dataset.view==='kiosk');
+ await page.reload();await page.waitForSelector('#tfb-splash:not([hidden])');
+ assert.equal(await page.evaluate(()=>location.hash),'#kiosk','Reload restores Kiosk beneath Splash');
+ await page.locator('[data-action="splash-enter"]').click();
+ await page.waitForFunction(()=>location.hash==='#home'&&document.querySelector('#view').dataset.view==='home');
+ await page.waitForSelector('#view .pbsp-duo');
+ await page.evaluate(()=>TFB.partnerVisibility.show(true));
  const newGuest=await open();assert.match(await newGuest.page.locator('#tfb-splash h1').innerText(),/Hier ist TFB/,'splash text persists centrally across devices');
  assert.equal(await newGuest.page.locator('#tfb-splash .tfb-splash-message .tfb-splash-eyebrow').count(),0);assert.equal(await newGuest.page.locator('#tfb-splash .tfb-splash-foot').count(),0);
  await page.locator('[data-action="splash-edit"]').click();await page.locator('[name="eyebrowEnabled"]').check();await page.locator('[name="footEnabled"]').check();await page.locator('[data-editor="splash"] [type="submit"]').click();await page.waitForFunction(()=>!document.querySelector('#sheet-root.open'));

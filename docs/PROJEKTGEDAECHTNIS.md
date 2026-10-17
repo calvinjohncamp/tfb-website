@@ -1851,3 +1851,15 @@ Klickfläche. „Einstiegsseite anzeigen“ steht weiterhin am Anfang. Die Optio
 für die kleine Zeile über der Überschrift und unter dem Einstiegsbutton stehen
 jeweils direkt unter ihrem Textfeld. Speicherlogik und Inhalte unverändert;
 Messung bleibt ausgeschaltet. Cache tfb-kiosk-v214.
+
+## 17.10.2026 · v215 – Splash-Einstieg führt immer auf Home
+
+Bisher schloss der Einstiegsbutton die Splash-Seite und ließ die darunterliegende
+Ansicht stehen (außer der Partnerverwaltung). Dadurch konnte nach einem Reload
+oder beim erneuten Öffnen der Splash-Seite der Kiosk sichtbar werden. Das Ziel
+ist jetzt ausdrücklich #home, unabhängig von vorheriger Ansicht und Gerätebreite.
+Bei bereits geöffnetem Home wird die Splash geschlossen und nach oben gescrollt.
+Die spätere Messung startet erst auf der Zielseite, ohne die alte Ansicht beim
+Schließen zusätzlich zu zählen. Messung bleibt ausgeschaltet. Cache v215.
+Regression im isolierten Browser: Smartphone-, Tablet- und Desktopgrößen,
+Einstieg von Kiosk, Club, Partnerverwaltung und Home sowie Reload auf #kiosk.
