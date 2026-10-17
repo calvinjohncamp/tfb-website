@@ -1,8 +1,9 @@
 # TFB – Übergabe für die nächste Sitzung
 
-## Aktuelle Ergänzung v222 – E-Mail-Muster auf Club-Seite
+## Verbindlicher aktueller Stand: bestätigt und live v222 – 17.10.2026
 
-E-Mail-Entwurf zur Mitgliedsanmeldung als einseitige PDF in der Club-Seite
+Der Nutzer hat den aktuellen Gesamtstand einschließlich E-Mail-Muster und
+Club-Platzierung bestätigt. E-Mail zur Mitgliedsanmeldung als einseitige PDF in der Club-Seite
 verlinkt: rechts außen im Bereich Mitglied werden, „E-Mail-Bestätigung (PDF)“.
 Öffnet in neuem Tab, auf Mobilgeräten umbruchfähig und offline verfügbar.
 PDF trägt einen kleinen Präsentationsmuster-Hinweis und fiktive Beispieldaten.
@@ -11,9 +12,10 @@ Versand bleiben unverändert. Mailregel: nur Mitgliedsanmeldung per E-Mail,
 sonstige Hinweise in die App-Klingel. Bisherigen mehrstufigen Aufnahme-Prototyp
 vor späterer Anbindung gesondert umstellen. Details/Vorschauen:
 [MAILKONZEPT.md](MAILKONZEPT.md). Cache `tfb-kiosk-v222`, übriger bestätigter
-Produktstand v221 unverändert; folgende Freigabe dokumentiert diese Basis.
+Produktstand v221 unverändert. Maßgeblicher Stand ist jetzt insgesamt v222;
+die folgenden Abschnitte beschreiben die weiterhin gültigen Funktionen.
 
-## Bestätigte Basis v221, ergänzt durch v222 – 17.10.2026
+## Freigabe, Veröffentlichung und Betriebsgrenzen
 
 Der Nutzer hat den aktuellen Auftritt und die Bedienung ausdrücklich bestätigt
 („Sehr schön, gefällt mir alles gut“) und die Aktualisierung der Dokumentation
@@ -23,9 +25,11 @@ selbständig abarbeiten. Kein neuer Datenbank-Rollback oder Betriebsstart beauft
 
 - Website: [joern-kaemper.de](https://joern-kaemper.de/).
 - Repository: `calvinjohncamp/tfb-website`, lokaler Ordner `tfb-kiosk/`.
-- Veröffentlichter Basis-Quellstand v221: `ed9d9db712e4028e6e707397d927953970921c12`.
-- Basis-Cache `tfb-kiosk-v221`; aktuelle PDF-Ergänzung mit `tfb-kiosk-v222`.
-- Erfolgreiche Veröffentlichung: [Workflow 39002979284](https://github.com/calvinjohncamp/tfb-website/actions/runs/39002979284).
+- Veröffentlichter Website-Quellstand: `f5752caac746f3050444f65ed3929c307650fd06`.
+- Aktueller Cache `tfb-kiosk-v222`; dieser Dokumentationsabschluss verändert die Website nicht.
+- Erfolgreiche Veröffentlichung: [Workflow 39004454286](https://github.com/calvinjohncamp/tfb-website/actions/runs/39004454286).
+- Live-Abgleich von Club-Code, CSS, Service Worker und PDF: 200/bytegleich;
+  privater Nachweis `.private/release-v222/live-check.json`.
 - Zuletzt veröffentlichter Worker: `f2973171-e161-4b08-a74e-0f240c3e58a1`
   (v213; Nachweis `.private/release-v213/worker-deploy.log`). Keine spätere
   Worker-/Datenbankänderung für die folgenden Website-Feinschliffe erforderlich.
@@ -131,8 +135,11 @@ Darstellung, Home-Einstieg samt Kiosk-Reload, Menütitel und aktive Markierung.
 Originalflyer in Großansicht und bytegleiche Downloads geprüft. App-Symbole nach
 Abmessungen, exakten Farbwerten, Ballentfernung und Maskable-Sicherheitszone geprüft;
 Manifest, Apple-Verknüpfung und Offline-Icons mit echtem Service Worker geprüft.
-Die finale v221-Auslieferung aller Icons, des Manifests und des Service Workers
-wurde bytegenau gegen die geprüfte lokale Fassung verglichen.
+Die v221-Auslieferung aller Icons, des Manifests und des Service Workers
+wurde bytegenau gegen die geprüfte lokale Fassung verglichen. Für v222 zusätzlich
+PDF-Seite gerendert und visuell kontrolliert, 24 Seitentests erfolgreich, PDF-Link
+in beiden Farbwelten bei 320/390/834/1194/1440px geprüft, Öffnen in neuem Tab und
+Offline-Zugriff getestet sowie die finale Live-Auslieferung bytegenau verglichen.
 
 Zentrale Profile/Kiosk/Chats seit v203, Gruppen/Verabredungen seit v204;
 Touch-Optimierung seit v205 weiter aktiv. Kiosk bleibt Vorführung ohne produktive

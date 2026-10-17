@@ -1,8 +1,8 @@
 # TFB-Kiosk – Projektgedächtnis und Übergabe
 
-## Verbindlicher Kurzstand – 17.10.2026 · v221 plus Präsentationslink v222
+## Verbindlicher Kurzstand – 17.10.2026 · bestätigter Live-Stand v222
 
-**Aktuelle Ergänzung v222:** E-Mail-Muster zur Mitgliedsanmeldung als PDF
+**Vom Nutzer bestätigter Stand v222:** E-Mail-Muster zur Mitgliedsanmeldung als PDF
 auf der Club-Seite rechts neben den bestehenden Aktionen verfügbar. Einseitige
 Präsentationsansicht mit fiktiven Daten, Logo, Website-Farben/-Schriften und
 Musterhinweis. Details in [MAILKONZEPT.md](MAILKONZEPT.md). Cache v222;
@@ -15,10 +15,11 @@ Weitere Produktänderungen nur auf neuen Auftrag; ältere offene Listen nicht
 selbständig abarbeiten. Keine zusätzliche Betriebsfreigabe oder Datenrücksetzung.
 
 - Live: [joern-kaemper.de](https://joern-kaemper.de/), Quellstand
-  `ed9d9db712e4028e6e707397d927953970921c12`, Cache `tfb-kiosk-v221`.
-  Veröffentlichung [39002979284](https://github.com/calvinjohncamp/tfb-website/actions/runs/39002979284)
-  erfolgreich und ausgelieferte Dateien geprüft. Aktuelle Ergänzung v222 ergänzt
-  ausschließlich Präsentations-PDF und Club-Link; Basisangaben beziehen sich auf v221.
+  `f5752caac746f3050444f65ed3929c307650fd06`, Cache `tfb-kiosk-v222`.
+  Veröffentlichung [39004454286](https://github.com/calvinjohncamp/tfb-website/actions/runs/39004454286)
+  erfolgreich. Club-Code, CSS, Service Worker und PDF live bytegenau geprüft;
+  Nachweis `.private/release-v222/live-check.json`. Dieser Abschluss ändert nur
+  Dokumentation, keine neue Websiteversion.
 - Finales App-Symbol: **großes dunkles TFB ohne Ball/Unterzeile auf hellem Grund**;
   Schrift rund 18 % größer. Website-Farben exakt: #EFEFEF / #171717, automatisch
   aus CSS übernommen. Website und Splash behalten den roten Ball #C4553A.
@@ -2007,3 +2008,21 @@ Zusätzlich bei der Mobilprüfung gefundenen 320px-Menüüberlauf in der warmen
 Welt durch Verzicht auf Buchstabensperrung unter 360px beseitigt. Link in beiden
 Farbwelten und 320/390/834/1194/1440px geprüft, rechtsbündig auf Desktop und PDF
 öffnet per Klick in neuem Tab. 24 bestehende Seitentests erfolgreich.
+
+## 17.10.2026 · Dokumentationsabschluss zum bestätigten Live-Stand v222
+
+Nutzer bestätigt die Präsentations-PDF samt Platzierung auf Club („Sehr schön“)
+und beauftragt die Aktualisierung des aktuellen Stands und der Übergabedateien.
+Verbindliche Kurzstände jetzt durchgehend v222 mit Live-Commit und erfolgreichem
+Workflow, nicht mehr v221 mit nur nachgestellter Ergänzung. Veröffentlichungs-
+nachweis unter .private/release-v222/live-check.json: Club-Code, CSS, Service
+Worker und PDF 200 sowie bytegleich. Einseitige A4-PDF mit vollständigem TFB-Logo,
+Website-Farben/-Schriften, fiktiven Daten und Musterhinweis; neuer Tab und offline.
+
+Aktuellen Mailentwurf als Gestaltungs-/Präsentationsstand bestätigt, noch keine
+Versandfreigabe. Einzige vorgesehene automatische Mailart ist Mitgliedsanmeldung;
+weitere Meldungen über die App-Klingel. Bestehenden mehrstufigen Aufnahme-Prototyp
+vor späterem Einsatz anpassen. App-Symbol ohne Ball, Website-/Splash-Logo mit Ball,
+Partnerpflege und ausgeschaltete Sichtbarkeitsmessung unverändert. Keine weitere
+Produktänderung, keine neue Migration, keine Datenrücksetzung und kein neuer
+Sicherungstag mit diesem Dokumentationsabschluss. Historische Abschnitte erhalten.

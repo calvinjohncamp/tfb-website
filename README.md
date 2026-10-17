@@ -1,20 +1,23 @@
 # TFB-Website
 
 
-## Aktuelle Ergänzung v222 – Präsentations-PDF
+## Bestätigter Live-Stand v222 – 17.10.2026
 
 Club → Mitglied werden → rechts „E-Mail-Bestätigung (PDF)“. Einseitiges Muster
 mit vollständigem TFB-Logo, Website-Schriften/-Farben und fiktiven Daten; neuer
 Tab und Offline-Verfügbarkeit. Kein Mailversand aktiviert. Cache v222, sonstiger
-bestätigter Stand v221. Entwurf/Versandvorgabe: [MAILKONZEPT.md](docs/MAILKONZEPT.md).
+bestätigter Funktionsstand v221. Nutzer bestätigt den gesamten Stand.
+Live-Quellstand `f5752ca`, Veröffentlichung [39004454286](https://github.com/calvinjohncamp/tfb-website/actions/runs/39004454286)
+erfolgreich und ausgelieferte Dateien bytegenau geprüft. Dieser Abschluss
+aktualisiert ausschließlich die Dokumentation. Entwurf/Versandvorgabe: [MAILKONZEPT.md](docs/MAILKONZEPT.md).
 
-## Aktueller freigegebener Live-Stand v221 – 17.10.2026
+## Weiterhin gültige Funktionsbasis v221 – 17.10.2026
 
 Nutzer bestätigt den Gesamtstand. Verbindlicher Einstieg:
 [Übergabe](docs/UEBERGABE.md), ausführliches
 [Projektgedächtnis](docs/PROJEKTGEDAECHTNIS.md).
-Live auf [joern-kaemper.de](https://joern-kaemper.de/), Quellstand `ed9d9db`,
-Cache `tfb-kiosk-v221`; Dokumentationsabschluss ohne neue Websiteversion.
+Basisveröffentlichung v221: Quellstand `ed9d9db`, Cache `tfb-kiosk-v221`.
+Aktuelle Veröffentlichung v222 siehe oben; die folgenden Funktionen bleiben gültig.
 
 - Finales App-Symbol: größeres **TFB ohne Ball**, Website-Farben #EFEFEF/#171717.
   Website-/Splash-Logo behalten Ball #C4553A; Browser-Favicons unverändert.

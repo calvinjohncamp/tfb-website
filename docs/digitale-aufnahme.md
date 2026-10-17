@@ -1,11 +1,12 @@
 # Digitale Aufnahme
 
-## Neuer Mail-Entwurf und geänderte Vorgabe – 17.10.2026
+## Bestätigter Mailentwurf und Versandvorgabe – 17.10.2026
 
 Nur die Mitgliedsanmeldung soll eine automatische E-Mail auslösen. Alle übrigen
-Benachrichtigungen gehören in die App-Klingel. Erster Gestaltungsentwurf mit
+Benachrichtigungen gehören in die App-Klingel. Vom Nutzer bestätigter Gestaltungsentwurf mit
 vollständigem TFB-Logo, Originalfarben, Bricolage/DM Sans und Arial-Fallback:
-[MAILKONZEPT.md](MAILKONZEPT.md). Noch kein Versand und keine Live-Anbindung.
+[MAILKONZEPT.md](MAILKONZEPT.md). Seit v222 als Präsentations-PDF auf Club live
+verlinkt; noch kein Versand und keine Anbindung an den Aufnahmebetrieb.
 
 Der unten dokumentierte alte Prototyp erzeugt noch mehrere Mails (Bestätigung,
 gegebenenfalls Mandat, Vorstand und Antragszusammenfassung). Diese Logik ist vor

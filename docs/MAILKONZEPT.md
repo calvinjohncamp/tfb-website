@@ -1,6 +1,7 @@
-# TFB · Mitgliedsanmeldung: erster E-Mail-Entwurf
+# TFB · Mitgliedsanmeldung: bestätigter Präsentationsentwurf
 
-Stand 17.10.2026. Designentwurf auf Nutzerauftrag, **nicht an den Versand angeschlossen**.
+Stand 17.10.2026. Vom Nutzer bestätigter Gestaltungs-/Präsentationsstand,
+**nicht an den Versand angeschlossen**.
 Seit v222 ist ausschließlich das Präsentationsmuster als PDF auf der Club-Seite
 verlinkt. Keine echten Nachrichten, Empfänger oder Tokens verwendet.
 
@@ -92,3 +93,12 @@ unverändert. PDF wird als öffentliche Website-Datei und offline bereitgestellt
 Neuerzeugung nach Vorschauänderungen: erst `node tools/build-membership-mail-preview.mjs`,
 dann `node tools/build-membership-mail-pdf.mjs`. Letzteres erzeugt die PDF in
 output/pdf und kopiert sie in assets/docs für die Veröffentlichung.
+
+## Bestätigung und Veröffentlichungsnachweis
+
+Der Nutzer hat die Optik und danach den live platzierten PDF-Link bestätigt.
+Live v222, Commit f5752caac746f3050444f65ed3929c307650fd06, erfolgreicher
+[Workflow 39004454286](https://github.com/calvinjohncamp/tfb-website/actions/runs/39004454286).
+PDF und zugehöriger Club-Code/CSS/Service Worker nach Veröffentlichung bytegleich
+geprüft; Nachweis privat unter .private/release-v222/live-check.json.
+Freigabe gilt für Gestaltung und Präsentation, nicht für SMTP-/Aufnahmebetrieb.
