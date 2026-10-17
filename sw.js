@@ -1,14 +1,14 @@
 // TFB-Kiosk – Service Worker.
 // Netz zuerst, damit Änderungen sofort ankommen; ohne Netz startet die App aus dem Zwischenspeicher.
-const CACHE = 'tfb-kiosk-v220';
+const CACHE = 'tfb-kiosk-v221';
 const SHELL = [
   './assets/js/member-directory.js', './assets/js/cloud-sync.js',
   './assets/data/public-content.js',
   './', './index.html', './manifest.webmanifest',
   './praesentation.html', './assets/css/focus.css', './assets/js/focus.js',
   './assets/js/presentation-icons.js', './assets/js/presentation.js', './assets/js/presentation-bridge.js',
-  './assets/icons/icon-512.png?v=220', './assets/icons/icon-192.png?v=220',
-  './assets/icons/icon-maskable-512.png?v=220', './assets/icons/icon-180.png?v=220',
+  './assets/icons/icon-512.png?v=221', './assets/icons/icon-192.png?v=221',
+  './assets/icons/icon-maskable-512.png?v=221', './assets/icons/icon-180.png?v=221',
   './assets/icons/icon-512.png', './assets/icons/icon-maskable-512.png', './assets/icons/icon-180.png',
   './assets/css/brand.css', './assets/css/app.css',
   './assets/css/design-preview.css', './assets/js/design-preview.js',

@@ -1,4 +1,5 @@
-// App icons use the original logo geometry; the browser favicon has its own source.
+// App icons use the enlarged original TFB letters without ball or subtitle.
+// The browser favicon has its own unchanged source.
 import {readFileSync,writeFileSync} from 'node:fs';
 import {fileURLToPath} from 'node:url';
 import {resolve} from 'node:path';
@@ -15,12 +16,13 @@ function color(token){
   if(!match)throw new Error(`Website color missing: ${token}`);
   return match[1].toUpperCase();
 }
-const palette={background:color('--bg'),ink:color('--logo'),ball:color('--signal')};
+const palette={background:color('--bg'),ink:color('--logo')};
 console.log('Website palette:',palette);
 const manifestPath=resolve(root,'manifest.webmanifest');
 writeFileSync(manifestPath,readFileSync(manifestPath,'utf8').replace(/("background_color":\s*)"[^"]+"/,`$1"${palette.background}"`));
-// Original: 2000 × 1000. Mark without subtitle: 1803 × 664 at (92,78).
-// Ball: original box 280 × 280 at (1616,464). Both layers use the SAME mask.
+// Original: 2000 × 1000. TFB letters only: 1524 × 664 at (92,78).
+// Cropping before uniform scaling preserves the letter shapes and frees the
+// ball's former space, making TFB about 18% larger at the same outer margin.
 const browser=await chromium.launch({headless:true});
 try{
   for(const [file,size,width] of [
@@ -34,10 +36,9 @@ try{
     const page=await browser.newPage({viewport:{width:size,height:size},deviceScaleFactor:1});
     await page.setContent(`<style>
       html,body{margin:0;width:100%;height:100%;overflow:hidden;background:${palette.background}}
-      .mark{position:absolute;left:${(100-width)/2}%;top:50%;width:${width}%;aspect-ratio:1803/664;transform:translateY(-50%);overflow:hidden}
-      .ink,.ball{position:absolute;left:calc(-92 / 1803 * 100%);top:calc(-78 / 664 * 100%);width:calc(2000 / 1803 * 100%);height:calc(1000 / 664 * 100%);background:${palette.ink};mask:url('${original}') 0 0/100% 100% no-repeat;mask-mode:alpha}
-      .ball{background:${palette.ball};clip-path:inset(46.4% 5.2% 25.6% 80.8%)}
-    </style><div class="mark"><span class="ink"></span><span class="ball"></span></div>`);
+      .mark{position:absolute;left:${(100-width)/2}%;top:50%;width:${width}%;aspect-ratio:1524/664;transform:translateY(-50%);overflow:hidden}
+      .ink{position:absolute;left:calc(-92 / 1524 * 100%);top:calc(-78 / 664 * 100%);width:calc(2000 / 1524 * 100%);height:calc(1000 / 664 * 100%);background:${palette.ink};mask:url('${original}') 0 0/100% 100% no-repeat;mask-mode:alpha}
+    </style><div class="mark"><span class="ink"></span></div>`);
     await page.evaluate(async src=>{const image=new Image();image.src=src;await image.decode();await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));},original);
     await page.screenshot({path:resolve(root,file),omitBackground:false});
     await page.close();console.log(`${file}: ${size} × ${size}`);

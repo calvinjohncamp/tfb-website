@@ -1926,3 +1926,16 @@ Browser-Favicons bytegleich. Alle App-Formate neu erzeugt; Icon-URLs/Cache v220.
 Browserprüfung: berechnete Website-Farben nach Ende des Farbwechsels mit den
 PNG-Pixeln sämtlicher App-Formate verglichen; exakte RGBA-Farbwerte nachgewiesen,
 Manifest-Hintergrund geprüft und beide Browser-Favicons bytegleich bestätigt.
+
+## 17.10.2026 · v221 – App-Symbol als großes TFB ohne Ball
+
+Nach Praxiseindruck auf dem iPhone freigegeben: Ball nur aus App-Symbol entfernen,
+TFB-Zeichen größer setzen. Originalschrift unverzerrt aus 1524×664 ab (92,78)
+geschnitten und gemeinsam skaliert. Gleicher Außenabstand, dadurch Schrift etwa
+18 % größer gegenüber dem Symbol mit Ball. Hintergrund #EFEFEF und Zeichen
+#171717 weiterhin direkt aus Website-CSS. Maskable-Sicherheitszone berücksichtigt.
+Website-/Splash-Logo inklusive Signature-Ball sowie Browser-Favicons unverändert.
+Alle App-Formate und Quelle erneuert; Apple-/Manifest-URLs und Cache v221.
+Geprüft: alle Abmessungen, unveränderte Website-Farben, ausschließlich neutrale
+Bildpixel ohne roten Ball, vollständige Markensichtbarkeit im Maskable-Sicherheitskreis,
+bytegleiche Browser-Favicons und Website-Logo-Dateien. Veröffentlichungspaket geprüft.
