@@ -1598,14 +1598,15 @@
     return { ref, kind: 'image', name: file.name };
   }
   const PDF_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5"/><path d="M9.5 16.5h5M9.5 13h5"/></svg>';
+  const attachmentSource = ref => images[ref] || (/^assets\/content\//.test(ref || '') ? ref : '');
   function attachmentThumb(b, inEditor = false) {
     const a = b.attachment;
-    if (!a || !images[a.ref]) return '';
+    if (!a || !attachmentSource(a.ref)) return '';
     const inner = a.kind === 'pdf'
       ? `<span class="att-pdf">${PDF_ICON}<b>PDF</b></span>`
       : picture(a.ref, a.ref);
     if (inEditor) return `<span class="event-att ${a.kind}">${inner}</span>`;
-    return `<button type="button" class="event-att ${a.kind}" data-action="att-open" data-ref="${esc(a.ref)}" data-kind="${esc(a.kind)}" data-title="${esc(b.title || '')}" aria-label="${a.kind === 'pdf' ? 'PDF' : 'Bild'} groß ansehen">${inner}</button>`;
+    return `<button type="button" class="event-att ${a.kind}" data-action="att-open" data-ref="${esc(a.ref)}" data-kind="${esc(a.kind)}" data-title="${esc(b.title || '')}" data-filename="${esc(a.name || '')}" aria-label="${a.kind === 'pdf' ? 'PDF' : 'Bild'} groß ansehen">${inner}</button>`;
   }
   function dataUrlToBlobUrl(dataUrl) {
     const [head, body] = dataUrl.split(',');
@@ -1615,21 +1616,23 @@
     return URL.createObjectURL(new Blob([bytes], { type: head.slice(5).split(';')[0] }));
   }
   // Großansicht: Bild in Seitengröße (Klick = Lesegröße), PDF im Betrachter; schließen mit ×, Klick daneben oder Esc
-  function openViewer(ref, kind, title) {
-    const src = images[ref];
+  function openViewer(ref, kind, title, filename) {
+    const src = attachmentSource(ref);
     if (!src) return;
-    const blobUrl = kind === 'pdf' ? dataUrlToBlobUrl(src) : null;
+    const blobUrl = kind === 'pdf' && src.startsWith('data:') ? dataUrlToBlobUrl(src) : null;
+    const documentUrl = blobUrl || src;
     const box = document.createElement('div');
     box.className = `viewer ${kind}`;
     box.innerHTML = `
       <div class="viewer-stage">
         ${kind === 'pdf'
-          ? `<iframe class="viewer-doc" src="${blobUrl}" title="${esc(title)}"></iframe>`
+          ? `<iframe class="viewer-doc" src="${esc(documentUrl)}" title="${esc(title)}"></iframe>`
           : `<img class="viewer-img" src="${src}" alt="${esc(title)}" title="Klicken: Lesegröße / Seitenansicht">`}
       </div>
       <div class="viewer-bar">
         <span>${esc(title)}</span>
-        ${kind === 'pdf' ? `<a href="${blobUrl}" target="_blank" rel="noopener">In neuem Tab öffnen ↗</a>` : '<span class="viewer-hint">Bild antippen: Lesegröße</span>'}
+        ${kind === 'pdf' ? `<a href="${esc(documentUrl)}" target="_blank" rel="noopener">In neuem Tab öffnen ↗</a>` : '<span class="viewer-hint">Bild antippen: Lesegröße</span>'}
+        <a href="${esc(documentUrl)}" download="${esc(filename || (kind === 'pdf' ? 'Anhang.pdf' : 'Flyer.jpg'))}">Herunterladen</a>
       </div>
       <button type="button" class="viewer-close" aria-label="Schließen">${ui().icon.close}</button>`;
     const close = () => {
@@ -1889,7 +1892,7 @@
         case 'event': return `<div class="field-row">${field('Datum', 'date', draft.date, { type: 'date' })}${field('Uhrzeit', 'time', draft.time, { type: 'time' })}</div>`
           + field('Titel', 'title', draft.title) + field('Ort', 'place', draft.place) + field('Kurzinfo', 'text', draft.text, { area: true, rows: 3 })
           + `<div class="field"><span>Anhang: Bild oder PDF (z. B. Flyer, Ausschreibung)</span>
-              ${draft.attachment && images[draft.attachment.ref]
+              ${draft.attachment && attachmentSource(draft.attachment.ref)
                 ? `<div class="att-edit">${attachmentThumb(draft, true)}<div><strong>${esc(draft.attachment.name || (draft.attachment.kind === 'pdf' ? 'PDF' : 'Bild'))}</strong>
                     <div class="image-actions"><label class="btn small">Ersetzen<input type="file" accept="image/*,application/pdf" data-att-input hidden></label>
                     ${draft.attachment.kind === 'pdf' ? '' : frameButton(draft.attachment.ref)}
@@ -2911,7 +2914,7 @@
       if (b) openGallery((b.images || []).slice(0, 100), b.title, true);
     },
     'feed-more': (el) => { feedOpen[el.dataset.scope] = true; ui().renderView(); },
-    'att-open': (el) => openViewer(el.dataset.ref, el.dataset.kind, el.dataset.title),
+    'att-open': (el) => openViewer(el.dataset.ref, el.dataset.kind, el.dataset.title, el.dataset.filename),
     'hero-open': (el) => {
       const b = storyIndex[el.dataset.block] || homeBlocks().find((x) => x.id === el.dataset.block);
       openGallery(((b.more || {}).heroImages || []), b.title, true, Number(el.dataset.index) || 0);

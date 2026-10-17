@@ -1871,3 +1871,17 @@ Standard-Menübezeichnungen „Dating“ und „Verabreden“ werden ebenfalls e
 angezeigt; individuell benannte Menüpunkte bleiben möglich. Seitenüberschrift
 für angemeldete und nicht angemeldete Besucher heißt Verabreden. Route #treffen
 und Funktionalität unverändert. Cache v216.
+
+## 17.10.2026 · v217 – Save-the-Date-Anhänge wieder sichtbar
+
+Originalflyer für Oktoberfest und Weihnachtsfeier in beiden lokalen Sicherungen
+und bereits veröffentlichten Inhaltsdateien gefunden: JPG/JPEG, keine PDF-Dateien.
+Die Anhangsanzeige und der Viewer prüften ausschließlich Browser-Uploads; dadurch
+wurden beim Umzug als assets/content veröffentlichte Anhänge unsichtbar. Einheitliche
+Quellauflösung für Vorschau, Viewer und Admin-Editor ergänzt, auch für statische
+PDFs. Viewer bietet zusätzlich Herunterladen mit dem ursprünglichen Dateinamen;
+PDF-Ansicht unterstützt weiterhin lokale Uploads und öffentliche Dateipfade.
+Keine alten Sicherungen importiert, keine Inhalte oder Konten überschrieben.
+Hinweis: Weihnachtsflyer nennt 05.12.2026, Termineintrag 07.11.2026; unverändert.
+Regression für veröffentlichte Bild-/PDF-Anhänge; Browserprüfung der Originalflyer
+mit Großansicht und bytegenauem Download. Cache v217.

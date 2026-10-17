@@ -605,3 +605,19 @@ test('gallery and main links can be reordered and positioned independently', asy
   assert.equal(saved.album.position, 'left');
   assert.equal(saved.link.position || 'right', 'right');
 });
+
+
+test('Save the Date shows published image and PDF attachments without browser uploads', async () => {
+  const { context, api } = await setup();
+  const site = await api.site();
+  site.pages.aktuell.blocks = [
+    {id:'restored-image',type:'event',title:'Oktoberfest',date:'2026-10-02',attachment:{ref:'assets/content/flyer.jpg',kind:'image',name:'Oktoberfest.jpg'}},
+    {id:'restored-pdf',type:'event',title:'Weihnachtsfeier',date:'2026-12-05',attachment:{ref:'assets/content/flyer.pdf',kind:'pdf',name:'Weihnachtsfeier.pdf'}}
+  ];
+  await api.saveSite(site);
+  const html = await context.TFB.views.aktuell();
+  assert.match(html, /data-ref="assets\/content\/flyer.jpg"/);
+  assert.match(html, /data-ref="assets\/content\/flyer.pdf"/);
+  assert.match(html, /data-filename="Oktoberfest.jpg"/);
+  assert.match(html, /data-filename="Weihnachtsfeier.pdf"/);
+});
