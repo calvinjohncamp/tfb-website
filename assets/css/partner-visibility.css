@@ -131,3 +131,7 @@ button.tfb-splash-ball .tfb-logo-ball { width:100%; height:100%; display:block; 
 .partner-editor details{margin:16px 0}.partner-editor summary{font-weight:650;padding:10px 0;cursor:pointer}
 @media(max-width:850px){.partner-admin-row{grid-template-columns:80px minmax(160px,1fr) 110px;gap:16px}.partner-admin-logo{width:80px;height:60px}.partner-admin-money{grid-row:2}.partner-admin-money:nth-child(3){grid-column:2}.partner-admin-money:nth-child(4){grid-column:3}.partner-admin-actions{grid-column:3;grid-row:1}}
 @media(max-width:520px){.partner-admin-row{grid-template-columns:70px minmax(0,1fr);gap:16px;padding:22px 0}.partner-admin-logo{width:70px;height:56px}.partner-admin-name h3{font-size:16px}.partner-admin-money:nth-child(3){grid-column:1;grid-row:2}.partner-admin-money:nth-child(4){grid-column:2;grid-row:2}.partner-admin-actions{grid-column:1/-1;grid-row:3;flex-direction:row;align-items:center;gap:22px}.partner-admin-heading{align-items:flex-start}.partner-admin h2{font-size:22px}.partner-admin-payments>div{flex-wrap:wrap;gap:12px}.partner-admin-payments>div>span{flex-basis:65%}}
+.partner-admin-visibility h3{font-size:18px;text-transform:none;letter-spacing:0;color:var(--ink)}
+.partner-admin-visibility table{width:100%;border-collapse:collapse;font-size:13px;margin:16px 0}
+.partner-admin-visibility th,.partner-admin-visibility td{text-align:left;padding:12px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+.partner-admin-visibility th{font-weight:600;color:var(--muted)}

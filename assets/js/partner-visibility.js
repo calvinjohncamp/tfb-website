@@ -53,7 +53,7 @@
   }
   function schedule(image) {
     if(timers.has(image)||!unobscured(image))return;
-    const visit=active;timers.set(image,setTimeout(()=>{timers.delete(image);if(active!==visit||!unobscured(image))return;const tile=image.closest('[data-partner-id]');event('visible',tile.dataset.partnerId,tile.dataset.partnerSlot);},1000));
+    const visit=active;timers.set(image,setTimeout(()=>{timers.delete(image);if(active!==visit||!unobscured(image))return;const tile=image.closest('[data-partner-id]');event('partner_view');event('visible',tile.dataset.partnerId,tile.dataset.partnerSlot);},1000));
   }
   function observe(root) {
     stopObserver();if(!eligible()||!active)return;
@@ -117,10 +117,11 @@
   const n=value=>Number(value||0).toLocaleString('de-DE');
   const date=value=>value?new Date(value).toLocaleDateString('de-DE',{timeZone:'Europe/Berlin'}):'Noch keine Messung';
   function summarize(data){
-    const pages=new Map(),partners=new Map();let views=0,visible=0,clicks=0,splashViews=0;
+    const pages=new Map(),partners=new Map(),pagesWithPartners=new Map();let views=0,visible=0,clicks=0,splashViews=0;
     for(const row of data.rows){const total=Number(row.total);if(row.kind==='pageview'){if(row.page==='splash')splashViews+=total;else views+=total;pages.set(row.page,(pages.get(row.page)||0)+total);continue;}
+      if(row.kind==='partner_view'){pagesWithPartners.set(row.page,(pagesWithPartners.get(row.page)||0)+total);continue;}
       const p=partners.get(row.partner)||{display:0,visible:0,click:0,splash:0};p[row.kind]=(p[row.kind]||0)+total;if(row.kind==='visible'){visible+=total;if(row.page==='splash')p.splash+=total;}if(row.kind==='click')clicks+=total;partners.set(row.partner,p);
-    }return {pages,partners,views,visible,clicks,splashViews};
+    }return {pages,partners,pagesWithPartners,views,visible,clicks,splashViews};
   }
   async function reportView(){
     if(!admin())return '<section class="partner-report"><h1>Partner-Sichtbarkeit</h1><p>Diese Übersicht steht nur angemeldeten Admins zur Verfügung.</p></section>';

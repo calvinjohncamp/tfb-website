@@ -2,7 +2,7 @@
 import partners from './partner-catalog.json';
 
 export const PAGES = ['splash','home','home-detail','home-fotos','home-alle','aktuell','aktuell-detail','aktuell-alle','chat','chat-detail','sport','sport-training','team','club','club-detail','treffen','treffen-detail','kiosk','strichliste','abrechnungen','impressum','satzung'];
-const kinds = ['pageview','display','visible','click'];
+const kinds = ['pageview','partner_view','display','visible','click'];
 const catalog = new Map(partners.map(p => [p.id,p]));
 const bad = message => { throw Object.assign(Error(message),{status:400}); };
 export const berlinDay = (date = new Date()) => new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Berlin',year:'numeric',month:'2-digit',day:'2-digit'}).format(date);
@@ -12,8 +12,9 @@ export function validateEvents(data, knownPartners=catalog) {
   return data.events.map(e => {
     if (!e || typeof e !== 'object' || Object.keys(e).some(k=>!['id','page','kind','partner','slot'].includes(k))) bad('Ungültiges Zählereignis.');
     if (!/^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(e.id) || !PAGES.includes(e.page) || !kinds.includes(e.kind)) bad('Ungültiges Zählereignis.');
-    if (e.kind === 'pageview') {
+    if (e.kind === 'pageview' || e.kind === 'partner_view') {
       if (e.partner || e.slot) bad('Seitenaufrufe haben keinen Partnerplatz.');
+      if(e.kind==='partner_view'&&['impressum','satzung'].includes(e.page))bad('Diese Seite hat keine Partnerfläche.');
       return {...e,partner:'',slot:''};
     }
     if (!knownPartners.has(e.partner) || !['left','right'].includes(e.slot) || ['impressum','satzung'].includes(e.page)) bad('Ungültiger Partnerplatz.');

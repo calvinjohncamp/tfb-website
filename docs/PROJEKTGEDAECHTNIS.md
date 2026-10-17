@@ -1763,3 +1763,55 @@ werkzeuge nicht gelöscht. Admin-Rückweg zur Splash bleibt auch bei ausgeblende
 Admin-Werkzeugen erreichbar. Browserprüfung am echten Worker mit isoliertem
 SQLite bestätigt schlankes Konto und weiterhin Partnerpflege/Textänderungen.
 Cache-Version tfb-kiosk-v211; ausschließlich Websiteänderung, kein Worker-/D1-Update.
+
+## 17.10.2026 · v212 – Partnerarten und zweistufiger Auswertungsentwurf
+
+Nutzerpräzisierung: ausschließlich Premium-Partner und Partner · Bandenwerbung.
+Bezeichnungen in Liste, Editor und CSV angepasst; interne stabile Partnerart-IDs
+bleiben premium/partner, keine Migration bestehender Partner oder Beiträge.
+Vorbereitete Oberfläche in zwei Ebenen gegliedert: (1) Seitenaufrufe pro Seite,
+(2) davon Aufrufe mit mindestens einem qualifiziert sichtbaren Partnerlogo und
+Sichtbarkeitsquote. Die Messung bleibt vollständig ausgeschaltet.
+
+Wichtige Zählregel für Schritt 2: Zwei sichtbare Logos erzeugen zwei Partnerkontakte,
+aber nur EINEN Seitenaufruf mit Partner-Sichtbarkeit. Dafür einmaliges partner_view-
+Ereignis in der noch deaktivierten Messvorbereitung ergänzt; Entdoppelung pro
+angezeigter Seite und erneut bei Netzwerkwiederholung. Statistikmigration 0004 ist
+weiterhin nicht live angewandt; neue Ereignisart vor der späteren Aktivierung
+zusammen mit dem aktualisierten Worker ausliefern. Heute nur Website-Vorbereitung.
+
+Konzept: Aufruf/Neuladen ist ein Page View, kein beliebiger Mausklick. Kein erneuter
+Aufruf bei bloßen Datenaktualisierungen. Splash separat, keine Hintergrund-Home-
+Zählung. Personen sind keine Kennzahl: Wiederbesuche erzeugen weitere Aufrufe.
+Qualifizierte Sichtbarkeit bedeutet 50 % des geladenen Logos für mindestens eine
+zusammenhängende Sekunde im aktiven Tab, bekannte Überlagerungen ausgeschlossen.
+Dies ist eine technische Sichtmöglichkeit, kein Beleg bewusster Wahrnehmung und
+keine zertifizierte Werbemessung. Blocker und Verbindungsabbrüche können unterzählen.
+
+Nutzerhypothese 30–50 % Sichtbarkeit ist unbestätigt; niemals als gemessene Quote
+oder garantierte Leistung behandeln. Extern können Seitenaufrufe und ausdrücklich
+rechnerische Logo-Einblendungen berichtet werden. Nicht als tatsächlich gesehene
+Logos bezeichnen. Intern gegen gemessene Kontakte und tatsächliche Ausspielungen
+halten; letztere sind verlässlicher als eine pauschale Division bei wechselndem
+Partnerbestand. Bei zwei Slots und zehn gleichberechtigten Partnern entsprechen
+10.000 Seitenaufrufe rechnerisch 2.000 Ausspielungen pro Partner, unter der Annahme,
+dass beide Slots bei jedem Aufruf belegt sind. Das ist keine Zusage über Sichtkontakte.
+
+Vor Schritt-2-Freigabe die Statistik weiter verdichten: Tageszähler je Seite mit
+Aufrufen und Aufrufen-mit-Partner; separate Tageszähler je Partner/Platzierungsart
+mit Ausspielungen, Sichtkontakten und Klicks. Keine dauerhaften Klicklisten oder
+Scrollverläufe. Beispiel 20 Seiten x 365 Tage = 7.300 Seiten-Tageszeilen, unabhängig
+von der Besucherzahl; zusätzliche Partner-Tageszeilen und kurzlebige Entdoppelung
+separat kalkulieren. Die bestehende mehrdimensionale Entwurfstabelle ist noch
+keine finale Speicher-/Kostenoptimierung. D1-Tageskontingente anhand erwarteter
+Last prüfen; Analyseschreibfehler dürfen Bedienung nie blockieren.
+
+Platzierung erst nach Vergleich realer Quoten optimieren: z.B. kompakte Partner-
+fläche nach dem ersten Home-Thema bzw. vor dem Ende langer Unterseiten testen.
+Je Layoutversion/Zeitraum und grober Geräteklasse vergleichen; vorerst keine
+Änderung der freigegebenen Logo-Platzierung. Padel-Messung ebenfalls erst später.
+
+Primärquellen geprüft: MDN Intersection Observer API und Page Visibility API;
+Google Ads Viewability-Definition 50 % / 1 Sekunde; Google Analytics Dokumentation
+zu Seitenaufrufen; offizielle D1-Plattformlimits. Kein Google-Analytics-Dienst
+installiert und keine zusätzliche Fremdverbindung in die Website eingebaut.

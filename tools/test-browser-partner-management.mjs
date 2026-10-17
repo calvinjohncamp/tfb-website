@@ -14,7 +14,7 @@ async function open(admin=false){
  await page.route('**/*',async route=>{
   const req=route.request(),url=new URL(req.url());
   if(url.origin===api){if(url.pathname==='/public/partner-events')collectRequests++;
-   const headers=new Headers(req.headers());headers.set('Origin',site);headers.set('CF-Connecting-IP','192.0.2.55');const response=await worker.fetch(new Request(req.url(),{method:req.method(),headers,...(req.postData()?{body:req.postData()}:{})}),f.env);
+   const headers=new Headers(req.headers());headers.set('Origin',site);headers.set('CF-Connecting-IP','192.0.2.55');headers.set('User-Agent','TFB isolated browser test');const response=await worker.fetch(new Request(req.url(),{method:req.method(),headers,...(req.postData()?{body:req.postData()}:{})}),f.env);
    const bytes=Buffer.from(await response.arrayBuffer());if(response.status>=400)console.log('Test API',url.pathname,response.status,bytes.toString().slice(0,180));
    return route.fulfill({status:response.status,headers:Object.fromEntries(response.headers),body:bytes});
   }
@@ -55,6 +55,15 @@ try{
  await page.locator('[data-action="splash-open"]').click();await page.waitForSelector('[data-action="splash-edit"]');await page.locator('[data-action="splash-edit"]').click();await page.locator('[name="headline"]').fill('Hier ist TFB');await page.locator('[data-editor="splash"] [type="submit"]').click();await page.waitForFunction(()=>!document.querySelector('#sheet-root.open'));
  const newGuest=await open();assert.match(await newGuest.page.locator('#tfb-splash h1').innerText(),/Hier ist TFB/,'splash text persists centrally across devices');
  for(const [width,height] of [[320,740],[390,844],[834,1194],[1194,834],[1440,1100]]){await newGuest.page.setViewportSize({width,height});assert.equal(await newGuest.page.locator('#tfb-splash').evaluate(e=>e.scrollWidth>e.clientWidth),false,`Splash ${width}`);await newGuest.page.locator('[data-action="splash-enter"]').click();const duo=newGuest.page.locator('#view .pbsp-duo').first();await duo.waitFor();assert.ok(await duo.evaluate(e=>e.getBoundingClientRect().width)<=560);await newGuest.page.evaluate(()=>TFB.partnerVisibility.show(true));}
- await newGuest.page.waitForTimeout(1300);assert.equal(collectRequests,0,'no traffic collection, including after public navigation');assert.deepEqual(errors,[]);
+ await newGuest.page.waitForTimeout(1300);assert.equal(collectRequests,0,'no traffic collection, including after public navigation');
+ // Isolated Step-2 check only: two logos must not double-count page-level visibility.
+ f.env.PARTNER_MEASUREMENT_ENABLED='1';
+ await newGuest.page.evaluate(()=>{TFB.config.partnerVisibility.enabled=true;});
+ await newGuest.page.locator('[data-action="splash-enter"]').click();
+ await newGuest.page.locator('#view .pbsp-duo').first().scrollIntoViewIfNeeded();
+ await newGuest.page.waitForTimeout(1800);
+ const counts=Object.fromEntries(f.env.DB.sqlite.prepare("SELECT kind,SUM(total) AS n FROM partner_daily WHERE page='home' GROUP BY kind").all().map(r=>[r.kind,r.n]));
+ assert.equal(counts.pageview,1);assert.equal(counts.partner_view,1);assert.equal(counts.visible,2);
+ assert.deepEqual(errors,[]);
  console.log('Passed: real-worker browser integration, admin-only access, central partner/logo/payment editing, year/search/export, cross-device splash text, equal-sized partner blocks, responsive layout, measurement disabled.');
 }finally{await browser.close();}

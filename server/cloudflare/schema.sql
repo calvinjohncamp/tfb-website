@@ -56,7 +56,7 @@ CREATE TABLE IF NOT EXISTS partner_meta (key TEXT PRIMARY KEY, value TEXT NOT NU
 CREATE TABLE IF NOT EXISTS partner_events (
   id TEXT PRIMARY KEY, source TEXT NOT NULL CHECK(source IN ('tfb','padel')),
   day TEXT NOT NULL, page TEXT NOT NULL, partner TEXT NOT NULL, slot TEXT NOT NULL,
-  kind TEXT NOT NULL CHECK(kind IN ('pageview','display','visible','click')), expires_at INTEGER NOT NULL
+  kind TEXT NOT NULL CHECK(kind IN ('pageview','partner_view','display','visible','click')), expires_at INTEGER NOT NULL
 );
 CREATE INDEX IF NOT EXISTS partner_events_expiry ON partner_events(expires_at);
 CREATE TABLE IF NOT EXISTS partner_daily (
