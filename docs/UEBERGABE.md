@@ -1,23 +1,136 @@
 # TFB – Übergabe für die nächste Sitzung
 
-## Aktuell: veröffentlichte Version v210 – 17.10.2026
+## Verbindlicher aktueller Stand: live v221 – 17.10.2026
 
-Splash und zentrale TFB-Partnerpflege sind veröffentlicht: https://joern-kaemper.de.
-Als Admin: im Konto „Einstiegsseite ansehen“, dann roter Ball → Partnerpflege.
-Stift auf der Splash → Texte bearbeiten; Speichern wirkt auf allen Geräten.
-Alle Partner rotieren gleichberechtigt, Premium zusätzlich auf der Splash.
-38 Partner aus Padel dienen als austauschbarer Testbestand; keine übernommenen
-Finanzzusagen/Zahlungen. Regulärer Jahresbeitrag 300 Euro, echte Zahlungen separat.
-Statistik bleibt im Frontend und Worker ausgeschaltet. Vorgeschlagener gemeinsamer
-Betriebsstart 01.01.2027 erst nach Vorstandsbeschluss und separater Freigabe;
-Folgekonzept nach drei Padel-Betriebsjahren offen. Projektgedächtnis enthält Details.
+Der Nutzer hat den aktuellen Auftritt und die Bedienung ausdrücklich bestätigt
+(„Sehr schön, gefällt mir alles gut“) und die Aktualisierung der Dokumentation
+beauftragt. Dieser Abschnitt hat Vorrang vor historischen Übergaben weiter unten.
+Weitere Produktänderungen nur auf neuen Auftrag; ältere offene Listen nicht
+selbständig abarbeiten. Kein neuer Datenbank-Rollback oder Betriebsstart beauftragt.
 
-Website-Quellstand 6c1ebda, Cache tfb-kiosk-v210. Worker
-980cbbd0-7f59-40da-93cb-dd20f57c045a. D1 vor Migration gesichert und probeweise
-wiederhergestellt. Migration 0005 eingespielt; Statistikmigration 0004 nicht eingespielt.
-Live geprüft: öffentliche Partnerdaten 200 ohne Finanz-/Kontaktfelder, Admin-APIs
-anonym 401, fremder Ursprung 403, Zählungs-API 409 (ausgeschaltet), Splash/Logos/iPad
-im Browser fehlerfrei und keine Messanfragen. Private Nachweise: .private/release-v210/.
+- Website: [joern-kaemper.de](https://joern-kaemper.de/).
+- Repository: `calvinjohncamp/tfb-website`, lokaler Ordner `tfb-kiosk/`.
+- Veröffentlichter Website-Quellstand: `ed9d9db712e4028e6e707397d927953970921c12`.
+- Cache: `tfb-kiosk-v221`; danach nur Dokumentationsabschluss, keine neue Websiteversion.
+- Erfolgreiche Veröffentlichung: [Workflow 39002979284](https://github.com/calvinjohncamp/tfb-website/actions/runs/39002979284).
+- Zuletzt veröffentlichter Worker: `f2973171-e161-4b08-a74e-0f240c3e58a1`
+  (v213; Nachweis `.private/release-v213/worker-deploy.log`). Keine spätere
+  Worker-/Datenbankänderung für die folgenden Website-Feinschliffe erforderlich.
+- Der Sicherungstag `stand-2026-10-16-v208` bleibt eine ältere Rückfallreferenz,
+  ist nicht der aktuelle Live-Stand. Keine neue vollständige D1-Sicherung oder
+  neuer Sicherungstag mit diesem reinen Dokumentationsauftrag erstellt.
+
+## Finales Branding und App-Symbol
+
+Kühle Welt bleibt Standard, warme Welt als lokale Alternative erhalten. App-Symbol
+verwendet fest die Farben der kühlen Website: Hintergrund **#EFEFEF**, TFB-Zeichen
+**#171717**. Website und Splash behalten den Signature-Ball in **#C4553A**.
+
+**Endgültige App-Entscheidung: großes TFB ohne Ball und ohne Unterzeile.**
+Die zuvor veröffentlichten Varianten mit Ball (v219/v220) sind überholt.
+Nach Ansicht auf dem echten iPhone war der Ball zu klein, um den Tennisbezug
+zuverlässig zu vermitteln. Das reine TFB ist bei gleichem Rand rund 18 % größer.
+Schriftform bleibt unverzerrt; Originalausschnitt 1524×664 ab (92,78).
+Apple 180px, PWA 192/512px, maskable 512px und 1024px-Quelle sind erneuert;
+maskable erhält die eigene Sicherheitszone. Browser-Favicons PNG/ICO bleiben
+unverändert ohne Ball. Keine erneute Umstellung auf die frühere dunkle Kachel.
+
+`tools/build-app-icons.mjs` liest --bg/--logo direkt aus den Website-CSS-Dateien.
+`tools/build-brand.sh` nutzt diesen Build und die separate unveränderte
+`assets/brand/tfb-favicon-source.png`. Apple-/Manifest-Icon-URLs sind mit `v=221`
+versioniert. Auf bestehenden iPhones kann erneutes Hinzufügen zum Home-Bildschirm
+nötig sein; Seitenneuladen allein garantiert keine Aktualisierung installierter Icons.
+
+## Splash, Navigation und Account
+
+- Eine Einstiegsseite mit Original-TFB-Logo und rotem Ball, ohne zusätzlichen
+  Aktionsbutton. Der einzige Einstiegsbutton führt **immer nach #home**, auch
+  bei zuvor geöffnetem Kiosk oder nach erneutem Öffnen aus der Partnerverwaltung.
+- Als angemeldeter Admin: Konto → „Einstiegsseite ansehen“ → roter Ball auf der
+  Splash → zentrale Partnerpflege `#partner` (alter Alias `#partnerzahlen`).
+  Gäste erhalten diesen Verwaltungszugang nicht; Server prüft die Adminrolle.
+- Stift auf der Splash öffnet die vertraute TFB-Textpflege. „Einstiegsseite anzeigen“
+  steht oben; die zwei unabhängigen Schalter für kleine Zeilen oberhalb der
+  Überschrift und unterhalb des Einstiegsbuttons stehen direkt unter ihrem Textfeld.
+  Kleine quadratische Auswahlfelder, schwarzer Rahmen/schwarzes Häkchen auf hellem
+  Grund. Ausblenden erhält den Text; zentral speichern wirkt auf allen Geräten.
+- Menü **Dating 2.0**, Seitenüberschrift **Verabreden**, Route weiterhin `#treffen`.
+- Kiosk hat keine dauerhafte rote Sondermarkierung mehr. Nur der tatsächliche
+  aktive Bereich wird hervorgehoben; spätere Menüaktualisierung erhält diesen Zustand.
+- Konto verschlankt: Übergangshinweise und „Bisherige Browserdaten übernehmen“
+  entfernt. Profil und Mitgliedschaft bleiben, zentrale Bestandsdaten bleiben erhalten.
+
+## Partnerpflege und vorbereitete Auswertung
+
+TFB-Partnerpflege ist zentral und unabhängig von Padel. Schlanke gemeinsame Seite
+für Logos, Firma/Marke, Website, Kontakt, Vertragsstand, vereinbarten Jahresbeitrag
+und tatsächlich eingegangene Zahlungen pro Beitragsjahr. Kontakt-/Finanzfelder
+bleiben ausschließlich für Admins sichtbar. Kategorien: **Premium-Partner** und
+**Partnerbandenwerbung** (ohne trennenden Punkt).
+
+Regulärer Beitrag standardmäßig 300 Euro/Jahr. Alle aktiven Partner rotieren
+**gleichberechtigt**, keine finanzielle Gewichtung. Premium bekommt ausschließlich
+zusätzliche Sichtbarkeit auf der Splash (maximal zwei aktive Premium-Partner).
+Zwei Logos je Partnerzeile; Formate/Platzierung wie bei Padel über Geräteklassen.
+Ursprünglich 38 Padel-Partner als austauschbarer Testbestand übernommen, ohne
+Finanzzusagen/Zahlungen. Echte TFB-Partner nach und nach in dieser Pflege ersetzen;
+keine erneute Initialisierung oder Überschreibung inzwischen gepflegter Datensätze.
+
+**Messung bleibt ausgeschaltet:** Frontend `partnerVisibility.enabled=false`,
+Worker `PARTNER_MEASUREMENT_ENABLED=0`. Keine Besucherzahlen sammeln, keine
+Testwerte als Jahresstatistik anzeigen und kein automatisches Anschalten am Datum.
+
+Vorbereitet sind zwei Ebenen pro Jahr/Seite: (1) Seitenaufrufe, (2) davon Aufrufe
+mit Partner-Sichtbarkeit. Gemeinsame Partnerzeile ab mindestens 50 % Sichtbarkeit
+für **0,5 Sekunden** im aktiven Tab; vorhandene Logos müssen geladen sein,
+bekannte Überlagerungen unterbrechen den Zeitraum. Eine sichtbare Zweierzeile
+zählt einmal als `partner_view` und je Partner einmal als `visible`.
+Die ältere 1-Sekunden-Definition ist überholt. Bildschirmkontakt ist kein Nachweis
+bewusster Wahrnehmung. Ausspielungen/Rotation und gemessene Sichtkontakte getrennt
+behandeln. Admin-, Editor-, Präsentations- und lokale Vorschauaufrufe ausschließen.
+Jahresübersicht/CSV/Druck sind vorbereitet, noch kein produktives Messjahr.
+
+Schritte: (1) jetziger Live-Auftritt zum Feinschliff, (2) Vorstandsvorschlag für
+TFB und Padel ab **01.01.2027**, danach ein volles Jahr auswerten; dazu eigene
+Freigabe, Sicherung, Statistikmigration 0004 und Betriebsprüfung erforderlich.
+Migration 0005 für Partnerpflege ist bereits eingespielt; 0004 bisher nicht.
+Padel-Messung später ins dortige MIS übertragen, gemeinsame Übersicht langfristig
+auf TFB vorsehen. (3) nach drei Padel-Betriebsjahren Partnerkonzept nur Padel oder
+Padel+TFB prüfen; TFB-Bandenwerbung separat oder gemeinsames Paket bleibt offen.
+
+## Aktuell · Save the Date
+
+Originalanhänge für Oktoberfest und Weihnachtsfeier wieder sichtbar, mit Großansicht
+und Download auf Smartphone/Tablet/Desktop. Die gesicherten Originale sind **JPG/JPEG**,
+keine PDFs. Sie waren bereits veröffentlicht; die Anzeige akzeptierte zuvor nur
+Browser-Uploads. Öffentliche `assets/content/`-Anhänge werden jetzt in Anzeige,
+Viewer und Editor unterstützt; statische PDFs sind ebenfalls möglich.
+
+Offene Inhaltsklärung: Weihnachtsflyer nennt **05.12.2026, 18 Uhr**, veröffentlichter
+Termineintrag **07.11.2026, 11 Uhr**. Im Rahmen der Wiederherstellung wurden keine
+Terminangaben geändert. Auf neuen Auftrag beziehungsweise nach Inhaltsfreigabe klären.
+
+## Prüfungen und Betriebsgrenzen
+
+Für die Änderungen v210–v221 wurden isolierte Backend-/Browserprüfungen eingesetzt:
+Adminzugang, Partner-/Logo-/Zahlungspflege, zentrale Splash-Texte, responsive
+Darstellung, Home-Einstieg samt Kiosk-Reload, Menütitel und aktive Markierung.
+Originalflyer in Großansicht und bytegleiche Downloads geprüft. App-Symbole nach
+Abmessungen, exakten Farbwerten, Ballentfernung und Maskable-Sicherheitszone geprüft;
+Manifest, Apple-Verknüpfung und Offline-Icons mit echtem Service Worker geprüft.
+Die finale v221-Auslieferung aller Icons, des Manifests und des Service Workers
+wurde bytegenau gegen die geprüfte lokale Fassung verglichen.
+
+Zentrale Profile/Kiosk/Chats seit v203, Gruppen/Verabredungen seit v204;
+Touch-Optimierung seit v205 weiter aktiv. Kiosk bleibt Vorführung ohne produktive
+Abbuchung. Übrige redaktionelle Seiten bleiben im bisherigen lokalen Pflege-/Exportweg;
+Splash-Texte und Partnerpflege sind die zentralen Ausnahmen. Private Sicherungen,
+Mitgliederdaten und Schlüssel niemals veröffentlichen; Browserdaten nicht als
+Reparatur löschen. Frühere Wiederherstellungen sind abgeschlossen, nicht erneut
+als offene Migration behandeln. Technische Details in
+[GERAETEUEBERGREIFENDE_DATEN.md](GERAETEUEBERGREIFENDE_DATEN.md),
+[DESIGNVERGLEICH.md](DESIGNVERGLEICH.md) und
+[Server-README](../server/cloudflare/README.md).
 
 Die folgenden älteren Abschnitte sind historische Übergaben.
 

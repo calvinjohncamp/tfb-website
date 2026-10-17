@@ -1,8 +1,20 @@
-# Geräteübergreifende Vorführung – eingefrorener Live-Stand v208
+# Geräteübergreifende Vorführung – aktueller Live-Stand v221
 
-Aktueller Stand 16.10.2026: v208 ist eingefroren; Profil/Kiosk/Chats seit v203,
-Planung seit v204 zentral, Touch-Optimierung seit v205. Maßgebliche Übergabe:
-[UEBERGABE.md](UEBERGABE.md). Der folgende Abschnitt beschreibt den ersten Ausbau.
+Aktueller bestätigter Stand 17.10.2026: Website v221, Profil/Kiosk/Chats seit v203,
+Planung seit v204 zentral, Touch-Optimierung seit v205. Seit v210 sind auch
+TFB-Partnerpflege und Splash-Texte zentral, einschließlich Jahreszahlungen und
+unabhängiger Schalter für die kleinen Splash-Zeilen. Übrige redaktionelle Seiten
+behalten ihren bisherigen lokalen Pflege-/Exportweg. Der frühere Browserimport
+ist aus dem Konto entfernt; bestehende zentrale Daten bleiben erhalten.
+
+App-Symbol seit v221: großes TFB ohne Ball, #171717 auf #EFEFEF; Website/Splash
+behalten Ball #C4553A. Versions-URLs aktualisieren PWA-/Apple-Verknüpfungen,
+bereits installierte iPhone-Symbole können erneutes Hinzufügen erfordern.
+Partner-Sichtbarkeitsmessung bleibt ausdrücklich aus; vorbereitete 0,5-Sekunden-
+Definition und spätere Freigabeschritte in [UEBERGABE.md](UEBERGABE.md).
+
+Die folgenden Abschnitte dokumentieren die technische Einführung; bei älteren
+Aussagen zu lokal/zentral haben diese Angaben und die aktuelle Übergabe Vorrang.
 
 Migration, Worker und Website v203 sind nach ausdrücklicher
 Nutzerfreigabe veröffentlicht. Die eigene Übernahme wurde durchgeführt und durch

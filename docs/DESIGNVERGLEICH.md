@@ -1,10 +1,25 @@
 # TFB: Kühle Welt und Warme Welt
 
-Veröffentlichter, bestätigter und eingefrorener Stand vom 16.10.2026, Cache v208.
-Kühle Welt ist Voreinstellung, warme Originalwelt bleibt auswählbare Alternative.
-Ein gemeinsamer Datenbestand; aktuelle Navigation und Partnermaße in
-[UEBERGABE.md](UEBERGABE.md). Die folgende Recherche dokumentiert den Ursprung des
-Designvergleichs, keine noch ausstehende Design- oder Veröffentlichungsentscheidung.
+
+Aktueller bestätigter Live-Stand 17.10.2026, Cache v221. Kühle Welt ist Standard,
+warme Welt bleibt lokale Alternative; beide nutzen denselben Inhaltsbestand.
+Maßgeblich ist die [aktuelle Übergabe](UEBERGABE.md). Frühere Veröffentlichungs-
+und Experimenthinweise weiter unten sind historische Recherche.
+
+## Aktuell freigegebenes Branding und App-Symbol
+
+Website und Splash: dunkles TFB mit Signature-Ball #C4553A. Kühle Website:
+Hintergrund #EFEFEF, Logo/Text #171717. Finale App-Variante seit v221: **nur TFB,
+ohne Ball und Unterzeile**, bei gleichem Rand rund 18 % größer als die Zwischen-
+variante mit Ball. Die Schriftform wird proportional aus dem Original übernommen.
+App-Farben werden in `tools/build-app-icons.mjs` direkt aus --bg/--logo der
+kühlen Website gelesen; App-Icon wechselt nicht mit der lokalen warmen Ansicht.
+Apple/PWA und maskable besitzen passende Größen/Sicherheitszonen. Browser-Favicons
+bleiben unverändert ohne Ball, mit separater Vorlage. Die Icon-Varianten mit Ball
+(v219/v220) sind als finale Entscheidung verworfen, Website-Ball bleibt erhalten.
+
+Kiosk ist kein dauerhaft roter Menüpunkt mehr. Aktive Seite bestimmt Markierung,
+Menü heißt Dating 2.0 und die Seite selbst Verabreden. Splash-Einstieg immer Home.
 
 ## Referenz und Schriften
 

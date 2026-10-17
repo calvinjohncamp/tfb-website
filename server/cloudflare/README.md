@@ -1,10 +1,24 @@
 # Geschütztes Mitgliederverzeichnis ohne Supabase
 
-Stand 16.10.2026: Worker online, Version `26195ded-5951-4e21-b8cf-f1c170af1e09`.
-Health-Check 200; anonyme Suche/Verwaltung 401; fremder Browser-Ursprung 403.
+
+## Aktueller Betriebsstand – 17.10.2026 · Website v221
+
+Zuletzt veröffentlichter Worker `f2973171-e161-4b08-a74e-0f240c3e58a1` (v213),
+Deploymentnachweis `.private/release-v213/worker-deploy.log`. Seitdem nur Website-
+Feinschliffe bis v221, keine erneute Worker-/Datenbankänderung. Aktuelle Freigaben
+und Live-Quellstand in [UEBERGABE.md](../../docs/UEBERGABE.md).
+
+Partnerpflege und Splash-Texte seit v210 zentral; Migration 0005 eingespielt.
+Öffentliche Konfiguration enthält keine Admin-Kontakt-/Finanzfelder, Änderungen
+prüfen serverseitig die Adminrolle. TFB-Daten bleiben von Padel getrennt.
+`PARTNER_MEASUREMENT_ENABLED=0` und Frontend-Messung aus. Statistikmigration 0004
+noch nicht eingespielt; kein automatischer Start am vorgeschlagenen 01.01.2027.
+Vorbereitete Sichtbarkeit: gemeinsame Partnerzeile, 50 % / 0,5 Sekunden, zwei
+Logokontakte aber ein Seitenaufruf mit Partner-Sichtbarkeit. Aktivierung braucht
+separaten Auftrag, Sicherung und additive Migration; kein Schema-/Setup-Neustart.
+
 Secrets ausschließlich im Worker und lokal unter `.private/`. Verwaltungskonto
-eingerichtet; Website-Anbindung aktiviert, geschützte Mitgliederliste geladen.
-Die Domain hat ein bis 13.01.2027 gültiges Zertifikat; HTTPS wird erzwungen.
+ist eingerichtet; Setup und lokale Datenübernahmen nicht erneut ausführen.
 
 Worker `tfb-api`, D1 `tfb-website`, Binding `DB`. Getrennt von den vorhandenen
 Folio- und Padel-Anwendungen. Die Datenbankkennung in `wrangler.jsonc` ist keine
@@ -33,7 +47,8 @@ Cloudflare-Zugangsdaten gehören niemals in Git oder das Pages-Paket.
   CORS schränkt Browser-Ursprünge ein, ersetzt jedoch keine Authentifizierung.
 - Seit v203 sind Profilfoto, Kiosk-Striche und Chat/Kommentare/Anhänge zentral.
   Seit v204 sind auch Verabredungen, Gruppen und Trainingsserien zentral.
-  Websitebearbeitung bleibt lokal.
+  Übrige redaktionelle Websitebearbeitung bleibt lokal; Partner und Splash-Texte
+  sind seit v210 die zentralen Ausnahmen.
   Die Kiosk-Vorführung ist weiterhin kein produktiver Abrechnungsbetrieb.
 - Die Website-Schaltung ist für die öffentlichen Website-Hosts aktiviert.
   Anfragen mit Zugangsdaten erfordern HTTPS. In der Vorführung blendet der rote

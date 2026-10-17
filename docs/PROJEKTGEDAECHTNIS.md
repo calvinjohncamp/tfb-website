@@ -1,33 +1,47 @@
 # TFB-Kiosk – Projektgedächtnis und Übergabe
 
-**Neuer Auftrag 17.10.2026 – v210:** Splash jetzt veröffentlichen; Partnerpflege
-zentral und unabhängig von Padel. Alle Partner gleich rotieren, regulär 300 Euro
-pro Jahr; Premium nur zusätzlich auf der Splash. Statistik bleibt abgeschaltet.
-Gemeinsamer Betriebsbeginn 01.01.2027 ist ein Vorschlag an den Vorstand, keine
-erteilte Betriebsfreigabe oder automatische Terminaktivierung. Siehe Eintrag
-„17.10.2026 · v210“ am Dateiende.
+## Verbindlicher Kurzstand – 17.10.2026 · live v221
 
-**Nachtrag 17.10.2026:** Auf neuen Nutzerauftrag lokale Weiterentwicklung v209
-für Splash und Partner-Sichtbarkeit. Noch keine Veröffentlichung; Live bleibt
-v208. Vollständiger Eintrag „17.10.2026 · Partner-Sichtbarkeit v209“ am Dateiende.
+Der Nutzer hat Gestaltung und Bedienung ausdrücklich bestätigt und diesen Stand
+zur Dokumentation freigegeben. Maßgeblich für die nächste Sitzung ist die aktuelle
+[Übergabe](UEBERGABE.md). Dieser Kurzstand hat Vorrang vor dem historischen Verlauf.
+Weitere Produktänderungen nur auf neuen Auftrag; ältere offene Listen nicht
+selbständig abarbeiten. Keine zusätzliche Betriebsfreigabe oder Datenrücksetzung.
 
-Für den schnellen Einstieg zuerst die kurze **[UEBERGABE.md](UEBERGABE.md)** lesen.
-Diese Datei enthält alle Entscheidungen, Konzepte, offenen Punkte und den Verlauf.
-Neues bitte unten bei „Verlauf“ ergänzen.
+- Live: [joern-kaemper.de](https://joern-kaemper.de/), Quellstand
+  `ed9d9db712e4028e6e707397d927953970921c12`, Cache `tfb-kiosk-v221`.
+  Veröffentlichung [39002979284](https://github.com/calvinjohncamp/tfb-website/actions/runs/39002979284)
+  erfolgreich und ausgelieferte Dateien geprüft. Dieser Abschluss ändert nur Dokumentation.
+- Finales App-Symbol: **großes dunkles TFB ohne Ball/Unterzeile auf hellem Grund**;
+  Schrift rund 18 % größer. Website-Farben exakt: #EFEFEF / #171717, automatisch
+  aus CSS übernommen. Website und Splash behalten den roten Ball #C4553A.
+  Browser-Favicons bleiben unverändert. App-Entwürfe mit Ball sind überholt.
+- Kühle Welt ist Standard, warme Welt bleibt lokale Alternative. Menü Dating 2.0,
+  Seitentitel Verabreden. Kiosk nur als tatsächlich aktiver Bereich hervorgehoben.
+- Splash-Einstieg führt immer auf Home. Textpflege per Stift, kleine quadratische
+  schwarze Auswahlfelder; zwei kleine Textzeilen unabhängig an-/ausblendbar.
+  Admin: Konto → Einstiegsseite ansehen → roter Ball → kompakte Partnerpflege.
+- Partner zentral/separat für TFB: Premium-Partner und Partnerbandenwerbung,
+  Standard 300 Euro/Jahr, gleiche Rotation für alle; Premium zusätzlich Splash.
+  Verträge und tatsächliche Jahreszahlungen getrennt. Keine Testbestände erneut einspielen.
+- Messung **ausgeschaltet** in Frontend und Worker. Zweistufig vorbereitet:
+  Seitenaufrufe und davon Partner-Sichtbarkeit; gemeinsame Zweierzeile mindestens
+  50 % sichtbar für **0,5 Sekunden**. Vorschlag 01.01.2027 braucht eigene Freigabe,
+  keine automatische Aktivierung. Padel-MIS und gemeinsames Konzept nach drei
+  Padel-Jahren sind spätere Schritte.
+- Oktoberfest-/Weihnachtsflyer als originale JPG-Anhänge wieder sichtbar, mit
+  Großansicht/Download. Weihnachtsdatum auf Flyer und Termineintrag widerspricht
+  sich weiterhin; siehe Übergabe, keine unbeauftragte Inhaltsänderung.
+- Letzter Worker: `f2973171-e161-4b08-a74e-0f240c3e58a1` (v213).
+  Aktuelle Version benötigt keine weitere Datenbank-/Workeränderung.
+  Migration 0005 eingespielt, Statistikmigration 0004 noch nicht.
+- Sicherungstag `stand-2026-10-16-v208` ist eine historische Rückfallreferenz,
+  nicht mehr der Live-Stand. Private Exporte unverändert behalten; kein neuer
+  D1-Export oder Sicherungstag mit diesem Dokumentationsauftrag erstellt.
 
-**Verbindlicher Stand: 16.10.2026, veröffentlichte Vorführversion v208.**
-Der Nutzer hat Gestaltung und Bedienung ausdrücklich bestätigt und das Einfrieren
-beauftragt. Letzte freigegebene Korrektur: ausschließlich die iPad-Partnerflächen
-bei gleicher Breite um 20 Prozent höher. Erst auf einen neuen Nutzerauftrag
-weiterentwickeln; ältere offene Listen nicht selbständig abarbeiten.
-
-Sicherungstag: `stand-2026-10-16-v208`. Website-Quellstand `4781aca`, Cache
-`tfb-kiosk-v208`; Dokumentationsabschluss ist ebenfalls im Sicherungstag enthalten.
-Dieser Kurzstand hat Vorrang vor allen historischen Abschnitten weiter unten.
-
-Aktuelle Gestaltung, Live-System, Sicherungen, Grenzen und Prüfungen stehen kompakt
-in [UEBERGABE.md](UEBERGABE.md). Historische Aussagen wie „nur lokal“, „nicht
-veröffentlicht“ oder „Verabredungen noch nicht zentral“ sind durch v203/v204 überholt.
+Die folgenden Abschnitte dokumentieren ältere Entscheidungen und Zwischenstände.
+Aussagen wie „Live bleibt v208“, „noch nicht veröffentlicht“ und frühere Symbol-
+oder Messvarianten gelten nur für ihren damaligen Stand.
 
 ## Entscheidung: Kühle Welt voreingestellt (v183)
 
@@ -1939,3 +1953,14 @@ Alle App-Formate und Quelle erneuert; Apple-/Manifest-URLs und Cache v221.
 Geprüft: alle Abmessungen, unveränderte Website-Farben, ausschließlich neutrale
 Bildpixel ohne roten Ball, vollständige Markensichtbarkeit im Maskable-Sicherheitskreis,
 bytegleiche Browser-Favicons und Website-Logo-Dateien. Veröffentlichungspaket geprüft.
+
+## 17.10.2026 · Dokumentationsabschluss v221 – Nutzer bestätigt Gesamtstand
+
+Aktuellen Auftritt, Bedienung und finales großes App-Zeichen ohne Ball bestätigt.
+Verbindliche Kurzstände in Projektgedächtnis und Übergabe auf v221 umgestellt;
+README, Design- und geräteübergreifende Übergabe sowie Server-README abgeglichen.
+Historische v208-Freigabe und Zwischenstände erhalten, aber klar nachgeordnet.
+Dokumentiert: Live-Commit/Workflow/Cache, exakte Icon-Farben, Navigation/Splash,
+Partnerpflege und deaktivierte 0,5-Sekunden-Messung, dreistufige Zukunftsplanung,
+Flyer-Wiederherstellung und offene Weihnachtsdatumsabweichung. Keine Website-
+oder Datenbankänderung, keine Messaktivierung und kein neuer Sicherungstag.

@@ -1,5 +1,28 @@
 # TFB-Website
 
+
+## Aktueller freigegebener Live-Stand v221 – 17.10.2026
+
+Nutzer bestätigt den Gesamtstand. Verbindlicher Einstieg:
+[Übergabe](docs/UEBERGABE.md), ausführliches
+[Projektgedächtnis](docs/PROJEKTGEDAECHTNIS.md).
+Live auf [joern-kaemper.de](https://joern-kaemper.de/), Quellstand `ed9d9db`,
+Cache `tfb-kiosk-v221`; Dokumentationsabschluss ohne neue Websiteversion.
+
+- Finales App-Symbol: größeres **TFB ohne Ball**, Website-Farben #EFEFEF/#171717.
+  Website-/Splash-Logo behalten Ball #C4553A; Browser-Favicons unverändert.
+- Splash führt immer auf Home; zentrale Textpflege mit zwei unabhängig schaltbaren
+  kleinen Zeilen. Adminzugang zur Partnerpflege über Konto → Einstiegsseite → Ball.
+- Partnerarten Premium-Partner/Partnerbandenwerbung, gleiche Rotation, standardmäßig
+  300 Euro/Jahr, tatsächliche Zahlungen separat. Premium zusätzlich auf Splash.
+- Messung bleibt aus; vorbereitet sind Seitenaufrufe und Sichtbarkeit der gemeinsamen
+  Logozeile ab 50 % / 0,5 Sekunden. 01.01.2027 ist ein Vorschlag, keine automatische
+  Aktivierung. Padel-MIS und Folgekonzept sind spätere Schritte.
+- Menü Dating 2.0, Seitentitel Verabreden; keine dauerhafte rote Kiosk-Markierung.
+  Konto verschlankt; Originalflyer unter Aktuell/Save the Date wieder verfügbar.
+
+Die folgenden Versionsabschnitte sind historisch; bei Widersprüchen gilt v221.
+
 ## v211 – Konto verschlankt, 17.10.2026
 
 Technische Übergangshinweise und „Bisherige Browserdaten übernehmen“ samt
