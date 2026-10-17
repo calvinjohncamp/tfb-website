@@ -41,14 +41,12 @@ css=assets/css/brand.css
   done
 } > $css
 
-# Signature-Kachel: Original-TFB ohne Ball, dieselbe Vorlage für alle App-Symbole.
+# App-Symbole: heller Grund, dunkles TFB und roter Ball in Originalproportionen.
+# Eigenständige Favicon-Vorlage erhält das bisherige kompakte Zeichen ohne Ball.
 I=assets/icons
-magick $B/tfb-app-icon-source.png -resize 512x512 PNG32:$I/icon-512.png
-magick -size 512x512 xc:"$SIGNATURE" \( $B/tfb-app-icon-source.png -resize 420x420 \) -gravity center -composite PNG32:$I/icon-maskable-512.png
-magick $I/icon-512.png -resize 192x192 $I/icon-192.png
-magick -size 180x180 xc:"$SIGNATURE" \( $B/tfb-app-icon-source.png -resize 180x180 \) -gravity center -composite $I/icon-180.png
-magick $B/tfb-app-icon-source.png -resize 64x64 $I/favicon-64.png
-magick $B/tfb-app-icon-source.png -define icon:auto-resize=256,128,64,48,32,16 $I/icon.ico
+node tools/build-app-icons.mjs
+magick $B/tfb-favicon-source.png -resize 64x64 $I/favicon-64.png
+magick $B/tfb-favicon-source.png -define icon:auto-resize=256,128,64,48,32,16 $I/icon.ico
 ls -la $css $I
 
 # Weißes "TFB."-Zeichen für Symbole (Kappe, Shirt) als data-URI, damit es auch per Doppelklick lädt

@@ -56,6 +56,7 @@ for page in ENTRY_FILES & {'index.html', 'praesentation.html', 'mitgliedschaft-b
         if local and not (DEST / local).is_file():
             raise RuntimeError('Webdatei fehlt: ' + ref)
 for ref in re.findall(r"'\./([^']+)'", (DEST / 'sw.js').read_text()):
-    if not (DEST / ref).is_file():
+    local = ref.split('#')[0].split('?')[0]
+    if not (DEST / local).is_file():
         raise RuntimeError('Offline-Datei fehlt: ' + ref)
 print(f'{len(selected)} Webdateien für GitHub Pages vorbereitet.')

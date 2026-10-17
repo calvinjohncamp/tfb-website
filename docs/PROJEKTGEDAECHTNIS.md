@@ -1894,3 +1894,22 @@ Hervorhebung und aria-current folgen weiterhin ausschließlich der aktiven Seite
 Home erhält damit keine irreführende rote Kiosk-Markierung. Cache v218.
 Auch den aktiven Navigationsbereich bei Seitenwechseln aktualisiert, damit ein
 späteres Neuzeichnen des Menüs keine veraltete Kiosk-Markierung zurückbringt.
+
+## 17.10.2026 · v219 – helles App-Symbol mit Original-Ball, Favicon separat
+
+Freigegeben: App-Symbol dunkles TFB auf hellem Grund (#F5F0E6), Ball #C4553A.
+Schrift und Ball werden aus derselben Originalmaske als eine Einheit skaliert:
+Original 2000×1000; Markenausschnitt ohne Unterzeile 1803×664 ab (92,78);
+Ballbox 280×280 ab (1616,464). Größe, Position und Abstand unverändert gegenüber
+Original. Reguläre Kachel entspricht dem bestätigten Entwurf ohne künstlichen
+Außenrand; Betriebssystem übernimmt die Ecken. Maskable-Version mit eigener
+Sicherheitszone. Apple-Touch-Icon 180px, PWA 192/512px und 1024px-Quelle erneuert.
+Browser-Favicons (PNG/ICO) unverändert und weiterhin ohne Ball, alte Vorlage als
+separate tfb-favicon-source.png gesichert. Build trennt App- und Favicon-Quelle.
+Icon-URLs für Manifest/Apple versioniert; heller Manifest-Starthintergrund,
+Cache v219. Bereits installierte Symbole aktualisiert das jeweilige Betriebssystem;
+auf iOS kann erneutes Hinzufügen zum Home-Bildschirm nötig sein.
+Geprüft: bytegleiche Browser-Favicons, Abmessungen/Farben aller App-Symbole,
+Maskable-Sicherheitskreis, echter Service-Worker-Install und Offline-Aufruf der
+versionierten Icons. Veröffentlichungsprüfung löst URL-Parameter wie bei HTML
+nun auch bei Offline-Dateien auf.
