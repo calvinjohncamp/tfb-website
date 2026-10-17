@@ -1,5 +1,11 @@
 # TFB-Website
 
+## v211 – Konto verschlankt, 17.10.2026
+
+Technische Übergangshinweise und „Bisherige Browserdaten übernehmen“ samt
+Bedienaktion aus dem Konto entfernt. Name/Profilbild bleiben; danach folgt direkt
+die Mitgliedschaft. Daten und zentraler Abgleich bleiben erhalten. Cache v211.
+
 ## Veröffentlicht: v210 – 17.10.2026
 
 Auf Nutzerauftrag: Splash und schlanke zentrale Partnerpflege veröffentlicht,

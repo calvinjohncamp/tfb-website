@@ -30,7 +30,13 @@ try{
  assert.equal(await guest.page.locator('[data-action="partner-report"]').count(),0);
  await guest.page.locator('.tfb-splash-partners').scrollIntoViewIfNeeded();await guest.page.waitForTimeout(1600);assert.equal(collectRequests,0);
  await guest.page.locator('[data-action="splash-enter"]').click();await guest.page.evaluate(()=>location.hash='#partner');await guest.page.waitForSelector('.partner-admin');assert.match(await guest.page.locator('.partner-admin').innerText(),/nur für angemeldete Admins/);
- const {page}=await open(true);assert.equal(await page.evaluate(()=>TFB.ui.isAdmin()),true,'Server admin session should be restored');await page.locator('[data-action="partner-report"]').click();await page.waitForSelector('[data-partner-row]');
+ const {page}=await open(true);assert.equal(await page.evaluate(()=>TFB.ui.isAdmin()),true,'Server admin session should be restored');
+ await page.locator('[data-action="splash-enter"]').click();await page.locator('[data-action="profile"]').click();await page.waitForSelector('.acct');
+ assert.equal(await page.locator('.acct [data-action="sync-import"]').count(),0);
+ assert.equal(await page.locator('.acct .membership-notice').count(),0);
+ assert.match(await page.locator('.acct-card').first().innerText(),/Mitglied der Tennisfreunde Bielstein/);
+ assert.equal(await page.locator('.acct-head').count(),1);
+ await page.locator('.acct [data-action="splash-open"]').click();await page.locator('[data-action="partner-report"]').click();await page.waitForSelector('[data-partner-row]');
  assert.equal(await page.locator('[data-partner-row]').count(),38);assert.match(await page.locator('.partner-admin-visibility').innerText(),/ausgeschaltet/);
  const id=await page.locator('[data-partner-row]').first().getAttribute('data-partner-row');await page.locator(`[data-action="partner-edit"][data-id="${id}"]`).click();await page.waitForSelector('[data-editor="partner"]');
  await page.locator('[name="name"]').fill('Unser TFB-Testpartner');await page.locator('[name="company"]').fill('TFB Musterfirma');await page.locator('[name="tier"]').selectOption('partner');await page.locator('[name="sample"]').uncheck();await page.locator('[name="status"]').selectOption('contract');

@@ -1751,3 +1751,15 @@ Die zentrale Admin-Text-/Partner-/Logo-/Zahlungsbedienung wurde gegen denselben
 Worker-Code in isoliertem SQLite geprüft, ohne echte Live-Partnerdaten zu ändern.
 Konto-Link zur Einstiegsseite ist für tatsächliche Admins auch bei ausgeblendeten
 Vorführ-Werkzeugen erreichbar. Vollständige private Nachweise in .private/release-v210/.
+
+## 17.10.2026 · v211 – Konto für die Präsentation verschlankt
+
+Auf Nutzerwunsch Übergangs-/Abgleichhinweise, Vorführhinweis, lokale Probeversions-
+meldung und den Knopf „Bisherige Browserdaten übernehmen“ oberhalb der Mitgliedschaft
+aus dem Konto entfernt. Auch die zugehörige sync-import-Bedienaktion entfernt.
+Der Kontokopf mit Name/Profilfoto bleibt, danach folgt direkt die Mitgliedschaft.
+Vorhandene Daten und zentraler Abgleich unverändert; interne Wiederherstellungs-
+werkzeuge nicht gelöscht. Admin-Rückweg zur Splash bleibt auch bei ausgeblendeten
+Admin-Werkzeugen erreichbar. Browserprüfung am echten Worker mit isoliertem
+SQLite bestätigt schlankes Konto und weiterhin Partnerpflege/Textänderungen.
+Cache-Version tfb-kiosk-v211; ausschließlich Websiteänderung, kein Worker-/D1-Update.

@@ -921,8 +921,6 @@
           <p class="acct-meta">Mitglied Nr. ${esc(m.memberNo)}${m.isAdmin ? '<span class="acct-badge">Admin</span>' : ''}</p>
         </header>
 
-        ${api.centralSync ? `<section class="acct-card"><p class="membership-notice">${api.syncError ? `Abgleich unterbrochen: ${esc(api.syncError)}` : 'Profilfoto, Bierdeckel, Chats, Gruppen, Verabredungen und Trainingsserien werden in deinem Mitgliedskonto gespeichert und nach der Anmeldung auf deinen Geräten geladen. Geöffnete Chats werden regelmäßig aktualisiert.'} Der Kiosk bleibt eine Vorführung ohne echte Abbuchung.</p><button type="button" class="btn small" data-action="sync-import">Bisherige Browserdaten übernehmen</button><p class="small muted">Auf dem Gerät öffnen, auf dem dein bisheriges Foto, dein Bierdeckel und deine Chats vorhanden waren.</p></section>` : '<p class="membership-notice">Lokale Probeversion: Profilfoto, Bierdeckel und Chats werden nur in diesem Browser gespeichert.</p>'}
-
         <section class="acct-card">
           ${row(true, `Mitglied der ${esc(cfg.clubName)}`, 'Erkannt über deine E-Mail-Adresse aus der Mitgliederliste – du musst nichts eintragen.')}
           ${row(m.hasConsent, 'Kiosk &amp; Lastschrift', m.hasConsent
@@ -1295,15 +1293,6 @@
     const action = el.dataset.action;
     if (action === 'pick') openPick(el.dataset.id);
     else if (action === 'profile') openProfile();
-    else if (action === 'sync-import') {
-      el.disabled=true;
-      try {
-        const plan=await api.syncMigrationPreview();
-        if(!plan.count){toast('Keine bisherigen eigenen Browserdaten vorhanden.');return;}
-        if(!confirm(`Folgende Daten aus diesem Browser deinem Konto zuordnen und zentral übernehmen?\n\n${plan.photo?'1 Profilfoto':'Kein Profilfoto'} · ${plan.items} Bierdeckel-Einträge · ${plan.posts} Chat-Beiträge · ${plan.comments} Kommentare${plan.catalog?' · Kiosk-Sortiment und Preise':''}\n\nAls Verwaltung können darunter eigene Beiträge des früheren Vorführkontos Max Mustermann sein. Bitte nur bestätigen, wenn diese Daten dir gehören. Bereits übernommene Datensätze werden übersprungen; neuere Serverdaten bleiben erhalten.`))return;
-        state.member=await api.importLocalSync();refreshAvatars();closeSheet();await renderView();toast('Browserdaten in dein Mitgliedskonto übernommen',true);
-      }catch(err){toast(err.message);}finally{el.disabled=false;}
-    }
     else if (action === 'close-sheet') closeSheet();
     else if (action === 'auth-back') { state.authStep = 'email'; showAuth(); }
     else if (action === 'auth-activate') { state.authStep = 'create'; showAuth(); }
