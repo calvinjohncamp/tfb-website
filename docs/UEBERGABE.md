@@ -1,5 +1,26 @@
 # TFB – Übergabe für die nächste Sitzung
 
+## Aktuell: veröffentlichte Version v210 – 17.10.2026
+
+Splash und zentrale TFB-Partnerpflege sind veröffentlicht: https://joern-kaemper.de.
+Als Admin: im Konto „Einstiegsseite ansehen“, dann roter Ball → Partnerpflege.
+Stift auf der Splash → Texte bearbeiten; Speichern wirkt auf allen Geräten.
+Alle Partner rotieren gleichberechtigt, Premium zusätzlich auf der Splash.
+38 Partner aus Padel dienen als austauschbarer Testbestand; keine übernommenen
+Finanzzusagen/Zahlungen. Regulärer Jahresbeitrag 300 Euro, echte Zahlungen separat.
+Statistik bleibt im Frontend und Worker ausgeschaltet. Vorgeschlagener gemeinsamer
+Betriebsstart 01.01.2027 erst nach Vorstandsbeschluss und separater Freigabe;
+Folgekonzept nach drei Padel-Betriebsjahren offen. Projektgedächtnis enthält Details.
+
+Website-Quellstand 6c1ebda, Cache tfb-kiosk-v210. Worker
+980cbbd0-7f59-40da-93cb-dd20f57c045a. D1 vor Migration gesichert und probeweise
+wiederhergestellt. Migration 0005 eingespielt; Statistikmigration 0004 nicht eingespielt.
+Live geprüft: öffentliche Partnerdaten 200 ohne Finanz-/Kontaktfelder, Admin-APIs
+anonym 401, fremder Ursprung 403, Zählungs-API 409 (ausgeschaltet), Splash/Logos/iPad
+im Browser fehlerfrei und keine Messanfragen. Private Nachweise: .private/release-v210/.
+
+Die folgenden älteren Abschnitte sind historische Übergaben.
+
 **Verbindlicher Stand: 16.10.2026, veröffentlichte Vorführversion v208.**
 Der Nutzer hat Gestaltung und Bedienung ausdrücklich bestätigt und das Einfrieren
 beauftragt. Letzte freigegebene Korrektur: ausschließlich die iPad-Partnerflächen

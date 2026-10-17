@@ -1739,3 +1739,15 @@ Logo-Upload, zentrale Splash-Texte auf anderem Gerät, Zahlung/Beitragsjahr, Suc
 CSV und responsive Darstellung 320/390/834/1194/1440 px. Keine Erfassungsanfrage
 an den Statistik-Endpunkt. Live-D1 vor Änderung privat exportiert und erfolgreich
 in isoliertem SQLite wiederhergestellt (.private/release-v210/backup-check.json).
+
+Veröffentlichung v210 abgeschlossen und live überprüft: Website-Quellstand 6c1ebda,
+GitHub-Pages-Lauf https://github.com/calvinjohncamp/tfb-website/actions/runs/38995041440
+erfolgreich; URL https://joern-kaemper.de. Worker-Version
+980cbbd0-7f59-40da-93cb-dd20f57c045a. Live: 38 öffentliche Partner, keine privaten
+Kontakt-/Finanzfelder; Admin-APIs anonym 401, fremder Origin 403, Statistik-Schreiben
+409 (ausgeschaltet). Gastbrowser bestätigt Splash, geladene Logos, 560-px-Partnerblock
+auf Desktop/iPad, gesperrte Partnerseite, null Messanfragen und keine Skriptfehler.
+Die zentrale Admin-Text-/Partner-/Logo-/Zahlungsbedienung wurde gegen denselben
+Worker-Code in isoliertem SQLite geprüft, ohne echte Live-Partnerdaten zu ändern.
+Konto-Link zur Einstiegsseite ist für tatsächliche Admins auch bei ausgeblendeten
+Vorführ-Werkzeugen erreichbar. Vollständige private Nachweise in .private/release-v210/.

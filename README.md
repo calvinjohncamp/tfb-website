@@ -1,8 +1,8 @@
 # TFB-Website
 
-## Veröffentlichung v210 – 17.10.2026
+## Veröffentlicht: v210 – 17.10.2026
 
-Auf Nutzerauftrag: Splash und schlanke zentrale Partnerpflege veröffentlichen,
+Auf Nutzerauftrag: Splash und schlanke zentrale Partnerpflege veröffentlicht,
 Zählung ausdrücklich **ausgeschaltet** lassen. Der rote Ball der Splash führt
 für angemeldete Admins zu `#partner`; keine neue große Admin-Navigation.
 Logo, Marke/Firma, Website, Kontakte, Vertragsstand und Jahresbeitrag pflegen;
