@@ -11,6 +11,12 @@ IMAGE = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC
 
 
 class PublicContentTests(unittest.TestCase):
+    def test_splash_texts_are_exported_with_the_existing_site(self):
+        backup = self.fixture()
+        backup['db']['site']['splash'] = {'enabled': True, 'headline': 'Unser Verein', 'entry': 'Zum Club'}
+        site, _ = exporter.extract(backup)
+        self.assertEqual(site['splash']['headline'], 'Unser Verein')
+
     def fixture(self):
         return {'format': 'tfb-sicherung', 'version': 1,
                 'db': {'members': [{'email': 'PRIVATE-MEMBER'}],

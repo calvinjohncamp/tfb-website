@@ -85,6 +85,8 @@ try {
   const local = await browser.newPage();
   await local.goto(new URL('../index.html', import.meta.url).href);
   await local.waitForSelector('.topbar');
+  await local.waitForSelector('#tfb-splash');
+  await local.locator('[data-action="splash-enter"]').click();
   assert.equal(await local.evaluate(() => document.body.dataset.designWorld), 'cool');
   await local.evaluate(() => Promise.all([document.fonts.load('700 30px "TFB Bricolage"'), document.fonts.load('400 16px "TFB DM Sans"')]));
   await local.locator('[data-design-preview]').focus();

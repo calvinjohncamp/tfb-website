@@ -8,7 +8,7 @@
   const $sheet = document.getElementById('sheet-root');
   const $toast = document.getElementById('toast-root');
 
-  const VIEWS = ['home', 'kiosk', 'strichliste', 'abrechnungen', 'chat', 'aktuell', 'gefluester', 'sport', 'team', 'club', 'treffen', 'verwaltung', 'impressum', 'satzung'];
+  const VIEWS = ['home', 'kiosk', 'strichliste', 'abrechnungen', 'chat', 'aktuell', 'gefluester', 'sport', 'team', 'club', 'treffen', 'verwaltung', 'impressum', 'satzung', 'partnerzahlen', 'partner'];
   const KIOSK_AREA = ['kiosk', 'strichliste', 'abrechnungen'];   // nur mit Anmeldung
   // Reiter unten: Kiosk zuerst, dann die Vereinsseiten, dann der Padel-Link.
   // Team-Seiten gehören zu „Sport“
@@ -106,14 +106,16 @@
 
   // ---------- Start ----------
   async function boot() {
+    await TFB.partnerContent?.ready;
     state.catalog = await api.catalog();
     state.member = await api.session();
     // Wer die App neu öffnet, landet immer auf Home – egal, welche Seite zuletzt offen war.
     // Ausnahmen: Neu laden (bleibt auf der Seite) und direkte Links wie #treffen/<id>.
     const nav = (performance.getEntriesByType && performance.getEntriesByType('navigation')[0]) || {};
     const deepLink = location.hash.includes('/');
-    if (!location.hash || (nav.type !== 'reload' && !deepLink)) history.replaceState(null, '', '#home');
-    render();
+    if (!location.hash || (nav.type !== 'reload' && !deepLink && !['#impressum','#satzung','#partnerzahlen','#partner'].includes(location.hash))) history.replaceState(null, '', '#home');
+    await render();
+    await TFB.partnerVisibility?.start();
   }
 
   function currentView() {
@@ -392,13 +394,7 @@
   function partnerSlot(page, kicker) {
     const pair = TFB.partnerPair ? TFB.partnerPair(page) : [];
     if (!pair.length) return '';
-    const tile = (p) => {
-      const img = `<img src="${esc(p.logo)}" alt="${esc(p.name)}" decoding="async">`;
-      return p.url
-        ? `<a class="pbsp-tile" href="${esc(p.url)}" target="_blank" rel="noopener noreferrer nofollow" title="${esc(p.name)}">${img}</a>`
-        : `<div class="pbsp-tile" title="${esc(p.name)}">${img}</div>`;
-    };
-    return `<section class="pbsp-slot" aria-label="Partner"><div class="pbsp-kicker">${esc(kicker)}</div><div class="pbsp-duo">${pair.map(tile).join('')}</div></section>`;
+    return `<section class="pbsp-slot" aria-label="Partner"><div class="pbsp-kicker">${esc(kicker)}</div><div class="pbsp-duo">${pair.map(TFB.partnerTile).join('')}</div></section>`;
   }
 
   let viewRender = 0;
@@ -432,6 +428,7 @@
         }
       }
       TFB.scrollToSiteContent?.();
+      TFB.partnerVisibility?.rendered();
     } catch (err) {
       if(request!==viewRender)return;
       $view.innerHTML = `<div class="card error-card"><h2>Das hat nicht geklappt</h2><p>${esc(err.message)}</p></div>`;
@@ -985,6 +982,7 @@
           <button type="submit" class="btn primary block">Speichern</button>
         </form>
 
+        ${rawMember?.isAdmin ? '<button type="button" class="link" data-action="splash-open">Einstiegsseite ansehen</button>' : ''}
         ${m.isAdmin ? `
         <section class="acct-adminbox">
           <h3 class="acct-section">Admin</h3>
@@ -1417,7 +1415,12 @@
   });
 
   // Schnittstelle für die Vereinsseiten (site.js)
-  TFB.ui = { state, api, cfg, esc, icon, logo, viewHead, partnerSlot, openSheet, closeSheet, toast, renderView, currentView, loadImage, largeImage, openLightbox, openAvatarCropper, refreshAvatars };
+  TFB.partnerTile = (p,index=0) => {
+    const attrs=`class="pbsp-tile" data-partner-id="${esc(p.id)}" data-partner-slot="${index?'right':'left'}"`;
+    const img=`<img src="${esc(p.logo)}" alt="${esc(p.name)}" decoding="async" fetchpriority="high">`;
+    return /^https?:\/\//i.test(p.url||'')?`<a ${attrs} href="${esc(p.url)}" target="_blank" rel="noopener noreferrer nofollow">${img}</a>`:`<div ${attrs}>${img}</div>`;
+  };
+  TFB.ui = { state, api, cfg, esc, icon, logo, viewHead, partnerSlot, openSheet, closeSheet, toast, renderView, currentView, loadImage, largeImage, openLightbox, openAvatarCropper, refreshAvatars, isAdmin:()=>Boolean(rawMember?.isAdmin) };
 
   if ('serviceWorker' in navigator && (location.protocol === 'https:' || ['localhost', '127.0.0.1', '[::1]'].includes(location.hostname))) {
     navigator.serviceWorker.register('sw.js').catch(() => {});

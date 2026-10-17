@@ -1,5 +1,16 @@
 # TFB-Kiosk – Projektgedächtnis und Übergabe
 
+**Neuer Auftrag 17.10.2026 – v210:** Splash jetzt veröffentlichen; Partnerpflege
+zentral und unabhängig von Padel. Alle Partner gleich rotieren, regulär 300 Euro
+pro Jahr; Premium nur zusätzlich auf der Splash. Statistik bleibt abgeschaltet.
+Gemeinsamer Betriebsbeginn 01.01.2027 ist ein Vorschlag an den Vorstand, keine
+erteilte Betriebsfreigabe oder automatische Terminaktivierung. Siehe Eintrag
+„17.10.2026 · v210“ am Dateiende.
+
+**Nachtrag 17.10.2026:** Auf neuen Nutzerauftrag lokale Weiterentwicklung v209
+für Splash und Partner-Sichtbarkeit. Noch keine Veröffentlichung; Live bleibt
+v208. Vollständiger Eintrag „17.10.2026 · Partner-Sichtbarkeit v209“ am Dateiende.
+
 Für den schnellen Einstieg zuerst die kurze **[UEBERGABE.md](UEBERGABE.md)** lesen.
 Diese Datei enthält alle Entscheidungen, Konzepte, offenen Punkte und den Verlauf.
 Neues bitte unten bei „Verlauf“ ergänzen.
@@ -1566,3 +1577,165 @@ Quellstand 4781aca, Cache tfb-kiosk-v208, Pages-Lauf 38957773956. Abschließend 
 Dateien geprüft; aktueller privater D1-Export erfolgreich in SQLite wiederhergestellt.
 Quellstand und Dokumentationsabschluss über Tag stand-2026-10-16-v208 eingefroren.
 Ab jetzt nur auf neuen Auftrag weiterarbeiten; die alte offene Liste ist keine Freigabe.
+
+## 17.10.2026 · Partner-Sichtbarkeit v209 (lokal, nicht veröffentlicht)
+
+Nutzer hat den Entwurf bestätigt und konkret beauftragt: keine Splash-Aktion,
+keine zusätzliche PNG-Aktion; nur der Einstieg zu den Tennisfreunden. Kein großer
+MIS-Adminbereich. Der rote Ball auf der Splash ist der versteckte Ein-Klick-Zugang
+zur Zahlenseite, ausschließlich für angemeldete Admins. Ein Stift daneben bearbeitet
+die Splash-Texte. Die Demo-Mitgliederansicht versteckt zwar normale Admin-Werkzeuge,
+der Splash-Ball prüft jedoch die tatsächliche, unveränderte Adminrolle. Online
+stammt diese Rolle aus der verifizierten Directory-Sitzung; die Statistikabfrage
+prüft die Rolle und aktive Mitgliedschaft zusätzlich immer serverseitig.
+
+Implementierung: assets/js/partner-visibility.js, assets/css/partner-visibility.css,
+Einbindung im normalen index.html und Service-Worker v209. Original-TFB-Masken und
+roter Ball, vorhandene lokale Schriften und kühle Farben. Splash einmal pro Besuch
+(30 Minuten Inaktivität), auf Wunsch über den schlanken Konto-Link erneut anzeigen.
+Rechtsseiten und direkter Statistiklink bleiben ohne vorgeschaltete Splash.
+Der bestehende Startseiten-Einstieg bleibt erhalten. Kein neuer Navigationspunkt.
+
+Texte unter site.splash; Formular, Vorschau, Speichern über api.saveSite, vorhandene
+Sicherung/Wiederherstellung und öffentlicher Export (PUBLIC_KEYS erweitert).
+Lokal gespeicherte Änderungen werden weiterhin erst per gezieltem Export öffentlich.
+Keine vorhandenen Seiten-, Foto-, Vereins-, Preis- oder Mitgliederdaten migriert.
+
+Partner: gemeinsame Kachel-Markierung mit stabilen IDs, Frontendbestand und eigener
+Serverkatalog. Neue CSS-Schicht überschreibt die alten iPad-/Desktop-Sondermaße:
+Inhalt max. 560 px, 123 px hoch, 12 px Abstand; bis 520 px zwei Spalten, 86 px hoch,
+8 px Abstand. Splash separat wie Padel: 123/92/86 px sowie 112 px bei flachem Querformat.
+Farben bleiben TFB, Logos unverzerrt. Partner und Gewichtung nicht verändert.
+Aktuell vorhandene Premium-Partner besetzen die Splash; keine erfundenen Leerplätze.
+
+Statistikoberfläche: #partnerzahlen; Jahresauswahl, Home-/Unterseitenaufrufe,
+Splash separat, Ausspielungen, sichtbare Kontakte und Partnerklicks pro Partner,
+CSV und Browserdruck/PDF. Partner ohne Zählereignisse blähen die Tabelle nicht auf.
+Messbeginn und Messdefinition sind sichtbar. Detailseiten werden als Kategorien
+zusammengefasst (z.B. Home-Themen, Training, Mannschaften, Dating-Details), keine
+privaten Inhalts-, Personen- oder Verabredungskennungen gespeichert. Keine eindeutige
+Besucherreichweite und keine rückwirkende Schätzung. Ein Wiederaufruf zählt neu,
+ein Daten-Neurendern nicht. Sichtkontakt: mindestens halbes Logo für eine volle
+Sekunde im aktiven Tab, nicht hinter Splash/Modal/Überlagerung; pro Aufruf und
+Partnerplatz einmal. Jeder bewusste Partnerklick zählt einzeln.
+
+Backend vorbereitet: /public/partner-events anonym, /admin/partner-visibility nur
+mit aktiver verifizierter Admin-Sitzung. Strenge Seiten-/Partner-/Feldliste und
+Batchgrößen, Origin-Prüfung, Botfilter, kurzlebiges IP-Hash-Ratelimit wie beim
+bestehenden Directory. Keine Mitglieds-ID, E-Mail, Inhalte oder IP im Statistik-
+ereignis. Kurze zufällige Ereignis-ID dedupliziert Wiederholungsübertragung.
+Atomic D1-Batch und Insert-Trigger erhöhen Tagesaggregate nur für neue IDs.
+Ereignis-IDs laufen nach zwei Tagen ab und werden bei der nächsten Übertragung
+bereinigt; Tagesaggregate bleiben erhalten. Begrenzte Netzwerk-Wiederholungen
+nur im Arbeitsspeicher, keine Besucherprofile oder Statistik-Cookies.
+Zeitzone Europe/Berlin, Quelle tfb; Schema lässt später padel als zweite Quelle zu.
+Alte Partner-IDs bei zukünftigen Bestandsänderungen im Serverkatalog beibehalten.
+
+Migration: server/cloudflare/migrations/0004-partner-visibility.sql. Ebenfalls in
+schema.sql für neue Installationen enthalten; vorhandene Live-D1 wurde nicht
+verändert. Vor Livefreigabe: Sicherung, additive Migration, Worker veröffentlichen,
+Datenschutzinformation konkret ergänzen, Website veröffentlichen und serverseitige
+401/403-Prüfungen wiederholen. Keine Änderung an Padel, keine E-Mails, kein Commit,
+Push oder Deployment. Die echte Jahresmessung beginnt erst nach dieser Veröffentlichung.
+
+Prüfstand: 57 Node-Tests (einschließlich vier neuer Statistiktests), weitere
+20 Directory/App-/Meet-Synchronisationstests und vier öffentliche Exporttests
+bestanden. Bestehende Browserprüfungen für Home/Aktuell, Galerien und Sicherungen
+bestanden. Neuer isolierter Browsertest prüft Splash-Sichtkontakte, verdeckte
+Home-Seite, Admin-Ausschluss, Stift/Vorschau/Speicherung, Ball, Auswertung/CSV,
+Neurender-Deduplizierung und Maße ohne Überlauf auf 320/390/834/1194/1440 px.
+Bestehender Gestaltungs-Browsertest berücksichtigt nun den Splash-Einstieg auch
+beim direkten Datei-Start und besteht. Pages-Paket mit 212 Webdateien vorbereitet;
+neue Assets explizit im Paket enthalten. git diff --check sauber.
+
+## 17.10.2026 · v210 – zentrale TFB-Partnerpflege, Veröffentlichung, Drei-Schritte-Plan
+
+Ausdrücklicher neuer Nutzerauftrag: Website jetzt live schalten, damit die Splash-
+Texte feingetunt werden können. Die Zählung soll im Hintergrund gerade NICHT laufen.
+Roten Splash-Ball für Admins zur Partner-Unterseite führen lassen, dort Pflege und
+vorbereitete Sichtbarkeit zusammenfassen. Keine große Padel-Admin-Navigation.
+
+Padel-Vorbild erneut im Quellcode geprüft: Stammdaten, Logo/Website, Marke/Firma,
+Kontakt/Anschrift, Vertragsstand, jährlicher Beitrag. Diese allgemeinen Funktionen
+übernommen; keine Court-Zuordnung, Buchungsrabatte, Aktionslogos, Vertragskampagnen,
+Drei-Jahres-Multiplikation oder Akquise-/Spendenverwaltung. Padel selbst unangetastet.
+38 bereits kopierte öffentliche Partnernamen/Logos/Websiteadressen als Testbestand
+übernommen, Regional-Kategorie bei TFB zu normalen Partnern vereinheitlicht. Keine
+privaten Padel-Kontakte, Finanzwerte, Verträge oder Zahlungseingänge kopiert.
+Padel-Trackingparameter aus Partner-Links entfernt. Testbestand wird nicht als
+bestätigter TFB-Umsatz ausgegeben und nimmt keine echten Zahlungseinträge an,
+bevor er als echter TFB-Partner übernommen ist. Nutzer ersetzt die Einträge nach
+und nach mit den bisherigen TFB-Werbepartnern.
+
+Neue Seite #partner (alter #partnerzahlen-Link führt zur selben Seite), nur für
+angemeldete Admins. Der rote Ball nutzt die tatsächliche Adminrolle auch bei in
+der Vorführung ausgeblendeten Werkzeugen. Jede Admin-API prüft die aktive
+serverspezifische Sitzung/Rolle, nicht nur versteckte Knöpfe. Jahresauswahl,
+Suche, Hinzufügen/Bearbeiten, Logo-Upload, Website/Partnerart, Sichtbarkeit,
+Testbestand, Vertragsstand, Jahresbetrag, Kontakte und CSV. Maximal zwei aktive
+Premium-Partner wie auf der Padel-Splash. Kein Löschen von Historie; ausblenden
+über Aktiv-Schalter. Finanz-/Kontaktfelder bleiben rein administrativ.
+
+Beträge: Default 300 Euro pro Jahr; aktuelle mündliche/vertragliche Zusagen und
+reale Zahlungseingänge sind getrennte Kennzahlen. Tatsächliche Zahlungen mit
+Beitragsjahr, Zahlungsdatum und Notiz erfassen, auch Vorauszahlungen. Wiederholte
+Übermittlung derselben Zahlung dupliziert nicht. Storno erhält den ursprünglichen
+Eintrag. Eine Änderung des Jahresbeitrags verändert keine früheren Zahlungseingänge.
+Keine Zahlung wird ausgelöst, keine Rechnung oder E-Mail verschickt.
+
+Zentrale Pflege ist für den gewünschten Live-Text-Feinschliff erforderlich:
+Splash-Konfiguration und Partner liegen getrennt in der vorhandenen TFB-D1,
+mit Versionsprüfung gegen gegenseitiges Überschreiben. Logo-Dateien werden als
+validierte, größenbegrenzte Rasterbilder gespeichert und über einen eigenen
+öffentlichen Bildpfad ausgeliefert. Öffentliche Konfiguration enthält ausschließlich
+aktive Partner mit ID, Name, Stufe, Reihenfolge, Logo und Website sowie Splash-Texte.
+Andere Website-Texte bleiben bei der vorhandenen lokalen TFB-Pflege. Der Stift
+bedient die Splash wie bisher; Speichern ist hier ab v210 sofort zentral sichtbar.
+
+Rotation ersetzt: keine Gewichte 3/3/1, keine Premium-links-Regel, kein Ausschluss
+zweier Premium-Partner in einem Inhalts-Paar. Zufällig gemischte vollständige
+Umläufe, jeder aktive Partner einmal je Umlauf, zwei verschiedene Partner pro
+Seite, vorhandenes Paar bleibt bei bloßer Datenaktualisierung stehen. Zustand
+über Sitzungsspeicher fortsetzen; Einzelpartner funktioniert. Premium erhält nur
+die zusätzlichen festen Splash-Plätze. Das garantiert gleiche Rotationsregeln,
+nicht exakt dieselbe tatsächliche Sichtkontaktzahl bei unterschiedlichen Seitenwegen.
+
+Drei ausdrücklich festgehaltene Schritte:
+1. Jetzt: veröffentlichte Website/Splash und einfache Partnerpflege zum Feinschliff.
+   Bisherige TFB-Werbung ist Bandenwerbung; App-/Websitewerbung entsteht erst mit
+   diesem neuen Angebot. Keine Padel-Partnerschaften als TFB-Verträge behaupten.
+2. Als Vorstandsvorschlag: gemeinsamer TFB- und Padel-Betriebsstart am 01.01.2027.
+   Erst nach Beschluss/Betriebsfreigabe einschalten, nicht automatisch am Datum.
+   Dann ein vollständiges Kalenderjahr als Sichtbarkeitsnachweis. Auf derselben
+   TFB-Partnerseite Seitenaufrufe, Ausspielungen, sichtbare Kontakte und Klicks
+   auswerten; Padel später als getrennte Quelle in die TFB-Gesamtübersicht übernehmen.
+   Die Sammlung bleibt heute im Frontend und im Worker deaktiviert. Untergrund-
+   Messlogik, Tagesaggregate, Deduplizierung, Definitionen und Export sind vorbereitet;
+   vor Aktivierung Statistikmigration, Datenschutzinformation und Liveprüfungen
+   ergänzen. Neue gepflegte TFB-Partnerkennungen sind im vorbereiteten Messcode
+   bereits an den zentralen Partnerbestand angebunden. Es gibt keine erfundenen
+   Nullen als Messwerte, keine Rückrechnung vor Start und keine Personen-Reichweite.
+3. Nach den ersten drei Jahren Padel-Betrieb (entsprechend der dortigen Verträge)
+   ein Folgekonzept für nur Padel oder Padel+TFB prüfen. Ob TFB-Bandenwerbung dann
+   separat bleibt oder in ein großes Paket aufgenommen wird, ist eine spätere offene
+   Entscheidung; bei Start 2027 wäre dies eine Perspektive ab 2030, kein heutiger Vertrag.
+
+Technik/Veröffentlichung: additive Migration 0005-partner-management.sql auf genau
+TFB-D1, kein bestehendes Mitglieder-/Kiosk-/Chat-Datenmodell verändern. Neue
+Worker-Routen /public/partner-content, /public/partner-logo/:id und die admin-
+geschützten /admin/partners, /admin/partners/save, /admin/partner-settings,
+/admin/partner-payments/add und /admin/partner-payments/void. Settings und Partner
+optimistisch versioniert. Statistik-API lehnt Schreibvorgänge ohne explizite
+PARTNER_MEASUREMENT_ENABLED=1 ab; aktuelle Konfiguration setzt 0, Frontend ebenfalls
+false. Statistikmigration 0004 wird mit diesem Auftrag nicht auf Live-D1 angewandt.
+Keine Padel-Datenbank, Padel-Veröffentlichung oder Nachrichten verändert.
+
+Prüfungen: sechs neue Backendtests für Partnerpflege/Finanzdaten/Privatsphäre und
+gleiche Rotation, vier vorbereitete Statistiktests; 20 bestehende Directory-/App-/
+Meet-Tests und 53 weitere Bestandstests erfolgreich, vier Exporttests. Neuer Browser-
+Integrationstest verwendet den echten Worker gegen isoliertes SQLite mit zwei
+Browserprofilen und synthetischer Admin-Sitzung: Gast-Sperre, Partneränderung,
+Logo-Upload, zentrale Splash-Texte auf anderem Gerät, Zahlung/Beitragsjahr, Suche,
+CSV und responsive Darstellung 320/390/834/1194/1440 px. Keine Erfassungsanfrage
+an den Statistik-Endpunkt. Live-D1 vor Änderung privat exportiert und erfolgreich
+in isoliertem SQLite wiederhergestellt (.private/release-v210/backup-check.json).

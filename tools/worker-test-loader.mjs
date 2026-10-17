@@ -4,9 +4,12 @@ const root=new URL('../server/cloudflare/',import.meta.url);
 const data=source=>'data:text/javascript;base64,'+Buffer.from(source).toString('base64');
 let sync=readFileSync(new URL('app-sync.mjs',root),'utf8').replace("import catalog from './demo-catalog.json';",'const catalog='+readFileSync(new URL('demo-catalog.json',root),'utf8')+';');
 sync=sync.replace("from './meet-sync.mjs'",'from '+JSON.stringify(data(readFileSync(new URL('meet-sync.mjs',root),'utf8'))));
+const visibility=readFileSync(new URL('partner-visibility.mjs',root),'utf8').replace("import partners from './partner-catalog.json';",'const partners='+readFileSync(new URL('partner-catalog.json',root),'utf8')+';');
 let source=readFileSync(new URL('worker.mjs',root),'utf8')
   .replace("import schema from './schema.sql';",'const schema='+JSON.stringify(readFileSync(new URL('schema.sql',root),'utf8'))+';')
   .replace("from './app-sync.mjs'",'from '+JSON.stringify(data(sync)))
+  .replace("from './partner-visibility.mjs'",'from '+JSON.stringify(data(visibility)))
+  .replace("from './partner-management.mjs'",'from '+JSON.stringify(data(readFileSync(new URL('partner-management.mjs',root),'utf8'))))
   .replace("from './management.mjs'",'from '+JSON.stringify(data(readFileSync(new URL('management.mjs',root),'utf8'))));
 if(process.env.TFB_WORKER_BUNDLE){
   const file=new URL('file://'+process.env.TFB_WORKER_BUNDLE);

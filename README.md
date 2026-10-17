@@ -1,5 +1,60 @@
 # TFB-Website
 
+## Veröffentlichung v210 – 17.10.2026
+
+Auf Nutzerauftrag: Splash und schlanke zentrale Partnerpflege veröffentlichen,
+Zählung ausdrücklich **ausgeschaltet** lassen. Der rote Ball der Splash führt
+für angemeldete Admins zu `#partner`; keine neue große Admin-Navigation.
+Logo, Marke/Firma, Website, Kontakte, Vertragsstand und Jahresbeitrag pflegen;
+300 Euro als Standard, echte Zahlungseingänge pro Beitragsjahr separat erfassen.
+Padel-Namen/Logos sind Testbestand ohne übernommene Vertrags-/Zahlungszusagen.
+
+Splash-Texte und Partner werden ab dieser Version zentral gespeichert und sind
+nach dem Speichern auf allen Geräten sichtbar. Andere redaktionelle TFB-Seiten
+behalten ihren bisherigen lokalen Exportweg. Partnerkontakte und Finanzangaben
+werden niemals in die öffentliche Konfiguration übernommen.
+
+**Rotation:** Alle sichtbaren Partner erscheinen einmal pro vollständigem Umlauf,
+ohne Gewichtung oder bevorzugte Position. Premium wird ausschließlich zusätzlich
+auf der Splash hervorgehoben (maximal zwei aktive Premium-Partner).
+
+**Drei Schritte:** Jetzt Veröffentlichung zum Feinschliff; danach als Vorschlag
+an den Vorstand gemeinsamer Betriebsstart TFB/Padel am 01.01.2027 und dann ein
+volles Messjahr. Kein automatisches Anschalten am Datum. Nach den ersten drei
+Padel-Betriebsjahren gemeinsames Folgekonzept prüfen: nur Padel oder Padel+TFB;
+TFB-Banden separat oder Gesamtpaket bleibt offen. Details im Projektgedächtnis.
+
+Nur Migration `0005-partner-management.sql` ist für diesen Live-Schritt nötig.
+`0004-partner-visibility.sql` und der Messcode bleiben für Schritt 2 vorbereitet.
+`PARTNER_MEASUREMENT_ENABLED=0` schützt auch serverseitig vor vorzeitiger Zählung.
+Live-Nachweis und Sicherung liegen privat unter `.private/release-v210/`.
+
+## Lokale Weiterentwicklung v209 – 17.10.2026
+
+Auf neuen Nutzerauftrag umgesetzt, noch nicht veröffentlicht: kühle TFB-Splash
+ohne Aktionsbutton, vertraute Textpflege per Stift, roter Ball als ausschließlich
+für angemeldete Admins verfügbarer Zugang zur kompakten Partner-Auswertung.
+Der bestehende Konto-Adminbereich enthält nur den Textlink „Einstiegsseite ansehen“.
+Partnerformate entsprechen jetzt Padel (Inhalt maximal 560 px, auch auf iPads).
+
+Statistik: Seitenaufrufe, geladene Logos, Sichtkontakte (50 % / 1 Sekunde im
+aktiven Tab) und Partnerklicks; keine Admin-/Editor-/Präsentationsaufrufe.
+Jahresauswahl, CSV und Drucken/PDF, kein zusätzlicher Admin-Menübaum. Die lokale
+Vorschau erzeugt keine Besucherzahlen und zeigt keine erfundenen Jahreswerte.
+Der zuletzt veröffentlichte Stand bleibt v208, siehe folgenden Abschnitt.
+
+Vor Veröffentlichung der Zählung: TFB-D1 sichern, anschließend ausschließlich
+`server/cloudflare/migrations/0004-partner-visibility.sql` auf die TFB-Datenbank
+anwenden (nicht das vollständige Schema oder Setup erneut ausführen), Worker
+und danach Website veröffentlichen. Einspielung ist additiv und wiederholbar.
+Die öffentliche Datenschutzinformation muss die konkrete Statistik beschreiben;
+mit diesem lokalen Auftrag wurde kein Tracking live geschaltet.
+
+Neue Prüfungen: `npm run test:partners`, `npm run test:browser:partners`.
+Der Browsertest nutzt isolierte synthetische Daten und einen abgefangenen
+Test-Ursprung; niemals echte Besuche oder Konten. Weitere technische Details
+stehen am Ende des Projektgedächtnisses.
+
 Repository: https://github.com/calvinjohncamp/tfb-website · Zieladresse:
 https://joern-kaemper.de. Lokaler Arbeitsordner weiterhin `tfb-kiosk/`.
 

@@ -1,0 +1,192 @@
+[
+  {
+    "id": "bmw-kaltenbach-gruppe",
+    "name": "BMW Kaltenbach Gruppe",
+    "tier": "premium"
+  },
+  {
+    "id": "intersport",
+    "name": "Intersport",
+    "tier": "premium"
+  },
+  {
+    "id": "a-s-creation",
+    "name": "A.S. Création",
+    "tier": "partner"
+  },
+  {
+    "id": "sparkasse-gummersbach",
+    "name": "Sparkasse Gummersbach",
+    "tier": "partner"
+  },
+  {
+    "id": "schwalbe",
+    "name": "Schwalbe",
+    "tier": "partner"
+  },
+  {
+    "id": "kanzlei-sattler",
+    "name": "Kanzlei Sattler",
+    "tier": "partner"
+  },
+  {
+    "id": "volksbank-oberberg-eg",
+    "name": "Volksbank Oberberg eG",
+    "tier": "partner"
+  },
+  {
+    "id": "die-finanzmaschine-r-kamper",
+    "name": "Die Finanzmaschine - R. Kämper",
+    "tier": "partner"
+  },
+  {
+    "id": "muller-textil-group",
+    "name": "Müller Textil Group",
+    "tier": "partner"
+  },
+  {
+    "id": "aok",
+    "name": "AOK",
+    "tier": "partner"
+  },
+  {
+    "id": "aggerenergie",
+    "name": "AggerEnergie",
+    "tier": "partner"
+  },
+  {
+    "id": "faulenbach-schmiedetechnik",
+    "name": "Faulenbach Schmiedetechnik",
+    "tier": "partner"
+  },
+  {
+    "id": "bpw",
+    "name": "BPW",
+    "tier": "partner"
+  },
+  {
+    "id": "sarstedt",
+    "name": "Sarstedt",
+    "tier": "partner"
+  },
+  {
+    "id": "wiehl-apotheke",
+    "name": "Wiehl Apotheke",
+    "tier": "regional"
+  },
+  {
+    "id": "oberberg-apotheke",
+    "name": "Oberberg Apotheke",
+    "tier": "regional"
+  },
+  {
+    "id": "stubs-dienstleistungen",
+    "name": "STUBS Dienstleistungen",
+    "tier": "regional"
+  },
+  {
+    "id": "fahrzeugpflege-wiehl",
+    "name": "Fahrzeugpflege Wiehl",
+    "tier": "regional"
+  },
+  {
+    "id": "penz",
+    "name": "Penz",
+    "tier": "regional"
+  },
+  {
+    "id": "pollmann-steuerberater",
+    "name": "Pollmann Steuerberater",
+    "tier": "regional"
+  },
+  {
+    "id": "gro-bestattungen",
+    "name": "Groß Bestattungen",
+    "tier": "regional"
+  },
+  {
+    "id": "erzquell-brauerei-bielstein-haas-gmbh-co-kg",
+    "name": "Erzquell Brauerei Bielstein Haas GmbH & Co. KG",
+    "tier": "regional"
+  },
+  {
+    "id": "auge-ohr-althofer",
+    "name": "Auge + Ohr Althöfer",
+    "tier": "regional"
+  },
+  {
+    "id": "asbach-und-winkler-zurich",
+    "name": "Asbach und Winkler - Zurich",
+    "tier": "regional"
+  },
+  {
+    "id": "metzgerei-muller",
+    "name": "Metzgerei Müller",
+    "tier": "regional"
+  },
+  {
+    "id": "bsv-bielstein",
+    "name": "BSV Bielstein",
+    "tier": "regional"
+  },
+  {
+    "id": "zappo-apotheke",
+    "name": "zappo Apotheke",
+    "tier": "regional"
+  },
+  {
+    "id": "sapv-oberberg",
+    "name": "SAPV Oberberg",
+    "tier": "regional"
+  },
+  {
+    "id": "jagenberg",
+    "name": "Jagenberg",
+    "tier": "regional"
+  },
+  {
+    "id": "sportpark-am-see",
+    "name": "Sportpark am See",
+    "tier": "regional"
+  },
+  {
+    "id": "bubenzer-baufachzentrum",
+    "name": "Bubenzer Baufachzentrum",
+    "tier": "regional"
+  },
+  {
+    "id": "5-elemente",
+    "name": "5 Elemente",
+    "tier": "regional"
+  },
+  {
+    "id": "aldi-sud",
+    "name": "ALDI SÜD",
+    "tier": "regional"
+  },
+  {
+    "id": "seitz",
+    "name": "Seitz",
+    "tier": "regional"
+  },
+  {
+    "id": "piccola-italia",
+    "name": "Piccola Italia",
+    "tier": "regional"
+  },
+  {
+    "id": "lang-raum-idee",
+    "name": "LANG Raum+Idee",
+    "tier": "regional"
+  },
+  {
+    "id": "gsg-grosshandel",
+    "name": "GSG Grosshandel",
+    "tier": "regional"
+  },
+  {
+    "id": "coca-cola",
+    "name": "Coca-Cola",
+    "tier": "regional"
+  }
+]

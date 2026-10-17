@@ -12,7 +12,7 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 PUBLIC_KEYS = {'version', 'pages', 'teams', 'applied', 'chatText', 'homeLook',
-               'nav', 'stories', 'homeColorMode', 'focusStrip'}
+               'nav', 'stories', 'homeColorMode', 'focusStrip', 'splash'}
 PAGE_KEYS = {'home', 'aktuell', 'sport', 'verein', 'satzung', 'impressum'}
 IMAGE_TYPES = {'image/jpeg': ('.jpg', b'\xff\xd8\xff'),
                'image/png': ('.png', b'\x89PNG\r\n\x1a\n'),

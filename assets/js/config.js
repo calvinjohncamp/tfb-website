@@ -20,6 +20,12 @@ TFB.config = {
   // Werbung für die Padel-Buchungs-App des Vereins (eigener Menüpunkt).
   padelUrl: 'https://padel-bielstein.de',
 
+  partnerVisibility: {
+    enabled: false,
+    url: 'https://tfb-api.calvinjohncamp.workers.dev',
+    hosts: ['joern-kaemper.de', 'www.joern-kaemper.de', 'calvinjohncamp.github.io'],
+  },
+
   // Öffentliche Adresse nach der Veröffentlichung – für Einladungslinks in WhatsApp.
   publicUrl: 'https://joern-kaemper.de',
 

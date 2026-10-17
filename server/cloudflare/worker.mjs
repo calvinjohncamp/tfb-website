@@ -2,6 +2,8 @@
 import schema from './schema.sql';
 import {syncState, syncCommit, syncRevision, syncFaces, syncPhoto} from './app-sync.mjs';
 import { managementPage } from './management.mjs';
+import {collectVisibility, visibilityReport} from './partner-visibility.mjs';
+import {publicPartnerContent,adminPartnerContent,savePartner,savePartnerSettings,addPartnerPayment,voidPartnerPayment,partnerLogo} from './partner-management.mjs';
 
 const ORIGINS = new Set(['https://joern-kaemper.de', 'https://www.joern-kaemper.de', 'https://calvinjohncamp.github.io']);
 const SESSION_MS = 12 * 60 * 60 * 1000;
@@ -162,7 +164,7 @@ async function route(request, env, url) {
     validatePassword(data.password);
     const email = norm(data.email), first = clean(data.firstName), last = clean(data.lastName);
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !first || !last || [email,first,last].some(s=>s.length>160)) fail(400, 'Name und E-Mail prüfen.');
-    await env.DB.exec(schema.split(';').map(s=>s.replace(/\s+/g,' ').trim()).filter(Boolean).join(';\n')+';');
+    await env.DB.exec(schema.replace(/^--[^\n]*$/gm,'').split(';').map(s=>s.replace(/\s+/g,' ').trim()).filter(Boolean).join(';\n')+';');
     const salt = random(); const id = crypto.randomUUID();
     const result = await env.DB.prepare(`INSERT INTO members(id,first_name,last_name,email,search_text,is_admin,password_hash,password_salt,updated_at)
       SELECT ?,?,?,?,?,1,?,?,? WHERE NOT EXISTS(SELECT 1 FROM members WHERE is_admin=1)`)
@@ -191,8 +193,25 @@ async function route(request, env, url) {
     await env.DB.prepare('DELETE FROM sessions WHERE member_id=?').bind(m.id).run();
     return createSession(env, result);
   }
+  if (request.method === 'GET' && path === '/public/partner-content') return publicPartnerContent(env,url.origin);
+  if (request.method === 'GET' && path.startsWith('/public/partner-logo/')) return partnerLogo(env,path.split('/').at(-1));
+  if (request.method === 'POST' && path === '/public/partner-events') {
+    if (env.PARTNER_MEASUREMENT_ENABLED !== '1') fail(409, 'Die Sichtbarkeitsmessung ist vorbereitet und derzeit ausgeschaltet.');
+    if (!ORIGINS.has(request.headers.get('Origin'))) fail(403, 'Diese Website ist nicht freigegeben.');
+    if (/bot|crawler|spider|headless|lighthouse/i.test(request.headers.get('User-Agent')||'')) return {ok:true,ignored:true};
+    await env.DB.prepare('DELETE FROM rate_limits WHERE expires_at<=?').bind(Date.now()).run();
+    await rate(env, request, 'partner-events', 900);
+    return collectVisibility(env, await body(request, 16384));
+  }
   const { member, tokenHash } = await authenticated(request, env, path.startsWith('/admin/'));
   await rate(env, request, 'directory', member.is_admin ? 3000 : 1800);
+  if (request.method === 'GET' && path === '/admin/partners') return adminPartnerContent(env,url.origin,url.searchParams.get('year'));
+  if (request.method === 'POST' && path === '/admin/partners/save') return savePartner(env,await body(request,450000));
+  if (request.method === 'POST' && path === '/admin/partner-settings') return savePartnerSettings(env,await body(request,4096));
+  if (request.method === 'POST' && path === '/admin/partner-payments/add') return addPartnerPayment(env,await body(request,4096));
+  if (request.method === 'POST' && path === '/admin/partner-payments/void') return voidPartnerPayment(env,await body(request,1024));
+  if (request.method === 'GET' && path === '/admin/partner-visibility' && env.PARTNER_MEASUREMENT_ENABLED !== '1') return {enabled:false,plannedStart:'2027-01-01'};
+  if (request.method === 'GET' && path === '/admin/partner-visibility') return visibilityReport(env,url.searchParams.get('year'));
   if (request.method === 'GET' && path === '/app/revision') return {revision:await syncRevision(env,member)};
   if (request.method === 'POST' && path === '/app/photo') return syncPhoto(env,member,(await body(request)).id);
   if (request.method === 'POST' && path === '/app/faces') return syncFaces(env,member,(await body(request)).ids);
