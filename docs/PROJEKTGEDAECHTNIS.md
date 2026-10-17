@@ -1885,3 +1885,12 @@ Keine alten Sicherungen importiert, keine Inhalte oder Konten überschrieben.
 Hinweis: Weihnachtsflyer nennt 05.12.2026, Termineintrag 07.11.2026; unverändert.
 Regression für veröffentlichte Bild-/PDF-Anhänge; Browserprüfung der Originalflyer
 mit Großansicht und bytegenauem Download. Cache v217.
+
+## 17.10.2026 · v218 – Kiosk ohne dauerhafte Menü-Hervorhebung
+
+Alte Sonderregel für immer roten und stärkeren Kiosk-Menüpunkt in beiden
+Gestaltungswelten entfernt. Kiosk wird wie alle internen Menüpunkte dargestellt;
+Hervorhebung und aria-current folgen weiterhin ausschließlich der aktiven Seite.
+Home erhält damit keine irreführende rote Kiosk-Markierung. Cache v218.
+Auch den aktiven Navigationsbereich bei Seitenwechseln aktualisiert, damit ein
+späteres Neuzeichnen des Menüs keine veraltete Kiosk-Markierung zurückbringt.

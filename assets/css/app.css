@@ -1307,11 +1307,9 @@ button.meet-series { cursor: pointer; }
 .tfb-logo-split > .tfb-logo-noball { position: absolute; inset: 0; width: 100%; height: 100%; }
 .tfb-logo-split > .tfb-logo-ball { position: absolute; left: 84.53%; top: 47.95%; width: 15.53%; height: 34.78%; color: var(--signal); }
 
-/* Menü: KIOSK immer in Signal-Rot; aktiver Bereich = dunkle Schrift mit kurzem roten Strich */
-.topnav .tab.tab-kiosk { color: var(--signal); font-weight: 800; }
+/* Menü: Nur der aktive Bereich erhält die gemeinsame Hervorhebung. */
 .topnav .tab.active { color: var(--ink); }
 .topnav .tab.active::after { content: ""; position: absolute; left: 0; right: .16em; bottom: 3px; height: 2px; border-radius: 2px; background: var(--signal); }
-.topnav .tab.tab-kiosk.active { color: var(--signal); }
 @media (min-width: 1024px) {
   .topnav .tab.active::after { bottom: -9px; right: .2em; }
 }

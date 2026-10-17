@@ -1386,6 +1386,7 @@
 
   window.addEventListener('hashchange', () => {
     const view = currentView();
+    navArea = areaOf(view);
     document.querySelectorAll('.topnav .tab').forEach((t) => {
       const active = t.getAttribute('href') === '#' + areaOf(view);
       t.classList.toggle('active', active);

@@ -62,7 +62,6 @@
 .editorial-preview-active .topbar { background: var(--bg); }
 .editorial-preview-active .topnav .tab { font-family: var(--font); font-size: .82rem; letter-spacing: 0; font-weight: 700; color: var(--muted); }
 .editorial-preview-active .topnav .tab.active { color: var(--ink); }
-.editorial-preview-active .topnav .tab.tab-kiosk { color: var(--signal); }
 @media (max-width: 400px) {
   .editorial-preview-active .topnav .tab { font-size: .76rem; }
 }
