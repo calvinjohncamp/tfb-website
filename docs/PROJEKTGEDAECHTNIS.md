@@ -1913,3 +1913,16 @@ Geprüft: bytegleiche Browser-Favicons, Abmessungen/Farben aller App-Symbole,
 Maskable-Sicherheitskreis, echter Service-Worker-Install und Offline-Aufruf der
 versionierten Icons. Veröffentlichungsprüfung löst URL-Parameter wie bei HTML
 nun auch bei Offline-Dateien auf.
+
+## 17.10.2026 · v220 – App-Symbol übernimmt exakt die Website-Farben
+
+App-Hintergrund von Creme #F5F0E6 auf #EFEFEF geändert, TFB-Zeichen von #1C1A17
+auf #171717. Signature-Rot bleibt #C4553A. Diese drei Farben entsprechen der kühlen
+Standardansicht der Website (design-preview.css plus geerbte Root-Farbe aus app.css).
+Der Icon-Build liest die CSS-Variablen --bg, --logo und --signal direkt aus den
+Website-Stilen, statt eigene Farbkonstanten zu führen. Manifest-Starthintergrund
+wird ebenfalls aus --bg gesetzt. Originalproportionen und Geometrie unverändert,
+Browser-Favicons bytegleich. Alle App-Formate neu erzeugt; Icon-URLs/Cache v220.
+Browserprüfung: berechnete Website-Farben nach Ende des Farbwechsels mit den
+PNG-Pixeln sämtlicher App-Formate verglichen; exakte RGBA-Farbwerte nachgewiesen,
+Manifest-Hintergrund geprüft und beide Browser-Favicons bytegleich bestätigt.
