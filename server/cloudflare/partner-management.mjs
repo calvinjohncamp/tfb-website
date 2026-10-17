@@ -46,6 +46,13 @@ export async function savePartner(env,data){
 export async function savePartnerSettings(env,data){
  const fields={headline:60,accent:60,description:350,entry:60,foot:120,partnerLabel:120},s=data.splash||{},clean={enabled:s.enabled};
  if(typeof s.enabled!=='boolean'||!Number.isSafeInteger(data.revision))fail(400,'Ungültige Einstiegsseite.');
+ const previous=await env.DB.prepare('SELECT payload FROM tfb_partner_settings WHERE id=1').first();
+ const old=previous?JSON.parse(previous.payload):{};
+ clean.eyebrowEnabled=s.eyebrowEnabled===undefined?old.eyebrowEnabled!==false:s.eyebrowEnabled;
+ if(typeof clean.eyebrowEnabled!=='boolean')fail(400,'Bitte die Anzeige der kleinen Zeile prüfen.');
+ clean.footEnabled=s.footEnabled===undefined?old.footEnabled!==false:s.footEnabled;
+ if(typeof clean.footEnabled!=='boolean')fail(400,'Bitte die Anzeige der Zeile unter dem Button prüfen.');
+ clean.eyebrowText=txt(s.eyebrowText===undefined?(old.eyebrowText??'Tennisfreunde Bielstein'):s.eyebrowText,120);
  for(const [key,max] of Object.entries(fields)){clean[key]=txt(s[key],max);if(!clean[key]&&key!=='description'&&key!=='foot')fail(400,'Bitte die Texte vervollständigen.');}
  const row=await env.DB.prepare('UPDATE tfb_partner_settings SET payload=?,revision=revision+1,updated_at=? WHERE id=1 AND revision=? RETURNING revision').bind(JSON.stringify(clean),new Date().toISOString(),data.revision).first();
  if(!row)fail(409,'Die Texte wurden inzwischen geändert. Bitte die Einstiegsseite neu laden.');return {revision:row.revision,splash:clean};

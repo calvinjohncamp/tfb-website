@@ -19,6 +19,12 @@ test('central splash edits use revisions, publish immediately, and reject stale 
  assert.equal((await f.call('/admin/partner-settings',data,f.adminToken)).status,200);
  assert.equal((await f.call('/public/partner-content')).body.splash.headline,'Unser Verein');
  assert.equal((await f.call('/admin/partner-settings',data,f.adminToken)).status,409);
+ const current=(await f.call('/public/partner-content')).body;
+ const switched=await f.call('/admin/partner-settings',{revision:current.revision,splash:{...current.splash,eyebrowEnabled:false,eyebrowText:'Kleine Vereinszeile',footEnabled:false}},f.adminToken);
+ assert.equal(switched.status,200);assert.equal(switched.body.splash.eyebrowEnabled,false);assert.equal(switched.body.splash.footEnabled,false);
+ // Old open editors must not reset the newly introduced flags or custom text.
+ const legacy=await f.call('/admin/partner-settings',{revision:switched.body.revision,splash:{...before.splash,headline:'Legacy edit'}},f.adminToken);
+ assert.equal(legacy.status,200);assert.equal(legacy.body.splash.eyebrowEnabled,false);assert.equal(legacy.body.splash.footEnabled,false);assert.equal(legacy.body.splash.eyebrowText,'Kleine Vereinszeile');
  assert.equal((await f.call('/public/partner-events',{events:[]})).status,409,'measurement stays disabled server-side');
  assert.deepEqual((await f.call('/admin/partner-visibility?year=2027',undefined,f.adminToken)).body,{enabled:false,plannedStart:'2027-01-01'});
 });

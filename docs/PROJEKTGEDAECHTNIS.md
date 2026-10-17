@@ -1815,3 +1815,29 @@ Primärquellen geprüft: MDN Intersection Observer API und Page Visibility API;
 Google Ads Viewability-Definition 50 % / 1 Sekunde; Google Analytics Dokumentation
 zu Seitenaufrufen; offizielle D1-Plattformlimits. Kein Google-Analytics-Dienst
 installiert und keine zusätzliche Fremdverbindung in die Website eingebaut.
+
+## 17.10.2026 · v213 – Splash-Zeilen unabhängig schalten, Partnerzeile 0,5 Sekunden
+
+Nutzerpräzisierungen umgesetzt: Partnerart heißt durchgehend Partnerbandenwerbung
+(ohne Punkt/Trennung), neben Premium-Partner. „Ausreichend lange“ aus den sichtbaren
+Auswertungsformulierungen entfernt. Eigene Messdefinition nun 0,5 Sekunden statt
+einer Sekunde; die Partnerzeile wird als Einheit betrachtet. Sind mindestens 50 %
+der Zeile im aktiven Tab sichtbar und alle vorhandenen Logos geladen, werden beide
+Partner gemeinsam gewertet; ein Seitenaufruf mit Partner-Sichtbarkeit wird weiterhin
+nur einmal gezählt. Bekannte Überlagerungen/ausgeblendete Tabs brechen den Zeitraum
+ab. Kein Zählen defekter Logos. Messung bleibt im Frontend und Worker ausgeschaltet.
+Der isolierte Zukunftstest prüft ein Pageview-/Partner-View-Ereignis bei zwei Logo-
+kontakten. Messdefinitionsversion auf 2 gesetzt; es gibt keine historischen Livewerte.
+
+Splash-Editor erhält zwei unabhängig speicherbare Schalter: (1) kleine Vereinszeile
+oberhalb der Überschrift, mit frei bearbeitbarem Text, (2) kleine Zeile unterhalb
+des Einstiegsbuttons, deren Text ebenfalls bearbeitbar bleibt. Logo, Partnerüberschrift
+und Rechtslinks bleiben eigenständig. Bestehende Inhalte standardmäßig weiter anzeigen;
+keine gespeicherten Texte überschreiben oder bei Ausblenden löschen. Leere Texte
+werden ohne leeren Absatz dargestellt. Beide Optionen zentral gespeichert, keine
+Schema-/D1-Migration nötig. Bereits geöffnete alte Editoren erhalten die neuen Werte,
+statt sie beim späteren Speichern auf Standard zurückzusetzen. Versionsprüfung bleibt.
+
+Backend- und Browserprüfungen erfolgreich: Ausblenden beider Zeilen, Wiedereinblenden,
+Textänderung und Sichtbarkeit in einem anderen Browserprofil; übrige Partnerpflege,
+Zahlungen, CSV und responsive Ansichten weiterhin geprüft. Cache tfb-kiosk-v213.

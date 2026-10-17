@@ -46,6 +46,6 @@ export async function visibilityReport(env, year) {
   const started=await env.DB.prepare("SELECT value FROM partner_meta WHERE key='measurement_started'").first();
   return {source:'tfb',year:Number(year),timeZone:'Europe/Berlin',startedAt:started?.value||null,
     through:year==current?berlinDay():`${year}-12-31`,generatedAt:new Date().toISOString(),
-    definition:'Sichtkontakt: mindestens 50 % des Logos für eine Sekunde im aktiven Tab; je Aufruf und Partnerplatz einmal.',
-    measurementVersion:1,rotationVersion:'tfb-equal-v1',partners:await currentPartners(env),rows};
+    definition:'Sichtkontakt: mindestens 50 % der geladenen Partnerzeile für eine halbe Sekunde im aktiven Tab; beide Logos gemeinsam, je Aufruf einmal.',
+    measurementVersion:2,rotationVersion:'tfb-equal-v1',partners:await currentPartners(env),rows};
 }

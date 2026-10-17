@@ -1,5 +1,5 @@
 (function () {
-  const defaults = {enabled:true,headline:'Hier spielt',accent:'das Miteinander.',description:'Tennis, Freunde und das Clubleben dazwischen. Willkommen bei den Tennisfreunden Bielstein.',entry:'Zu den Tennisfreunden',foot:'Sport verbindet. Seit 1976 in Bielstein.',partnerLabel:'Präsentiert von unseren Premium-Partnern'};
+  const defaults = {enabled:true,footEnabled:true,eyebrowEnabled:true,eyebrowText:'Tennisfreunde Bielstein',headline:'Hier spielt',accent:'das Miteinander.',description:'Tennis, Freunde und das Clubleben dazwischen. Willkommen bei den Tennisfreunden Bielstein.',entry:'Zu den Tennisfreunden',foot:'Sport verbindet. Seit 1976 in Bielstein.',partnerLabel:'Präsentiert von unseren Premium-Partnern'};
   const ui=()=>TFB.ui, admin=()=>Boolean(ui()?.isAdmin()), esc=s=>ui().esc(s);
   const cfg=TFB.config.partnerVisibility;
   const remote=()=>Boolean(cfg?.enabled && location.protocol==='https:' && cfg.hosts.includes(location.hostname));
@@ -49,11 +49,12 @@
     const w=Math.max(0,Math.min(r.right,innerWidth)-Math.max(0,r.left)),h=Math.max(0,Math.min(r.bottom,innerHeight)-Math.max(0,r.top));
     if(w*h/(r.width*r.height)<.5)return false;
     const hit=document.elementFromPoint(Math.max(0,Math.min(innerWidth-1,r.x+r.width/2)),Math.max(0,Math.min(innerHeight-1,r.y+r.height/2)));
-    return hit===image;
+    return hit===image||image.contains(hit);
   }
-  function schedule(image) {
-    if(timers.has(image)||!unobscured(image))return;
-    const visit=active;timers.set(image,setTimeout(()=>{timers.delete(image);if(active!==visit||!unobscured(image))return;const tile=image.closest('[data-partner-id]');event('partner_view');event('visible',tile.dataset.partnerId,tile.dataset.partnerSlot);},1000));
+  function schedule(group) {
+    const loaded=()=>[...group.querySelectorAll('[data-partner-id] img')].every(img=>img.complete&&img.naturalWidth>0);
+    if(timers.has(group)||!loaded()||!unobscured(group))return;
+    const visit=active;timers.set(group,setTimeout(()=>{timers.delete(group);if(active!==visit||!loaded()||!unobscured(group))return;event('partner_view');for(const tile of group.querySelectorAll('[data-partner-id]'))event('visible',tile.dataset.partnerId,tile.dataset.partnerSlot);},500));
   }
   function observe(root) {
     stopObserver();if(!eligible()||!active)return;
@@ -61,7 +62,7 @@
       if(isIntersecting&&intersectionRatio>=.5){candidates.add(target);schedule(target);}else{candidates.delete(target);clearTimeout(timers.get(target));timers.delete(target);}
     }),{threshold:[0,.5,1]});
     for(const image of root.querySelectorAll('[data-partner-id] img')){
-      const ready=()=>{if(!image.isConnected||!image.complete||!image.naturalWidth||!active||root!==currentRoot())return;const tile=image.closest('[data-partner-id]');event('display',tile.dataset.partnerId,tile.dataset.partnerSlot);observer?.observe(image);};
+      const ready=()=>{if(!image.isConnected||!image.complete||!image.naturalWidth||!active||root!==currentRoot())return;const tile=image.closest('[data-partner-id]');event('display',tile.dataset.partnerId,tile.dataset.partnerSlot);const group=tile.closest('.pbsp-duo');if(group){observer?.observe(group);schedule(group);}};
       if(image.complete)ready();else image.addEventListener('load',ready,{once:true});
     }
   }
@@ -78,7 +79,7 @@
     if(!partners.length)return '';
     return `<section class="tfb-splash-partners pbsp-slot" aria-label="Premium-Partner"><p class="pbsp-kicker">${esc(settings.partnerLabel)}</p><div class="pbsp-duo">${partners.map((p,i)=>TFB.partnerTile(p,i)).join('')}</div></section>`;
   }
-  function splashMarkup(){return `<div class="tfb-splash-inner"><div class="tfb-splash-top"><div class="tfb-splash-wordmark" role="${admin()?'group':'img'}" aria-label="Tennisfreunde Bielstein"><span class="tfb-logo-noball"></span>${admin()?'<button type="button" class="tfb-splash-ball" data-action="partner-report" aria-label="Partner verwalten"><span class="tfb-logo-ball"></span></button>':'<span class="tfb-logo-ball tfb-splash-ball"></span>'}</div>${admin()?`<button class="view-close tfb-splash-edit" data-action="splash-edit" aria-label="Einstiegsseite bearbeiten">${ui().icon.pencil}</button>`:''}</div><div class="tfb-splash-message"><p class="tfb-splash-eyebrow">Tennisfreunde Bielstein</p><h1><span>${esc(settings.headline)}</span><br><em>${esc(settings.accent)}</em></h1><p class="tfb-splash-description">${esc(settings.description)}</p></div><div><button type="button" class="tfb-splash-enter" data-action="splash-enter"><span>${esc(settings.entry)}</span><span aria-hidden="true">→</span></button><p class="tfb-splash-foot">${esc(settings.foot)}</p>${premiumMarkup()}<nav class="tfb-splash-legal" aria-label="Vereinsinformationen"><a href="#impressum" data-splash-legal>Impressum</a><a href="#satzung" data-splash-legal>Satzung</a></nav></div></div>`;}
+  function splashMarkup(){return `<div class="tfb-splash-inner"><div class="tfb-splash-top"><div class="tfb-splash-wordmark" role="${admin()?'group':'img'}" aria-label="Tennisfreunde Bielstein"><span class="tfb-logo-noball"></span>${admin()?'<button type="button" class="tfb-splash-ball" data-action="partner-report" aria-label="Partner verwalten"><span class="tfb-logo-ball"></span></button>':'<span class="tfb-logo-ball tfb-splash-ball"></span>'}</div>${admin()?`<button class="view-close tfb-splash-edit" data-action="splash-edit" aria-label="Einstiegsseite bearbeiten">${ui().icon.pencil}</button>`:''}</div><div class="tfb-splash-message">${settings.eyebrowEnabled&&settings.eyebrowText?`<p class="tfb-splash-eyebrow">${esc(settings.eyebrowText)}</p>`:''}<h1><span>${esc(settings.headline)}</span><br><em>${esc(settings.accent)}</em></h1><p class="tfb-splash-description">${esc(settings.description)}</p></div><div><button type="button" class="tfb-splash-enter" data-action="splash-enter"><span>${esc(settings.entry)}</span><span aria-hidden="true">→</span></button>${settings.footEnabled&&settings.foot?`<p class="tfb-splash-foot">${esc(settings.foot)}</p>`:''}${premiumMarkup()}<nav class="tfb-splash-legal" aria-label="Vereinsinformationen"><a href="#impressum" data-splash-legal>Impressum</a><a href="#satzung" data-splash-legal>Satzung</a></nav></div></div>`;}
   async function show(force=false) {
     await refreshSettings();if(!force&&!settings.enabled){rendered();return;}
     if(!splash){splash=document.createElement('section');splash.id='tfb-splash';splash.className='tfb-splash';splash.tabIndex=-1;splash.setAttribute('role','dialog');splash.setAttribute('aria-modal','true');splash.setAttribute('aria-label','Willkommen bei den Tennisfreunden Bielstein');document.body.appendChild(splash);}
@@ -105,10 +106,10 @@
   }
   async function edit(){
     if(!admin())return;if(previewSettings)settings={...previewSettings};else await refreshSettings();const saved={...settings};
-    ui().openSheet(`<form class="editor" data-editor="splash"><h2>Einstiegsseite bearbeiten</h2><p class="ed-hint">Texte anpassen und speichern – wie auf den anderen TFB-Seiten.</p><label class="field"><span><input name="enabled" type="checkbox" ${settings.enabled?'checked':''}> Einstiegsseite anzeigen</span></label>${[['headline','Überschrift',60],['accent','Hervorgehobene Zeile',60],['description','Beschreibung',350],['entry','Einstiegsbutton',60],['foot','Fußtext',120],['partnerLabel','Partnerüberschrift',120]].map(([key,label,max])=>`<label class="field"><span>${label}</span>${key==='description'?`<textarea name="${key}" maxlength="${max}" rows="3">${esc(settings[key])}</textarea>`:`<input name="${key}" value="${esc(settings[key])}" maxlength="${max}" required>`}</label>`).join('')}<p class="form-error" role="alert"></p><button type="button" class="btn block" data-splash-preview>Vorschau ansehen</button><div class="ed-actions"><button type="submit" class="btn primary block">Speichern</button></div><p class="ed-hint">${TFB.partnerContent?.isRemote?'Nach dem Speichern sind die Texte auf allen Geräten sichtbar.':'Lokale Vorschau: Speichern gilt in diesem Browser.'}</p></form>`);
+    ui().openSheet(`<form class="editor" data-editor="splash"><h2>Einstiegsseite bearbeiten</h2><p class="ed-hint">Texte anpassen und speichern – wie auf den anderen TFB-Seiten.</p><label class="field"><span><input name="enabled" type="checkbox" ${settings.enabled?'checked':''}> Einstiegsseite anzeigen</span></label><label class="field"><span><input name="eyebrowEnabled" type="checkbox" ${settings.eyebrowEnabled?'checked':''}> Kleine Zeile oberhalb der Überschrift anzeigen</span></label><label class="field"><span><input name="footEnabled" type="checkbox" ${settings.footEnabled?'checked':''}> Kleine Zeile unter dem Einstiegsbutton anzeigen</span></label>${[['eyebrowText','Text der kleinen Zeile',120],['headline','Überschrift',60],['accent','Hervorgehobene Zeile',60],['description','Beschreibung',350],['entry','Einstiegsbutton',60],['foot','Text unter dem Einstiegsbutton',120],['partnerLabel','Partnerüberschrift',120]].map(([key,label,max])=>`<label class="field"><span>${label}</span>${key==='description'?`<textarea name="${key}" maxlength="${max}" rows="3">${esc(settings[key])}</textarea>`:`<input name="${key}" value="${esc(settings[key])}" maxlength="${max}" ${['eyebrowText','foot'].includes(key)?'':'required'}>`}</label>`).join('')}<p class="form-error" role="alert"></p><button type="button" class="btn block" data-splash-preview>Vorschau ansehen</button><div class="ed-actions"><button type="submit" class="btn primary block">Speichern</button></div><p class="ed-hint">${TFB.partnerContent?.isRemote?'Nach dem Speichern sind die Texte auf allen Geräten sichtbar.':'Lokale Vorschau: Speichern gilt in diesem Browser.'}</p></form>`);
     const form=document.querySelector('[data-editor="splash"]');
     requestAnimationFrame(()=>form.elements.headline.focus());
-    const draft=()=>Object.fromEntries(Object.keys(defaults).map(k=>[k,k==='enabled'?form.elements[k].checked:form.elements[k].value.trim()]));
+    const draft=()=>Object.fromEntries(Object.keys(defaults).map(k=>[k,['enabled','eyebrowEnabled','footEnabled'].includes(k)?form.elements[k].checked:form.elements[k].value.trim()]));
     const preview=()=>{settings=draft();previewSettings={...settings};splash.innerHTML=splashMarkup();};
     form.querySelector('[data-splash-preview]').onclick=()=>{preview();ui().closeSheet();ui().toast('Vorschau – über den Stift weiterbearbeiten oder speichern.',true);};
     // Preview stays in memory; reopening the editor retains it until save/reload.
@@ -151,7 +152,7 @@
   document.addEventListener('keydown',e=>{if(e.key!=='Tab'||!splash||splash.hidden||document.querySelector('#sheet-root.open'))return;const controls=[...splash.querySelectorAll('button,a[href]')];const first=controls[0],last=controls.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}});
   window.addEventListener('hashchange',()=>{stopObserver();active=null;if(splash&&!splash.hidden)hide(false);markVisit();});
   document.addEventListener('visibilitychange',()=>{cancelTimers();if(document.visibilityState==='visible'){if(splash&&!splash.hidden)begin('splash',splash);else rendered();}else flush();});
-  // A modal breaks continuous visibility even when it opens during the one-second interval.
+  // A modal breaks continuous visibility even when it opens during the half-second interval.
   new MutationObserver(()=>{cancelTimers();const open=Boolean(document.querySelector('#sheet-root .sheet'));if(splash&&!splash.hidden)splash.inert=open;if(!open)for(const image of candidates)schedule(image);}).observe(document.getElementById('sheet-root'),{childList:true,attributes:true});
   window.addEventListener('pagehide',()=>{markVisit();flush();});
   let activityAt=0;for(const type of ['pointerdown','keydown','scroll'])document.addEventListener(type,()=>{if(Date.now()-activityAt>60000){activityAt=Date.now();markVisit();}},{passive:true});
