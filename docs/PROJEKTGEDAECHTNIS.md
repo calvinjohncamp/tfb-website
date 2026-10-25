@@ -1,5 +1,13 @@
 # TFB-Kiosk – Projektgedächtnis und Übergabe
 
+## Strichlisten-Begriffe v229 – 25.10.2026
+
+Spaltenüberschriften heißen jetzt „Match“ und „Shop“ (Schläger/Bälle),
+jeweils als vollständiger Begriff ohne Abkürzung und auch in den zugänglichen
+Spaltenbezeichnungen. Unveränderte Kategorien und Buchungen. Cache v229.
+Veröffentlichung v229 noch ausstehend.
+
+
 ## Strichlisten-Typografie v228 – 25.10.2026
 
 Namensschrift auf allen Größen um rund 22% reduziert: .875rem Desktop,
