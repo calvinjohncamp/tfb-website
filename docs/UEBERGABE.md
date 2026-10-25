@@ -5,7 +5,10 @@
 Spaltenüberschriften heißen jetzt „Match“ und „Shop“ (Schläger/Bälle),
 jeweils als vollständiger Begriff ohne Abkürzung und auch in den zugänglichen
 Spaltenbezeichnungen. Unveränderte Kategorien und Buchungen. Cache v229.
-Veröffentlichung v229 noch ausstehend.
+v229 veröffentlicht: Quellstand `d1a912463d1119fc112e69c1bf29e031d6efcfff`,
+[Pages-Lauf 40195817149](https://github.com/calvinjohncamp/tfb-website/actions/runs/40195817149)
+erfolgreich. App und Service Worker live bytegleich; 42 Ansichten auf passende
+Spaltenüberschriften geprüft. Nachweis `.private/release-v229/live-check.json`.
 
 
 ## Strichlisten-Typografie v228 – 25.10.2026
