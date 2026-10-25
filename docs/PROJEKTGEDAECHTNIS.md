@@ -1,5 +1,92 @@
 # TFB-Kiosk – Projektgedächtnis und Übergabe
 
+## Bestätigter Gesamtstand: live v231 – 25.10.2026
+
+Der Nutzer hat den aktuellen Gesamtstand mit „Das sieht gut aus“ bestätigt und
+die Aktualisierung von Projektgedächtnis und Übergabe beauftragt. Diese Übersicht
+hat Vorrang vor den darunterstehenden Versionsnotizen und älteren Übergaben.
+Die Feinschliffe dieser Sitzung sind umgesetzt und veröffentlicht; weitere
+Produktänderungen erst auf neuen Auftrag. Dieser Abschluss ändert nur Dokumentation.
+
+### Anmeldung und Kiosk
+
+Nach erfolgreicher Anmeldung beziehungsweise Passwortaktivierung führt die App
+direkt auf **Home**, ohne Umweg über Kiosk oder Splash. Die bestehende Splash
+beim normalen Websiteeinstieg bleibt erhalten. Kiosk hat oben einen eigenen
+Seitentitel im gleichen Schriftstil wie der Chat, mit 28px Abstand zum bestehenden
+Bierdeckel und Sortiment. Reihenfolge, Käufe und Abrechnung bleiben erhalten.
+
+### Strichliste – endgültig bestätigte Darstellung
+
+- Insgesamt **20 unterschiedliche Namen**: das angemeldete Mitglied mit seinen
+  echten Buchungen und 19 Personen aus dem geschützten TFB-Mitgliederverzeichnis
+  mit fiktiven Vorführstrichen. Keine zusätzlichen Buchungen oder Abrechnungsbeträge.
+- Namen über das Alphabet verteilt auswählen, anschließend deutsch nach Nachname
+  und Vorname sortieren. Bei ausreichendem Bestand neun Namen vor dem angemeldeten
+  Mitglied und zehn dahinter; die eigene Zeile steht damit in der Mitte.
+- Gleichnamige Verzeichniseinträge werden nur für diese Anzeige zusammengefasst.
+  Die eigene Zeile stammt ausschließlich vom angemeldeten Konto. Den doppelten
+  eigenen Namen nicht erneut als Vorführperson auswählen. Keine Konten löschen
+  oder echte Käufe zusammenführen; die Konten wurden schreibgeschützt geprüft.
+- Keine sichtbaren „Beispiel“-Zusätze an Namen oder Detailkategorien. Eigene Zeile
+  weiterhin dezent mit „du“ markiert; kurzer linksbündiger Hinweis zu Abrechnungen.
+- Namensschrift rund **22% kleiner** als vor v228. Spalten heißen **Getränke,
+  Kränze, Snacks, Match, Shop**; Shop steht für Schläger und Bälle.
+- **Striche und Spaltenüberschriften beide linksbündig.** Das ist die abschließend
+  bestätigte Ausrichtung. Die frühere Zentrierung ist überholt. Überschriften
+  passen sich ihrer tatsächlichen Spaltenbreite an und dürfen sich nicht überlagern.
+
+### Dating 2.0 / Verabreden
+
+Meine Gruppen enthalten nur Name und Mitglieder. Einladungen zur Gruppe und
+Zu-/Absagen zu Terminen sind getrennt. Alle vier oberen Einstiege (Einzel,
+Doppel, Training, Mannschafts-Spiel) nutzen dieselbe Einladungsmaske: oben ist
+„Einmalig“ vorbelegt, „Trainingsserie anlegen“ im regelmäßigen Bereich startet
+mit „Jede Woche“. Beide Einstiege erlauben das Umschalten der Häufigkeit.
+
+Mehrere Gruppen kombinieren, zusätzliche Spieler auswählen und einzelne Personen
+entfernen; Überschneidungen erscheinen nur einmal. Eingaben bleiben beim Wechsel
+der Auswahl/Häufigkeit erhalten. Gruppen sind Auswahlhilfen und werden dadurch
+nicht verändert. Neue Einladungen/Serien speichern genau die angezeigten Personen
+(`groupId:null`); spätere Gruppenänderungen verändern diese Auswahl nicht
+automatisch. Alte gruppengebundene Serien bleiben erhalten. Weitere Angaben
+wie Notiz, Treffen und Abfahrt sind eingeklappt. Kommende Matches stehen oben,
+regelmäßige Trainingsgruppen darunter, Meine Gruppen unten.
+
+### Abstände und Partner
+
+Erklärungstexte in Dating haben 18px Abstand zu den Karten. Der Kontohinweis ist
+vollständig linksbündig und hat 24px Abstand zu den Gruppen. Sponsorenbereiche
+haben auf allen Inhaltsseiten einheitlich 32px Abstand zum vorherigen Inhalt;
+die linksbündige Überschrift hat 10px Abstand zu den Logos. Logoformate,
+Partnerrotation und ausgeschaltete Messung bleiben erhalten.
+
+### Veröffentlichungs- und Prüfnachweise
+
+- Website: https://joern-kaemper.de/ · Repository: `calvinjohncamp/tfb-website`.
+- Aktueller Website-Quellstand: `ffa7d1cc99046c4f4f865af546272bca047457b2`.
+  Dokumentationscommits danach verändern die ausgelieferte Website nicht.
+- Cache: `tfb-kiosk-v231`. Erfolgreicher [Pages-Lauf 40196259659](https://github.com/calvinjohncamp/tfb-website/actions/runs/40196259659).
+  CSS und Service Worker live bytegleich geprüft; `.private/release-v231/live-check.json`.
+- Aktueller Worker: `a854f00e-e5a2-413f-8b5c-ca4478db0f96` (v227), danach keine
+  Backendänderung. Bestehende TFB-D1, kein Schemawechsel und keine Löschung von Konten.
+- Vorherige Nachweise für Kiosk, Abstände und Strichlistenbereinigung unter
+  `.private/release-v225/` bis `.private/release-v230/`.
+- 13 Backendtests sowie isolierte Browserprüfungen für Anmeldung/Home, Gruppen,
+  Serien, Geräteabgleich, echte eigene Käufe und Dubletten bestanden. Abschließend
+  42 Layoutansichten: beide Farbwelten, 21 Breiten von 320 bis 1920px. Überschriften
+  ohne Überlagerung, kleinere Namensschrift, linksbündige Striche/Überschriften.
+  Dies sind Browserprüfungen in Desktop-/Tablet-/Handybreiten; keine neue Prüfung
+  auf physischen Geräten im Dokumentationsabschluss.
+- Die Website bleibt Vorführung ohne produktiven Abrechnungsstart.
+  `PARTNER_MEASUREMENT_ENABLED=0`; keine neue Statistikaktivierung, kein
+  Mitgliederimport und keine zusätzlichen E-Mails. Private Mitgliederlisten,
+  Sicherungen und Zugangsdaten nicht ins Repository oder Pages-Paket übernehmen.
+
+Die folgenden Versionsnotizen dokumentieren die einzelnen Schritte. Bei
+Widersprüchen gilt der oben bestätigte Gesamtstand v231.
+
+
 ## Linksbündige Spaltenüberschriften v231 – 25.10.2026
 
 Überschriften der Strichliste passend zu den Strichen ebenfalls linksbündig.
