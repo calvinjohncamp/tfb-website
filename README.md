@@ -23,7 +23,13 @@ Prüfung: 13 bestehende Backendtests; neue isolierte Browsertests
 und `node tools/test-browser-tally-examples.mjs` (echter Worker mit Wegwerf-SQLite,
 20 Zeilen, 19 Beispiele, echte eigene Buchungen/Betrag auch nach Reload).
 Worker-Build erfolgreich; Messung bleibt ausgeschaltet.
-Veröffentlichungsnachweis folgt nach erfolgreicher Auslieferung.
+Veröffentlicht und geprüft: Website-Quellstand `cc9836e7aae97d1785b27904937e9343db877f8d`,
+[Pages-Lauf 40193735376](https://github.com/calvinjohncamp/tfb-website/actions/runs/40193735376)
+erfolgreich; Worker `3d57dda8-c68b-481a-b60c-2a8824f00b2e` veröffentlicht.
+App, Dating, Sync-Adapter und Service Worker live HTTP 200/bytegleich geprüft;
+anonymer Zugriff auf `/app/state` bleibt 401. Privater Nachweis:
+`.private/release-v223/live-check.json`. Automatische nuLiga-Aktualisierung
+`fcaf08a` übernommen; sonstige lokale Entwürfe unverändert belassen.
 
 
 
