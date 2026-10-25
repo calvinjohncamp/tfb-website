@@ -6,7 +6,10 @@
 Unveränderte Spalten und Buchungen. Cache v231. Beide Farbwelten bei 21 Breiten
 von 320 bis 1920px geprüft: Überschriften und Striche linksbündig,
 keine überlappenden Überschriften; Desktop/Handy visuell kontrolliert.
-Veröffentlichung v231 noch ausstehend.
+v231 veröffentlicht: Quellstand `ffa7d1cc99046c4f4f865af546272bca047457b2`,
+[Pages-Lauf 40196259659](https://github.com/calvinjohncamp/tfb-website/actions/runs/40196259659)
+erfolgreich. CSS und Service Worker live bytegleich;
+Nachweis `.private/release-v231/live-check.json`.
 
 
 ## Linksbündige Striche v230 – 25.10.2026
