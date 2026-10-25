@@ -29,7 +29,7 @@ export async function syncRevision(env,member) {
   const row=await env.DB.prepare('SELECT COUNT(*) n,COALESCE(SUM(revision),0) total FROM app_records').first();
   const members=await env.DB.prepare('SELECT COUNT(*) n,SUM(active) active,MAX(updated_at) updated FROM members').first();
   const teams=(await env.DB.prepare('SELECT team_key FROM member_teams WHERE member_id=? ORDER BY team_key').bind(member.id).all()).results.map(r=>r.team_key);
-  return `${row.n}:${row.total}:${member.updated_at}:${members.n}:${members.active}:${members.updated}:${teams.join(',')}:${berlinDay()}:tally2`;
+  return `${row.n}:${row.total}:${member.updated_at}:${members.n}:${members.active}:${members.updated}:${teams.join(',')}:${berlinDay()}:tally3`;
 }
 export async function syncFaces(env,member,ids) {
   if(!Array.isArray(ids)||ids.length>100||ids.some(id=>typeof id!=='string'||id.length>120))fail(400,'Ungültige Profilabfrage.');
@@ -47,7 +47,12 @@ export async function syncPhoto(env,member,id) {
 // Keep nine before and ten after where the directory has enough candidates.
 function tallySampleMembers(people, member) {
   const compare=(a,b)=>a.last_name.localeCompare(b.last_name,'de')||a.first_name.localeCompare(b.first_name,'de')||a.id.localeCompare(b.id);
-  const sorted=people.filter(m=>m.id!==member.id).sort(compare);
+  const nameKey=m=>JSON.stringify([m.last_name,m.first_name].map(s=>s.normalize('NFKC').trim().replace(/\s+/g,' ').toLocaleLowerCase('de')));
+  // Separate directory records can name the same person. Always keep the signed-in account.
+  const seen=new Set([nameKey(member)]);
+  const sorted=people.filter(m=>m.id!==member.id).sort(compare).filter(m=>{
+    const key=nameKey(m);if(seen.has(key))return false;seen.add(key);return true;
+  });
   const before=sorted.filter(m=>compare(m,member)<0),after=sorted.filter(m=>compare(m,member)>=0);
   const afterCount=Math.min(19-Math.min(9,before.length),after.length);
   const beforeCount=Math.min(19-afterCount,before.length);
@@ -72,7 +77,7 @@ export async function syncState(env, member) {
     demoTally:tallySampleMembers(people,member).map((m,i)=>{
       const cats={drinks:i%9+1,snacks:i%3,kranz:i%5===0?1:0,spielbetrieb:i%4===0?2:0,equipment:i%6===0?1:0};
       const labels={drinks:'Getränke',snacks:'Snacks',kranz:'Kränze',spielbetrieb:'Spielbetrieb',equipment:'Equipment'};
-      return {firstName:m.first_name,lastName:m.last_name,isMe:false,isDemo:true,cats,counts:Object.fromEntries(Object.entries(cats).filter(([,n])=>n).map(([k,n])=>[labels[k]+' (Beispiel)',n])),total:Object.values(cats).reduce((a,b)=>a+b,0)};
+      return {firstName:m.first_name,lastName:m.last_name,isMe:false,isDemo:true,cats,counts:Object.fromEntries(Object.entries(cats).filter(([,n])=>n).map(([k,n])=>[labels[k],n])),total:Object.values(cats).reduce((a,b)=>a+b,0)};
     }),
     members:people.filter(m=>visibleIds.has(m.id)).map(m=>({id:m.id,firstName:m.first_name,lastName:m.last_name,active:true})), faces,catalog:c.map.get('catalog:club')?.value||catalog,demo:true,revision,meetProtocol:1,meetings:planning.data};
 }

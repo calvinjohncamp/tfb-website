@@ -1,5 +1,23 @@
 # TFB-Kiosk – Projektgedächtnis und Übergabe
 
+## Bereinigte Strichliste v227 – 25.10.2026
+
+Doppelte Namen aus unterschiedlichen Verzeichniseinträgen werden für die
+Vorführliste zusammengefasst (Unicode, Groß-/Kleinschreibung und Leerzeichen
+normalisiert). Der Name des angemeldeten Mitglieds wird vollständig aus den
+Vorführzeilen ausgeschlossen: Nur die echte eigene Buchungszeile bleibt stehen.
+Weiter 20 unterschiedliche Namen, alphabetisch gemischt und mit eigener Zeile
+in der Mitte. Keine Konten gelöscht, keine Buchungen geändert. Sync-Kennung tally3.
+
+„Beispiel“ aus Namensmarkierungen und Detailkategorien entfernt; der lange
+Vorführhinweis ist durch einen kurzen Abrechnungshinweis ersetzt. Einheitliche
+Namensschrift, etwas mehr Zeilenabstand, dezente eigene Markierung, linksbündiger
+Hinweis. Cache v227. 13 Backendtests und isolierter Browser mit gezielten
+Dubletten, 20 unterschiedlichen Namen, echten Käufen/Beträgen sowie Darstellung
+bei 320/390/834/1100px und Reload erfolgreich; Desktop/Handy visuell geprüft.
+Veröffentlichung v227 noch ausstehend.
+
+
 ## Kiosk-Seitentitel v226 – 25.10.2026
 
 Oben im Kiosk steht jetzt „Kiosk“ im selben Seitentitel-Stil wie der Chat

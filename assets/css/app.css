@@ -2679,3 +2679,11 @@ body.admin-hidden [data-action="post-hide"] { display: none !important; }
 
 /* Match the other page titles and leave room before the coaster and catalog. */
 .kiosk-head { margin-bottom: 28px; }
+
+/* Tally: calmer names and spacing, with a discreet marker for the signed-in member. */
+.paper-row.tally-row { padding-top: 12px; padding-bottom: 12px; }
+.paper-row.tally-row .paper-name { font-family: var(--font); font-weight: 600; line-height: 1.35; }
+.paper-row.tally-row .paper-name em { background: var(--bg); color: var(--ink); font-size: .6rem; font-weight: 600; border: 1px solid var(--line); }
+.paper-row.tally-row:hover { background-color: rgba(23,23,23,.025); }
+.paper-row.tally-row:focus-visible { outline: 2px solid var(--signal); outline-offset: -2px; }
+.fineprint.tally-note { text-align: left; margin: 20px 0 0; }

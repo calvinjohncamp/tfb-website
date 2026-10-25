@@ -634,13 +634,13 @@
           };
           return `
             <button type="button" class="paper-row tally-row ${r.isMe ? 'me' : ''} ${open ? 'open' : ''}" data-action="tally-row" data-key="${esc(key)}" aria-expanded="${open}">
-              <span class="paper-name"><span class="paper-name-part">${esc(r.lastName)}<span class="paper-name-comma">,</span></span> <span class="paper-name-part">${esc(r.firstName)}</span>${r.isMe ? ' <em>du</em>' : r.isDemo ? ' <em>Beispiel</em>' : ''}</span>
+              <span class="paper-name"><span class="paper-name-part">${esc(r.lastName)}<span class="paper-name-comma">,</span></span> <span class="paper-name-part">${esc(r.firstName)}</span>${r.isMe ? ' <em>du</em>' : ''}</span>
               ${TALLY_CATS.map(([c]) => cell(c)).join('')}
               ${open ? `<span class="paper-detail">${detail}</span>` : ''}
             </button>`;
         }).join('') : '<p class="paper-empty">In den letzten sieben Tagen hat noch niemand angeschrieben.</p>'}
       </section>
-      <p class="fineprint">Deine Striche stammen aus deinen Buchungen. Die 19 mit „Beispiel“ markierten Personen zeigen fiktive Striche zur Vorführung; sie werden nicht abgerechnet. Ältere eigene Striche verschwinden automatisch. Beträge siehst du nur für dich selbst unter „Abrechnungen“.</p>
+      <p class="fineprint tally-note">Deine Beträge findest du unter „Abrechnungen“. Die Strichliste zeigt die letzten sieben Tage.</p>
       ${partnerSlot('strichliste', 'Die Strichliste wird dir präsentiert von')}`;
   }
 
