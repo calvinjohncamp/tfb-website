@@ -74,6 +74,7 @@ try {
  // Create weekly training through the iPad editor; first occurrence is generated centrally.
  await tablet.page.locator(`[data-action="meet-group"][data-id="${gid}"]`).click();
  await tablet.page.locator('[data-group-form] [data-start]').click();
+ await tablet.page.locator('[data-meet-form] [data-weekly="1"]').click();
  await tablet.page.locator('[data-meet-form] [name=title]').fill('Training vom iPad');
  await tablet.page.locator('[data-meet-form] [name=leadDays]').selectOption('7');
  await tablet.page.locator('[data-meet-form] [type=submit]').click();

@@ -1,5 +1,42 @@
 # TFB-Website
 
+## Einheitliches Verabreden v224 – 25.10.2026
+
+Alle vier oberen Einstiege (Einzel, Doppel, Training, Mannschafts-Spiel) verwenden
+jetzt dieselbe Einladungsmaske, standardmäßig einmalig. „Trainingsserie anlegen“
+im regelmäßigen Bereich öffnet dieselbe Maske mit „Jede Woche“. Die Häufigkeit
+bleibt in beiden Richtungen umschaltbar. Keine automatisch ausgewählte erste Gruppe.
+Der Gruppen-Dialog bietet „Diese Gruppe zum Training einladen“ mit dieser Gruppe
+als vorausgewählter Spielerliste. Gruppen selbst enthalten weiter nur Name/Mitglieder.
+
+Alle Einladungsarten erlauben mehrere Gruppen und zusätzliche Einzelspieler.
+Überlappende Spieler erscheinen nur einmal. Manuell hinzugefügte Personen bleiben
+beim Abwählen einer Gruppe erhalten; einzelne Gruppenmitglieder können aus der
+Einladung entfernt werden. Namen, Ort, Zeiten und weitere Angaben bleiben beim
+Wechsel der Auswahl/Häufigkeit erhalten. Sekundäre Angaben (Treffen, Abfahrt,
+Notiz und optionale Mannschafts-Platzzahl) sind unter „Weitere Angaben“ eingeklappt.
+Gruppenknöpfe haben mindestens 44px Höhe und zeigen bei Auswahl die gewählte
+Personenzahl innerhalb dieser Gruppe. Gruppenbestätigung und Terminzusage sind
+auch sprachlich getrennt.
+
+Neue Termine/Serien speichern die ausdrücklich angezeigte Personenauswahl mit
+`groupId:null`; Gruppen dienen als Auswahlhilfe und werden beim Einladen nicht
+verändert. Damit überschreibt die alte Bindung an genau eine Gruppe beim Erzeugen
+der Serientermine keine zusätzlichen Spieler oder individuellen Ausschlüsse mehr.
+Die Auswahl gilt für die angelegte Einladung/Serie; spätere Gruppenänderungen
+verändern sie nicht automatisch. Alte gruppengebundene Serien bleiben erhalten.
+Kein Backend-/Schema-/Datenupdate erforderlich; v223-Worker bleibt bestehen.
+Cache v224. Kiosk und Home-Anmeldung unverändert.
+
+Prüfungen: 13 Backendtests; vorhandene Browserprüfungen für Geräteabgleich,
+Gruppenbestätigung, Wochentage/Serienstart/Zeitumstellung und v223-Feinschliff.
+Neue Prüfung `node tools/test-browser-invitation-ux.mjs`: alle vier Arten,
+einmaliger und wöchentlicher Einstieg, überlappende Gruppen, zusätzliche/entfernte
+Spieler, erhaltene Eingaben, unveränderte Gruppen, zentral erzeugte Termine und
+Neuladen sowie Darstellung von 320 bis 1100px. Ausschließlich synthetische Daten.
+Veröffentlichung noch ausstehend.
+
+
 ## Feinschliff v223 – 25.10.2026
 
 Nach erfolgreicher Anmeldung immer direkt Home. Gruppen in Dating 2.0 enthalten

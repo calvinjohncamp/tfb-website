@@ -23,8 +23,10 @@ try {
   await page.reload();
   await page.waitForSelector('.topbar');
   await page.evaluate(() => { location.hash = '#treffen'; });
-  await page.locator('[data-action="meet-new"][data-kind="training"]').click();
+  await page.locator('.meet-new-row [data-action="meet-new"][data-kind="training"]').click();
   const form = page.locator('[data-meet-form]');
+  await form.locator('[data-togglegroup="g-weekday-test"]').click();
+  await form.locator('[data-weekly="1"]').click();
   assert.deepEqual(await form.locator('[data-weekday]').allTextContents(), ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So']);
   assert.equal(await form.locator('[name="date"]').inputValue(), '2026-10-14');
   await form.locator('[name="time"]').fill('19:30');

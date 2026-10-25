@@ -2665,3 +2665,10 @@ body.admin-hidden [data-action="post-hide"] { display: none !important; }
 @media (min-width: 1024px) and (min-height: 640px) and (pointer: coarse) {
   .pbsp-slot .pbsp-tile { height: 138px; }
 }
+
+/* Shared invitation composer: secondary fields stay out of the main flow. */
+.meet-options { margin: 16px 0 22px; }
+.meet-options summary { cursor: pointer; font-weight: 600; padding: 12px 0; }
+.meet-options[open] summary { margin-bottom: 8px; }
+.meet-groups-pick button { min-height: 44px; height: auto; padding: 9px 12px; max-width: 100%; }
+.meet-groups-pick button span { white-space: normal; overflow-wrap: anywhere; }
