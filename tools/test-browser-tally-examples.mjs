@@ -1,0 +1,20 @@
+import {fileURLToPath} from 'node:url';
+import {readFileSync} from 'node:fs';
+import {resolve,extname} from 'node:path';
+import assert from 'node:assert/strict';
+import {chromium} from 'playwright';
+import {fixture} from './app-sync-fixture.mjs';
+import worker from './worker-test-loader.mjs';
+const root=fileURLToPath(new URL('../',import.meta.url)),f=await fixture();
+for(let i=0;i<25;i++)f.env.DB.sqlite.prepare('INSERT INTO members(id,first_name,last_name,updated_at) VALUES (?,?,?,?)').run('example-'+i,'Person '+i,'Example '+i,Date.now());
+const browser=await chromium.launch({headless:true});
+try{const page=await browser.newPage({serviceWorkers:'block'});const errors=[];page.on('pageerror',e=>errors.push(e.message));
+await page.route('**/*',async route=>{const r=route.request(),u=new URL(r.url());if(u.hostname==='tfb-api.calvinjohncamp.workers.dev'){const response=await worker.fetch(new Request('https://tfb-api.test'+u.pathname+u.search,{method:r.method(),headers:{...r.headers(),'CF-Connecting-IP':'192.0.2.5'},...(r.postData()?{body:r.postData()}:{})}),f.env);return route.fulfill({status:response.status,headers:Object.fromEntries(response.headers),body:await response.text()});}if(u.hostname!=='joern-kaemper.de')return route.abort();try{return route.fulfill({body:readFileSync(resolve(root,'.'+(u.pathname==='/'?'/index.html':u.pathname))),contentType:({'.html':'text/html','.js':'text/javascript','.css':'text/css'})[extname(u.pathname==='/'?'/index.html':u.pathname)]||'application/octet-stream'});}catch{return route.fulfill({status:404,body:''});}});
+await page.goto('https://joern-kaemper.de/#home');await page.waitForFunction(()=>TFB.ui&&TFB.api.centralSync);
+await page.evaluate(async()=>{TFB.ui.state.member=await TFB.api.signIn('test@example.invalid','Synthetic password only 123!');});
+let rows=await page.evaluate(()=>TFB.api.tally());assert.equal(rows.length,20);assert.equal(rows.filter(r=>r.isDemo).length,19);assert.equal(rows.find(r=>r.isMe).total,0);
+await page.evaluate(async()=>{await TFB.api.acceptConsent();await TFB.api.addToTab('koelsch',2);});
+rows=await page.evaluate(()=>TFB.api.tally());assert.equal(rows.length,20);assert.equal(rows.find(r=>r.isMe).total,2);assert.equal(await page.evaluate(async()=>(await TFB.api.myOpenMonth()).totalCents),360);assert.deepEqual(rows,[...rows].sort((a,b)=>a.lastName.localeCompare(b.lastName,'de')||a.firstName.localeCompare(b.firstName,'de')));
+await page.evaluate(()=>location.hash='#strichliste');await page.locator('.tally-row').first().waitFor();assert.equal(await page.locator('.tally-row').count(),20);assert.equal(await page.locator('.paper-name em').filter({hasText:'Beispiel'}).count(),19);
+await page.reload();await page.waitForFunction(()=>TFB.ui?.state.member);rows=await page.evaluate(()=>TFB.api.tally());assert.equal(rows.find(r=>r.isMe).total,2);assert.equal(rows.length,20);assert.deepEqual(errors,[]);console.log('Central browser: exactly 20 alphabetic people, 19 samples, real own purchases and balance unchanged after reload.');
+}finally{await browser.close();}

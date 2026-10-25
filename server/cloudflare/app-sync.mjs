@@ -57,6 +57,12 @@ export async function syncState(env, member) {
   const visibleIds=new Set([member.id,...planning.memberIds,...posts.map(r=>r.owner_id),...comments.map(r=>r.owner_id)]);
   const faces=c.rows.filter(r=>r.kind==='account'&&!r.deleted&&r.owner_id!==member.id&&r.value.avatar&&!r.value.photoPending&&visibleIds.has(r.owner_id)).map(r=>({id:r.owner_id,avatar:r.value.avatar,avatarRevision:r.value.avatarRevision}));
   return {records:[...own,...posts,...comments,...media,...planning.records].map(({kind,id,owner_id,scope,revision,deleted,value})=>({kind,id,ownerId:owner_id,scope,revision,deleted:Boolean(deleted),value})),
+    // Presentation rows are derived from the protected directory, never booked as items.
+    demoTally:people.filter(m=>m.id!==member.id).sort((a,b)=>a.last_name.localeCompare(b.last_name,'de')||a.first_name.localeCompare(b.first_name,'de')||a.id.localeCompare(b.id)).slice(0,19).map((m,i)=>{
+      const cats={drinks:i%9+1,snacks:i%3,kranz:i%5===0?1:0,spielbetrieb:i%4===0?2:0,equipment:i%6===0?1:0};
+      const labels={drinks:'Getränke',snacks:'Snacks',kranz:'Kränze',spielbetrieb:'Spielbetrieb',equipment:'Equipment'};
+      return {firstName:m.first_name,lastName:m.last_name,isMe:false,isDemo:true,cats,counts:Object.fromEntries(Object.entries(cats).filter(([,n])=>n).map(([k,n])=>[labels[k]+' (Beispiel)',n])),total:Object.values(cats).reduce((a,b)=>a+b,0)};
+    }),
     members:people.filter(m=>visibleIds.has(m.id)).map(m=>({id:m.id,firstName:m.first_name,lastName:m.last_name,active:true})), faces,catalog:c.map.get('catalog:club')?.value||catalog,demo:true,revision,meetProtocol:1,meetings:planning.data};
 }
 async function validate(env,member,c,op,all,importing) {

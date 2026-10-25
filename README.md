@@ -1,5 +1,31 @@
 # TFB-Website
 
+## Feinschliff v223 – 25.10.2026
+
+Nach erfolgreicher Anmeldung immer direkt Home. Gruppen in Dating 2.0 enthalten
+bei Neuanlage nur Name und Mitglieder. Alte Trainingsvorgaben bleiben kompatibel
+erhalten, werden aber in den Gruppen nicht mehr angezeigt. Der immer sichtbare
+Bereich „Regelmäßige Trainingsgruppen“ bietet „Training anlegen“; Trainings haben
+einen eigenen Namen, Anlage, Wochentag/Uhrzeit und den bestehenden Zeitraum/Vorlauf.
+Reihenfolge von oben: kommende Matches, regelmäßige Trainingsgruppen, meine Gruppen.
+Einladungen, Antworten und zentrale Speicherung bleiben erhalten.
+
+Die geschützte Strichliste zeigt das angemeldete Mitglied mit ausschließlich seinen
+echten Buchungen und 19 alphabetisch ausgewählte aktive Mitglieder aus dem
+zentralen Verzeichnis mit markierten Beispielstrichen. Namen werden nicht in
+öffentliche Dateien kopiert. Beispielzeilen sind eine reine Anzeige im Vorführbetrieb
+und erzeugen weder Buchungsdatensätze noch Abrechnungsbeträge. Auch bei null eigenen
+Buchungen bleibt die eigene Zeile sichtbar. Sortierung: Nachname, Vorname (Deutsch).
+Kein Mitgliederimport oder Datenbankschemawechsel. Cache v223.
+
+Prüfung: 13 bestehende Backendtests; neue isolierte Browsertests
+`node tools/test-browser-finetuning.mjs` (Gruppe, Training, Login/Home, 320–1100 px)
+und `node tools/test-browser-tally-examples.mjs` (echter Worker mit Wegwerf-SQLite,
+20 Zeilen, 19 Beispiele, echte eigene Buchungen/Betrag auch nach Reload).
+Worker-Build erfolgreich; Messung bleibt ausgeschaltet.
+Veröffentlichungsnachweis folgt nach erfolgreicher Auslieferung.
+
+
 
 ## Bestätigter Live-Stand v222 – 17.10.2026
 

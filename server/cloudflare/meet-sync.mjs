@@ -78,8 +78,9 @@ export async function validateMeetingOperation(env,member,c,op,all,importing) {
       if(!members.includes(member.id))members.unshift(member.id);
       const pending=requested.filter(id=>!members.includes(id)),inviteEpochs={};
       for(const id of requested)inviteEpochs[id]=old&&everyone(projectedGroup(c,old)).includes(id)?old.value.inviteEpochs?.[id]||0:importing?0:(old?.revision||0)+1;
-      if(!Number.isInteger(v.weekday)||v.weekday<0||v.weekday>6)fail(400,'Trainingstag prüfen.');
-      value={id:op.id,name:text(v.name,120),weekday:v.weekday,time:time(v.time),place:text(v.place||'',200),createdBy:member.id,members,pending,inviteEpochs};
+      value={id:op.id,name:text(v.name,120),createdBy:member.id,members,pending,inviteEpochs};
+      // Retain older training defaults without requiring them for a people-only group.
+      if(v.weekday!=null){if(!Number.isInteger(v.weekday)||v.weekday<0||v.weekday>6)fail(400,'Trainingstag prüfen.');Object.assign(value,{weekday:v.weekday,time:time(v.time),place:text(v.place||'',200)});}
       if(!value.name.trim())fail(400,'Bitte einen Gruppennamen eingeben.');
     } else {
       if(!['einzel','doppel','training','frei'].includes(v.kind))fail(400,'Ungültige Verabredungsart.');

@@ -335,12 +335,12 @@
           </button>`).join('')}${waiting.map((m) => card(m, names)).join('')}</div>` : ''}
       <h2 class="block-heading">Meine kommenden Matches</h2>
       ${rest.length ? `<div class="meet-list">${rest.map((m) => card(m, names)).join('')}</div>` : '<p class="muted">Gerade keine weiteren Verabredungen.</p>'}
-      ${mySeries.length ? `
-        <h2 class="block-heading">Regelmäßig</h2>
-        <div class="meet-series-list">${mySeries.map((s) => seriesCard(s, names)).join('')}</div>` : ''}
+      <h2 class="block-heading">Regelmäßige Trainingsgruppen</h2>
+      <div class="meet-series-list">${mySeries.map((s) => seriesCard(s, names)).join('')}</div>
+      <button type="button" class="btn meet-gap" data-action="meet-new" data-kind="training">Training anlegen</button>
       <h2 class="block-heading">Meine Gruppen</h2>
       <div class="meet-groups">
-        ${myGroups.map((g) => `<button type="button" class="meet-group" data-action="meet-group" data-id="${g.id}"><strong>${esc(g.name)}</strong><small>${everyone(g).length} ${everyone(g).length === 1 ? 'Mitglied' : 'Mitglieder'}${g.weekday != null ? ` · ${WD[g.weekday]} ${esc(g.time)}` : ''}</small>${(g.pending || []).length ? `<small class="meet-unconfirmed">${g.pending.length} unbestätigt</small>` : ''}</button>`).join('')}
+        ${myGroups.map((g) => `<button type="button" class="meet-group" data-action="meet-group" data-id="${g.id}"><strong>${esc(g.name)}</strong><small>${everyone(g).length} ${everyone(g).length === 1 ? 'Mitglied' : 'Mitglieder'}</small>${(g.pending || []).length ? `<small class="meet-unconfirmed">${g.pending.length} unbestätigt</small>` : ''}</button>`).join('')}
         <button type="button" class="meet-group add" data-action="meet-group">${icon.plus}<strong>Gruppe anlegen</strong></button>
       </div>
       <p class="fineprint">${TFB.api.centralSync?'Gruppen, Trainingsserien und Antworten werden in deinem Konto gespeichert und auf deinen Geräten abgeglichen. Einladungen und Antworten stehen im Postfach.':'Vorführung: Die anderen antworten nach ein paar Sekunden von selbst. Neues landet im Postfach (Glocke oben) – ohne E-Mail und ohne Aufploppen.'}</p>
@@ -577,8 +577,8 @@
       groupId: isTraining ? g0.id : null,
       title: kind === 'training' ? (g0 ? `Training ${g0.name}` : 'Training') : kind === 'frei' ? (preset.title || '') : KINDS[kind].label,
       date: isTraining ? nextWeekday(g0.weekday) : preset.date || nextWeekday(null),
-      time: isTraining ? g0.time : preset.time || '18:00',
-      place: isTraining ? g0.place : preset.place || PLACE,
+      time: preset.time || (isTraining && g0.time) || '18:00',
+      place: preset.place || (isTraining && g0.place) || PLACE,
       note: preset.note || '',
       meetAt: preset.meetAt || '',
       departAt: preset.departAt || '',
@@ -600,19 +600,19 @@
       const sendDay = WD_LONG[weekdayOf(firstSend)];
       openSheet(`
         <form class="editor meet-editor" data-meet-form novalidate>
-          <h2>Neue Verabredung</h2>
-          <div class="seg meet-kinds">${Object.entries(KINDS).map(([k, v]) => `<button type="button" class="${k === draft.kind ? 'on' : ''}" data-kind="${k}">${v.label}</button>`).join('')}</div>
+          <h2>${draft.kind === 'training' ? 'Regelmäßige Trainingsgruppe' : 'Neue Verabredung'}</h2>
+          ${draft.kind !== 'training' ? `<div class="seg meet-kinds">${Object.entries(KINDS).map(([k, v]) => `<button type="button" class="${k === draft.kind ? 'on' : ''}" data-kind="${k}">${v.label}</button>`).join('')}</div>` : ''}
           ${draft.kind === 'training' && myGroups.length ? `
             <div class="field"><span>Gruppe</span>
               <div class="seg">${myGroups.map((g) => `<button type="button" class="${g.id === draft.groupId ? 'on' : ''}" data-group="${g.id}">${esc(g.name)}</button>`).join('')}</div>
             </div>` : ''}
-          ${draft.kind === 'frei' || draft.kind === 'training' ? `<label class="field"><span>Was</span><input name="title" value="${esc(draft.title)}" placeholder="z. B. Auswärts in Hennef"></label>` : ''}
-          <div class="field"><span>Wie oft?</span>
+          ${draft.kind === 'frei' || draft.kind === 'training' ? `<label class="field"><span>${draft.kind === 'training' ? 'Name des Trainings' : 'Was'}</span><input name="title" value="${esc(draft.title)}" placeholder="z. B. Auswärts in Hennef"></label>` : ''}
+          ${draft.kind !== 'training' ? `<div class="field"><span>Wie oft?</span>
             <div class="seg meet-often">
               <button type="button" class="${draft.weekly ? '' : 'on'}" data-weekly="0">Einmalig</button>
               <button type="button" class="${draft.weekly ? 'on' : ''}" data-weekly="1">Jede Woche</button>
             </div>
-          </div>
+          </div>` : ''}
           ${weekdayPicker(draft.weekday)}
           <div class="field-row">
             <label class="field"><span>${draft.weekly ? 'Erster Termin' : 'Datum'}</span><input name="date" type="date" value="${esc(draft.date)}" min="${draft.weekly ? nextWeekday(draft.weekday, draft.time) : today()}" ${draft.weekly ? 'step="7"' : ''}></label>
@@ -624,7 +624,7 @@
               <label class="field"><span>Einladung geht raus</span><select name="leadDays">${LEADS.map((n) => `<option value="${n}" ${n === draft.leadDays ? 'selected' : ''}>${n} ${n === 1 ? 'Tag' : 'Tage'} vorher</option>`).join('')}</select></label>
             </div>
             <p class="small muted meet-rule">Jede Woche ${esc(WD_LONG[draft.weekday])} bis ${esc(longDate(draft.until))}. Die Einladung zum jeweiligen Termin landet automatisch ${draft.leadDays} ${draft.leadDays === 1 ? 'Tag' : 'Tage'} vorher (${esc(sendDay)}) im Postfach aller Eingeladenen${firstSend <= today() ? ' – die erste sofort' : ` – die erste am ${esc(shortDate(firstSend))}`}. Jede Woche wird neu zu- oder abgesagt.</p>` : ''}
-          <label class="field"><span>Wo</span><input name="place" value="${esc(draft.place)}"></label>
+          <label class="field"><span>Anlage</span><input name="place" value="${esc(draft.place)}"></label>
           ${draft.kind === 'frei' ? `<label class="field"><span>Plätze (leer = unbegrenzt)</span><input name="slots" type="number" min="2" max="40" inputmode="numeric" value="${draft.slots || ''}"></label>` : ''}
           <div class="field"><span>${draft.kind === 'einzel' || draft.kind === 'doppel' ? 'Wen fragen?' : 'Wer?'} · ${draft.invitees.length} eingeladen</span>
             ${draft.kind === 'training' && g0 && (group(draft.groupId) || {}).pending && group(draft.groupId).pending.length ? `<p class="small muted meet-rule">${group(draft.groupId).pending.length} noch unbestätigt – sie werden trotzdem eingeladen.</p>` : ''}
@@ -643,7 +643,7 @@
           </div>
           <label class="field"><span>Notiz (freiwillig)</span><input name="note" value="${esc(draft.note)}" placeholder="${draft.kind === 'frei' ? 'z. B. Treffpunkt Parkplatz, Fahrgemeinschaften' : 'z. B. Wer hat Lust?'}"></label>
           <p class="form-error" role="alert"></p>
-          <button type="submit" class="btn primary block big">${draft.weekly ? 'Regelmäßige Einladung einrichten' : 'Einladung verschicken'}</button>
+          <button type="submit" class="btn primary block big">${draft.kind === 'training' ? 'Trainingsgruppe anlegen' : draft.weekly ? 'Regelmäßige Einladung einrichten' : 'Einladung verschicken'}</button>
         </form>`);
       const form = document.querySelector('[data-meet-form]');
       const collect = () => {
@@ -780,7 +780,7 @@
           <label class="field"><span>Uhrzeit</span><input name="time" type="time" value="${esc(s.time)}"></label>
           <label class="field"><span>Bis einschließlich</span><input name="until" type="date" value="${esc(s.until)}" min="${esc(today())}"></label>
         </div>
-        <label class="field"><span>Wo</span><input name="place" value="${esc(s.place)}"></label>
+        <label class="field"><span>Anlage</span><input name="place" value="${esc(s.place)}"></label>
         <label class="field"><span>Einladung geht raus</span><select name="leadDays">${LEADS.map((n) => `<option value="${n}" ${n === s.leadDays ? 'selected' : ''}>${n} ${n === 1 ? 'Tag' : 'Tage'} vorher</option>`).join('')}</select></label>
         <p class="small muted meet-rule">Änderungen gelten für alle Termine, deren Einladung noch nicht verschickt ist.</p>
         <p class="form-error" role="alert"></p>
@@ -898,7 +898,7 @@
     const g = groupId ? group(groupId) : null;
     if (g && g.createdBy !== me().id) return openGroupInfo(g);
     const draft = g ? { ...g, members: g.members.slice(), pending: (g.pending || []).slice() }
-      : { id: uid('g-'), name: '', members: [me().id], pending: [], createdBy: me().id, weekday: 2, time: '19:00', place: PLACE };
+      : { id: uid('g-'), name: '', members: [me().id], pending: [], createdBy: me().id };
     const everyone = () => [...draft.members, ...draft.pending];
     let names = await ui().api.memberNames(everyone());
     const render = () => {
@@ -906,11 +906,6 @@
         <form class="editor meet-editor" data-group-form novalidate>
           <h2>${g ? 'Gruppe' : 'Neue Gruppe'}</h2>
           <label class="field"><span>Name</span><input name="name" value="${esc(draft.name)}" placeholder="z. B. Herren 40 oder Damen 30 Mannschaft"></label>
-          <div class="field-row">
-            <label class="field"><span>Trainingstag</span><select name="weekday">${WD.map((w, i) => `<option value="${i}" ${i === draft.weekday ? 'selected' : ''}>${w}</option>`).join('')}</select></label>
-            <label class="field"><span>Uhrzeit</span><input name="time" type="time" value="${esc(draft.time)}"></label>
-          </div>
-          <label class="field"><span>Wo</span><input name="place" value="${esc(draft.place)}"></label>
           <div class="field"><span>Mitglieder · ${everyone().length}${draft.pending.length ? ` · davon ${draft.pending.length} unbestätigt` : ''}</span>
             <div class="meet-chips">${byName(everyone(), names).map((id) => `<span class="chip ${draft.pending.includes(id) ? 'pending' : ''}">${esc(names[id] || 'Mitglied')}${id === me().id ? ' (du)' : `${draft.pending.includes(id) ? ' <em>unbestätigt</em>' : ''}<button type="button" data-remove="${id}" aria-label="Entfernen">×</button>`}</span>`).join('')}</div>
             <input name="search" autocomplete="off" placeholder="Namen eintippen">
@@ -925,9 +920,6 @@
       const form = document.querySelector('[data-group-form]');
       const collect = () => {
         draft.name = form.elements.name.value.trim();
-        draft.weekday = Number(form.elements.weekday.value);
-        draft.time = form.elements.time.value;
-        draft.place = form.elements.place.value.trim();
       };
       form.addEventListener('click', async (e) => {
         if (e.target.closest('[data-start]')) { openCreate('training', { groupId: g.id }); return; }
@@ -990,7 +982,7 @@
     openSheet(`
       <div class="editor meet-editor" data-group-info>
         <h2>${esc(g.name)}</h2>
-        <p class="small muted">Angelegt von ${esc(names[g.createdBy] || 'Mitglied')}${g.weekday != null ? ` · Training ${WD_LONG[g.weekday]} ${esc(g.time)} Uhr` : ''} · ${esc(g.place || '')}</p>
+        <p class="small muted">Angelegt von ${esc(names[g.createdBy] || 'Mitglied')}</p>
         <div class="meet-chips">${byName(everyone(g), names).map((id) => `<span class="chip ${(g.pending || []).includes(id) ? 'pending' : ''}">${esc(names[id] || 'Mitglied')}${id === me().id ? ' (du)' : ''}${(g.pending || []).includes(id) ? ' <em>unbestätigt</em>' : ''}</span>`).join('')}</div>
         ${g.members.includes(me().id) ? '<button type="button" class="link center danger-link" data-leave>Gruppe verlassen</button>' : ''}
       </div>`);

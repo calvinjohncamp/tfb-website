@@ -111,7 +111,10 @@
   // update it independently, so a slow mobile request cannot block a tap.
   for(const name of readNames)api[name]=async(...args)=>{
     if(!member)return name==='teamPostCounts'?{}:[];
-    return local[name](...args);
+    const result=await local[name](...args);
+    if(name!=='tally'||!state?.demoTally)return result;
+    const own=result.find(r=>r.isMe)||{firstName:publicMember.firstName,lastName:publicMember.lastName,isMe:true,counts:{},cats:{},total:0};
+    return [own,...state.demoTally].sort((a,b)=>a.lastName.localeCompare(b.lastName,'de')||a.firstName.localeCompare(b.firstName,'de'));
   };
   api.memberNames=async ids=>{
     if(!member)return {};
