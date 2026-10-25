@@ -1,5 +1,14 @@
 # TFB-Kiosk – Projektgedächtnis und Übergabe
 
+## Linksbündige Spaltenüberschriften v231 – 25.10.2026
+
+Überschriften der Strichliste passend zu den Strichen ebenfalls linksbündig.
+Unveränderte Spalten und Buchungen. Cache v231. Beide Farbwelten bei 21 Breiten
+von 320 bis 1920px geprüft: Überschriften und Striche linksbündig,
+keine überlappenden Überschriften; Desktop/Handy visuell kontrolliert.
+Veröffentlichung v231 noch ausstehend.
+
+
 ## Linksbündige Striche v230 – 25.10.2026
 
 Alle Striche innerhalb ihrer Kategorien linksbündig statt zentriert.
