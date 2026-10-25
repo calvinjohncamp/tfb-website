@@ -6,7 +6,10 @@ Oben im Kiosk steht jetzt „Kiosk“ im selben Seitentitel-Stil wie der Chat
 (`view-head page-head`), mit 28px Abstand zum bestehenden Bierdeckel/Sortiment.
 Reihenfolge und Funktionen unverändert. Cache v226. Schriftfamilie, Größe und
 Gewicht gegen Chat bei 320/390/834/1100/1440px verglichen; Desktop/Handy visuell
-geprüft. Veröffentlichung v226 noch ausstehend.
+geprüft. v226 veröffentlicht: Quellstand `190402fe2cb3664a13b692e2aea871b066691e64`,
+[Pages-Lauf 40194972087](https://github.com/calvinjohncamp/tfb-website/actions/runs/40194972087)
+erfolgreich; App, CSS und Service Worker live HTTP 200/bytegleich geprüft.
+Nachweis `.private/release-v226/live-check.json`.
 
 
 ## Strichlisten-Mix – 25.10.2026
