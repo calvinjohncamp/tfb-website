@@ -1,5 +1,14 @@
 # TFB-Website
 
+## Linksbündige Striche v230 – 25.10.2026
+
+Alle Striche innerhalb ihrer Kategorien linksbündig statt zentriert.
+Spaltenüberschriften bleiben unverändert. Cache v230. 42 Ansichten in beiden
+Farbwelten geprüft: gleicher linker Beginn pro Spalte, unveränderte Überschriften
+und kleinere Namensschrift; Desktop/Handy visuell kontrolliert.
+Veröffentlichung v230 noch ausstehend.
+
+
 ## Strichlisten-Begriffe v229 – 25.10.2026
 
 Spaltenüberschriften heißen jetzt „Match“ und „Shop“ (Schläger/Bälle),

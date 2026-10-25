@@ -2147,7 +2147,7 @@ h1, h2, h3, .event h3, .feature-body h2, .story-head h1, .post-body h3 { -webkit
 .tally-head .short { display: none; }
 .paper-row.tally-row .paper-name { display: flex; flex-wrap: wrap; align-items: center; gap: 2px .25em; min-width: 0; overflow-wrap: normal; word-break: normal; hyphens: none; }
 .paper-name-part { white-space: nowrap; }
-.tally-cell { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; align-content: center; gap: 3px 4px; min-width: 0; min-height: 26px; border-left: 1px dashed #DCE6EE; }
+.tally-cell { display: flex; flex-wrap: wrap; justify-content: flex-start; align-items: center; align-content: center; gap: 3px 4px; min-width: 0; min-height: 26px; border-left: 1px dashed #DCE6EE; }
 .tally-cell .bundle { height: 24px; }
 .tally-cell.kranz .bundle { stroke: var(--signal); }
 .tally-cell em { font-style: normal; font-size: .68rem; font-weight: 800; color: var(--muted); }
