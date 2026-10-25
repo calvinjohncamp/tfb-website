@@ -12,7 +12,10 @@ Keine Daten-/Funktionsänderung. Cache v228. In beiden Farbwelten bei 21 Breiten
 von 320 bis 1920px geprüft: Textrechtecke innerhalb der eigenen Spalte,
 Abstand zwischen allen Überschriften, kein horizontaler Überlauf und
 Schriftreduktion im gewünschten Bereich. Desktop/Handy visuell kontrolliert.
-Veröffentlichung v228 noch ausstehend.
+v228 veröffentlicht: Quellstand `bc6a0cd1de8fc4656b0203fffe87c25172e3c958`,
+[Pages-Lauf 40195511185](https://github.com/calvinjohncamp/tfb-website/actions/runs/40195511185)
+erfolgreich. App, CSS und Service Worker live HTTP 200/bytegleich geprüft;
+Nachweis `.private/release-v228/live-check.json`.
 
 
 ## Bereinigte Strichliste v227 – 25.10.2026
