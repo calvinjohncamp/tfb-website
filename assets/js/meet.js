@@ -336,16 +336,16 @@
       <h2 class="block-heading">Meine kommenden Matches</h2>
       ${rest.length ? `<div class="meet-list">${rest.map((m) => card(m, names)).join('')}</div>` : '<p class="muted">Gerade keine weiteren Verabredungen.</p>'}
       <h2 class="block-heading">Regelmäßige Trainingsgruppen</h2>
-      <p class="small muted">Wiederkehrende Einladungen mit festem Tag und fester Uhrzeit.</p>
+      <p class="small muted meet-section-intro">Wiederkehrende Einladungen mit festem Tag und fester Uhrzeit.</p>
       <div class="meet-series-list">${mySeries.map((s) => seriesCard(s, names)).join('')}</div>
       <button type="button" class="btn meet-gap" data-action="meet-new" data-kind="training" data-repeat="weekly">Trainingsserie anlegen</button>
       <h2 class="block-heading">Meine Gruppen</h2>
-      <p class="small muted">Gespeicherte Mitgliederlisten, die du beim Einladen auswählen und kombinieren kannst.</p>
+      <p class="small muted meet-section-intro">Gespeicherte Mitgliederlisten, die du beim Einladen auswählen und kombinieren kannst.</p>
       <div class="meet-groups">
         ${myGroups.map((g) => `<button type="button" class="meet-group" data-action="meet-group" data-id="${g.id}"><strong>${esc(g.name)}</strong><small>${everyone(g).length} ${everyone(g).length === 1 ? 'Mitglied' : 'Mitglieder'}</small>${(g.pending || []).length ? `<small class="meet-unconfirmed">${g.pending.length} unbestätigt</small>` : ''}</button>`).join('')}
         <button type="button" class="meet-group add" data-action="meet-group">${icon.plus}<strong>Gruppe anlegen</strong></button>
       </div>
-      <p class="fineprint">${TFB.api.centralSync?'Gruppen, Trainingsserien und Antworten werden in deinem Konto gespeichert und auf deinen Geräten abgeglichen. Einladungen und Antworten stehen im Postfach.':'Vorführung: Die anderen antworten nach ein paar Sekunden von selbst. Neues landet im Postfach (Glocke oben) – ohne E-Mail und ohne Aufploppen.'}</p>
+      <p class="fineprint meet-sync-note">${TFB.api.centralSync?'Gruppen, Trainingsserien und Antworten werden in deinem Konto gespeichert und auf deinen Geräten abgeglichen. Einladungen und Antworten stehen im Postfach.':'Vorführung: Die anderen antworten nach ein paar Sekunden von selbst. Neues landet im Postfach (Glocke oben) – ohne E-Mail und ohne Aufploppen.'}</p>
       ${ui().partnerSlot('treffen', 'Verabreden wird dir präsentiert von')}`;
   }
 

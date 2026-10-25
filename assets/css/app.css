@@ -2672,3 +2672,7 @@ body.admin-hidden [data-action="post-hide"] { display: none !important; }
 .meet-options[open] summary { margin-bottom: 8px; }
 .meet-groups-pick button { min-height: 44px; height: auto; padding: 9px 12px; max-width: 100%; }
 .meet-groups-pick button span { white-space: normal; overflow-wrap: anywhere; }
+
+/* Dating overview: room between explanatory copy, cards and partners. */
+.meet-section-intro { margin: 0 0 18px; line-height: 1.6; text-align: left; }
+.fineprint.meet-sync-note { margin: 24px 0 0; text-align: left; line-height: 1.6; }

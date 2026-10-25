@@ -1,5 +1,18 @@
 # TFB-Website
 
+## Abstände v225 – 25.10.2026
+
+Sponsorenüberschriften haben auf allen Inhaltsseiten einheitlich 32px Abstand
+zum vorherigen Inhalt, linksbündige Ausrichtung und 10px Abstand zu den Logos.
+Die gemeinsame Partner-CSS ersetzt die bisherige enge 8px-Desktopregel.
+Dating-Erklärungstexte stehen mit 18px Abstand vor den Karten; der Kontohinweis
+ist linksbündig und hat 24px Abstand zu den Gruppen. Keine Funktionsänderung.
+Cache v225. Prüfung: Sponsorenplatzierung in 10 Ansichten (Home, Kiosk,
+Strichliste, Abrechnung, Chat, Aktuell, Sport, Sport/Training, Club, Dating)
+bei 320/390/834/1100/1440px ausgemessen; Dating auf Desktop/Handy visuell geprüft.
+Veröffentlichung v225 noch ausstehend.
+
+
 ## Einheitliches Verabreden v224 – 25.10.2026
 
 Alle vier oberen Einstiege (Einzel, Doppel, Training, Mannschafts-Spiel) verwenden
