@@ -2676,3 +2676,6 @@ body.admin-hidden [data-action="post-hide"] { display: none !important; }
 /* Dating overview: room between explanatory copy, cards and partners. */
 .meet-section-intro { margin: 0 0 18px; line-height: 1.6; text-align: left; }
 .fineprint.meet-sync-note { margin: 24px 0 0; text-align: left; line-height: 1.6; }
+
+/* Match the other page titles and leave room before the coaster and catalog. */
+.kiosk-head { margin-bottom: 28px; }

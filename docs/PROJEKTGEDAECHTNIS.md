@@ -1,5 +1,14 @@
 # TFB-Kiosk – Projektgedächtnis und Übergabe
 
+## Kiosk-Seitentitel v226 – 25.10.2026
+
+Oben im Kiosk steht jetzt „Kiosk“ im selben Seitentitel-Stil wie der Chat
+(`view-head page-head`), mit 28px Abstand zum bestehenden Bierdeckel/Sortiment.
+Reihenfolge und Funktionen unverändert. Cache v226. Schriftfamilie, Größe und
+Gewicht gegen Chat bei 320/390/834/1100/1440px verglichen; Desktop/Handy visuell
+geprüft. Veröffentlichung v226 noch ausstehend.
+
+
 ## Strichlisten-Mix – 25.10.2026
 
 Die 19 Beispielpersonen werden jetzt über das gesamte Alphabet verteilt gewählt:

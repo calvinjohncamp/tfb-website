@@ -474,6 +474,7 @@
     const edit = isEditing();
     // Zwei Bereiche: Deckel (auf großen Bildschirmen links feststehend) und Sortiment.
     return `
+      <header class="view-head page-head kiosk-head"><div><h1>Kiosk</h1></div></header>
       <div class="kiosk-layout ${edit ? 'editing' : ''}">
         <aside class="kiosk-side">
           ${edit ? `
