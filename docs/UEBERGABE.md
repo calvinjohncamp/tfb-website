@@ -15,7 +15,11 @@ Namensschrift, etwas mehr Zeilenabstand, dezente eigene Markierung, linksbündig
 Hinweis. Cache v227. 13 Backendtests und isolierter Browser mit gezielten
 Dubletten, 20 unterschiedlichen Namen, echten Käufen/Beträgen sowie Darstellung
 bei 320/390/834/1100px und Reload erfolgreich; Desktop/Handy visuell geprüft.
-Veröffentlichung v227 noch ausstehend.
+v227 veröffentlicht: Quellstand `f8473c250197b72633e7183f0d4c8d7dd552f1fd`,
+[Pages-Lauf 40195167099](https://github.com/calvinjohncamp/tfb-website/actions/runs/40195167099)
+erfolgreich. Worker `a854f00e-e5a2-413f-8b5c-ca4478db0f96` veröffentlicht.
+App, CSS und Service Worker live HTTP 200/bytegleich geprüft;
+Nachweis `.private/release-v227/live-check.json`.
 
 
 ## Kiosk-Seitentitel v226 – 25.10.2026
