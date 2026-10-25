@@ -34,7 +34,10 @@ Neue Prüfung `node tools/test-browser-invitation-ux.mjs`: alle vier Arten,
 einmaliger und wöchentlicher Einstieg, überlappende Gruppen, zusätzliche/entfernte
 Spieler, erhaltene Eingaben, unveränderte Gruppen, zentral erzeugte Termine und
 Neuladen sowie Darstellung von 320 bis 1100px. Ausschließlich synthetische Daten.
-Veröffentlichung noch ausstehend.
+Veröffentlicht: Quellstand `f81a13c1dbfb0107a8c57a7368d5288fc0f8f2f5`,
+[Pages-Lauf 40194126066](https://github.com/calvinjohncamp/tfb-website/actions/runs/40194126066)
+erfolgreich. Dating-Code, CSS und Service Worker live HTTP 200/bytegleich geprüft;
+Nachweis `.private/release-v224/live-check.json`. Worker unverändert v223.
 
 
 ## Feinschliff v223 – 25.10.2026
