@@ -10,7 +10,10 @@ ist linksbündig und hat 24px Abstand zu den Gruppen. Keine Funktionsänderung.
 Cache v225. Prüfung: Sponsorenplatzierung in 10 Ansichten (Home, Kiosk,
 Strichliste, Abrechnung, Chat, Aktuell, Sport, Sport/Training, Club, Dating)
 bei 320/390/834/1100/1440px ausgemessen; Dating auf Desktop/Handy visuell geprüft.
-Veröffentlichung v225 noch ausstehend.
+v225 veröffentlicht: Quellstand `a5a4d52ffb5c2d1f1f99068d8ed38b99411b5e0f`,
+[Pages-Lauf 40194476494](https://github.com/calvinjohncamp/tfb-website/actions/runs/40194476494)
+erfolgreich. Dating-Code, beide CSS-Dateien und Service Worker live HTTP 200 und
+bytegleich geprüft. Nachweis `.private/release-v225/live-check.json`.
 
 
 ## Einheitliches Verabreden v224 – 25.10.2026
