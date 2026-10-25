@@ -2141,7 +2141,8 @@ h1, h2, h3, .event h3, .feature-body h2, .story-head h1, .post-body h3 { -webkit
   gap: 4px 10px; padding-left: 56px; padding-right: 16px;
 }
 .tally-head { align-items: end; padding-top: 4px; padding-bottom: 8px; border-bottom: 1.5px solid #C9D6E0; }
-.tally-head > span { min-width: 0; text-align: center; font-size: .66rem; font-weight: 800; letter-spacing: 0; text-transform: uppercase; color: var(--muted); }
+.tally-head > span { container: tally-column / inline-size; min-width: 0; text-align: center; font-size: .66rem; font-weight: 800; letter-spacing: 0; text-transform: uppercase; color: var(--muted); }
+.tally-head b { display: block; max-width: 100%; font-size: clamp(.48rem, 18cqi, .66rem); font-weight: inherit; line-height: 1.3; white-space: normal; overflow-wrap: anywhere; }
 .tally-head .kranz { color: var(--signal); }
 .tally-head .short { display: none; }
 .paper-row.tally-row .paper-name { display: flex; flex-wrap: wrap; align-items: center; gap: 2px .25em; min-width: 0; overflow-wrap: normal; word-break: normal; hyphens: none; }
@@ -2150,14 +2151,14 @@ h1, h2, h3, .event h3, .feature-body h2, .story-head h1, .post-body h3 { -webkit
 .tally-cell .bundle { height: 24px; }
 .tally-cell.kranz .bundle { stroke: var(--signal); }
 .tally-cell em { font-style: normal; font-size: .68rem; font-weight: 800; color: var(--muted); }
-@container tally (max-width: 680px) {
+@container tally-column (max-width: 90px) {
   .tally-head .full { display: none; }
-  .tally-head .short { display: inline; }
+  .tally-head .short { display: block; }
 }
 @container tally (max-width: 639px) {
   .tally-paper { background: linear-gradient(90deg, transparent 0 6px, rgba(196, 85, 58, .35) 6px 7px, transparent 7px), var(--paper); }
   .tally-head, .paper-row.tally-row {
-    grid-template-columns: minmax(76px, 1.35fr) minmax(58px, 1.2fr) minmax(30px, .65fr) repeat(3, minmax(26px, .55fr));
+    grid-template-columns: minmax(70px, 1.35fr) minmax(54px, 1.2fr) minmax(32px, .65fr) minmax(34px, .65fr) repeat(2, minmax(26px, .55fr));
     gap: 4px; padding-left: 14px; padding-right: 8px;
   }
   .tally-head > span { font-size: .6rem; }
@@ -2687,3 +2688,12 @@ body.admin-hidden [data-action="post-hide"] { display: none !important; }
 .paper-row.tally-row:hover { background-color: rgba(23,23,23,.025); }
 .paper-row.tally-row:focus-visible { outline: 2px solid var(--signal); outline-offset: -2px; }
 .fineprint.tally-note { text-align: left; margin: 20px 0 0; }
+
+/* Names are about 22% smaller; header labels adapt to their own column width. */
+.paper-row.tally-row .paper-name { font-size: .875rem; }
+@container tally (max-width: 639px) {
+  .paper-row.tally-row .paper-name { font-size: .76rem; }
+}
+@container tally (max-width: 310px) {
+  .paper-row.tally-row .paper-name { font-size: .72rem; }
+}

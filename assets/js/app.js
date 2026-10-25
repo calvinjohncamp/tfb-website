@@ -622,7 +622,7 @@
     return `
       ${viewHead('Strichliste', `Letzte ${cfg.tallyDays} Tage · ${esc(range)}`)}
       <section class="paper tally-paper">
-        ${rows.length ? `<div class="tally-head" aria-hidden="true"><span></span>${TALLY_CATS.map(([c, l, short]) => `<span class="${c}"><b class="full">${l}</b><b class="short">${short}</b></span>`).join('')}</div>` : ''}
+        ${rows.length ? `<div class="tally-head" aria-hidden="true"><span></span>${TALLY_CATS.map(([c, l, short]) => `<span class="${c}" title="${l}"><b class="full">${l}</b><b class="short">${short}</b></span>`).join('')}</div>` : ''}
         ${rows.length ? rows.map((r, i) => {
           const key = `${r.lastName}|${r.firstName}`;
           const open = state.openTallyRow === key;

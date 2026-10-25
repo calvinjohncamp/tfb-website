@@ -1,5 +1,20 @@
 # TFB-Kiosk – Projektgedächtnis und Übergabe
 
+## Strichlisten-Typografie v228 – 25.10.2026
+
+Namensschrift auf allen Größen um rund 22% reduziert: .875rem Desktop,
+.76rem schmal, .72rem sehr schmal. Die Spaltenüberschriften wählen Lang-/Kurzform
+jetzt anhand ihrer tatsächlichen Spaltenbreite statt nur der gesamten Liste.
+Schrift passt sich der Spalte an; Umbruch bleibt als Absicherung möglich.
+„Spiel“/„Equip.“ bei wenig Platz, vollständiger Name als Titel. Mobile Spalten
+für kurze Überschriften ausbalanciert; Striche und Überschriften bleiben bündig.
+Keine Daten-/Funktionsänderung. Cache v228. In beiden Farbwelten bei 21 Breiten
+von 320 bis 1920px geprüft: Textrechtecke innerhalb der eigenen Spalte,
+Abstand zwischen allen Überschriften, kein horizontaler Überlauf und
+Schriftreduktion im gewünschten Bereich. Desktop/Handy visuell kontrolliert.
+Veröffentlichung v228 noch ausstehend.
+
+
 ## Bereinigte Strichliste v227 – 25.10.2026
 
 Doppelte Namen aus unterschiedlichen Verzeichniseinträgen werden für die
