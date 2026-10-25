@@ -11,7 +11,9 @@ Beispielbuchungen in Abrechnungen. Neue Sync-Kennung aktualisiert die Auswahl au
 in bereits geöffneten Sitzungen. Nur Backendänderung; Website-Cache bleibt v225.
 13 Backendtests und isolierter Browser mit alphabetischer Streuung, eigener Zeile
 an Position 10, echten Käufen/Beträgen und Reload erfolgreich.
-Veröffentlichung des Strichlisten-Mix noch ausstehend.
+Veröffentlicht: Worker `3a67e467-d4ad-467c-97e1-28fcadc4f3d5`,
+Quellstand `71eb12a`. Bestehendes D1-Binding erhalten, Messung weiterhin aus.
+Keine erneute Pages-Veröffentlichung für diese Backendkorrektur erforderlich.
 
 
 ## Abstände v225 – 25.10.2026
