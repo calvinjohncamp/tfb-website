@@ -6,7 +6,10 @@ Alle Striche innerhalb ihrer Kategorien linksbündig statt zentriert.
 Spaltenüberschriften bleiben unverändert. Cache v230. 42 Ansichten in beiden
 Farbwelten geprüft: gleicher linker Beginn pro Spalte, unveränderte Überschriften
 und kleinere Namensschrift; Desktop/Handy visuell kontrolliert.
-Veröffentlichung v230 noch ausstehend.
+v230 veröffentlicht: Quellstand `9c20c5d11f625bfa42b9078f04e4694235f9e1dc`,
+[Pages-Lauf 40196125709](https://github.com/calvinjohncamp/tfb-website/actions/runs/40196125709)
+erfolgreich. CSS und Service Worker live bytegleich;
+Nachweis `.private/release-v230/live-check.json`.
 
 
 ## Strichlisten-Begriffe v229 – 25.10.2026
