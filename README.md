@@ -1,5 +1,19 @@
 # TFB-Website
 
+## Strichlisten-Mix – 25.10.2026
+
+Die 19 Beispielpersonen werden jetzt über das gesamte Alphabet verteilt gewählt:
+neun alphabetisch vor dem angemeldeten Mitglied, zehn dahinter (bei ausreichendem
+Bestand auf beiden Seiten). Innerhalb beider Bereiche gleichmäßig verteilte Namen
+statt der ersten 19 Einträge. Dadurch steht Jörn alphabetisch korrekt in der Mitte
+der 20 Personen. Eigene Zeile weiter ausschließlich echte Buchungen; keine
+Beispielbuchungen in Abrechnungen. Neue Sync-Kennung aktualisiert die Auswahl auch
+in bereits geöffneten Sitzungen. Nur Backendänderung; Website-Cache bleibt v225.
+13 Backendtests und isolierter Browser mit alphabetischer Streuung, eigener Zeile
+an Position 10, echten Käufen/Beträgen und Reload erfolgreich.
+Veröffentlichung des Strichlisten-Mix noch ausstehend.
+
+
 ## Abstände v225 – 25.10.2026
 
 Sponsorenüberschriften haben auf allen Inhaltsseiten einheitlich 32px Abstand
