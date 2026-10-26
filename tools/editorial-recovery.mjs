@@ -2,13 +2,16 @@
 import {DatabaseSync} from 'node:sqlite';
 import {existsSync,readFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
-export async function decryptSystemBackup(bytes,hex){
+async function decryptJson(bytes,hex){
  if(!/^[a-f0-9]{64}$/.test(hex))throw Error('Expected a separate 256-bit backup key');
  const key=await crypto.subtle.importKey('raw',Buffer.from(hex,'hex'),'AES-GCM',false,['decrypt']);
  const packed=await crypto.subtle.decrypt({name:'AES-GCM',iv:bytes.subarray(0,12)},key,bytes.subarray(12));
  const value=await new Response(new Blob([packed]).stream().pipeThrough(new DecompressionStream('gzip'))).json();
- if(value.format!=='tfb-system-backup'||value.version!==1||!value.schema||!value.tables)throw Error('Unsupported backup');return value;
+ return value;
 }
+
+export async function decryptSystemBackup(bytes,hex){const value=await decryptJson(bytes,hex);if(value.format!=='tfb-system-backup'||value.version!==1||!value.schema||!value.tables)throw Error('Unsupported backup');return value;}
+export async function decryptSystemPackage(bytes,hex){const value=await decryptJson(bytes,hex);if(value.format!=='tfb-system-package'||value.version!==1||!value.database||!value.objects)throw Error('Unsupported package');return value;}
 const quoted=s=>'"'+s.replaceAll('"','""')+'"';
 export function restoreDatabase(archive,path){
  if(existsSync(path))throw Error('Restore target already exists; no existing database will be overwritten');

@@ -1,7 +1,8 @@
 # Zentrale Redaktion und Sicherungen v232
 
-Stand: 26.10.2026. Technisch implementiert und lokal geprüft; Veröffentlichung
-wird separat in UEBERGABE.md protokolliert. R2-Aktivierung vom Nutzer bestätigt.
+Stand: 26.10.2026. v232 veröffentlicht und live geprüft; Nachweise in UEBERGABE.md.
+R2-Aktivierung vom Nutzer bestätigt. Erster echter Gesamtlauf erfolgreich um
+18:37:56 MEZ, echter Admin-ZIP-Download vollständig geprüft.
 
 ## Bedienung
 
@@ -71,6 +72,15 @@ node tools/export-editorial-system.mjs YYYY-MM-DD SEPARATE-KEY-FILE NEW-PRIVATE-
 Das Tool lädt DB und Objekte, prüft Medien-/Codehashes, stellt eine neue lokale
 Testdatenbank her und packt alles in ein zusätzlich AES-256-GCM-verschlüsseltes
 Paket. Temporäre Klartextdateien werden entfernt, Schlüssel nicht beigelegt.
+Unabhängige Offline-Wiederherstellungsprobe des fertigen Pakets:
+
+```
+node tools/check-editorial-system-copy.mjs PACKAGE.aes SEPARATE-KEY-FILE NEW-PRIVATE-TEST-DIRECTORY
+```
+
+Dieses Prüfverzeichnis enthält entschlüsselte private Daten und bleibt privat.
+Das Werkzeug überschreibt keine vorhandene Datenbank und kontaktiert keine Cloud.
+
 Dies ist ein manueller Operator-Lauf, noch kein extern automatisierter Backupjob.
 Regelmäßige Kopie außerhalb R2 organisatorisch einplanen. Ohne getrennte
 Schlüsselsicherung sind verschlüsselte Sicherungen nicht wiederherstellbar.

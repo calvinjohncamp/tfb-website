@@ -1,8 +1,8 @@
 # Geräteübergreifende Vorführung
 
 Stand 26.10.2026: v232 zentralisiert auch die redaktionellen Seiten. Umsetzung
-und Tests sind abgeschlossen; Live-Nachweis und letzte Deployment-Schritte stehen
-in [UEBERGABE.md](UEBERGABE.md). Bis dahin bleibt v231 der bestätigte Live-Stand.
+und Tests sind abgeschlossen und v232 ist veröffentlicht. Live-Nachweise stehen
+in [UEBERGABE.md](UEBERGABE.md). Desktopstand und frisches Mobilprofil stimmen überein.
 Die folgenden v222-Angaben sind historisch. Technischer Ablauf und Sicherungsumfang:
 [Zentrale Redaktion](ZENTRALE_REDAKTION.md).
 

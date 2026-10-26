@@ -2,8 +2,8 @@
 
 ## Ausbau v232 – zentrale Redaktion und Sicherungen, 26.10.2026
 
-Beauftragt und lokal umgesetzt; die Live-Freischaltung läuft. Bis zum expliziten
-Veröffentlichungsnachweis unten bleibt der letzte bestätigte Live-Stand v231.
+Beauftragt, umgesetzt und als v232 veröffentlicht. Der folgende aktuelle
+Veröffentlichungsnachweis hat Vorrang vor älteren v231-/Konzeptabschnitten.
 R2-Aktivierung wurde vom Nutzer am 26.10. bestätigt. Keine Workers-Tarifumstellung
 beauftragt oder durchgeführt. R2 wird verbrauchsabhängig mit Freimengen abgerechnet.
 
@@ -45,6 +45,41 @@ Datei wiederhergestellt, Integrität/Fremdschlüssel geprüft; Sessions bleiben 
 Partner-Messung bleibt aus, E-Mail-Versand unverändert.
 
 Technische Schritte und Betriebsgrenzen: [Zentrale Redaktion](ZENTRALE_REDAKTION.md).
+
+### Veröffentlichung und echte Live-Prüfung v232
+
+- Website-Quellstand `35da0e2c61719112dc68b846829d8985508521bb`,
+  [Pages-Lauf 40370255892](https://github.com/calvinjohncamp/tfb-website/actions/runs/40370255892)
+  erfolgreich. Öffentliche Startdateien bytegleich mit dem geprüften Stand.
+- Worker `6f54a41d-40fb-4228-9dff-fc01623aa87a`; D1-Migration 0006 und privater
+  R2-Bucket `tfb-website-private` aktiv; täglicher Cron `15 2 * * *` registriert.
+- Zentraler Anfangsstand Revision 1, 16 Dokumente, alle 101 öffentlichen Medien
+  live anhand SHA-256 geprüft. Home-Reihenfolge entspricht exakt dem gesicherten
+  Desktop: Jubiläum, Voll fokussiert, Padel, Kiosk, Impressionen.
+- Frisches mobiles Browserprofil ohne Sitzung: zentraler Home-Stand korrekt,
+  sichtbare Bilder vollständig geladen, keine JS-Fehler/Überbreite.
+- Echter Admin-Zugang im bestehenden Chrome-Tab: neuer Sicherungsbereich sichtbar,
+  erster verschlüsselter Gesamtlauf erfolgreich am 26.10.2026 um 18:37:56 MEZ.
+  Das ist ein echter manueller Live-Lauf, noch kein Nachweis künftiger Cron-Läufe.
+- Echte Browser-ZIP-Sicherung heruntergeladen: 66.317.498 Bytes; 101 Medien und
+  Quellarchiv mit allen Prüfsummen unabhängig geprüft. Privat archiviert.
+- Alle Zeilen der acht bestehenden dauerhaften Geschäftstabellen stimmen mit
+  dem Stand vor der Umstellung überein. Sitzungen/Rate-Limits sind hiervon
+  absichtlich ausgenommen. Keine neuen Geschäfts-/Vorführbuchungen angelegt.
+- Zusätzliche verschlüsselte lokale Kopie außerhalb Cloudflare erfolgreich:
+  102 Objekte geprüft; aus dem fertigen Paket unabhängig 19 Tabellen/1.062 Zeilen
+  wiederhergestellt, Integrität/Fremdschlüssel ok. Nachweise unter
+  `.private/release-v232/independent-system-copy` und `independent-restore-check`.
+  Liegt lokal im Dropbox-Projektordner; Dropbox-Cloudsynchronisation nicht geprüft.
+- Nachweise ausschließlich `.private/release-v232/`; vollständige Sicherungen
+  gehören weder auf GitHub Pages noch in öffentliche Anlagen. Separater Schlüssel:
+  `.private/release-v232/cms-backup-key.txt`, niemals in Logs/Git aufnehmen.
+
+Weitere Betreuung: nächtlichen Sicherungserfolg kontrollieren, externe Kopien
+regelmäßig erneut ausführen. Keine externe Wiederholung automatisiert eingerichtet;
+das manuelle Exportwerkzeug ist vorhanden. Partner/Splash bleiben separat gepflegt
+und sind über die technische Gesamtsicherung abgedeckt. Messung und Mailversand
+wurden nicht aktiviert. Keine Änderung am Workers-Tarif durchgeführt.
 
 ## Bestätigter Gesamtstand: live v231 – 25.10.2026
 

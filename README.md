@@ -1,9 +1,11 @@
 # TFB-Website
 
-## Zentrale Redaktion v232 – Freischaltung in Arbeit
+## Zentrale Redaktion v232 – live am 26.10.2026
 
 Geräteübergreifende Inhalte, versionierte Stände und portable ZIP-Sicherungen sind
-lokal implementiert und getestet. Live-Nachweis folgt nach Backend-Initialisierung.
+veröffentlicht. Echter Desktopstand übernommen; 101 Medien live geprüft; erste
+verschlüsselte Gesamtsicherung und echter Admin-Download erfolgreich.
+[Veröffentlichung](https://github.com/calvinjohncamp/tfb-website/actions/runs/40370255892).
 Details und Betriebsanleitung: [Zentrale Redaktion](docs/ZENTRALE_REDAKTION.md).
 
 
