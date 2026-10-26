@@ -1,5 +1,23 @@
 # TFB – Übergabe für die nächste Sitzung
 
+## Vorstandsfotos v233 – live am 26.10.2026
+
+Regression nach Zentralisierung behoben: Die Vorstandskarten setzten interne
+img:cms-Kennungen direkt als Bildadresse ein. editorial.boardPeople löst jetzt
+Vorschau und Original über die zentrale Medienzuordnung auf. Der Vorstandseditor
+verwendet dieselbe Auflösung; Zuschneiden zentraler Bilder nutzt CORS. Serverseitig
+bleiben gespeicherte Ausschnitte und Originale getrennt, nicht freigegebene
+Mitgliederfotos bleiben privat. Keine Inhalts-/Mitgliedsdaten zurückgesetzt.
+
+Quellstand `71fc19a4f1ee8ad606b8e9397b31901a95cc0633`,
+[Pages-Lauf 40373146993](https://github.com/calvinjohncamp/tfb-website/actions/runs/40373146993)
+erfolgreich; Worker `65ae440b-58bb-4df2-b271-3284233918bb`, Cache v233.
+Passendes Quellarchiv privat in R2 für vollständige Snapshots hinterlegt.
+Vier Backendtests und Browserregression einschließlich Editor-/Crop-Vorschau
+bestanden. Echte Live-Prüfung: alle sieben Fotos und Großansicht geladen;
+Handy 390, Tablet 834 und Desktop 1440px ohne Überbreite/JS-Fehler.
+Nachweis und visueller Vergleich unter `.private/release-v233/`.
+
 ## Ausbau v232 – zentrale Redaktion und Sicherungen, 26.10.2026
 
 Beauftragt, umgesetzt und als v232 veröffentlicht. Der folgende aktuelle

@@ -1,5 +1,11 @@
 # TFB-Website
 
+## Vorstandsfotos v233 – 26.10.2026
+
+Zentrale Bildkennungen werden für Vorstandskarten, Großansicht und Editor wieder
+korrekt aufgelöst. Alle sieben Fotos live auf Handy/Tablet/Desktop geprüft.
+[Veröffentlichung](https://github.com/calvinjohncamp/tfb-website/actions/runs/40373146993).
+
 ## Zentrale Redaktion v232 – live am 26.10.2026
 
 Geräteübergreifende Inhalte, versionierte Stände und portable ZIP-Sicherungen sind
