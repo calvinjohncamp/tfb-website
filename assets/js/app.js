@@ -1187,6 +1187,7 @@
   function openAvatarCropper(src, onSave, options = {}) {
     const V = 260;
     const img = new Image();
+    if (/^https?:/i.test(src) && new URL(src).origin !== location.origin) img.crossOrigin = 'anonymous';
     img.onload = () => {
       const base = Math.max(V / img.naturalWidth, V / img.naturalHeight);
       let zoom = Math.max(1, Math.min(4, Number(options.initial?.zoom) || 1));

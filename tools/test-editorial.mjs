@@ -61,3 +61,11 @@ test('scheduled backups and snapshot retention; encrypted database archive can b
  const tmp=mkdtempSync('/private/tmp/tfb-restore-');try{const decoded=await decryptSystemBackup(bytes,f.env.CMS_BACKUP_KEY),target=tmp+'/independent.sqlite';const check=restoreDatabase(decoded,target);assert.ok(check.tables>=10);const restored=new DatabaseSync(target);assert.equal(restored.prepare('SELECT COUNT(*) AS n FROM members').get().n,2);assert.equal(restored.prepare('SELECT COUNT(*) AS n FROM sessions').get().n,0);assert.equal(restored.prepare("SELECT payload FROM cms_documents WHERE key='page:home'").get().payload,JSON.stringify({title:'Home'}));restored.close();assert.throws(()=>restoreDatabase(decoded,target),/already exists/);await assert.rejects(()=>decryptSystemBackup(bytes,'cd'.repeat(32)));}finally{rmSync(tmp,{recursive:true});}
 
 });
+test('board portraits retain approved crops and originals without publishing private member photos',async()=>{
+ const f=await setup();const media=await f.call('/admin/site/media',{data:png},f.adminToken);const ref=media.body.ref;
+ const posted=await f.commit([{kind:'account',id:f.admin.id,revision:0,value:{avatar:png,avatarLarge:png,photoPublic:false}}]);assert.equal(posted.status,200);
+ await save(f,[change('page:home',0,{title:'Home'}),change('page:verein',0,{blocks:[{id:'v-vorstand',type:'people',people:[{name:'Static board',image:ref,photoCrop:{source:ref,image:png}},{memberId:f.admin.id,name:'Linked board'}]}]})]);
+ let board=(await f.call('/public/site')).body.boardPeople;assert.equal(board[0].avatar,png);assert.equal(board[0].avatarLarge,ref);assert.equal(board[1].avatar,null);assert.equal(board[1].avatarLarge,null);
+ const record=f.env.DB.sqlite.prepare("SELECT payload_id FROM app_records WHERE kind='account' AND id=?").get(f.admin.id);const payload=f.env.DB.sqlite.prepare('SELECT data FROM app_payloads WHERE payload_id=? AND part=0').get(record.payload_id);const account=JSON.parse(payload.data);account.photoPublic=true;account.photoPending=false;f.env.DB.sqlite.prepare('UPDATE app_payloads SET data=? WHERE payload_id=? AND part=0').run(JSON.stringify(account),record.payload_id);
+ board=(await f.call('/public/site')).body.boardPeople;assert.equal(board[1].avatar,png);assert.equal(board[1].avatarLarge,png);
+});

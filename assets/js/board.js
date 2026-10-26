@@ -20,9 +20,10 @@
     if (!block) return ui().toast('Bitte zuerst einen Vorstandsbereich im Club anlegen.');
     const people = JSON.parse(JSON.stringify(block.people || []));
     const faces = new Map();
+    const images = await ui().api.images();
     const photoSource = (p) => {
       const src = p.memberId ? faces.get(p.memberId)?.avatarLarge || faces.get(p.memberId)?.avatar : (TFB.boardPhotoPreviews || {})[p.image] || p.image;
-      return (TFB.boardPhotoData || {})[src] || src;
+      return (TFB.boardPhotoData || {})[src] || images[src] || src;
     };
     const photoKey = (p) => p.memberId ? `member:${p.memberId}:${faces.get(p.memberId)?.avatarRevision || 0}` : p.image;
     const photoPreview = (p) => p.photoCrop?.source === photoKey(p) ? p.photoCrop.image : p.memberId ? faces.get(p.memberId)?.avatar : photoSource(p);

@@ -32,12 +32,13 @@ async function publicDocuments(env,documents){
   const parts=(await env.DB.prepare("SELECT r.id,p.data FROM app_records r JOIN app_payloads p ON p.payload_id=r.payload_id WHERE r.kind='account' AND r.deleted=0 AND r.id IN (SELECT value FROM json_each(?)) ORDER BY r.id,p.part").bind(JSON.stringify(ids)).all()).results;
   for(const row of parts)accounts.set(row.id,(accounts.get(row.id)||'')+row.data);
  }
- for(const person of people){if(!person.memberId)continue;
+ for(const person of people){if(!person.memberId){if(person.image&&person.photoCrop?.source===person.image){person.avatarLarge=person.image;person.image=person.photoCrop.image;}continue;}
+  person.avatarLarge=null;
   const member=members.get(person.memberId);person.image=null;
   if(!member){person.name='Nicht besetzt';delete person.photoCrop;continue;}
   person.name=member.first_name+' '+member.last_name;if(person.publishEmail)person.email=member.email;
   const account=JSON.parse(accounts.get(person.memberId)||'{}');
-  if(account.photoPublic&&!account.photoPending&&account.avatar)person.image=person.photoCrop?.source===`member:${person.memberId}:${account.avatarRevision||0}`?person.photoCrop.image:account.avatar;
+  if(account.photoPublic&&!account.photoPending&&account.avatar){person.avatarLarge=account.avatarLarge||account.avatar;person.image=person.photoCrop?.source===`member:${person.memberId}:${account.avatarRevision||0}`?person.photoCrop.image:account.avatar;}
   delete person.photoCrop;
  }
  return Object.fromEntries(Object.entries(copy).map(([key,doc])=>[key,{...doc,value:publicValue(doc.value)}]));
@@ -51,7 +52,7 @@ export async function editorialState(env,admin=false,attempt=0){
  const media=(await env.DB.prepare('SELECT m.ref,m.mime,m.size,m.hash FROM cms_media m '+(admin?'':'JOIN cms_public_media p ON p.ref=m.ref')).all()).results;
  const revision=(await env.DB.prepare('SELECT revision FROM cms_head WHERE id=1').first()).revision;
  if(before!==revision){if(attempt>=3)fail(409,'Inhalte werden gerade geändert. Bitte erneut laden.');return editorialState(env,admin,attempt+1);}
- const boardPeople=(projected['page:verein']?.value?.blocks?.find(b=>b.id==='v-vorstand')?.people||[]).map(p=>({role:p.role,name:p.name,email:p.publishEmail?p.email||'':'',phone:p.publishPhone?p.phone||'':'',avatar:p.image||null,avatarLarge:p.image||null}));
+ const boardPeople=(projected['page:verein']?.value?.blocks?.find(b=>b.id==='v-vorstand')?.people||[]).map(p=>({role:p.role,name:p.name,email:p.publishEmail?p.email||'':'',phone:p.publishPhone?p.phone||'':'',avatar:p.image||null,avatarLarge:p.avatarLarge||p.image||null}));
  const backup=admin?await env.DB.prepare('SELECT last_success,last_attempt,last_error FROM cms_backup_status WHERE id=1').first():undefined;
  return {format:'tfb-editorial-state',version:1,revision,documents,media,boardPeople,...(admin?{backup}: {})};
 }

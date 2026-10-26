@@ -11,7 +11,7 @@ const root=fileURLToPath(new URL('../',import.meta.url)),site='https://joern-kae
 const f=await fixture(),browser=await chromium.launch({headless:true});let collectRequests=0;const errors=[];
 f.env.CMS_BUCKET=new Bucket();
 const uploaded=await f.call('/admin/site/media',{data:'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aQWQAAAAASUVORK5CYII='},f.adminToken);assert.equal(uploaded.status,200);
-const initial=(await f.call('/admin/site/commit',{id:crypto.randomUUID(),changes:[{key:'page:home',expected:0,value:{title:'Home',blocks:[{id:'one',type:'feature',title:'Zentraler erster Beitrag',text:'Gemeinsam auf allen Geräten',image:uploaded.body.ref}]}},{key:'page:verein',expected:0,value:{title:'Club',blocks:[]}}]},f.adminToken));
+const initial=(await f.call('/admin/site/commit',{id:crypto.randomUUID(),changes:[{key:'page:home',expected:0,value:{title:'Home',blocks:[{id:'one',type:'feature',title:'Zentraler erster Beitrag',text:'Gemeinsam auf allen Geräten',image:uploaded.body.ref}]}},{key:'page:verein',expected:0,value:{title:'Club',blocks:[{id:'v-vorstand',type:'people',title:'Vorstand',people:[{role:'Vorsitz',name:'Test Vorstand',image:uploaded.body.ref}]}]}}]},f.adminToken));
 assert.equal(initial.status,200);
 const archive=new Uint8Array([80,75,5,6,...Array(18).fill(0)]),release='a'.repeat(40);
 await f.env.CMS_BUCKET.put('editorial/releases/'+release+'.zip',archive);
@@ -38,6 +38,15 @@ try{
  const {page}=await open(true);
  await page.locator('[data-action="splash-enter"]').click();
  await page.waitForFunction(()=>document.querySelector('#view').textContent.includes('Zentraler erster Beitrag'));
+ await page.evaluate(()=>{location.hash='#club';});
+ await page.waitForSelector('.board-photo img');await page.waitForFunction(()=>document.querySelector('.board-photo img')?.naturalWidth>0);
+ assert.match(await page.locator('.board-photo img').getAttribute('src'),/^https:/);
+ const board=await page.evaluate(async()=>await TFB.api.boardPeople());assert.match(board[0].avatarLarge,/^https:/);
+ if(!await page.evaluate(()=>TFB.ui.state.member.isAdmin))await page.locator('.topbar .header-logo .tfb-logo-ball').click();
+ await page.evaluate(()=>TFB.board.open());await page.waitForSelector('[data-board-editor] .board-linked img');
+ await page.waitForFunction(()=>document.querySelector('[data-board-editor] .board-linked img')?.naturalWidth>0);
+ await page.locator('[data-board-crop]').click();await page.waitForSelector('[data-crop-save]');await page.locator('[data-crop-save]').click();await page.waitForSelector('[data-board-editor]');assert.match(await page.locator('[data-board-editor] .board-linked img').getAttribute('src'),/^data:image/);
+ await page.locator('.sheet-close').click();await page.evaluate(()=>{location.hash='#home';});await page.waitForFunction(()=>document.querySelector('#view').dataset.view==='home');
  const version=await page.evaluate(async()=>{const site=await TFB.api.site();site.pages.home.blocks[0].title='Desktop gespeichert';await TFB.api.saveSite(site);await TFB.refreshSite(true);return (await TFB.api.site())._cms.versions['page:home'];});assert.equal(version,2);
  const guest=await open();await guest.page.setViewportSize({width:390,height:844});await guest.page.locator('[data-action="splash-enter"]').click();
  await guest.page.waitForFunction(()=>document.querySelector('#view').textContent.includes('Desktop gespeichert'));
