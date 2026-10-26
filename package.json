@@ -16,7 +16,9 @@
     "test:browser:design-preview": "node tools/test-browser-design-preview.mjs",
     "test:browser:overview": "node tools/test-browser-overview.mjs",
     "test:browser:gallery": "node tools/test-browser-gallery.mjs",
-    "test:browser:backups": "node tools/test-browser-backups.mjs"
+    "test:browser:backups": "node tools/test-browser-backups.mjs",
+    "test:editorial": "node --test tools/test-editorial.mjs",
+    "test:browser:editorial": "node tools/test-browser-editorial.mjs"
   },
   "devDependencies": {
     "playwright": "^1.64.0"

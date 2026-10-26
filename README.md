@@ -1,5 +1,12 @@
 # TFB-Website
 
+## Zentrale Redaktion v232 – Freischaltung in Arbeit
+
+Geräteübergreifende Inhalte, versionierte Stände und portable ZIP-Sicherungen sind
+lokal implementiert und getestet. Live-Nachweis folgt nach Backend-Initialisierung.
+Details und Betriebsanleitung: [Zentrale Redaktion](docs/ZENTRALE_REDAKTION.md).
+
+
 ## Linksbündige Spaltenüberschriften v231 – 25.10.2026
 
 Überschriften der Strichliste passend zu den Strichen ebenfalls linksbündig.

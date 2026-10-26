@@ -1,0 +1,29 @@
+CREATE TABLE IF NOT EXISTS cms_head (id INTEGER PRIMARY KEY CHECK(id=1), revision INTEGER NOT NULL DEFAULT 0);
+INSERT OR IGNORE INTO cms_head VALUES(1,0);
+CREATE TABLE IF NOT EXISTS cms_documents (
+ key TEXT PRIMARY KEY, revision INTEGER NOT NULL, payload TEXT NOT NULL, updated_at TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS cms_guards (id TEXT PRIMARY KEY, key TEXT NOT NULL, expected INTEGER NOT NULL);
+CREATE TRIGGER IF NOT EXISTS cms_revision_guard BEFORE INSERT ON cms_guards BEGIN
+ SELECT CASE WHEN NEW.expected != CASE WHEN NEW.key='@head'
+ THEN (SELECT revision FROM cms_head WHERE id=1)
+ ELSE COALESCE((SELECT revision FROM cms_documents WHERE key=NEW.key),0) END
+ THEN RAISE(ABORT,'CMS_CONFLICT') END;
+END;
+CREATE TABLE IF NOT EXISTS cms_history (
+ id TEXT PRIMARY KEY, revision INTEGER NOT NULL, created_at TEXT NOT NULL, author TEXT NOT NULL,
+ label TEXT NOT NULL, kind TEXT NOT NULL, named INTEGER NOT NULL DEFAULT 0, object_key TEXT NOT NULL,
+ bucket TEXT NOT NULL DEFAULT ''
+);
+CREATE UNIQUE INDEX IF NOT EXISTS cms_history_period ON cms_history(kind,bucket) WHERE kind IN ('daily','monthly');
+CREATE TABLE IF NOT EXISTS cms_receipts (id TEXT PRIMARY KEY, signature TEXT NOT NULL, result TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS cms_media (
+ ref TEXT PRIMARY KEY, hash TEXT NOT NULL, mime TEXT NOT NULL, size INTEGER NOT NULL, object_key TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS cms_public_media (ref TEXT PRIMARY KEY REFERENCES cms_media(ref));
+CREATE TABLE IF NOT EXISTS cms_releases (
+ commit_id TEXT PRIMARY KEY, object_key TEXT NOT NULL, sha256 TEXT NOT NULL, size INTEGER NOT NULL, created_at TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS cms_backup_status (
+ id INTEGER PRIMARY KEY CHECK(id=1), last_success TEXT, last_attempt TEXT, last_error TEXT NOT NULL DEFAULT ''
+);

@@ -12,5 +12,7 @@
     "database_name": "tfb-website",
     "database_id": "89c7e329-d351-483b-8c55-f2c0ec87c42c"
   }],
+  "r2_buckets": [{"binding":"CMS_BUCKET","bucket_name":"tfb-website-private"}],
+  "triggers": {"crons":["15 2 * * *"]},
   "observability": { "enabled": false }
 }

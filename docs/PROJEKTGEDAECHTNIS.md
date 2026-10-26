@@ -1,17 +1,50 @@
 # TFB-Kiosk – Projektgedächtnis und Übergabe
 
-## Nächster Ausbaustand v232 – Vorschlag vom 26.10.2026
+## Ausbau v232 – zentrale Redaktion und Sicherungen, 26.10.2026
 
-Nutzer verlangt zentrale Inhaltspflege über Geräte hinweg sowie versionierte
-Snapshots für Inhalte/Look und eine gesonderte vollständige Systemsicherung.
-Diagnose bestätigt: aktueller Live-Code v231 speichert api.saveSite weiterhin nur
-im Browser; Neuinstallation auf iPhone kann Desktopänderungen nicht übernehmen.
-Noch keine technische Umsetzung oder Live-Änderung beauftragt: zuerst Konzept.
-Der detaillierte Vorschlag „Nächster Ausbaustand v232“ steht am Dateiende.
-Wichtig vor einer Umstellung: tatsächlichen neuesten Desktopstand vollständig
-sichern; veröffentlichte Startinhalte nicht ungeprüft als neuesten Stand verwenden.
-TFB-Worker/D1 ausbauen, Padel-Sicherungsprinzipien übernehmen, Daten getrennt halten.
-Inhaltsrestore darf neuere Chats, Buchungen und Mitgliederdaten nicht zurücksetzen.
+Beauftragt und lokal umgesetzt; die Live-Freischaltung läuft. Bis zum expliziten
+Veröffentlichungsnachweis unten bleibt der letzte bestätigte Live-Stand v231.
+R2-Aktivierung wurde vom Nutzer am 26.10. bestätigt. Keine Workers-Tarifumstellung
+beauftragt oder durchgeführt. R2 wird verbrauchsabhängig mit Freimengen abgerechnet.
+
+Der echte Desktopstand wurde über „Inhalte sichern“ exportiert, privat gesichert
+und geprüft: 16 Redaktionsdokumente, 101 Medien (25.899.784 Bytes). Nicht die älteren
+öffentlichen Startinhalte als Grundlage verwenden. Originalexport, Quellarchiv,
+Git-Bundle, D1-Export und erfolgreich geprüfte Datenbankkopie liegen ausschließlich
+unter `.private/release-v232/`. Keine dieser Dateien veröffentlichen.
+
+Implementiert: zentrale Seiten-/Konfigurationsrevisionen, Konfliktschutz,
+unveränderliche R2-Medien mit SHA-256, private unveröffentlichte Uploads,
+Entwurfserhalt bei Offline-/Konfliktfehlern, geräteübergreifendes Nachladen.
+Bestehende Stifte/Speicherbuttons bleiben. Admin-Konto erhält „Inhalte & Sicherung“:
+benannte Stände, Historie, Vergleich/selektive Wiederherstellung und ZIP-Export/Import.
+Das ZIP enthält JSON, benötigte Medien und den passenden Quellarchiv-Commit.
+Programmcode wird durch einen Inhaltsimport niemals ausgeführt oder deployt.
+
+Nur redaktionelle Dokumente werden per App zurückgesetzt. Aktuelle Chats,
+Mitgliedsdaten, Käufe, Partnerzahlungen und bestehende Partner-/Splash-Endpunkte
+bleiben erhalten. Partner/Splash werden weiterhin im bestehenden Bereich gepflegt;
+sie sind Bestandteil der technischen Gesamtsicherung, nicht der selektiven
+Seiten-Wiederherstellung. Das ist der tatsächliche Umfang gegenüber dem breiteren
+ursprünglichen Snapshot-Vorschlag.
+
+Automatik vorbereitet: 30 Änderungsstände je Art, 30 Tages-/12 Monatsstände,
+benannte und Sicherheitsstände bleiben erhalten. Medien werden bislang nicht
+bereinigt, damit alte Stände wiederherstellbar bleiben; Speicherwachstum überwachen.
+Datenbank-Vollsicherung mit AES-256-GCM, separater Schlüssel als Worker-Secret,
+täglich 02:15 UTC. Live-Erfolg erst nach Kontrolle von cms_backup_status behaupten.
+Free-Worker-CPU-/D1-Grenzen insbesondere für Vollsicherungen prüfen; R2-Freimengen
+allein garantieren keinen dauerhaft kostenlosen Gesamtbetrieb.
+
+Prüfungen: 20 Backendtests (Redaktion, App-Sync, Partner, Sichtbarkeit) bestanden.
+Isolierter Browser gegen echten Worker: Desktop/frisches Mobilprofil, Konfliktentwurf,
+benannter Stand, ZIP mit echten Medien/Programm, Importvorschau, selektives Home-
+Restore, Offline-Fehler, drei Bildschirmgrößen, keine Messung. ZIP zusätzlich mit
+Python zipfile geprüft. Verschlüsselte Datenbanksicherung in unabhängiger SQLite-
+Datei wiederhergestellt, Integrität/Fremdschlüssel geprüft; Sessions bleiben leer.
+Partner-Messung bleibt aus, E-Mail-Versand unverändert.
+
+Technische Schritte und Betriebsgrenzen: [Zentrale Redaktion](ZENTRALE_REDAKTION.md).
 
 ## Bestätigter Gesamtstand: live v231 – 25.10.2026
 

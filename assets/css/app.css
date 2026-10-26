@@ -2697,3 +2697,10 @@ body.admin-hidden [data-action="post-hide"] { display: none !important; }
 @container tally (max-width: 310px) {
   .paper-row.tally-row .paper-name { font-size: .72rem; }
 }
+
+/* Compact central website history, alongside the existing account controls. */
+.cms-controls{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-top:14px}
+.cms-import{cursor:pointer}.cms-history section{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:16px 0;border-bottom:1px solid var(--line)}
+.cms-history section>div{flex:1 1 180px}.cms-history small{display:block;color:var(--muted);font-size:12px;margin-top:5px}
+.cms-preview section{padding:14px 0;border-bottom:1px solid var(--line)}.cms-preview h3{font-size:15px;color:var(--ink);text-transform:none;letter-spacing:0}
+.cms-preview ol{padding-left:20px;font-size:14px;line-height:1.6}.cms-preview pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px;max-height:220px;overflow:auto}

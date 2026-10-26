@@ -2735,7 +2735,8 @@
       const src = images[ref] || (/^assets\//.test(ref || '') ? ref : '');
       if (!src) return;
       TFB.photoFrame.open(src, site.photoFrames?.[ref], async frame => {
-        site.photoFrames = await ui().api.setPhotoFrame(ref, frame);
+        await ui().api.setPhotoFrame(ref, frame);
+        site = await ui().api.site();
         document.querySelectorAll('img[data-photo-ref]').forEach(img => {
           if (img.dataset.photoRef === ref) (img.closest('.photo-frame') || img).outerHTML = picture(ref, ref, img.alt);
         });

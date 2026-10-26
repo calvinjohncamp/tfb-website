@@ -1,4 +1,12 @@
-# Geräteübergreifende Vorführung – aktueller Live-Stand v222
+# Geräteübergreifende Vorführung
+
+Stand 26.10.2026: v232 zentralisiert auch die redaktionellen Seiten. Umsetzung
+und Tests sind abgeschlossen; Live-Nachweis und letzte Deployment-Schritte stehen
+in [UEBERGABE.md](UEBERGABE.md). Bis dahin bleibt v231 der bestätigte Live-Stand.
+Die folgenden v222-Angaben sind historisch. Technischer Ablauf und Sicherungsumfang:
+[Zentrale Redaktion](ZENTRALE_REDAKTION.md).
+
+# Historischer Stand v222
 
 Aktueller bestätigter Stand 17.10.2026: Website v222 (Präsentations-PDF), Profil/Kiosk/Chats seit v203,
 Planung seit v204 zentral, Touch-Optimierung seit v205. Seit v210 sind auch

@@ -4,6 +4,8 @@ import {syncState, syncCommit, syncRevision, syncFaces, syncPhoto} from './app-s
 import { managementPage } from './management.mjs';
 import {collectVisibility, visibilityReport} from './partner-visibility.mjs';
 import {publicPartnerContent,adminPartnerContent,savePartner,savePartnerSettings,addPartnerPayment,voidPartnerPayment,partnerLogo} from './partner-management.mjs';
+import {editorialState,uploadEditorialMedia,editorialMedia,editorialCommit,editorialCheckpoint,editorialHistory,editorialPreview,editorialRestore,editorialExport,editorialScheduled} from './editorial.mjs';
+import {backupEditorialSystem} from './editorial-backup.mjs';
 
 const ORIGINS = new Set(['https://joern-kaemper.de', 'https://www.joern-kaemper.de', 'https://calvinjohncamp.github.io']);
 const SESSION_MS = 12 * 60 * 60 * 1000;
@@ -194,6 +196,9 @@ async function route(request, env, url) {
     return createSession(env, result);
   }
   if (request.method === 'GET' && path === '/public/partner-content') return publicPartnerContent(env,url.origin);
+  if (request.method === 'GET' && path === '/public/site') return editorialState(env);
+  if (request.method === 'GET' && path === '/public/site-revision') return {revision:(await env.DB.prepare('SELECT revision FROM cms_head WHERE id=1').first())?.revision||0};
+  if (request.method === 'GET' && path.startsWith('/public/site-media/')) return editorialMedia(env,decodeURIComponent(path.split('/').at(-1)));
   if (request.method === 'GET' && path.startsWith('/public/partner-logo/')) return partnerLogo(env,path.split('/').at(-1));
   if (request.method === 'POST' && path === '/public/partner-events') {
     if (env.PARTNER_MEASUREMENT_ENABLED !== '1') fail(409, 'Die Sichtbarkeitsmessung ist vorbereitet und derzeit ausgeschaltet.');
@@ -205,6 +210,22 @@ async function route(request, env, url) {
   }
   const { member, tokenHash } = await authenticated(request, env, path.startsWith('/admin/'));
   await rate(env, request, 'directory', member.is_admin ? 3000 : 1800);
+  if (request.method === 'GET' && path === '/admin/site') return editorialState(env,true);
+  if (request.method === 'GET' && path === '/admin/site/history') return editorialHistory(env);
+  if (request.method === 'GET' && path === '/admin/site/export') return editorialExport(env,url.searchParams.get('id'));
+  if (request.method === 'GET' && path.startsWith('/admin/site/media/')) return editorialMedia(env,decodeURIComponent(path.split('/').at(-1)),true);
+  if (request.method === 'POST' && path === '/admin/site/media') return uploadEditorialMedia(env,await body(request,15*1024*1024));
+  if (request.method === 'POST' && path === '/admin/site/commit') return editorialCommit(env,member,await body(request,4*1024*1024));
+  if (request.method === 'POST' && path === '/admin/site/checkpoint') return editorialCheckpoint(env,member,await body(request,4096));
+  if (request.method === 'POST' && path === '/admin/site/system-checkpoint') return backupEditorialSystem(env);
+  if (request.method === 'POST' && path === '/admin/site/preview') return editorialPreview(env,await body(request,4*1024*1024));
+  if (request.method === 'POST' && path === '/admin/site/restore') return editorialRestore(env,member,await body(request,4*1024*1024));
+  if (request.method === 'GET' && path === '/admin/site/release') {
+    const release=await env.DB.prepare('SELECT * FROM cms_releases WHERE commit_id=?').bind(url.searchParams.get('id')||'').first();
+    if(!release||!env.CMS_BUCKET)fail(404,'Programmstand nicht gefunden.');
+    const object=await env.CMS_BUCKET.get(release.object_key);if(!object)fail(503,'Programmdatei nicht verfügbar.');
+    return new Response(object.body,{headers:{'Content-Type':'application/zip','Content-Disposition':'attachment; filename="programm.zip"'}});
+  }
   if (request.method === 'GET' && path === '/admin/partners') return adminPartnerContent(env,url.origin,url.searchParams.get('year'));
   if (request.method === 'POST' && path === '/admin/partners/save') return savePartner(env,await body(request,450000));
   if (request.method === 'POST' && path === '/admin/partner-settings') return savePartnerSettings(env,await body(request,4096));
@@ -254,6 +275,7 @@ async function route(request, env, url) {
 }
 
 export default {
+  async scheduled(controller,env,ctx){ctx.waitUntil((async()=>{await editorialScheduled(env);await backupEditorialSystem(env);})());},
   async fetch(request, env) {
     const url = new URL(request.url); const origin = request.headers.get('Origin');
     const sameOrigin = origin === url.origin;
@@ -261,7 +283,7 @@ export default {
     const headers = { 'Cache-Control':'no-store', 'X-Content-Type-Options':'nosniff', 'Referrer-Policy':'no-referrer',
       'Vary':'Origin', ...(allowed && origin ? {'Access-Control-Allow-Origin':origin} : {}) };
     function respond(value, status=200) {
-      if (value instanceof Response) { const h=new Headers(value.headers);for(const [k,v] of Object.entries(headers))h.set(k,v);return new Response(value.body,{status:value.status,headers:h}); }
+      if (value instanceof Response) { const h=new Headers(value.headers);for(const [k,v] of Object.entries(headers)){if(k==='Cache-Control'&&h.has(k))continue;h.set(k,v);}return new Response(value.body,{status:value.status,headers:h}); }
       return Response.json(value,{status,headers});
     }
     if (!allowed) return respond({error:'Diese Website ist nicht freigegeben.'},403);

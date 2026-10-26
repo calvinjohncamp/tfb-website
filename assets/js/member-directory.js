@@ -9,7 +9,7 @@
   let token = sessionStorage.getItem(KEY) || '';
   let verified = null;
   const base = cfg.url.replace(/\/$/, '');
-  async function call(path, data) {
+  async function call(path, data, options = {}) {
     if (location.protocol !== 'https:') throw Error('Bitte öffne die Website über https://joern-kaemper.de, um dich sicher anzumelden.');
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 15000);
@@ -20,6 +20,7 @@
           ...(token ? { Authorization: 'Bearer ' + token } : {}) },
         ...(data === undefined ? {} : { body: JSON.stringify(data) }),
       });
+      if(options.raw && response.ok)return response;
       const value = await response.json();
       if (!response.ok) {
         if (response.status === 401) clear();
@@ -32,6 +33,7 @@
     } finally { clearTimeout(timeout); }
   }
   TFB.directoryCall = call;
+  TFB.directoryFetch = path => call(path,undefined,{raw:true});
   function clear() {
     token = ''; verified = null; sessionStorage.removeItem(KEY); api.disconnectSync?.();
     api.attachDirectoryMember(null);

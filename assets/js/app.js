@@ -107,6 +107,7 @@
   // ---------- Start ----------
   async function boot() {
     await TFB.partnerContent?.ready;
+    await TFB.editorial?.ready;
     state.catalog = await api.catalog();
     state.member = await api.session();
     // Wer die App neu öffnet, landet immer auf Home – egal, welche Seite zuletzt offen war.
@@ -983,12 +984,13 @@
         </form>
 
         ${rawMember?.isAdmin ? '<button type="button" class="link" data-action="splash-open">Einstiegsseite ansehen</button>' : ''}
+        ${rawMember?.isAdmin && TFB.editorial?.enabled ? TFB.editorial.accountBox() : ''}
         ${m.isAdmin ? `
         <section class="acct-adminbox">
           <h3 class="acct-section">Admin</h3>
           <p class="acct-hint">Seiten und Kiosk bearbeitest du direkt dort über den Stift oben rechts.</p>
           ${TFB.memberImport ? TFB.memberImport.card() : ''}
-          <section class="card admin-card">
+          ${!TFB.editorial?.enabled ? `          <section class="card admin-card">
             <h2>Sichern &amp; Laden</h2>
             <p class="muted">Alle Inhalte – Seiten, Fotos, Mitglieder, Sortiment, Striche, Verabredungen – in einer Datei. So bist du vor Datenverlust geschützt und kannst alles auf einen anderen Rechner übertragen.</p>
             <div class="admin-links">
@@ -997,7 +999,7 @@
               <label class="btn">Chat-Beiträge ergänzen<input type="file" accept=".json,application/json" data-chat-restore-input hidden></label>
             </div>
             ${TFB.autosave ? `<h3 class="font-group">Automatisch sichern</h3>${TFB.autosave.box()}` : ''}
-          </section>
+          </section>` : ''}
           <section class="card admin-card">
             <h2>Foto-Freigaben</h2>
             <p class="muted">Öffentliche Profilfotos und Elternfreigaben prüfen.</p>
