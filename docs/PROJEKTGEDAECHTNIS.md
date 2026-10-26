@@ -1,5 +1,18 @@
 # TFB-Kiosk – Projektgedächtnis und Übergabe
 
+## Nächster Ausbaustand v232 – Vorschlag vom 26.10.2026
+
+Nutzer verlangt zentrale Inhaltspflege über Geräte hinweg sowie versionierte
+Snapshots für Inhalte/Look und eine gesonderte vollständige Systemsicherung.
+Diagnose bestätigt: aktueller Live-Code v231 speichert api.saveSite weiterhin nur
+im Browser; Neuinstallation auf iPhone kann Desktopänderungen nicht übernehmen.
+Noch keine technische Umsetzung oder Live-Änderung beauftragt: zuerst Konzept.
+Der detaillierte Vorschlag „Nächster Ausbaustand v232“ steht am Dateiende.
+Wichtig vor einer Umstellung: tatsächlichen neuesten Desktopstand vollständig
+sichern; veröffentlichte Startinhalte nicht ungeprüft als neuesten Stand verwenden.
+TFB-Worker/D1 ausbauen, Padel-Sicherungsprinzipien übernehmen, Daten getrennt halten.
+Inhaltsrestore darf neuere Chats, Buchungen und Mitgliederdaten nicht zurücksetzen.
+
 ## Bestätigter Gesamtstand: live v231 – 25.10.2026
 
 Der Nutzer hat den aktuellen Gesamtstand mit „Das sieht gut aus“ bestätigt und
@@ -2304,3 +2317,26 @@ vor späterem Einsatz anpassen. App-Symbol ohne Ball, Website-/Splash-Logo mit B
 Partnerpflege und ausgeschaltete Sichtbarkeitsmessung unverändert. Keine weitere
 Produktänderung, keine neue Migration, keine Datenrücksetzung und kein neuer
 Sicherungstag mit diesem Dokumentationsabschluss. Historische Abschnitte erhalten.
+
+## 26.10.2026 · Diagnose redaktioneller Speicherung und Vorschlag v232
+
+Nutzer meldet unterschiedliche Home-Reihenfolgen/Inhalte trotz iPhone-Neuinstallation.
+Live-Code schreibgeschützt gegen lokalen Stand geprüft: v231, api.saveSite weiterhin
+lokales db.site/localStorage, kein zentraler CMS-Adapter. Damit Unterschied erklärt;
+Anmeldung/Kiosk/Chat/Planung und Partner/Splash sind davon getrennt bereits zentral.
+
+Auf Folgeauftrag zentrale Redaktion und Apple-artige Snapshot-Wiederherstellung
+konzipiert. Bestehende lokale Komplett-JSON mit gemischten Daten und fortgeschriebener
+Automatik reicht dafür nicht. Padel-Quellarchiv/Git-Bundle und Datenbank-/Medien-
+Backuproutinen studiert, offizielle D1-/R2-Dokumentation überprüft. Vorschlag:
+vorhandenes TFB-Worker/D1 erweitern, revisionsgesicherte Seiten und zentrale Medien,
+Inhaltssnapshots getrennt von Programmrelease und vollständigem Betriebsbackup.
+JSON-Manifest plus mitgelieferte Medien/Quellarchiv als portables Paket, optional
+kleine Ein-Datei-JSON. Wiederherstellung mit Vorschau und vorherigem Sicherheitsstand,
+keine Rücksetzung anderer Bereiche. Kompakter Adminbereich und klare Redaktionsrechte.
+Ausführlicher Vorschlag/Umsetzungsreihenfolge in UEBERGABE.md am Dateiende.
+
+Nur Konzept dokumentiert, keine echte aktuelle Desktop-Sicherung erstellt und keine
+neue Migration, Automation, Dienstanmeldung, Messung oder Mailversand aktiviert.
+Live bleibt v231. Erste notwendige Quelle bei Umsetzung: neuester Desktop-Browser-
+stand einschließlich Bilder/Anhänge/Look, nicht bloß veröffentlichter Startbestand.

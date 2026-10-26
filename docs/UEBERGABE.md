@@ -1,5 +1,18 @@
 # TFB – Übergabe für die nächste Sitzung
 
+## Nächster Ausbaustand v232 – Vorschlag vom 26.10.2026
+
+Nutzer verlangt zentrale Inhaltspflege über Geräte hinweg sowie versionierte
+Snapshots für Inhalte/Look und eine gesonderte vollständige Systemsicherung.
+Diagnose bestätigt: aktueller Live-Code v231 speichert api.saveSite weiterhin nur
+im Browser; Neuinstallation auf iPhone kann Desktopänderungen nicht übernehmen.
+Noch keine technische Umsetzung oder Live-Änderung beauftragt: zuerst Konzept.
+Der detaillierte Vorschlag „Nächster Ausbaustand v232“ steht am Dateiende.
+Wichtig vor einer Umstellung: tatsächlichen neuesten Desktopstand vollständig
+sichern; veröffentlichte Startinhalte nicht ungeprüft als neuesten Stand verwenden.
+TFB-Worker/D1 ausbauen, Padel-Sicherungsprinzipien übernehmen, Daten getrennt halten.
+Inhaltsrestore darf neuere Chats, Buchungen und Mitgliederdaten nicht zurücksetzen.
+
 ## Bestätigter Gesamtstand: live v231 – 25.10.2026
 
 Der Nutzer hat den aktuellen Gesamtstand mit „Das sieht gut aus“ bestätigt und
@@ -1865,3 +1878,148 @@ und aktuelle direkte HTML-Prüfung bleiben offen.
   Signature-Rot `#C4553A`; Gestaltung in kleinen Schritten.
 - Deutsch, kurz und ehrlich. Nicht still veröffentlichen, versenden oder committen.
   Bestehende lokale Änderungen nicht zurücksetzen oder ungefragt insgesamt committen.
+
+## Nächster Ausbaustand v232: zentrale Redaktion und Website-Snapshots (Vorschlag 26.10.2026)
+
+Status: Nutzer beauftragt einen Vorschlag für zentrale geräteübergreifende
+Inhaltspflege und wiederherstellbare Sicherungsstände. Noch keine Umsetzung,
+keine Live-/Datenbankänderung und keine bestehende lokale Datei als vermeintlich
+aktueller Desktopstand übernommen. Live bleibt bestätigte v231. Dieser Abschnitt
+ist der nächste Entwicklungsauftrag und kein Hinweis auf bereits aktive Funktionen.
+
+### Diagnose und vorhandene Grundlage
+
+Am 26.10.2026 öffentlich ausgelieferten demo-backend.js, cloud-sync.js,
+public-content.js und sw.js schreibgeschützt mit dem lokalen Stand verglichen:
+Dateien identisch, Cache v231. api.saveSite schreibt redaktionelle Inhalte nur
+in db.site/localStorage; cloud-sync ersetzt site/saveSite nicht. Ein frisches
+Gerät startet mit TFB.publicSite, Änderungen eines Desktop-Browsers sind dort
+nicht enthalten. Kein durch Neuinstallation lösbares Cacheproblem.
+
+Bereits zentral: Mitglieder-/Anmeldung, Profile, Kiosk, Chats/Kommentare,
+Verabredungen/Gruppen sowie Partner/Splash. Vorhandene TFB-Infrastruktur:
+Cloudflare Worker tfb-api und separate D1 tfb-website. Kein Neubau der Anmeldung
+und keine Migration sämtlicher TFB-Daten nach Supabase nötig. Padel verwendet
+andere technische Datenhaltung; bewährte Abläufe/Backupprinzipien übernehmen,
+TFB und Padel organisatorisch und in ihren Datenbeständen getrennt halten.
+
+Bestehendes exportAll/importAll: Format tfb-sicherung v1 mit db, Bildern und
+zusätzlichen Browserständen. Das ist eine lokale Komplettsicherung, kein
+vollständiges Backup der zentralen Dienste oder des Programmcodes. Die lokale
+Automatik benötigt einen geöffneten/berechtigten Browser und schreibt dieselbe
+TFB-Sicherung-automatisch.json fort. Keine Historie unveränderlicher Einzelstände.
+Alte Komplettimporte nicht als Wiederherstellung einer einzelnen Website-Seite
+verwenden, sonst drohen ungewollte Rücksetzungen anderer Bereiche.
+
+### Zentrale Inhaltspflege
+
+Die bestehenden Stifte und Speicherknöpfe behalten. Seiteninhalte, Blockreihenfolge,
+Navigation, Galerien/Anhänge, Bildausschnitte und gemeinsame Gestaltungsoptionen
+über serverseitig geprüfte Redaktions-Endpunkte speichern. Jeder bestätigte Save
+veröffentlicht einen zentralen, versionierten Inhaltsstand. Andere Geräte laden
+diesen beim Öffnen, Zurückkehren und über eine kleine Revisionsprüfung; lokale
+Daten dienen als Offline-/Entwurfscache und überschreiben den Server nie automatisch.
+„Gespeichert“ erst nach erfolgreicher zentraler Bestätigung; offline bleibt ein
+sichtbarer Entwurf und wird nicht als veröffentlicht ausgegeben.
+
+Revisionen pro Seite bzw. gemeinsamer Konfiguration erlauben parallele Pflege.
+Bei veraltetem Ausgangsstand Konflikt anzeigen und Entwurf erhalten, keine
+stille letzte-Schreiboperation-gewinnt-Regel. Revision, Autor, Zeitpunkt und
+Änderungsgrund protokollieren. Partner-/Splash-Endpunkte sinnvoll integrieren,
+aber keine widersprüchlichen zweiten Wahrheitsquellen aufbauen.
+
+Für öffentliche redaktionelle Bilder/PDFs zentralen Medienspeicher vorsehen,
+bevorzugt eigener R2-Bereich im bestehenden Cloudflare-Konto. Medien unveränderlich
+unter geprüften IDs/Hashes ablegen; erst nach vollständig hochgeladenen Medien
+den Seitenstand atomar freigeben. Private Profil-/Chatbilder nicht automatisch
+öffentlich machen oder in redaktionelle Sicherungen aufnehmen. Medienfreigaben
+und Aufbewahrung bei Rücknahmen ausdrücklich berücksichtigen.
+
+### Drei getrennte Sicherungsumfänge
+
+1. **Website-Inhaltssnapshot:** Seiten, Reihenfolge, redaktionelle Texte und Medien,
+   Navigation, Designwerte/Look, Bildausschnitte, öffentliche Partner-/Splash-Darstellung.
+   Nicht enthalten: Sitzungen, Passwörter, Mitgliederliste, Käufe/Abrechnungen,
+   neuere Chats oder Verabredungen. Interne Partnerkontakte/-zahlungen separat.
+2. **Programm-/Designrelease:** exakter Git-Commit, Quellarchiv und Git-Bundle,
+   Schriften, Logos, CSS/JS, Schema-/Migrationsstand und nicht geheime Konfiguration.
+   Keine Secrets in JSON/Git/PDF. Programm-Rollback benötigt einen technischen
+   Deployment-Schritt und Prüfung der Datenbankkompatibilität; kein Ausführen
+   beliebigen Programmcodes aus einer hochgeladenen JSON-Datei im Admin.
+3. **Vollständige Betriebssicherung:** geschützter Datenbankexport plus zugehörige
+   Medienkopie und Konfigurations-/Secret-Wiederanlaufplan. Nur berechtigte Betreiber,
+   verschlüsselte externe Kopie und unabhängige Aufbewahrung. Eigenständige
+   Wiederherstellungsproben; nicht mit dem Inhalts-Zurücksetzen vermischen.
+
+### JSON als Snapshot-Verzeichnis, Paket für vollständige Portabilität
+
+Vorgeschlagenes Exportpaket TFB-Website-Snapshot_<Datum-Uhrzeit>.zip:
+- snapshot.json: Format/Schema-Version, Projektkennung, Snapshot-ID, Datum,
+  Inhaltsrevisionen, Inhalt/Look, Medienmanifest mit SHA-256-Prüfsummen,
+  Programmrelease/Commit und benötigter Schema-Stand.
+- medien/: tatsächlich benötigte Bild-/PDF-Dateien in den geprüften Versionen.
+- programm/: bei vollständigem Stand Quellarchiv/Git-Bundle des passenden Releases.
+
+Eine JSON mit bloßen Medienlinks oder Commitnummer ist keine eigenständig
+vollständig wiederherstellbare Kopie. Für kleine Inhaltssicherungen zusätzlich
+Ein-Datei-JSON mit eingebetteten Medien anbieten; bei vielen Fotos ZIP verwenden,
+keine künstlich riesige JSON mit gesamten Programmdateien und privaten Daten.
+Gemeinsamer Snapshot-Zeitpunkt/Revisionsschnitt; referenzierte Medien vollständig
+prüfen und während der Sicherung gegen vorzeitiges Löschen schützen.
+
+Sicherungsvorschlag: automatisch vor/nach Inhaltsänderungen versionieren,
+benannte manuelle Stände (z.B. Vorstandsfreigabe), regelmäßige serverseitige
+Exportpakete unabhängig vom geöffneten Browser. Als zu beschließende Startwerte:
+letzte 30 Änderungsstände, 30 Tagesstände und 12 Monatsstände; bewusst benannte
+Stände bis zur ausdrücklichen Aufhebung behalten. Aufbewahrungsfristen und
+personenbezogene Inhalte gesondert abstimmen. Sicherungen außerhalb öffentlicher
+Website-Dateien und zusätzlich außerhalb des primären Datenspeichers aufbewahren.
+
+D1 Time Travel ist eine zusätzliche Notfallhilfe, kein Ersatz für Medien-/Code-
+Sicherungen und keinenfalls die normale Inhalts-Zurück-Funktion: vollständige
+Datenbankwiederherstellung setzt auch andere Datenbereiche zurück. Dokumentation:
+https://developers.cloudflare.com/d1/reference/time-travel/
+Export: https://developers.cloudflare.com/api/resources/d1/subresources/database/methods/export/
+R2-Aufbewahrung: https://developers.cloudflare.com/r2/buckets/object-lifecycles/
+Tarif-/Kontozustand und tatsächliche Sicherungsverfügbarkeit vor Implementierung prüfen.
+
+### Einfache Admin-Bedienung und Rechte
+
+Ein kompakter Bereich „Inhalte & Sicherung“ im vorhandenen Konto-Adminbereich,
+kein großer zusätzlicher Verwaltungsbaum. Aktionen: „Stand sichern“, „Frühere
+Stände“, „Sicherung herunterladen“. Wiederherstellen zeigt zuerst eine Vorschau
+und eine verständliche Änderungsliste. Wahlweise einzelne Seite oder gesamte
+redaktionelle Website zurückholen; unmittelbar davor automatisch einen neuen
+Sicherheitsstand anlegen. Wiederherstellung erzeugt eine neue Revision, löscht
+keine Historie. Fehlende Medien/inkompatible Formate sperren die Übernahme.
+
+Mitglieder pflegen ihre zulässigen Chat-/Sportbeiträge, Vereinsadministratoren
+bzw. gezielt berechtigte Redakteure die offiziellen Seiten und Gestaltung.
+Keine automatische Vergabe von Adminrechten an alle Mitglieder. Rollenprüfung
+serverseitig; keine privaten Daten aus dem Redaktions-Endpunkt für Gäste ausliefern.
+
+### Sichere Reihenfolge für Umsetzung und Vereinsdomain
+
+1. Tatsächlich zuletzt gepflegten Desktop-Browserstand samt Bildern, Dokumenten
+   und Look vollständig sichern und seine Home-Reihenfolge mit dem Nutzer abgleichen.
+   Nicht stattdessen einfach public-content.js als neuesten Inhalt übernehmen.
+2. Aktuelle zentrale TFB-Daten sichern; additive CMS-/Snapshot-Strukturen und
+   geschützte Medienablage vorbereiten, vorhandene Bereiche unverändert erhalten.
+3. Desktop-Inhalte einmalig geprüft übernehmen. Desktop/iPhone/iPad und Gastprofil
+   müssen denselben veröffentlichten Inhalt samt Bildquellen sehen. Gleichzeitige
+   Bearbeitung, Offline-Verhalten und fehlerhafte Uploads gezielt prüfen.
+4. Inhaltsrestore in getrenntem Testbestand erproben: neuere Chats/Käufe bleiben
+   erhalten, vorheriger Look/Reihenfolge/Fotos werden exakt wiederhergestellt.
+   Zusätzlich vollständigen Wiederanlauf aus Exportpaket testen, nicht nur Dateiexistenz.
+5. Nach Freigabe bestehende Anmeldung, Partnerverwaltung, Klingel und später die
+   Aufnahme passend integrieren. Keine Freischaltung der Mailstrecke oder
+   Partner-Sichtbarkeitsmessung allein durch diesen Ausbau.
+6. Vereinsdomain erst bei tatsächlichem Umzug festlegen/verifizieren. DNS/HTTPS,
+   erlaubte Ursprünge, öffentliche Links, Mail-/Bestätigungslinks, Manifest/PWA
+   und Weiterleitung der Übergangsadresse anpassen. Zentrale Inhalte bleiben
+   erhalten; lokale Sitzungen/App-Installationen wechseln nicht automatisch
+   auf einen neuen Ursprung. Keine unnötige gleichzeitige Datenbankmigration.
+
+Für die erste Umstellung ist der lokale aktuelle Desktopstand die kritische
+Quelle. Zugangsdaten oder neue Dienste erst prüfen/einrichten, wenn die Umsetzung
+beauftragt ist; für diesen Vorschlag keine Accounts/Kosten/Automatiken aktiviert.
