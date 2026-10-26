@@ -1,5 +1,54 @@
 # TFB-Kiosk – Projektgedächtnis und Übergabe
 
+## Aktueller Gesamtstand und Wiederaufnahme – 26.10.2026
+
+Aktueller veröffentlichter Stand ist **v233** auf https://joern-kaemper.de.
+Die folgenden älteren Versions- und Konzeptabschnitte sind historische Nachweise;
+bei Widersprüchen gilt diese Zusammenfassung samt den v233-/v232-Nachweisen.
+
+- Redaktionelle Inhalte, Beitragsreihenfolge, Navigation und gemeinsame Gestaltung
+  werden zentral über den bestehenden TFB-Worker/D1 und privaten R2-Speicher gepflegt.
+  Ausgangspunkt war der echte zuletzt gesicherte Desktopstand, nicht der ältere Seed.
+  Neue Geräte laden denselben veröffentlichten Inhalt. Konflikte überschreiben
+  keine neueren Änderungen; nicht veröffentlichte Entwürfe bleiben lokal erhalten.
+- **Bedienweg: Profilbild oben rechts → Account → nach unten zu „Inhalte & Sicherung“.**
+  Der Bereich liegt unter „Einstiegsseite ansehen“, vor dem weiteren Adminbereich.
+  Er steht nur angemeldeten Admins zur Verfügung, auch bei ausgeblendeten übrigen
+  Adminwerkzeugen. Nutzer hat den Bereich inzwischen gefunden; kein offenes
+  Auffindbarkeitsproblem und keine Platzierung auf Home beauftragt.
+- Dort sind benannte Stände, Historie, Vergleich, selektives Inhalts-Restore sowie
+  vollständiger ZIP-Download und Import verfügbar. ZIP umfasst JSON, zugehörige
+  Medien und den passenden Programmstand. Ein Inhalts-Restore setzt keine neueren
+  Chats, Mitgliedsdaten, Käufe oder Partnerzahlungen zurück und deployt keinen Code.
+- Private verschlüsselte Gesamtsicherung: erster echter manueller Live-Lauf am
+  26.10.2026 um 18:37:56 MEZ erfolgreich. Täglicher Cron 02:15 UTC ist eingerichtet;
+  ein späterer erfolgreicher automatischer Nachtlauf wurde noch nicht beobachtet.
+  Unabhängige lokale verschlüsselte Kopie außerhalb Cloudflare geprüft: 102 Objekte,
+  19 Tabellen und 1.062 Zeilen wiederhergestellt, Integrität/Fremdschlüssel ok.
+  Regelmäßige externe Kopien sind noch kein automatisierter Dienst. Dropbox-
+  Cloudsynchronisation und externe Aufbewahrung des Schlüssels nicht als geprüft ausgeben.
+- Vorstandsfotos: Regression der internen Bildkennungen in v233 behoben. Alle sieben
+  Fotos und die Großansicht live geprüft; Editorvorschau und Zuschneiden ebenfalls
+  getestet. Vorhandene Inhalte und private Fotofreigaben bleiben erhalten.
+- Partner/Splash bleiben separat im bestehenden Adminablauf gepflegt. Ihre Daten
+  sind in der technischen Gesamtsicherung enthalten, nicht im selektiven Seiten-Restore.
+  Partner-Sichtbarkeitsmessung bleibt ausgeschaltet; kein neuer E-Mail-Versand aktiviert.
+  R2 ist vom Nutzer aktiviert; keine Workers-Tarifumstellung vorgenommen.
+
+### Hinweise für die nächste Sitzung
+
+Kein offener Fehler aus dieser Sitzung bekannt. Neue Änderungen erst nach Nutzerauftrag.
+Bei Betriebsprüfung zuerst den letzten bestätigten Sicherungserfolg kontrollieren;
+Cron-Konfiguration allein ist kein Nachweis eines gelungenen Backups. Zusätzlich
+regelmäßige unabhängige Kopien, Schlüsselaufbewahrung und Speicherwachstum betreuen.
+Bestehende Nutzerdaten nicht erneut aus dem v232-Ausgangsexport importieren: Seitdem
+können neue zentrale Änderungen vorhanden sein. Für künftige Releases das passende
+Quellarchiv weiter im privaten Sicherungsspeicher registrieren.
+
+Betriebsanleitung: [Zentrale Redaktion und Sicherungen](ZENTRALE_REDAKTION.md).
+Private Nachweise liegen unter `.private/release-v232/` und `.private/release-v233/`;
+Sicherungen, Mitgliedsdaten und Schlüssel niemals in Git oder Website aufnehmen.
+
 ## Vorstandsfotos v233 – live am 26.10.2026
 
 Regression nach Zentralisierung behoben: Die Vorstandskarten setzten interne
