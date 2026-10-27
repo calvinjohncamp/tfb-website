@@ -27,7 +27,7 @@ button.tfb-splash-ball .tfb-logo-ball { width:100%; height:100%; display:block; 
 .tfb-splash h1 { font:700 clamp(52px,8vw,84px)/.98 "TFB Bricolage",sans-serif; letter-spacing:-.045em; color:#171717; margin:0 0 26px; overflow-wrap:break-word; }
 .tfb-splash h1 em { color:#C4553A; font-style:normal; }
 .tfb-splash-description { max-width:465px; font-size:19px; line-height:1.5; color:#535353; white-space:pre-line; }
-.tfb-splash-enter { width:100%; min-height:62px; display:flex; justify-content:space-between; align-items:center; gap:16px; padding:18px 22px; border:0; border-radius:8px; background:#C4553A; color:#fff; font-size:18px; font-weight:650; text-align:left; }
+.tfb-splash-enter { width:100%; min-height:64px; display:flex; justify-content:space-between; align-items:center; gap:16px; padding:18px 22px; border:0; border-radius:8px; background:#C4553A; color:#fff; font-size:18px; font-weight:650; text-align:left; }
 .tfb-splash-foot { color:#686868; font-size:13px; margin:12px 0 0; }
 .tfb-splash .tfb-splash-partners { margin:30px 0 0; padding-top:23px; border-top:1px solid #D7D7D7; }
 .tfb-splash .pbsp-kicker { color:#686868; font-size:10px; font-weight:700; letter-spacing:.15em; margin:0 0 16px; text-align:left; line-height:1.4; }
@@ -37,6 +37,14 @@ button.tfb-splash-ball .tfb-logo-ball { width:100%; height:100%; display:block; 
 .tfb-splash-legal { display:flex; flex-wrap:wrap; gap:18px; margin-top:20px; font-size:12px; color:#686868; }
 .tfb-splash-legal a { color:inherit; text-decoration:none; }
 .tfb-splash button:focus-visible,.tfb-splash a:focus-visible { outline:3px solid #171717; outline-offset:4px; }
+/* Desktopvergleich mit Padel: Partner-Unterkante bei gleicher Fensterhöhe.
+   Nur die äußeren Zwischenräume verdichten; der Partnerblock bleibt unverändert.
+   Die Rechtstexte passen in den unteren Freiraum und verteilen die Blöcke nicht mit. */
+@media (min-width:700px) and (min-height:561px) and (orientation:landscape) {
+  .tfb-splash-inner { gap:44px; padding-bottom:clamp(40px,4.5vh,60px); }
+  .tfb-splash-inner > :last-child { position:relative; }
+  .tfb-splash-legal { position:absolute; top:100%; left:0; right:0; }
+}
 @media(min-width:768px) and (orientation:portrait) { .tfb-splash-inner { justify-content:space-evenly; padding-top:clamp(38px,4.2vh,56px); padding-bottom:clamp(48px,5vh,72px); gap:60px; } }
 @media(max-width:560px) {
   .tfb-splash-inner { min-height:100dvh; justify-content:flex-start; padding:calc(30px + env(safe-area-inset-top,0px)) 28px calc(50px + env(safe-area-inset-bottom,0px)); gap:68px; }

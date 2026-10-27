@@ -1,5 +1,18 @@
 # TFB-Website
 
+## Gemeinsame Splash Gestaltung und Projektordnung vom 27.10.2026
+
+Die aktive TFB-Website und dieses Git-Repository liegen lokal jetzt unter
+`/Users/jk/Dropbox/9. TFB-Website/01 Software/`.
+Der bisherige Pfad `tfb-kiosk/` bleibt als Kompatibilitätslink für Mac-Starter erhalten.
+Die historische Padel-Kopie ist unter `90 Archiv/Padel-Vorlage-vor-2026-10-27/` archiviert.
+Der Gesamtprojekt-Einstieg liegt eine Ebene höher unter `00 START HIER/ADMIN_START.md`.
+
+Die Desktop-Abstände der TFB-Splash-Seite sind verdichtet; innere Partner-Abstände
+bleiben erhalten. Der Einstiegsknopf hat 64 px Mindesthöhe und 8 px Radius wie Padel.
+Cache v234; keine Datenbank- oder Workeränderung.
+
+
 ## Vorstandsfotos v233 – 26.10.2026
 
 Zentrale Bildkennungen werden für Vorstandskarten, Großansicht und Editor wieder
