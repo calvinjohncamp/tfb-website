@@ -159,9 +159,9 @@ svg { display: block; }
   position: sticky; top: 0; z-index: 10;
   display: flex; align-items: center; justify-content: space-between; gap: 14px;
   padding: calc(12px + env(safe-area-inset-top, 0px)) 16px 12px;
-  background: var(--topbar);
-  backdrop-filter: saturate(1.4) blur(12px);
-  -webkit-backdrop-filter: saturate(1.4) blur(12px);
+  background: var(--bg);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 .avatar {
   width: 48px; height: 48px; border-radius: 50%; border: 0; padding: 0;
@@ -2704,3 +2704,12 @@ body.admin-hidden [data-action="post-hide"] { display: none !important; }
 .cms-history section>div{flex:1 1 180px}.cms-history small{display:block;color:var(--muted);font-size:12px;margin-top:5px}
 .cms-preview section{padding:14px 0;border-bottom:1px solid var(--line)}.cms-preview h3{font-size:15px;color:var(--ink);text-transform:none;letter-spacing:0}
 .cms-preview ol{padding-left:20px;font-size:14px;line-height:1.6}.cms-preview pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px;max-height:220px;overflow:auto}
+
+/* Shared link arrow: outline of the Padel entry button's Space Grotesk Bold glyph. */
+svg.link-arrow.link-arrow { display:inline-block; width:.806em; height:1em; flex:none; vertical-align:-.12em; fill:currentColor; stroke:none; }
+svg.link-arrow.link-arrow path { fill:currentColor; stroke:none; }
+
+/* Leave a clear, opaque safe area above the logo on iPhone and iPad. */
+@media (max-width:1100px) {
+  .app .topbar { padding-top:calc(24px + env(safe-area-inset-top, 0px)); }
+}

@@ -194,7 +194,7 @@
     h = h.replace(/\u0000(\d+)\u0000/g, (_, i) => {
       const [label, url] = links[Number(i)];
       const ext = /^https?:/.test(url);
-      return `<a class="inline-link" href="${url}"${ext ? ' target="_blank" rel="noopener"' : ''}>${label}${ext ? '<span class="inline-ext" aria-hidden="true">↗</span>' : ''}</a>`;
+      return `<a class="inline-link" href="${url}"${ext ? ' target="_blank" rel="noopener"' : ''}>${label}${ext ? '<span class="inline-ext" aria-hidden="true"><svg class="link-arrow" viewBox="0 0 806 1000" aria-hidden="true" focusable="false"><path transform="translate(0 755) scale(1 -1)" d="M528 -14 448 66 546 164 587 189 581 206 533 198H50V312H533L581 304L587 321L546 346L448 444L528 524L756 296V214Z"/></svg></span>' : ''}</a>`;
     });
     return h.replace(/\n/g, '<br>');
   }
@@ -398,13 +398,13 @@
     const label = esc(link.label || 'Mehr erfahren');
     const style = link.style || 'chip';
     const target = ext ? ' target="_blank" rel="noopener"' : '';
-    if (style === 'button' || (!ext && style === 'card')) return `<p class="feature-link"><a class="btn signal" href="${esc(link.url)}"${target} title="${esc(ext ? hostOf(link.url) : label)}">${label} <span aria-hidden="true">${ext ? '↗' : '→'}</span></a></p>`;
+    if (style === 'button' || (!ext && style === 'card')) return `<p class="feature-link"><a class="btn signal" href="${esc(link.url)}"${target} title="${esc(ext ? hostOf(link.url) : label)}">${label} <span aria-hidden="true"><svg class="link-arrow" viewBox="0 0 806 1000" aria-hidden="true" focusable="false"><path transform="translate(0 755) scale(1 -1)" d="M528 -14 448 66 546 164 587 189 581 206 533 198H50V312H533L581 304L587 321L546 346L448 444L528 524L756 296V214Z"/></svg></span></a></p>`;
     if (style === 'chip') return `
       <p class="feature-link"><a class="link-chip" href="${esc(link.url)}"${target} title="${esc(ext ? hostOf(link.url) : label)}">
         ${link.image ? `<span class="link-chip-img">${picture(link.image, link.url)}</span>`
           : link.icon && ui().icon[link.icon] ? `<span class="link-chip-img icon">${ui().icon[link.icon]}</span>` : !ext ? `<span class="link-chip-img icon">${pageIcon(link.url)}</span>` : ''}
         <span class="link-chip-label">${ext && !link.label ? esc(hostOf(link.url)) : label}</span>
-        <small aria-hidden="true">${ext ? '↗' : '→'}</small>
+        <small aria-hidden="true"><svg class="link-arrow" viewBox="0 0 806 1000" aria-hidden="true" focusable="false"><path transform="translate(0 755) scale(1 -1)" d="M528 -14 448 66 546 164 587 189 581 206 533 198H50V312H533L581 304L587 321L546 346L448 444L528 524L756 296V214Z"/></svg></small>
       </a></p>`;
     return `
       <a class="link-card" href="${esc(link.url)}" target="_blank" rel="noopener">
@@ -413,7 +413,7 @@
           <small>${esc(hostOf(link.url))}</small>
           ${link.title ? `<b>${esc(link.title)}</b>` : ''}
           ${link.text ? `<span>${esc(link.text)}</span>` : ''}
-          <em>${label} <span aria-hidden="true">↗</span></em>
+          <em>${label} <span aria-hidden="true"><svg class="link-arrow" viewBox="0 0 806 1000" aria-hidden="true" focusable="false"><path transform="translate(0 755) scale(1 -1)" d="M528 -14 448 66 546 164 587 189 581 206 533 198H50V312H533L581 304L587 321L546 346L448 444L528 524L756 296V214Z"/></svg></span></em>
         </span>
       </a>`;
   }
@@ -467,7 +467,7 @@
               <div class="feature-right">
                 <div class="feature-text">${textHtml}</div>
                 ${slot('right', 'Link hierher')}
-                ${more && b.showMore !== false ? `<p class="feature-more"><a class="more-link" href="${esc(more)}">Mehr erfahren <span aria-hidden="true">→</span></a></p>` : ''}
+                ${more && b.showMore !== false ? `<p class="feature-more"><a class="more-link" href="${esc(more)}">Mehr erfahren <span aria-hidden="true"><svg class="link-arrow" viewBox="0 0 806 1000" aria-hidden="true" focusable="false"><path transform="translate(0 755) scale(1 -1)" d="M528 -14 448 66 546 164 587 189 581 206 533 198H50V312H533L581 304L587 321L546 346L448 444L528 524L756 296V214Z"/></svg></span></a></p>` : ''}
               </div>
             </div>
           </article>`;
@@ -482,7 +482,7 @@
           ${b.email ? `<a href="mailto:${esc(b.email)}">${esc(b.email)}</a>` : ''}</div></div>
           ${b.image ? `<figure class="training-coach-photo">${picture(b.image, b.id, b.title)}</figure>` : ''}</section>`;
         if (b.id === 'v-history') return `<section class="block-text story-teaser">${b.title ? `<h2><a class="post-title-link" href="#club/history">${esc(b.title)}</a></h2>` : ''}${paragraphs(b.text)}
-          <p class="feature-more"><a class="more-link" href="#club/history">${esc(b.linkLabel || 'Mehr erfahren')} <span aria-hidden="true">→</span></a></p></section>`;
+          <p class="feature-more"><a class="more-link" href="#club/history">${esc(b.linkLabel || 'Mehr erfahren')} <span aria-hidden="true"><svg class="link-arrow" viewBox="0 0 806 1000" aria-hidden="true" focusable="false"><path transform="translate(0 755) scale(1 -1)" d="M528 -14 448 66 546 164 587 189 581 206 533 198H50V312H533L581 304L587 321L546 346L448 444L528 524L756 296V214Z"/></svg></span></a></p></section>`;
         return `<section class="block-text" data-site-content="${esc(b.id)}">${b.title ? `<h2>${esc(b.title)}</h2>` : ''}${paragraphs(b.text)}</section>`;
       case 'event':
         return `
@@ -536,9 +536,9 @@
       case 'facts':
         return `<section class="block-facts">${(b.items || []).map((f) => `<div><b>${esc(f.value)}</b><span>${esc(f.label)}</span></div>`).join('')}</section>`;
       case 'button': {
-        if (b.id === 'v-mitglied-btn' || b.url === '#aufnahme') return `<div class="block-button membership-actions"><button type="button" class="btn membership-fees-button" data-action="membership-fees">Mitgliedsbeiträge</button><button type="button" class="btn membership-apply-button" data-action="membership-open">${esc(b.label || 'Zum Anmeldeformular')}</button>${b.note ? `<p class="membership-benefit">${esc(b.note)}</p>` : ''}<a class="membership-mail-preview" href="assets/docs/tfb-mitgliedsanmeldung-muster.pdf" target="_blank" rel="noopener" aria-label="Muster der E-Mail-Bestätigung als PDF in neuem Tab öffnen">E-Mail-Bestätigung (PDF)&nbsp;↗</a></div>`;
+        if (b.id === 'v-mitglied-btn' || b.url === '#aufnahme') return `<div class="block-button membership-actions"><button type="button" class="btn membership-fees-button" data-action="membership-fees">Mitgliedsbeiträge</button><button type="button" class="btn membership-apply-button" data-action="membership-open">${esc(b.label || 'Zum Anmeldeformular')}</button>${b.note ? `<p class="membership-benefit">${esc(b.note)}</p>` : ''}<a class="membership-mail-preview" href="assets/docs/tfb-mitgliedsanmeldung-muster.pdf" target="_blank" rel="noopener" aria-label="Muster der E-Mail-Bestätigung als PDF in neuem Tab öffnen">E-Mail-Bestätigung (PDF)&nbsp;<svg class="link-arrow" viewBox="0 0 806 1000" aria-hidden="true" focusable="false"><path transform="translate(0 755) scale(1 -1)" d="M528 -14 448 66 546 164 587 189 581 206 533 198H50V312H533L581 304L587 321L546 346L448 444L528 524L756 296V214Z"/></svg></a></div>`;
         const ext = /^https?:/i.test(b.url || '');
-        return `<p class="block-button"><a class="btn primary" href="${esc(b.url || '#')}" ${ext ? 'target="_blank" rel="noopener"' : ''}>${esc(b.label || 'Mehr')}${ext ? ' ↗' : ''}</a></p>`;
+        return `<p class="block-button"><a class="btn primary" href="${esc(b.url || '#')}" ${ext ? 'target="_blank" rel="noopener"' : ''}>${esc(b.label || 'Mehr')}${ext ? ' <svg class="link-arrow" viewBox="0 0 806 1000" aria-hidden="true" focusable="false"><path transform="translate(0 755) scale(1 -1)" d="M528 -14 448 66 546 164 587 189 581 206 533 198H50V312H533L581 304L587 321L546 346L448 444L528 524L756 296V214Z"/></svg>' : ''}</a></p>`;
       }
       case 'teams':
         return teamsMarkup(b);
@@ -569,7 +569,7 @@
             <a class="team team-row" href="#team/${esc(teamKey(t.name))}">
               <span class="team-thumb ${photo ? '' : 'empty'}">${photo || ui().icon.camera}${count ? `<span class="team-dot">${count}</span>` : ''}</span>
               <span class="team-name"><strong>${esc(t.name.replace(/\s*\(.*?\)/g, ''))}${/\((.*?)\)/.test(t.name) ? ` <i>${esc(t.name.match(/\((.*?)\)/)[1])}</i>` : ''}</strong><small>${esc(t.group)}</small></span>
-              <span class="team-news-btn ${count ? 'has' : ''}"><em class="${hasPortrait ? 'on' : ''}">Mannschaftsporträt</em> + <em class="${count ? 'on' : ''}">News</em>${count ? `<b>${count}</b>` : ''}<span aria-hidden="true">→</span></span>
+              <span class="team-news-btn ${count ? 'has' : ''}"><em class="${hasPortrait ? 'on' : ''}">Mannschaftsporträt</em> + <em class="${count ? 'on' : ''}">News</em>${count ? `<b>${count}</b>` : ''}<span aria-hidden="true"><svg class="link-arrow" viewBox="0 0 806 1000" aria-hidden="true" focusable="false"><path transform="translate(0 755) scale(1 -1)" d="M528 -14 448 66 546 164 587 189 581 206 533 198H50V312H533L581 304L587 321L546 346L448 444L528 524L756 296V214Z"/></svg></span></span>
               <span class="team-stand"><b class="${t.rank === '1' ? 'top' : ''}">${esc(t.rank || '–')}.</b><small>Platz · ${esc(t.points)}</small></span>
             </a>`;
           }).join('')}
@@ -894,7 +894,7 @@
     const shown = navAll().filter((x) => !x.hidden);
     return `<section class="look-picker nav-card" aria-label="Menü oben">
       <h2>Menü oben</h2>
-      <p class="nav-preview">${shown.map((x) => `<span>${esc(x.label)}${/^https?:/i.test(x.target || '') ? ' ↗' : ''}</span>`).join('')}</p>
+      <p class="nav-preview">${shown.map((x) => `<span>${esc(x.label)}${/^https?:/i.test(x.target || '') ? ' <svg class="link-arrow" viewBox="0 0 806 1000" aria-hidden="true" focusable="false"><path transform="translate(0 755) scale(1 -1)" d="M528 -14 448 66 546 164 587 189 581 206 533 198H50V312H533L581 304L587 321L546 346L448 444L528 524L756 296V214Z"/></svg>' : ''}</span>`).join('')}</p>
       <button type="button" class="btn small" data-action="nav-edit">${ui().icon.pencil} Menü bearbeiten</button>
     </section>`;
   }
@@ -1631,7 +1631,7 @@
       </div>
       <div class="viewer-bar">
         <span>${esc(title)}</span>
-        ${kind === 'pdf' ? `<a href="${esc(documentUrl)}" target="_blank" rel="noopener">In neuem Tab öffnen ↗</a>` : '<span class="viewer-hint">Bild antippen: Lesegröße</span>'}
+        ${kind === 'pdf' ? `<a href="${esc(documentUrl)}" target="_blank" rel="noopener">In neuem Tab öffnen <svg class="link-arrow" viewBox="0 0 806 1000" aria-hidden="true" focusable="false"><path transform="translate(0 755) scale(1 -1)" d="M528 -14 448 66 546 164 587 189 581 206 533 198H50V312H533L581 304L587 321L546 346L448 444L528 524L756 296V214Z"/></svg></a>` : '<span class="viewer-hint">Bild antippen: Lesegröße</span>'}
         <a href="${esc(documentUrl)}" download="${esc(filename || (kind === 'pdf' ? 'Anhang.pdf' : 'Flyer.jpg'))}">Herunterladen</a>
       </div>
       <button type="button" class="viewer-close" aria-label="Schließen">${ui().icon.close}</button>`;
@@ -1667,7 +1667,7 @@
           <button type="button" data-rich="rot" title="Rot"><span class="sw sw-red"></span></button>
         </span>
         <span class="rich-group" role="group" aria-label="Weiteres">
-          <button type="button" data-rich="link" title="Link">↗ Link</button>
+          <button type="button" data-rich="link" title="Link"><svg class="link-arrow" viewBox="0 0 806 1000" aria-hidden="true" focusable="false"><path transform="translate(0 755) scale(1 -1)" d="M528 -14 448 66 546 164 587 189 581 206 533 198H50V312H533L581 304L587 321L546 346L448 444L528 524L756 296V214Z"/></svg> Link</button>
           <button type="button" data-rich="clear" title="Markierten Text wieder ganz schlicht machen">⌫ Schlicht</button>
         </span>` : `
         <span class="rich-group" role="group" aria-label="Schrift">
@@ -1690,7 +1690,7 @@
         </span>
         <span class="rich-group" role="group" aria-label="Absatz">
           <button type="button" data-rich="h" title="Markierten Absatz zur Zwischenüberschrift machen (nochmal = zurück)">Überschrift</button>
-          <button type="button" data-rich="link" title="Link">↗ Link</button>
+          <button type="button" data-rich="link" title="Link"><svg class="link-arrow" viewBox="0 0 806 1000" aria-hidden="true" focusable="false"><path transform="translate(0 755) scale(1 -1)" d="M528 -14 448 66 546 164 587 189 581 206 533 198H50V312H533L581 304L587 321L546 346L448 444L528 524L756 296V214Z"/></svg> Link</button>
           <button type="button" data-rich="clear" title="Markierten Text wieder ganz schlicht machen">⌫ Schlicht</button>
         </span>`}
       </div>
@@ -2335,7 +2335,7 @@
         <a class="portrait-cta" href="#team/${esc(key)}/portraet">
           ${img ? `<span class="portrait-cta-img">${picture(img, img, '')}</span>` : ''}
           <span class="portrait-cta-body"><small>Mannschaftsporträt</small><b>${esc(p.title || teamName(team))}</b>
-            ${p.subtitle ? `<span>${esc(p.subtitle)}</span>` : ''}<em>Porträt ansehen <i aria-hidden="true">→</i></em></span>
+            ${p.subtitle ? `<span>${esc(p.subtitle)}</span>` : ''}<em>Porträt ansehen <i aria-hidden="true"><svg class="link-arrow" viewBox="0 0 806 1000" aria-hidden="true" focusable="false"><path transform="translate(0 755) scale(1 -1)" d="M528 -14 448 66 546 164 587 189 581 206 533 198H50V312H533L581 304L587 321L546 346L448 444L528 524L756 296V214Z"/></svg></i></em></span>
         </a>`;
     }
     if (!canEdit) return '';
@@ -2583,8 +2583,8 @@
             <div class="team-card-row"><span>Mannschaftsführer</span><b>${esc(team.captain || '–')}</b></div>
             <div class="team-card-row"><span>Liga</span><b>${esc(team.group)}</b></div>
             <div class="team-card-links">
-              <a href="${esc(team.teamUrl)}" target="_blank" rel="noopener">Spielplan &amp; Mannschaft <span>nuLiga ↗</span></a>
-              ${team.groupUrl ? `<a href="${esc(team.groupUrl)}" target="_blank" rel="noopener">Tabelle der Gruppe <span>nuLiga ↗</span></a>` : ''}
+              <a href="${esc(team.teamUrl)}" target="_blank" rel="noopener">Spielplan &amp; Mannschaft <span>nuLiga <svg class="link-arrow" viewBox="0 0 806 1000" aria-hidden="true" focusable="false"><path transform="translate(0 755) scale(1 -1)" d="M528 -14 448 66 546 164 587 189 581 206 533 198H50V312H533L581 304L587 321L546 346L448 444L528 524L756 296V214Z"/></svg></span></a>
+              ${team.groupUrl ? `<a href="${esc(team.groupUrl)}" target="_blank" rel="noopener">Tabelle der Gruppe <span>nuLiga <svg class="link-arrow" viewBox="0 0 806 1000" aria-hidden="true" focusable="false"><path transform="translate(0 755) scale(1 -1)" d="M528 -14 448 66 546 164 587 189 581 206 533 198H50V312H533L581 304L587 321L546 346L448 444L528 524L756 296V214Z"/></svg></span></a>` : ''}
             </div>
           </aside>
         </div>

@@ -88,7 +88,7 @@
     check: '<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
     close: '<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>',
     camera: '<svg viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>',
-    chevron: '<svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg>',
+    chevron: '<svg class="link-arrow" viewBox="0 0 806 1000" aria-hidden="true" focusable="false"><path transform="translate(0 755) scale(1 -1)" d="M528 -14 448 66 546 164 587 189 581 206 533 198H50V312H533L581 304L587 321L546 346L448 444L528 524L756 296V214Z"/></svg>',
     back: '<svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg>',
     up: '<svg viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></svg>',
     down: '<svg viewBox="0 0 24 24"><path d="M12 5v14M6 13l6 6 6-6"/></svg>',
@@ -935,7 +935,7 @@
           <h3>Nächstes Match</h3>
           ${nextMatch ? `<p>Dein nächstes Match startet am <strong>${esc(matchDate)}</strong> um <strong>${esc(nextMatch.time)} Uhr</strong>.</p>
             <small>${esc(nextMatch.title)}${nextMatch.place ? ` · ${esc(nextMatch.place)}` : ''}${nextMatch.missing ? ` · Noch ${nextMatch.missing} ${nextMatch.missing === 1 ? 'Platz frei' : 'Plätze frei'}` : ''}</small>
-            <a href="#treffen/${esc(nextMatch.id)}" data-action="close-sheet">Details ansehen <span aria-hidden="true">→</span></a>`
+            <a href="#treffen/${esc(nextMatch.id)}" data-action="close-sheet">Details ansehen <span aria-hidden="true"><svg class="link-arrow" viewBox="0 0 806 1000" aria-hidden="true" focusable="false"><path transform="translate(0 755) scale(1 -1)" d="M528 -14 448 66 546 164 587 189 581 206 533 198H50V312H533L581 304L587 321L546 346L448 444L528 524L756 296V214Z"/></svg></span></a>`
             : '<p class="muted">Aktuell hast du kein zugesagtes Match.</p>'}
         </section>` : ''}
 
@@ -947,7 +947,7 @@
           <a href="#abrechnungen" data-action="close-sheet"><small>${esc(monthName(open.month, false))}</small><b>${euro(open.totalCents)}</b></a>
           <a href="#abrechnungen" data-action="close-sheet"><small>Einzug</small><b>${esc(nextMonthDebit(open.month).replace(/(\d+)\. (\w{3})\w*/, '$1. $2'))}</b></a>
           </div>
-          <a class="acct-details" href="#abrechnungen" data-action="close-sheet">Details ansehen <span aria-hidden="true">→</span></a>
+          <a class="acct-details" href="#abrechnungen" data-action="close-sheet">Details ansehen <span aria-hidden="true"><svg class="link-arrow" viewBox="0 0 806 1000" aria-hidden="true" focusable="false"><path transform="translate(0 755) scale(1 -1)" d="M528 -14 448 66 546 164 587 189 581 206 533 198H50V312H533L581 304L587 321L546 346L448 444L528 524L756 296V214Z"/></svg></span></a>
         </section>` : ''}
 
         <form class="acct-card acct-form" data-account-form novalidate>
