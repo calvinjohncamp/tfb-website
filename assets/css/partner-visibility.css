@@ -162,25 +162,19 @@ button.tfb-splash-ball .tfb-logo-ball { width:100%; height:100%; display:block; 
   z-index: 1;
 }
 .tfb-logo-preview-splash + button.tfb-splash-ball { z-index: 2; }
-/* Public choice of club colors. The existing palette is the default. */
-.tfb-brand-select {
-  max-width: 100%;
+/* Farbauswahl auf der Einstiegsseite */
+.tfb-brand-toggle {
+  display: block;
   min-height: 44px;
-  padding: 0 8px;
-  border: 1px solid var(--line, #D7D7D7);
-  border-radius: 8px;
-  background: var(--card, #FFF);
-  color: var(--ink, #171717);
-  font: 600 .875rem var(--font, sans-serif);
+  margin: 4px 0 0 auto;
+  padding: 0 4px;
+  border: 0;
+  background: transparent;
+  color: #535353;
+  font-size: .875rem;
+  text-decoration: underline;
+  text-underline-offset: .18em;
 }
-.tfb-header-brand-select {
-  grid-column: 1 / -1;
-  display: flex;
-  justify-content: flex-end;
-  padding-top: 4px;
-}
-.tfb-splash-top { flex-wrap: wrap; }
-.tfb-splash-top .tfb-brand-select { margin-left: auto; }
 
 html.tfb-logo-midnight-amber {
   --tfb-midnight-blue: #001D3D;
@@ -189,23 +183,11 @@ html.tfb-logo-midnight-amber {
   --on-signature: var(--tfb-midnight-blue);
 }
 html.tfb-logo-midnight-amber body {
-  --ink: #171717;
-  --muted: #595959;
-  --on-bg: var(--ink);
-  --on-bg-muted: var(--muted);
-  --signature-text: var(--tfb-midnight-blue);
+  --signature-text: var(--ink);
   --signal: var(--signature-text);
 }
-html.tfb-logo-midnight-amber :is(.tfb-splash h1, .tfb-splash h1 em, .view h1, .block-heading, .feature:not(.feature-dark) .feature-body h2) {
-  color: var(--tfb-midnight-blue);
-}
-html.tfb-logo-midnight-amber .tfb-splash :is(.tfb-splash-eyebrow, .tfb-splash-foot, .tfb-splash-description, .pbsp-kicker) {
-  color: var(--muted);
-}
-html.tfb-logo-midnight-amber :is(.story-text, .block-text, .legal-page) a:not(.btn, .link-chip) {
-  color: var(--tfb-midnight-blue);
-  text-decoration: underline;
-}
+html.tfb-logo-midnight-amber .tfb-splash h1 { color: var(--tfb-midnight-blue); }
+html.tfb-logo-midnight-amber .tfb-splash h1 em { color: var(--signature); }
 html.tfb-logo-midnight-amber body :is(.tfb-splash-enter, .focus-enter, .btn.primary, .btn.signal, .membership-actions .membership-apply-button):not(:disabled, [aria-disabled="true"]),
 html.tfb-logo-midnight-amber body :is(.tfb-splash-enter, .focus-enter, .btn.primary, .btn.signal, .membership-actions .membership-apply-button):hover:not(:disabled, [aria-disabled="true"]) {
   background-color: var(--signature);
@@ -218,8 +200,8 @@ html.tfb-logo-midnight-amber .feature-dark .feature-body {
   --signature-text: #F7F7F7;
 }
 html.tfb-logo-midnight-amber .editorial-preview-active .feature-dark .feature-body {
-  --signal: var(--tfb-midnight-blue);
-  --signature-text: var(--tfb-midnight-blue);
+  --signal: var(--ink);
+  --signature-text: var(--ink);
 }
 html.tfb-logo-midnight-amber body :is(.tfb-logo-split, .tfb-splash-wordmark) {
   background: url('../brand/tfb-logo-midnight-amber.png') center / contain no-repeat;
