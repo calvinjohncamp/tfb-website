@@ -11,8 +11,8 @@
     });
   }
 
-  function brandButton() {
-    return `<button type="button" class="tfb-brand-button" data-tfb-brand aria-label="Farbwelt wechseln" title="Farbwelt wechseln" aria-pressed="${brand === 'club'}"><span aria-hidden="true">C</span></button>`;
+  function brandButton(position, content = '') {
+    return `<button type="button" class="tfb-brand-button ${position}" data-tfb-brand aria-label="Farbwelt wechseln" title="Farbwelt wechseln" aria-pressed="${brand === 'club'}">${content}</button>`;
   }
 
   document.addEventListener('click', event => {
@@ -28,48 +28,42 @@
     applyBrand();
   });
 
-  const key = 'tfb_design_world_v2';
-  const worlds = ['cool', 'warm'];
-  const names = ['Kühle Welt', 'Warme Welt'];
+  const worldLabels = { cool: 'Kühle Welt', warm: 'Warme Welt', custom: 'Eigene Hintergründe' };
   let world = 'cool';
-  const normalize = value => worlds.includes(value) ? value : 'cool';
-  try { world = normalize(localStorage.getItem(key)); } catch (_) {}
+  const isAdmin = () => Boolean(TFB.ui?.state.member?.isAdmin);
+  const activeWorld = () => isAdmin() ? world : 'cool';
+
   function apply() {
-    document.body.classList.toggle('editorial-preview-active', world === 'cool');
-    document.body.dataset.designWorld = world;
-    document.querySelectorAll('[data-design-preview]').forEach(button => {
-      button.hidden = false;
-      button.setAttribute('aria-pressed', String(world !== 'warm'));
-      const index = worlds.indexOf(world);
-      const label = `${names[index]} – wechseln zu: ${names[(index + 1) % worlds.length]}`;
-      button.setAttribute('aria-label', label);
-      button.title = label;
-    });
-    document.querySelectorAll('button[data-design-world]').forEach(button => {
-      button.setAttribute('aria-pressed', String(button.dataset.designWorld === world));
-    });
+    const active = activeWorld();
+    document.body.classList.toggle('editorial-preview-active', active === 'cool');
+    document.body.dataset.designWorld = active;
     document.dispatchEvent(new Event('tfb-design-preview'));
     window.dispatchEvent(new Event('resize'));
   }
-  document.addEventListener('click', event => {
-    const choice = event.target.closest('button[data-design-world]');
-    if (choice) {
-      if (!TFB.ui?.state.member?.isAdmin || !worlds.includes(choice.dataset.designWorld)) return;
-      world = choice.dataset.designWorld;
-    } else {
-      if (!event.target.closest('[data-design-preview]')) return;
-      world = worlds[(worlds.indexOf(world) + 1) % worlds.length];
-    }
-    try { if (world !== 'cool') localStorage.setItem(key, world); else localStorage.removeItem(key); } catch (_) {}
+
+  function selectWorld(value) {
+    if (!isAdmin() || !Object.hasOwn(worldLabels, value)) return;
+    world = value;
     apply();
-    document.fonts.ready.then(() => document.dispatchEvent(new Event('tfb-design-preview')));
+  }
+
+  function buttons() {
+    const active = activeWorld();
+    const choices = active === 'cool' ? ['cool', 'warm'] : ['cool', 'warm', 'custom'];
+    return `<div class="world-switch" role="group" aria-label="Gestaltung">${choices.map(value =>
+      `<button type="button" data-design-world="${value}" aria-pressed="${active === value}">${worldLabels[value]}</button>`
+    ).join('')}</div>`;
+  }
+
+  document.addEventListener('click', async event => {
+    const choice = event.target.closest('button[data-design-world]');
+    if (!choice || !isAdmin() || choice.dataset.designWorld === world) return;
+    selectWorld(choice.dataset.designWorld);
+    await TFB.ui.renderView();
+    document.querySelector(`button[data-design-world="${world}"]`)?.focus({ preventScroll: true });
   });
-  window.addEventListener('hashchange', apply);
-  window.addEventListener('storage', event => {
-    if (event.key === key) { world = normalize(event.newValue); apply(); }
-  });
-  TFB.designPreview = { apply, buttons: () => `<div class="world-switch" role="group" aria-label="Gestaltung">${worlds.map((value, index) => `<button type="button" data-design-world="${value}" aria-pressed="${world === value}">${names[index]}</button>`).join('')}</div>` };
-  TFB.designPreview.brandButton = brandButton;
+
+  TFB.designPreview = { apply, buttons, brandButton, selectWorld, usesCustomBackgrounds: () => activeWorld() === 'custom' };
   applyBrand();
   apply();
 })();

@@ -23,7 +23,7 @@
     lastAdd: null,          // { ids, until, text } – Storno-Stempel auf dem Deckel
   };
   // Nur Demo: Admin-Werkzeuge sind beim Laden ausgeblendet (Mitglieder-Ansicht für die Vorführung);
-  // der Ball im Logo blendet sie ein und aus. state.member liefert dann isAdmin = false, adminHidden = true –
+  // der Bleistift blendet sie ein und aus. state.member liefert dann isAdmin = false, adminHidden = true –
   // egal, wo das Mitglied neu geladen oder gespeichert wird.
   let hideAdmin = true;
   let rawMember = null;
@@ -285,13 +285,13 @@
     $app.innerHTML = `
       <header class="topbar">
         <div class="topbar-row">
-          <div class="brand brand-preview-wrap">
-          <a class="brand-home" href="#home" aria-label="${clubName} – Startseite">${logo}</a>
-          <button type="button" class="brand-world-switch" data-design-preview aria-label="Gestaltung wechseln" aria-pressed="false"></button>
+          <div class="brand brand-logo-controls">
+            <a class="brand-home" href="#home" data-action="brand-home" aria-label="${clubName} – Startseite">${logo}</a>
+            ${TFB.designPreview.brandButton('header-brand-ball')}
           </div>
           <div class="top-actions">
-            ${TFB.designPreview.brandButton()}
             ${state.member && TFB.inbox ? TFB.inbox.button() : ''}
+            ${rawMember?.isAdmin ? `<button type="button" class="header-admin-edit" data-action="admin-toggle" aria-label="Admin-Werkzeuge" title="Admin-Werkzeuge" aria-pressed="${state.member?.isAdmin === true}">${icon.pencil}</button>` : ''}
             ${state.member
               ? `<button class="avatar" type="button" data-action="profile" aria-label="Profil">${avatarFace(state.member)}</button>`
               : `<button class="avatar guest" type="button" data-action="login" aria-label="Anmelden">${icon.user}</button>`}
@@ -333,22 +333,16 @@
   }
   window.addEventListener('resize', () => requestAnimationFrame(alignHeader));
 
-  // Nur Demo: Klick auf den Ball im Logo oben links blendet die Admin-Werkzeuge (Stifte usw.) aus und
-  // wieder ein – so lässt sich die Seite vorführen, wie ein Mitglied sie sieht, ohne sich abzumelden.
-  // Der Rest des Logos führt weiter zu Home. Nach dem Neuladen sind die Werkzeuge wieder ausgeblendet.
-  document.addEventListener('click', (e) => {
-    const ball = e.target.closest('.topbar .header-logo .tfb-logo-ball');
-    if (!ball || api.mode !== 'demo' || !state.member || !(state.member.isAdmin || state.member.adminHidden)) return;
-    e.preventDefault();
-    e.stopPropagation();
+  function toggleAdminTools(button) {
+    if (!rawMember?.isAdmin || api.mode !== 'demo') return;
     hideAdmin = !hideAdmin;
     viewMember = null;
-    const hide = hideAdmin;
     state.editMode = false;
-    document.body.classList.toggle('admin-hidden', hide);
-    toast(hide ? 'Mitglieder-Ansicht – Admin-Werkzeuge ausgeblendet' : 'Admin-Werkzeuge wieder sichtbar', true);
+    document.body.classList.toggle('admin-hidden', hideAdmin);
+    button.setAttribute('aria-pressed', String(!hideAdmin));
+    if (hideAdmin) closeSheet();
     renderView();
-  }, true);
+  }
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => alignHeader());
 
   // Menü oben: Standard oder – sobald geladen – die im Admin gepflegten Punkte (Name + Ziel: Seite der App oder Website)
@@ -414,6 +408,8 @@
         $view.innerHTML=body;
       }
       if (state.member?.isAdmin) {
+        $view.insertAdjacentHTML('afterbegin', `<div class="tfb-admin-design">${TFB.designPreview.buttons()}
+          <div class="tfb-admin-links"><button type="button" class="btn small" data-action="splash-edit">Einstiegsseite bearbeiten</button><a class="btn small" href="#partner">Partner verwalten</a></div></div>`);
         const edit = $view.querySelector('.view-close[data-action="site-edit"], .view-close[data-action="edit-start"], .view-close[data-action="feature-edit"], .view-close[data-action="album-edit"], .view-close[data-action="portrait-edit"], .view-close[data-action="chat-text-edit"]');
         if (edit) {
           const tools = document.createElement('div');
@@ -1294,6 +1290,13 @@
     const action = el.dataset.action;
     if (action === 'pick') openPick(el.dataset.id);
     else if (action === 'profile') openProfile();
+    else if (action === 'brand-home' && location.hash === '#home' && !e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey) {
+      e.preventDefault();
+      closeSheet();
+      renderView('home');
+      window.scrollTo(0, 0);
+    }
+    else if (action === 'admin-toggle') toggleAdminTools(el);
     else if (action === 'close-sheet') closeSheet();
     else if (action === 'auth-back') { state.authStep = 'email'; showAuth(); }
     else if (action === 'auth-activate') { state.authStep = 'create'; showAuth(); }

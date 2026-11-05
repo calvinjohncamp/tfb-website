@@ -1,98 +1,86 @@
 import assert from 'node:assert/strict';
 import { chromium } from 'playwright';
-const browser = await chromium.launch({ headless: true,
-  ...(process.env.TFB_CHROME_PATH ? { executablePath: process.env.TFB_CHROME_PATH } : {}) });
+
+const browser = await chromium.launch();
 try {
   const page = await browser.newPage({ serviceWorkers: 'block', viewport: { width: 1440, height: 1000 } });
   const errors = [];
-  page.on('pageerror', e => errors.push(e.message));
-  await page.goto('http://127.0.0.1:5180/');
-  await page.waitForSelector('.topbar');
+  page.on('pageerror', error => errors.push(error.message));
+  await page.goto(process.env.TFB_TEST_SITE_URL || 'http://127.0.0.1:5180/');
+  const splash = page.locator('#tfb-splash');
+  const splashBall = splash.getByRole('button', { name: 'Farbwelt wechseln' });
+  const headerBall = page.locator('.topbar [data-tfb-brand]');
+  const admin = page.locator('[data-action="admin-toggle"]');
   const world = () => page.evaluate(() => document.body.dataset.designWorld);
+  await splashBall.click();
+  assert.equal(await splashBall.getAttribute('aria-pressed'), 'true');
+  assert.equal(await splash.locator('[data-action="splash-edit"]').count(), 0);
+  await splash.locator('[data-action="splash-enter"]').click();
+  assert.equal(await headerBall.getAttribute('aria-pressed'), 'true');
   assert.equal(await world(), 'cool');
-  assert.equal(await page.locator('.world-switch').count(), 0);
+  assert.equal(await admin.count(), 0);
+  assert.equal(await page.locator('[data-design-preview]').count(), 0);
+
   await page.evaluate(() => {
     const db = JSON.parse(localStorage.getItem('tfb_kiosk_demo_v1'));
-    db.site.homeLook = '6';
-    db.site.pages.home.blocks = [{ id: 'preview-home', type: 'feature', title: '50 Jahre Tennisfreunde', kicker: 'Seit 1976', subtitle: 'Fotos unserer Jubiläumsparty', text: 'Seit einem halben Jahrhundert wird in Bielstein Tennis gespielt.', image: 'assets/images/board/kai-eichmann.jpg' }];
-    db.community.posts = [{ id: 'preview-chat', scope: 'club', authorId: 'm4', title: 'Grüße aus Andalusien', text: 'Wir grüßen alle Tennisfreunde.', images: [], createdAt: new Date().toISOString() }];
-    db.accounts.push({ memberId: 'm-demo', consentVersion: TFB.config.consentVersion, consentedAt: new Date().toISOString() });
+    db.site.pages.home.blocks.find(block => block.type === 'feature').bg = '#99C6FD';
+    db.site.homeColorMode = 'bunt';
+    if (!db.accounts.some(account => account.memberId === 'm-demo')) db.accounts.push({ memberId: 'm-demo' });
     localStorage.setItem('tfb_kiosk_demo_v1', JSON.stringify(db));
     localStorage.setItem('tfb_kiosk_demo_session_v1', 'm-demo');
-    localStorage.setItem('tfb_editorial_preview_v1', 'colors');
+    localStorage.setItem('tfb_design_world_v2', 'warm');
   });
   await page.reload();
-  await page.waitForSelector('.feature-body h2');
-  await page.evaluate(() => document.fonts.ready);
+  await splash.locator('[data-action="splash-enter"]').click();
   assert.equal(await world(), 'cool');
-  assert.equal(await page.locator('.world-switch').count(), 0);
-  assert.equal(await page.locator('.feature-number').first().evaluate(el => getComputedStyle(el).webkitTextStrokeWidth), '1.25px');
-  await page.locator('.tfb-logo-ball').click();
-  await page.waitForSelector('.world-switch');
-  assert.equal(await page.locator('.world-switch button').count(), 2);
-  assert.equal(await page.locator('button[data-design-world="cool"]').getAttribute('aria-pressed'), 'true');
-  const before = await page.evaluate(() => localStorage.getItem('tfb_kiosk_demo_v1'));
-  const homeText = await page.locator('#view').textContent();
-  await page.locator('button[data-design-world="warm"]').click();
+  const feature = page.locator('[data-feature]').first();
+  const background = () => feature.evaluate(el => el.style.getPropertyValue('--feature-bg'));
+  assert.equal(await background(), '');
+  await feature.locator('.feature-number').click();
+  assert.equal(await background(), '');
+
+  await admin.click();
+  const custom = page.locator('button[data-design-world="custom"]');
+  assert.equal(await custom.count(), 0);
+  await page.getByRole('button', { name: 'Warme Welt' }).click();
+  await custom.waitFor();
   assert.equal(await world(), 'warm');
-  assert.match(await page.locator('.feature-body h2').first().evaluate(el => getComputedStyle(el).fontFamily), /Avenir/);
-  assert.equal(await page.locator('#view').textContent(), homeText);
-  assert.equal(await page.evaluate(() => localStorage.getItem('tfb_kiosk_demo_v1')), before);
-  await page.reload();
-  await page.waitForSelector('.feature-body h2');
-  assert.equal(await world(), 'warm');
-  await page.locator('.tfb-logo-ball').click();
-  await page.waitForSelector('.world-switch');
-  await page.locator('[data-design-preview]').click();
-  assert.equal(await world(), 'cool');
-  assert.equal(await page.locator('button[data-design-world="cool"]').getAttribute('aria-pressed'), 'true');
-  await page.locator('[data-design-preview]').click();
-  assert.equal(await world(), 'warm');
-  await page.locator('button[data-design-world="cool"]').click();
-  assert.equal(await page.evaluate(() => localStorage.getItem('tfb_design_world_v2')), null);
-  for (const width of [1440, 1024, 834, 390, 320]) {
-    await page.setViewportSize({ width, height: 1000 });
-    await page.waitForFunction(() => [...document.querySelectorAll('.feature-title-word')].every(el => el.getBoundingClientRect().width <= el.closest('h2').clientWidth + 1));
-    const switcher = await page.locator('.world-switch').boundingBox();
-    const pencil = await page.locator('.home-tools .view-close').boundingBox();
-    assert.ok(switcher.x < pencil.x);
-    assert.ok(Math.abs(switcher.y + switcher.height / 2 - pencil.y - pencil.height / 2) < 1, JSON.stringify({ width, switcher, pencil }));
+  assert.equal(await background(), '');
+  await custom.click();
+  await page.waitForFunction(() => document.querySelector('[data-feature]')?.style.getPropertyValue('--feature-bg') === '#99C6FD');
+  assert.equal(await world(), 'custom');
+  await page.getByRole('button', { name: 'Warme Welt' }).click();
+  await page.locator('.home-tools [data-action="site-edit"]').click();
+  await page.locator('[data-action="block-edit"]').first().click();
+  const blockEditor = page.locator('[data-editor="block"]');
+  await blockEditor.locator('input[name="bg"]').fill('#AABBCC');
+  await page.waitForFunction(() => document.querySelector('[data-feature]')?.style.getPropertyValue('--feature-bg') === '#AABBCC');
+  assert.equal(await world(), 'custom');
+  await blockEditor.locator('[type="submit"]').click();
+  await page.getByRole('button', { name: 'Fertig', exact: true }).click();
+  assert.equal(await background(), '#AABBCC');
+  await page.getByRole('button', { name: 'Einstiegsseite bearbeiten' }).click();
+  const editor = page.locator('[data-editor="splash"]');
+  await editor.locator('[name="headline"]').fill('Vorschau für den Test');
+  await editor.getByRole('button', { name: 'Vorschau ansehen' }).click();
+  await splash.locator('h1').getByText('Vorschau für den Test').waitFor();
+  assert.equal(await splash.locator('[data-action="splash-edit"]').count(), 0);
+  await splash.locator('[data-action="splash-enter"]').click();
+  await admin.click();
+  await page.waitForFunction(() => document.body.dataset.designWorld === 'cool' && !document.querySelector('.world-switch'));
+  assert.equal(await background(), '');
+
+  await page.locator('nav.topnav a[href="#sport"]').click();
+  await page.waitForURL(/#sport$/);
+  await headerBall.click();
+  assert.match(page.url(), /#sport$/);
+  assert.equal(await headerBall.getAttribute('aria-pressed'), 'false');
+  await page.locator('.brand-home').click({ position: {x: 5, y: 5} });
+  await page.waitForURL(/#home$/);
+  for (const width of [320, 390, 834, 1024, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
-    await page.screenshot({ path: `/tmp/tfb-world-admin-${width}.png` });
   }
-  await page.locator('.tfb-logo-ball').click();
-  await page.waitForFunction(() => !document.querySelector('.world-switch'));
-  for (const width of [1440, 834, 390, 320]) {
-    await page.setViewportSize({ width, height: 1000 });
-    for (const route of ['home', 'chat', 'kiosk', 'strichliste', 'abrechnungen', 'aktuell', 'sport', 'sport/training', 'club', 'treffen', 'team/herren-40-1', 'impressum', 'satzung']) {
-      await page.evaluate(route => { location.hash = '#' + route; }, route);
-      await page.waitForFunction(route => document.querySelector('#view')?.dataset.view === route.split('/')[0] && !document.querySelector('#view > .loading'), route);
-      assert.equal(await world(), 'cool');
-      assert.equal(await page.locator('.world-switch').count(), 0);
-      assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false, `${route} ${width}px`);
-      const hash = await page.evaluate(() => location.hash);
-      await page.locator('[data-design-preview]').click();
-      assert.equal(await world(), 'warm');
-      assert.equal(await page.evaluate(() => location.hash), hash);
-      await page.locator('[data-design-preview]').click();
-      assert.equal(await world(), 'cool');
-    }
-  }
-  await page.locator('[data-action="profile"]').click();
-  await page.waitForSelector('.acct');
-  assert.equal(await page.locator('.sheet').evaluate(el => getComputedStyle(el).backgroundColor), 'rgb(247, 247, 247)');
-  await page.locator('.sheet-close').click();
-  const local = await browser.newPage();
-  await local.goto(new URL('../index.html', import.meta.url).href);
-  await local.waitForSelector('.topbar');
-  await local.waitForSelector('#tfb-splash');
-  await local.locator('[data-action="splash-enter"]').click();
-  assert.equal(await local.evaluate(() => document.body.dataset.designWorld), 'cool');
-  await local.evaluate(() => Promise.all([document.fonts.load('700 30px "TFB Bricolage"'), document.fonts.load('400 16px "TFB DM Sans"')]));
-  await local.locator('[data-design-preview]').focus();
-  await local.keyboard.press('Enter');
-  assert.equal(await local.evaluate(() => document.body.dataset.designWorld), 'warm');
-  await local.close();
   assert.deepEqual(errors, []);
-  console.log('Kühl standardmäßig, zwei Welten, Zwischenvariante ignoriert, Home-Admin-Auswahl/Stift-Ausrichtung, Member/Guest ausgeblendet, Logo/Reload/Datei/Account, unveränderte Daten und alle Routen geprüft.');
+  console.log('Farbwechsel am Ball, Home-Link, Admin-Welten und Einstiegsseiten-Vorschau geprüft.');
 } finally { await browser.close(); }

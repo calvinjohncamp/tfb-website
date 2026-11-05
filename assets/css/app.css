@@ -1217,28 +1217,31 @@ button.meet-row:hover { background: #FAF8F3; }
 
 /* Postfach (Glocke neben dem Profilbild) und regelmäßige Einladungen */
 .top-actions { display: flex; align-items: flex-end; gap: clamp(12px, 4vw, 31px); flex: none; }
+.brand-logo-controls { position: relative; flex: 0 1 auto; }
 .tfb-brand-button {
-  position: relative;
-  display: grid;
-  place-items: center;
-  flex: none;
-  box-sizing: border-box;
-  width: 21.6px;
-  height: 21.6px;
+  position: absolute;
   padding: 0;
-  border: 1.2px solid var(--tfb-signature-red);
+  border: 0;
   border-radius: 50%;
   background: transparent;
-  color: #171717;
-  font: 600 12px/1 var(--font);
 }
-.tfb-brand-button::before { content: ""; position: absolute; inset: -7px; border-radius: 50%; }
-.tfb-brand-button[aria-pressed="true"] {
-  border-color: var(--tfb-signature-yellow);
-  color: var(--tfb-midnight-blue);
+.header-brand-ball { left: 84.53%; top: 47.95%; width: 15.53%; height: 34.78%; }
+.tfb-brand-button:focus-visible, .header-admin-edit:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
 }
-.tfb-brand-button:focus-visible { outline: 2px solid var(--ink); outline-offset: 4px; }
-.top-actions .tfb-brand-button { align-self: flex-end; margin-bottom: 2.7px; }
+.header-admin-edit {
+  display: grid;
+  place-items: center;
+  width: 27px;
+  height: 27px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+}
+.header-admin-edit:hover, .header-admin-edit[aria-pressed="true"] { color: var(--ink); }
+.header-admin-edit svg { width: 19px; height: 19px; }
 @media (max-width: 460px) {
   .topbar .header-logo { height: clamp(38px, 13vw, 58px); }
 }
@@ -1372,8 +1375,6 @@ button.meet-series { cursor: pointer; }
 .feature-square .feature-media { aspect-ratio: 1; }
 .feature-kicker { display: flex; align-items: baseline; gap: 10px; margin: 0 0 8px; font-size: .74rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
 .feature-kicker span { color: var(--signal); font-family: var(--serif); font-size: 1rem; letter-spacing: 0; }
-.feature-kicker .feature-number { appearance: none; border: 0; padding: 0; margin: 0; background: transparent; color: inherit; font: inherit; line-height: inherit; cursor: pointer; flex: none; }
-.feature-number:focus-visible { outline: 2px solid var(--signal); outline-offset: 4px; }
 .feature-body h2 { font-family: var(--serif); font-size: 2.1rem; line-height: 1.05; margin: 0; }
 .feature-sub { font-size: 1.12rem; font-weight: 600; color: var(--signal); margin: 10px 0 0; line-height: 1.35; }
 .feature-text { margin-top: 14px; font-size: 1rem; line-height: 1.6; }

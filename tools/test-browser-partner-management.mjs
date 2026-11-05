@@ -26,7 +26,7 @@ async function open(admin=false){
  await page.goto(site);await page.waitForSelector('#tfb-splash');await page.evaluate(()=>document.fonts.ready);return {page,context};
 }
 try{
- const guest=await open();assert.equal(await guest.page.locator('#tfb-splash button').count(),1);
+ const guest=await open();assert.equal(await guest.page.locator('#tfb-splash button').count(),2);
  assert.equal(await guest.page.locator('[data-action="partner-report"]').count(),0);
  await guest.page.locator('.tfb-splash-partners').scrollIntoViewIfNeeded();await guest.page.waitForTimeout(1600);assert.equal(collectRequests,0);
  await guest.page.locator('[data-action="splash-enter"]').click();await guest.page.evaluate(()=>location.hash='#partner');await guest.page.waitForSelector('.partner-admin');assert.match(await guest.page.locator('.partner-admin').innerText(),/nur für angemeldete Admins/);
@@ -36,7 +36,7 @@ try{
  assert.equal(await page.locator('.acct .membership-notice').count(),0);
  assert.match(await page.locator('.acct-card').first().innerText(),/Mitglied der Tennisfreunde Bielstein/);
  assert.equal(await page.locator('.acct-head').count(),1);
- await page.locator('.acct [data-action="splash-open"]').click();await page.locator('[data-action="partner-report"]').click();await page.waitForSelector('[data-partner-row]');
+ await page.locator('.sheet-close').click();await page.locator('[data-action="admin-toggle"]').click();await page.locator('.tfb-admin-links a[href="#partner"]').click();await page.waitForSelector('[data-partner-row]');
  assert.equal(await page.locator('[data-partner-row]').count(),38);assert.match(await page.locator('.partner-admin-visibility').innerText(),/ausgeschaltet/);
  const id=await page.locator('[data-partner-row]').first().getAttribute('data-partner-row');await page.locator(`[data-action="partner-edit"][data-id="${id}"]`).click();await page.waitForSelector('[data-editor="partner"]');
  await page.locator('[name="name"]').fill('Unser TFB-Testpartner');await page.locator('[name="company"]').fill('TFB Musterfirma');await page.locator('[name="tier"]').selectOption('partner');await page.locator('[name="sample"]').uncheck();await page.locator('[name="status"]').selectOption('contract');
@@ -52,7 +52,7 @@ try{
  for(const [width,height] of [[320,740],[390,844],[834,1194],[1194,834],[1440,1100]]){await page.setViewportSize({width,height});assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,`Admin ${width}`);}
  await page.screenshot({path:'/tmp/tfb-partner-admin-v210.png',fullPage:true});
  const download=page.waitForEvent('download');await page.locator('[data-action="partner-admin-export"]').click();assert.match((await download).suggestedFilename(),/TFB-Partner-2027/);
- await page.locator('[data-action="splash-open"]').click();await page.waitForSelector('[data-action="splash-edit"]');await page.locator('[data-action="splash-edit"]').click();await page.locator('[name="headline"]').fill('Hier ist TFB');await page.locator('[name="eyebrowEnabled"]').uncheck();await page.locator('[name="footEnabled"]').uncheck();await page.locator('[name="eyebrowText"]').fill('Unser Verein');await page.locator('[data-editor="splash"] [type="submit"]').click();await page.waitForFunction(()=>!document.querySelector('#sheet-root.open'));
+ await page.locator('[data-action="splash-edit"]').click();await page.locator('[name="headline"]').fill('Hier ist TFB');await page.locator('[name="eyebrowEnabled"]').uncheck();await page.locator('[name="footEnabled"]').uncheck();await page.locator('[name="eyebrowText"]').fill('Unser Verein');await page.locator('[data-editor="splash"] [type="submit"]').click();await page.waitForFunction(()=>!document.querySelector('#sheet-root.open'));
  // Entry always returns Home, including a restored Kiosk route and admin re-entry.
  for(const [width,height] of [[320,740],[390,844],[834,1194],[1194,834],[1440,1100]]){
   await page.setViewportSize({width,height});
@@ -77,6 +77,7 @@ try{
  await page.evaluate(()=>TFB.partnerVisibility.show(true));
  const newGuest=await open();assert.match(await newGuest.page.locator('#tfb-splash h1').innerText(),/Hier ist TFB/,'splash text persists centrally across devices');
  assert.equal(await newGuest.page.locator('#tfb-splash .tfb-splash-message .tfb-splash-eyebrow').count(),0);assert.equal(await newGuest.page.locator('#tfb-splash .tfb-splash-foot').count(),0);
+ await page.locator('[data-action="splash-enter"]').click();
  await page.locator('[data-action="splash-edit"]').click();await page.locator('[name="eyebrowEnabled"]').check();await page.locator('[name="footEnabled"]').check();await page.locator('[data-editor="splash"] [type="submit"]').click();await page.waitForFunction(()=>!document.querySelector('#sheet-root.open'));
  const checkGuest=await open();assert.equal(await checkGuest.page.locator('#tfb-splash .tfb-splash-message .tfb-splash-eyebrow').textContent(),'Unser Verein');assert.equal(await checkGuest.page.locator('#tfb-splash .tfb-splash-foot').count(),1);await checkGuest.context.close();
  for(const [width,height] of [[320,740],[390,844],[834,1194],[1194,834],[1440,1100]]){await newGuest.page.setViewportSize({width,height});assert.equal(await newGuest.page.locator('#tfb-splash').evaluate(e=>e.scrollWidth>e.clientWidth),false,`Splash ${width}`);await newGuest.page.locator('[data-action="splash-enter"]').click();const duo=newGuest.page.locator('#view .pbsp-duo').first();await duo.waitFor();assert.ok(await duo.evaluate(e=>e.getBoundingClientRect().width)<=560);await newGuest.page.evaluate(()=>TFB.partnerVisibility.show(true));}

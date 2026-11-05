@@ -28,10 +28,10 @@ try {
   await page.waitForFunction(() => TFB.ui?.state.member?.adminHidden);
   assert.equal(await page.evaluate(() => TFB.api.secureDirectory), true);
   assert.equal(await page.locator('[data-action="site-edit"]').count(), 0);
-  const ball = page.locator('.topbar .tfb-logo-ball');
-  await ball.click();
+  const pencil = page.locator('[data-action="admin-toggle"]');
+  await pencil.click();
   await page.locator('[data-action="site-edit"]').first().waitFor();
-  await ball.click();
+  await pencil.click();
   await page.waitForFunction(() => TFB.ui.state.member.adminHidden === true);
   assert.equal(await page.locator('[data-action="site-edit"]').count(), 0);
   const role = await page.evaluate(async () => {
@@ -48,17 +48,17 @@ try {
   });
   await page.locator('.kiosk-link').first().waitFor();
   assert.equal(await page.locator('[data-action="edit-start"]').count(), 0);
-  await ball.click();
+  await pencil.click();
   await page.locator('[data-action="edit-start"]').first().waitFor();
   await page.reload();
   await page.waitForFunction(() => TFB.ui?.state.member?.adminHidden);
   assert.equal(await page.locator('[data-action="edit-start"]').count(), 0);
-  // An ordinary verified member cannot enable admin tools with the ball.
+  // An ordinary verified member cannot enable admin tools with the pencil.
   isAdmin = false;
   await page.reload();
   await page.waitForFunction(() => TFB.ui?.state.member && !TFB.ui.state.member.isAdmin && !TFB.ui.state.member.adminHidden);
-  await ball.click();
+  assert.equal(await pencil.count(), 0);
   assert.equal(await page.locator('[data-action="site-edit"], [data-action="edit-start"]').count(), 0);
   assert.deepEqual(errors, []);
-  console.log('PASS: secure-login admin ball toggles Home/Kiosk tools, stays hidden after session refresh/reload, retains role and never elevates ordinary members.');
+  console.log('PASS: secure-login admin pencil toggles Home/Kiosk tools, stays hidden after session refresh/reload, retains role and never elevates ordinary members.');
 } finally { await browser.close(); }

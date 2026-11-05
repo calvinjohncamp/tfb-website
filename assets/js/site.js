@@ -135,10 +135,12 @@
       row.querySelector('[data-gap-reset]').addEventListener('click', () => set(def));
     });
   }
-  // Wer im Thema Farben ändert, arbeitet an der bunten Fassung → danach gilt „Bunt“
+  // Gespeicherte Farbänderungen sofort in der Admin-Vorschau zeigen.
   function markColors(before, after) {
     if (!after || after.type !== 'feature') return;
-    if ((before?.bg || '') !== (after.bg || '') || (before?.linkBg || '') !== (after.linkBg || '')) colorPeek = 'bunt';   // Ergebnis zeigen, nicht als Voreinstellung speichern
+    if ((before?.bg || '') !== (after.bg || '') || (before?.linkBg || '') !== (after.linkBg || '')) {
+      TFB.designPreview?.selectWorld('custom');
+    }
   }
   function wireColorFields(form, changed) {
     form.querySelectorAll('[data-color-field]').forEach((row) => {
@@ -442,7 +444,7 @@
             ? `<button type="button" data-action="link-move" data-block="${esc(b.id)}" data-slot="${name}">${hint}</button>`
             : '<span class="link-drop" aria-hidden="true">hier ablegen</span>'}</div>`;
         };
-        const colorsOn = page !== 'home' || homeColorsOn(b.id);
+        const colorsOn = TFB.designPreview?.usesCustomBackgrounds();
         const bg = colorsOn && hexOk(b.bg) ? b.bg : '';
         const linkBg = colorsOn && hexOk(b.linkBg) ? b.linkBg : '';
         const parts = String(b.text || '').split(/\n{2,}/).filter((x) => x.trim());
@@ -455,9 +457,7 @@
             ${(b.images || []).filter(shownImage).length ? newsCollage(b) : wrap(`<div class="feature-media">${picture(b.image, b.id, b.title)}</div>`)}
             <div class="feature-body">
               <div class="feature-left">
-                <div class="feature-kicker">${page === 'home' && ui().api.mode === 'demo'
-                  ? `<button type="button" class="feature-number" data-action="home-color-peek" data-id="${esc(b.id)}" aria-label="Standardfarben oder eigene Farben anzeigen" aria-pressed="${Boolean(colorsOn)}"><span>${n}</span></button>`
-                  : `<span>${n}</span>`}<span class="feature-kicker-label">${esc(b.kicker || '')}</span>
+                <div class="feature-kicker"><span class="feature-number">${n}</span><span class="feature-kicker-label">${esc(b.kicker || '')}</span>
                   ${page === 'home' && n === '01' && !isEdit && !preview ? contentOverviewLink('home') : ''}
                 </div>
                 ${wrap(`<h2>${titleWords(b.title)}</h2>`)}
@@ -864,7 +864,7 @@
             <button type="button" class="btn primary" data-action="site-done">Fertig</button>
           </div>` : ''}
         ${key === 'home' && !edit
-          ? (admin ? `<div class="home-tools">${TFB.designPreview?.buttons() || ''}<button type="button" class="view-close" data-action="site-edit" data-page="home" aria-label="Startseite bearbeiten">${icon.pencil}</button></div>` : '')
+          ? (admin ? `<div class="home-tools"><button type="button" class="view-close" data-action="site-edit" data-page="home" aria-label="Startseite bearbeiten">${icon.pencil}</button></div>` : '')
           : `<header class="view-head page-head">
           <div><h1>${esc(page.title)}</h1>${page.intro ? `<p class="muted">${esc(page.intro)}</p>` : ''}</div>
           ${key === 'aktuell' ? '<div class="page-head-tools">' : ''}${admin && !edit ? `<button type="button" class="view-close" data-action="site-edit" data-page="${key}" aria-label="Seite bearbeiten">${icon.pencil}</button>` : ''}${key === 'aktuell' ? `${!edit ? contentOverviewLink(key) : ''}</div>` : ''}
@@ -875,7 +875,7 @@
         </nav>` : ''}
         ${key === 'home' ? `<div class="home-masthead"><span>Neu im Club</span><span>${esc(new Date().toLocaleDateString('de-DE', { month: 'long', year: 'numeric' }))}</span></div>` : ''}
         ${key === 'home' && !edit && !list.some(b => b.type === 'feature') ? contentOverviewLink(key) : ''}
-        ${key === 'home' && edit ? lookPicker() + colorModeCard() + navCard() : ''}
+        ${key === 'home' && edit ? lookPicker() + navCard() : ''}
         ${blocks}
         ${edit && key === 'home' ? homeAddButton(list) : ''}
         ${edit && key !== 'home' && (key !== 'sport' || training) ? `<button type="button" class="btn block add-section" data-action="block-new">${icon.plus} Baustein hinzufügen</button>` : ''}
@@ -982,22 +982,6 @@
     return feature + ['gallery', 'collage'].map(type => `<button type="button" class="btn block add-section" data-action="block-add" data-type="${type}">${ui().icon.camera} ${type === 'gallery' ? 'Galerie' : 'Collage'} hinzufügen</button>`).join('');
   }
   const homeLook = () => (HOME_LOOKS.some(([k]) => k === site?.homeLook) ? site.homeLook : '6');
-  // Farben der Home-Themen: genau eine bunte Fassung (Farben je Thema) oder „Standard“ (Creme/Weiß).
-  // Gespeichert in site.homeColorMode (Standard ist voreingestellt); colorPeek = Vorführ-Schalter (Klick auf „01“)
-  // bzw. Anzeige nach dem Bearbeiten von Farben – beides nur bis zum Neuladen.
-  let colorPeek = null;
-  const savedColorMode = () => (site?.homeColorMode === 'bunt' ? 'bunt' : 'standard');
-  const homeColorMode = () => colorPeek || savedColorMode();
-  const homeColorsOn = (id) => homeColorMode() === 'bunt'
-    || (colorPeek === null && preview?.id === id);
-  function colorModeCard() {
-    const cur = homeColorMode();
-    return `<section class="look-picker color-mode" aria-label="Farben der Startseite">
-      <h2>Farben der Themen</h2>
-      <div class="seg">${[['standard', 'Standard'], ['bunt', 'Bunt']].map(([k, l]) => `<button type="button" class="${k === cur ? 'on' : ''}" data-action="home-colors" data-mode="${k}" aria-pressed="${k === cur}">${l}</button>`).join('')}</div>
-      <p class="muted small">„Bunt“ zeigt die Farben, die du je Thema eingestellt hast; „Standard“ zeigt alle in Creme mit weißen Knöpfen – deine Farben bleiben gespeichert. Die Auswahl hier gilt für alle Besucher; voreingestellt ist „Standard“.</p>
-    </section>`;
-  }
   function lookPicker() {
     const cur = homeLook();
     return `<section class="look-picker" aria-label="Look der Startseite">
@@ -1007,9 +991,6 @@
       <p class="muted small">Gilt für alle Besucher. Die Seite darunter zeigt sofort den gewählten Look – so bearbeitest du genau, was die Besucher sehen.</p>
     </section>`;
   }
-  // Nur Demo: Klick auf eine Themennummer (01, 02, 03 …) der Startseite schaltet zwischen Standard und Bunt um –
-  // mit und ohne eingeblendete Admin-Werkzeuge (Vorführung, wird nicht gespeichert; nach dem Neuladen gilt
-  // wieder die Voreinstellung aus dem Bearbeiten-Modus).
   ['home', 'aktuell', 'sport', 'verein', 'impressum', 'satzung'].forEach((key) => { TFB.views[routeOf(key)] = () => pageView(key); });
 
   // Ansicht (nicht Bearbeiten): Bausteine zu Gruppen bündeln, damit sie sich auf
@@ -1817,7 +1798,7 @@
             + `<h3 class="editor-sub">4 · Farben</h3>
                <div class="field bg-field"><span>Hintergrund der Textseite</span>${colorField('bg', draft.bg, FEATURE_BG)}</div>
                <div class="field bg-field"><span>Hintergrund der Link-Knöpfe</span>${colorField('linkBg', draft.linkBg, LINK_BG)}</div>
-               <p class="muted small ed-note">Im Look „Wechselspiel“, je Thema. ${'EyeDropper' in window ? 'Mit der Pipette nimmst du eine Farbe von überall auf dem Bildschirm auf – auch aus dem Foto oder einem anderen Fenster. ' : ''}Auf dunklem Grund wird die Schrift automatisch hell. „Standard“ setzt zurück.</p>`
+               <p class="muted small ed-note">Im Look „Wechselspiel“ siehst du diese Farben unter „Eigene Hintergründe“. ${'EyeDropper' in window ? 'Mit der Pipette nimmst du eine Farbe von überall auf dem Bildschirm auf – auch aus dem Foto oder einem anderen Fenster. ' : ''}Auf dunklem Grund wird die Schrift automatisch hell. „Standard“ setzt zurück.</p>`
             + `<h3 class="editor-sub">5 · Links (freiwillig)</h3>
                <p class="muted small ed-note">„Mehr erfahren“ zur Unterseite erscheint von selbst, sobald die Unterseite Inhalt hat.</p>
                <div class="gap-fields">${gapField('linkTop', draft.linkTop, LINK_TOP, 'Abstand über den Links')}${gapField('linkGap', draft.linkGap, LINK_GAP, 'Abstand zwischen den Links')}</div>`
@@ -2038,7 +2019,11 @@
       });
       form.addEventListener('dragstart', e => { if (e.target.closest('.gallery-thumb.sortable')) e.preventDefault(); });
       // Farben: Farbfeld, Pipette, Farbcode, Standard – alles mit Live-Vorschau
-      wireColorFields(form, () => { if (live) schedulePreview(); });
+      wireColorFields(form, () => {
+        if (!live) return;
+        TFB.designPreview?.selectWorld('custom');
+        schedulePreview();
+      });
       wireGapFields(form, () => { if (live) schedulePreview(); });
       if (live) {
         startLive(id, draft, () => { collect(form); return edTab; });
@@ -2791,21 +2776,6 @@
       window.scrollTo(0, el.dataset.keepScroll ? y : 0);
     },
     'nav-edit': () => openNavEditor(),
-    'home-color-peek': async (el) => {
-      if (ui().api.mode !== 'demo') return;
-      colorPeek = homeColorsOn(el.dataset.id) ? 'standard' : 'bunt';
-      const y = window.scrollY;
-      await ui().renderView();
-      window.scrollTo(0, y);
-    },
-    'home-colors': async (el) => {
-      try {
-        colorPeek = null;
-        site = await ui().api.saveSite({ ...JSON.parse(JSON.stringify(site)), homeColorMode: el.dataset.mode });
-        ui().toast(el.dataset.mode === 'bunt' ? 'Farben: Bunt' : 'Farben: Standard', true);
-        const y = window.scrollY; await ui().renderView(); window.scrollTo(0, y);
-      } catch (err) { ui().toast(err.message); }
-    },
     'home-look': async (el) => {
       try {
         site = await ui().api.saveSite({ ...JSON.parse(JSON.stringify(site)), homeLook: el.dataset.look });

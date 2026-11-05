@@ -79,9 +79,10 @@
     if(!partners.length)return '';
     return `<section class="tfb-splash-partners pbsp-slot" aria-label="Premium-Partner"><p class="pbsp-kicker">${esc(settings.partnerLabel)}</p><div class="pbsp-duo">${partners.map((p,i)=>TFB.partnerTile(p,i)).join('')}</div></section>`;
   }
-  function splashMarkup(){return `<div class="tfb-splash-inner"><div class="tfb-splash-top"><div class="tfb-splash-wordmark" role="${admin()?'group':'img'}" aria-label="Tennisfreunde Bielstein"><span class="tfb-logo-noball"></span>${admin()?'<button type="button" class="tfb-splash-ball" data-action="partner-report" aria-label="Partner verwalten"><span class="tfb-logo-ball"></span></button>':'<span class="tfb-logo-ball tfb-splash-ball"></span>'}</div><div class="tfb-splash-tools">${admin()?`<button class="view-close tfb-splash-edit" data-action="splash-edit" aria-label="Einstiegsseite bearbeiten">${ui().icon.pencil}</button>`:''}${TFB.designPreview.brandButton()}</div></div><div class="tfb-splash-message">${settings.eyebrowEnabled&&settings.eyebrowText?`<p class="tfb-splash-eyebrow">${esc(settings.eyebrowText)}</p>`:''}<h1><span>${esc(settings.headline)}</span><br><em>${esc(settings.accent)}</em></h1><p class="tfb-splash-description">${esc(settings.description)}</p></div><div><button type="button" class="tfb-splash-enter" data-action="splash-enter"><span>${esc(settings.entry)}</span><span aria-hidden="true"><svg class="link-arrow" viewBox="0 0 806 1000" aria-hidden="true" focusable="false"><path transform="translate(0 755) scale(1 -1)" d="M528 -14 448 66 546 164 587 189 581 206 533 198H50V312H533L581 304L587 321L546 346L448 444L528 524L756 296V214Z"/></svg></span></button>${settings.footEnabled&&settings.foot?`<p class="tfb-splash-foot">${esc(settings.foot)}</p>`:''}${premiumMarkup()}</div></div>`;}
-  async function show(force=false) {
-    await refreshSettings();if(!force&&!settings.enabled){rendered();return;}
+  function splashMarkup(){return `<div class="tfb-splash-inner"><div class="tfb-splash-top"><div class="tfb-splash-wordmark" role="group" aria-label="Tennisfreunde Bielstein"><span class="tfb-logo-noball" aria-hidden="true"></span>${TFB.designPreview.brandButton('tfb-splash-ball', '<span class="tfb-logo-ball" aria-hidden="true"></span>')}</div></div><div class="tfb-splash-message">${settings.eyebrowEnabled&&settings.eyebrowText?`<p class="tfb-splash-eyebrow">${esc(settings.eyebrowText)}</p>`:''}<h1><span>${esc(settings.headline)}</span><br><em>${esc(settings.accent)}</em></h1><p class="tfb-splash-description">${esc(settings.description)}</p></div><div><button type="button" class="tfb-splash-enter" data-action="splash-enter"><span>${esc(settings.entry)}</span><span aria-hidden="true"><svg class="link-arrow" viewBox="0 0 806 1000" aria-hidden="true" focusable="false"><path transform="translate(0 755) scale(1 -1)" d="M528 -14 448 66 546 164 587 189 581 206 533 198H50V312H533L581 304L587 321L546 346L448 444L528 524L756 296V214Z"/></svg></span></button>${settings.footEnabled&&settings.foot?`<p class="tfb-splash-foot">${esc(settings.foot)}</p>`:''}${premiumMarkup()}</div></div>`;}
+  async function show(force=false, draft=null) {
+    if (draft) settings = draft; else await refreshSettings();
+    if(!force&&!settings.enabled){rendered();return;}
     if(!splash){splash=document.createElement('section');splash.id='tfb-splash';splash.className='tfb-splash';splash.tabIndex=-1;splash.setAttribute('role','dialog');splash.setAttribute('aria-modal','true');splash.setAttribute('aria-label','Willkommen bei den Tennisfreunden Bielstein');document.body.appendChild(splash);}
     ui().closeSheet();stopObserver();active=null;splash.innerHTML=splashMarkup();splash.hidden=false;splash.scrollTop=0;
     document.body.classList.add('tfb-splash-open');document.getElementById('app').inert=true;
@@ -112,10 +113,14 @@
     const form=document.querySelector('[data-editor="splash"]');
     requestAnimationFrame(()=>form.elements.headline.focus());
     const draft=()=>Object.fromEntries(Object.keys(defaults).map(k=>[k,['enabled','eyebrowEnabled','footEnabled'].includes(k)?form.elements[k].checked:form.elements[k].value.trim()]));
-    const preview=()=>{settings=draft();previewSettings={...settings};splash.innerHTML=splashMarkup();};
-    form.querySelector('[data-splash-preview]').onclick=()=>{preview();ui().closeSheet();ui().toast('Vorschau – über den Stift weiterbearbeiten oder speichern.',true);};
+    form.querySelector('[data-splash-preview]').onclick = () => {
+      if (!admin()) return;
+      previewSettings = draft();
+      show(true, previewSettings);
+      ui().toast('Vorschau – zum Weiterbearbeiten zurück auf die App-Seite.', true);
+    };
     // Preview stays in memory; reopening the editor retains it until save/reload.
-    form.onsubmit=async e=>{e.preventDefault();if(!admin())return;const button=form.querySelector('[type="submit"]');button.disabled=true;try{if(TFB.partnerContent?.isRemote)await TFB.partnerContent.saveSplash(draft());else{const site=await ui().api.site();await ui().api.saveSite({...site,splash:draft()});}settings=draft();previewSettings=null;splash.innerHTML=splashMarkup();ui().closeSheet();await TFB.refreshSite();ui().toast('Einstiegsseite gespeichert',true);}catch(err){form.querySelector('.form-error').textContent=err.message;button.disabled=false;settings=saved;}};
+    form.onsubmit=async e=>{e.preventDefault();if(!admin())return;const button=form.querySelector('[type="submit"]');button.disabled=true;try{if(TFB.partnerContent?.isRemote)await TFB.partnerContent.saveSplash(draft());else{const site=await ui().api.site();await ui().api.saveSite({...site,splash:draft()});}settings=draft();previewSettings=null;ui().closeSheet();await TFB.refreshSite();ui().toast('Einstiegsseite gespeichert',true);}catch(err){form.querySelector('.form-error').textContent=err.message;button.disabled=false;settings=saved;}};
   }
   const n=value=>Number(value||0).toLocaleString('de-DE');
   const date=value=>value?new Date(value).toLocaleDateString('de-DE',{timeZone:'Europe/Berlin'}):'Noch keine Messung';
@@ -141,7 +146,6 @@
     'splash-enter':()=>{hide(false);if(location.hash!=='#home')location.hash='#home';else{window.scrollTo(0,0);rendered();document.querySelector('#view h1')?.focus?.();}},
     'splash-open':()=>{ui().closeSheet();show(true);},
     'splash-edit':edit,
-    'partner-report':()=>{if(!admin())return;hide(false);if(location.hash==='#partner')ui().renderView('partner');else location.hash='#partner';},
     'partner-report-refresh':()=>ui().renderView('partnerzahlen'),
     'partner-report-csv':csv,
     'partner-report-print':()=>{if(admin()&&report)window.print();},

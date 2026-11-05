@@ -42,7 +42,7 @@ try{
  await page.waitForSelector('.board-photo img');await page.waitForFunction(()=>document.querySelector('.board-photo img')?.naturalWidth>0);
  assert.match(await page.locator('.board-photo img').getAttribute('src'),/^https:/);
  const board=await page.evaluate(async()=>await TFB.api.boardPeople());assert.match(board[0].avatarLarge,/^https:/);
- if(!await page.evaluate(()=>TFB.ui.state.member.isAdmin))await page.locator('.topbar .header-logo .tfb-logo-ball').click();
+ if(!await page.evaluate(()=>TFB.ui.state.member.isAdmin))await page.locator('[data-action="admin-toggle"]').click();
  await page.evaluate(()=>TFB.board.open());await page.waitForSelector('[data-board-editor] .board-linked img');
  await page.waitForFunction(()=>document.querySelector('[data-board-editor] .board-linked img')?.naturalWidth>0);
  await page.locator('[data-board-crop]').click();await page.waitForSelector('[data-crop-save]');await page.locator('[data-crop-save]').click();await page.waitForSelector('[data-board-editor]');assert.match(await page.locator('[data-board-editor] .board-linked img').getAttribute('src'),/^data:image/);

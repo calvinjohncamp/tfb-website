@@ -205,63 +205,24 @@ test('home preserves Padel detail, links Kiosk directly and removes example noti
   assert.doesNotMatch(html, /Vorführversion/);
 });
 
-test('home number buttons toggle existing colors with admin tools visible or hidden without saving', async () => {
+test('custom backgrounds only render in the admin background preview', async () => {
   const { context, api, storage } = await setup();
   const site = await api.site();
-  const features = site.pages.home.blocks.filter(b => b.type === 'feature');
-  const colors = ['#99C6FD', '#AABBCC', '#DDEEFF']; // Test data, not default colors.
-  features.forEach((b, i) => { b.bg = colors[i]; b.linkBg = '#C4E3FF'; });
+  const feature = site.pages.home.blocks.find(block => block.type === 'feature');
+  feature.bg = '#99C6FD';
+  feature.linkBg = '#C4E3FF';
+  site.homeColorMode = 'bunt';
   await api.saveSite(site);
-  let html = await context.TFB.views.home();
   const before = storage.get('tfb_kiosk_demo_v1');
-  context.scrollY = 120;
-  context.scrollTo = (x, y) => assert.equal(y, 120);
-  context.TFB.ui.renderView = async () => { html = await context.TFB.views.home(); };
-  for (const isAdmin of [true, false]) {
-    context.TFB.ui.state.member = { isAdmin, adminHidden: !isAdmin };
-    for (const [i, b] of features.entries()) {
-      assert.match(html, new RegExp(`<button[^>]+data-action="home-color-peek"[^>]+data-id="${b.id}"[^>]+aria-pressed="false"><span>0${i + 1}</span>`));
-      await context.TFB.actions['home-color-peek']({ dataset: { id: b.id } });
-      for (const color of colors) assert.ok(html.includes('--feature-bg:' + color));
-      assert.match(html, /--link-bg:#C4E3FF/);
-      await context.TFB.actions['home-color-peek']({ dataset: { id: b.id } });
-      assert.doesNotMatch(html, /--feature-bg:|--link-bg:/);
-    }
-  }
-  assert.equal(storage.get('tfb_kiosk_demo_v1'), before);
-  vm.runInContext(readFileSync(new URL('assets/js/site.js', root), 'utf8'), context);
-  assert.doesNotMatch(await context.TFB.views.home(), /--feature-bg:/);
-  await context.TFB.actions['home-color-peek']({ dataset: { id: features[0].id } });
-  for (const color of colors) assert.ok(html.includes('--feature-bg:' + color));
-});
-
-test('home number toggles override the open editor color preview on the first click', async () => {
-  const { context, api, storage } = await setup();
-  const site = await api.site();
-  site.pages.home.blocks[0].bg = '#99C6FD';
-  await api.saveSite(site);
-  await context.TFB.views.home();
-  const before = storage.get('tfb_kiosk_demo_v1');
-  let html;
-  context.scrollY = 0;
-  context.scrollTo = () => {};
-  context.TFB.ui.closeSheet = () => {};
-  context.TFB.ui.currentView = () => 'home';
-  context.TFB.defaultNav = () => [];
-  context.matchMedia = () => ({ matches: true });
-  context.TFB.ui.renderView = async () => { html = await context.TFB.views.home(); };
-  const form = { elements: {}, addEventListener() {}, querySelectorAll: () => [], querySelector: () => null };
-  context.document.getElementById = () => ({ classList: { add() {}, remove() {} } });
-  context.document.body.classList = { add() {}, remove() {} };
-  context.document.querySelector = s => s === '[data-editor=block]' ? form : s === '#sheet-root .sheet' ? {scrollTop: 0} : null;
-  await context.TFB.actions['site-edit']({dataset: {page: 'home'}});
-  context.TFB.actions['block-edit']({dataset: {id: 'h-padel'}});
-  await context.TFB.ui.renderView();
-  assert.match(html, /--feature-bg:#99C6FD/);
-  await context.TFB.actions['home-color-peek']({dataset: {id: 'h-padel'}});
-  assert.doesNotMatch(html, /--feature-bg:/);
-  await context.TFB.actions['home-color-peek']({dataset: {id: 'h-padel'}});
-  assert.match(html, /--feature-bg:#99C6FD/);
+  let selected = false;
+  context.TFB.designPreview = { usesCustomBackgrounds: () => selected };
+  const standard = await context.TFB.views.home();
+  assert.match(standard, /<span class="feature-number">01<\/span>/);
+  assert.doesNotMatch(standard, /--feature-bg:|--link-bg:|home-color-peek/);
+  selected = true;
+  const custom = await context.TFB.views.home();
+  assert.match(custom, /--feature-bg:#99C6FD/);
+  assert.match(custom, /--link-bg:#C4E3FF/);
   assert.equal(storage.get('tfb_kiosk_demo_v1'), before);
 });
 

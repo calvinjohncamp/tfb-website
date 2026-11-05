@@ -78,7 +78,7 @@ try {
   }
   await page.evaluate(() => { location.hash = '#home'; });
   await page.waitForSelector('.gallery-item[data-block="gallery-home"]');
-  await page.locator('.topbar .tfb-logo-ball').click();
+  await page.locator('[data-action="admin-toggle"]').click();
   for (const route of ['home', 'aktuell', 'club', 'sport', 'chat', 'kiosk']) {
     await page.evaluate(route => { location.hash = '#' + route; }, route);
     await page.waitForSelector('.page-bottom-tools .view-close');
@@ -114,7 +114,7 @@ try {
   await page.waitForSelector('.gallery-item[data-block="gallery-home"]');
   assert.equal(await page.locator('.block-gallery:not(.block-collage) .gallery-text').count(), 0);
   assert.equal(await page.locator('.block-gallery:not(.block-collage) time').getAttribute('datetime'), '2026-10-14');
-  await page.locator('.topbar .tfb-logo-ball').click();
+  await page.locator('[data-action="admin-toggle"]').click();
   await page.locator('[data-action="site-edit"][data-page="home"]').first().click();
   await page.locator('[data-action="block-add"][data-type="gallery"]').click();
   await page.locator('[data-editor="block"] [name="title"]').fill('Neue Galerie');
