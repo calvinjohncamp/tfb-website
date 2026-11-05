@@ -16,7 +16,8 @@ body.tfb-splash-open { overflow:hidden; }
 .tfb-splash[hidden] { display:none; }
 .tfb-splash-inner { width:100%; max-width:720px; min-height:100dvh; margin:auto; padding:clamp(48px,6.5vh,90px) 40px clamp(38px,4.8vh,74px); display:flex; flex-direction:column; justify-content:space-between; gap:58px; }
 .tfb-splash-top { display:flex; align-items:flex-start; justify-content:space-between; gap:18px; }
-.tfb-splash-wordmark { position:relative; width:min(290px,75%); aspect-ratio:900/402; flex:none; }
+.tfb-splash-tools { display:flex; align-items:center; gap:12px; flex:none; }
+.tfb-splash-wordmark { position:relative; width:min(290px,75%); aspect-ratio:900/402; flex:0 1 auto; }
 .tfb-splash-wordmark > .tfb-logo-noball { position:absolute; inset:0; width:100%; height:100%; }
 .tfb-splash-wordmark > .tfb-splash-ball { position:absolute; left:84.53%; top:47.95%; width:15.53%; height:34.78%; color:#C4553A; }
 button.tfb-splash-ball { padding:0; border:0; background:transparent; border-radius:50%; }
@@ -149,36 +150,9 @@ button.tfb-splash-ball .tfb-logo-ball { width:100%; height:100%; display:block; 
 [data-editor="splash"] .splash-editor-check input:focus-visible{outline:2px solid #171717;outline-offset:3px}
 [data-editor="splash"] .splash-editor-field:has(.splash-editor-check) .field{margin-bottom:0}
 
-/* Logo-Vergleich über ?logo-test=1 */
-.tfb-logo-preview-toggle {
-  padding: 0;
-  border: 0;
-  background: transparent;
-  cursor: pointer;
-}
-.tfb-logo-preview-splash {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-}
-.tfb-logo-preview-splash + button.tfb-splash-ball { z-index: 2; }
-/* Farbauswahl auf der Einstiegsseite */
-.tfb-brand-toggle {
-  display: block;
-  min-height: 44px;
-  margin: 4px 0 0 auto;
-  padding: 0 4px;
-  border: 0;
-  background: transparent;
-  color: #535353;
-  font-size: .875rem;
-  text-decoration: underline;
-  text-underline-offset: .18em;
-}
-
 html.tfb-logo-midnight-amber {
   --tfb-midnight-blue: #001D3D;
-  --signature: #FFC300;
+  --signature: var(--tfb-signature-yellow);
   --signature-hover: var(--signature);
   --on-signature: var(--tfb-midnight-blue);
   --signature-text: var(--signature);
@@ -190,8 +164,8 @@ html.tfb-logo-midnight-amber body {
 }
 html.tfb-logo-midnight-amber .tfb-splash h1 { color: var(--tfb-midnight-blue); }
 html.tfb-logo-midnight-amber .tfb-splash h1 em { color: var(--signature); }
-html.tfb-logo-midnight-amber body :is(.tfb-splash-enter, .focus-enter, .btn.primary, .btn.signal, .membership-actions .membership-apply-button):not(:disabled, [aria-disabled="true"]),
-html.tfb-logo-midnight-amber body :is(.tfb-splash-enter, .focus-enter, .btn.primary, .btn.signal, .membership-actions .membership-apply-button):hover:not(:disabled, [aria-disabled="true"]) {
+html.tfb-logo-midnight-amber body :is(.tfb-splash-enter, .btn.primary, .btn.signal, .membership-actions .membership-apply-button):not(:disabled, [aria-disabled="true"]),
+html.tfb-logo-midnight-amber body :is(.tfb-splash-enter, .btn.primary, .btn.signal, .membership-actions .membership-apply-button):hover:not(:disabled, [aria-disabled="true"]) {
   background-color: var(--signature);
   border-color: var(--signature);
   color: var(--on-signature);
@@ -214,7 +188,9 @@ html.tfb-logo-midnight-amber body :is(.team-rank.top, .meet-mine.open, .meet-fac
 html.tfb-logo-midnight-amber body :is(.tfb-logo-split, .tfb-splash-wordmark) {
   background: url('../brand/tfb-logo-midnight-amber.png') center / contain no-repeat;
 }
-html.tfb-logo-midnight-amber :is(.tfb-logo-split, .tfb-splash-wordmark) .tfb-logo-noball,
-html.tfb-logo-midnight-amber :is(.tfb-logo-split, .tfb-splash-wordmark) .tfb-logo-ball {
+html.tfb-logo-midnight-amber :is(.tfb-logo-split, .tfb-splash-wordmark) .tfb-logo-noball {
   visibility: hidden;
+}
+html.tfb-logo-midnight-amber :is(.tfb-logo-split, .tfb-splash-wordmark) .tfb-logo-ball {
+  opacity: 0;
 }

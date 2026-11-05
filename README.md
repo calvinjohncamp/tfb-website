@@ -379,20 +379,7 @@ python3 -m http.server 5180
 Dann http://localhost:5180 öffnen. Demo-Zugang: `max@tfb-demo.de`
 (Passwort beim ersten Mal frei wählen).
 
-## Fokus-Vorführung
-
-Für die Vorstandsvorführung sind der Home-Streifen, seine Bearbeitung und die
-Installationsangebote im Konto ausgeblendet. Gespeicherte `site.focusStrip`-Werte
-bleiben erhalten, erzeugen aber keinen Streifen mehr. Auch der Fokus-Knopf im
-Konto ist entfernt. Die vorhandenen Desktop-Startknöpfe bleiben bestehen.
-Desktop-Browser haben stattdessen ein kleines F links neben der Klingel in der
-Kopfzeile (auch ohne Anmeldung verfügbar). Es öffnet Fokus bzw. beendet ihn
-in der eingebetteten Ansicht. Auf iPhone/iPad/Android und bei primärer
-Touch-Bedienung bleibt es ausgeblendet.
-
-„Fokus“ öffnet die aktuelle Seite vor Anthrazit in einer mittigen Ansicht.
-Die Geräteauswahl am unteren Rand wählt Desktop/iPad/iPhone; an den seitlichen
-Rändern lässt sich die Breite ziehen. Escape oder das Kreuz beendet Fokus.
+## Eigenständige Vorführung und App-Symbole
 
 App-Name: **TF Bielstein**. Alle Website-App-Symbole kommen aus
 `assets/brand/tfb-app-icon-source.png` (TFB ohne Ball auf Signature-Anthrazit).
@@ -418,8 +405,6 @@ wenn Chrome/Edge ihn anbieten, den nativen Installationsdialog. Safari bekommt
 die Anleitung „Zum Dock hinzufügen“. Ein neues Browserprofil oder eine andere
 Adresse übernimmt keine lokalen Demo-Daten automatisch.
 
-Fokus-Test: Vorschau auf `127.0.0.1:5180` starten, dann `npm run test:browser:focus`.
-Der Test verwendet ein separates Browserprofil mit Beispieldaten.
 
 ## Aufbau
 

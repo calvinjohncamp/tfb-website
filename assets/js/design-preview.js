@@ -1,19 +1,33 @@
 (function () {
   const brandKey = 'tfb_brand_theme';
-  const logoTest = new URLSearchParams(location.search).get('logo-test') === '1';
+  const brandNames = { signature: 'Signature Rot', club: 'Vereinsfarben Blau-Gelb' };
   let brand = 'signature';
   const normalizeBrand = value => value === 'club' ? 'club' : 'signature';
-  try { if (!logoTest) brand = normalizeBrand(localStorage.getItem(brandKey)); } catch (_) {}
+  try { brand = normalizeBrand(localStorage.getItem(brandKey)); } catch (_) {}
 
   function applyBrand() {
     document.documentElement.classList.toggle('tfb-logo-midnight-amber', brand === 'club');
-    document.querySelectorAll('[data-action="toggle-tfb-logo"]').forEach(button => {
-      button.setAttribute('aria-pressed', String(brand === 'club'));
+    document.querySelectorAll('button[data-tfb-brand]').forEach(button => {
+      button.setAttribute('aria-pressed', String(button.dataset.tfbBrand === brand));
     });
   }
 
+  function brandButtons() {
+    return `<div class="tfb-brand-buttons" role="group" aria-label="Farbwelt">${Object.entries(brandNames).map(([value, label]) =>
+      `<button type="button" data-tfb-brand="${value}" aria-label="${label}" title="${label}" aria-pressed="${brand === value}"></button>`
+    ).join('')}</div>`;
+  }
+
+  document.addEventListener('click', event => {
+    const button = event.target.closest('button[data-tfb-brand]');
+    if (!button || button.dataset.tfbBrand === brand) return;
+    brand = normalizeBrand(button.dataset.tfbBrand);
+    try { localStorage.setItem(brandKey, brand); } catch (_) {}
+    applyBrand();
+  });
+
   window.addEventListener('storage', event => {
-    if (logoTest || (event.key !== brandKey && event.key !== null)) return;
+    if (event.key !== brandKey && event.key !== null) return;
     brand = normalizeBrand(event.newValue);
     applyBrand();
   });
@@ -59,12 +73,7 @@
     if (event.key === key) { world = normalize(event.newValue); apply(); }
   });
   TFB.designPreview = { apply, buttons: () => `<div class="world-switch" role="group" aria-label="Gestaltung">${worlds.map((value, index) => `<button type="button" data-design-world="${value}" aria-pressed="${world === value}">${names[index]}</button>`).join('')}</div>` };
-  TFB.designPreview.isClubBrand = () => brand === 'club';
-  TFB.designPreview.toggleBrand = () => {
-    brand = brand === 'club' ? 'signature' : 'club';
-    try { if (!logoTest) localStorage.setItem(brandKey, brand); } catch (_) {}
-    applyBrand();
-  };
+  TFB.designPreview.brandButtons = brandButtons;
   applyBrand();
   apply();
 })();

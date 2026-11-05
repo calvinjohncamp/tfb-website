@@ -3,11 +3,13 @@
    als schmale App-Spalte. Bewusst ohne externe Schriften (keine Google-Fonts-Abfrage). */
 
 :root {
+  --tfb-signature-red: #C4553A;
+  --tfb-signature-yellow: #FFC300;
   --brand: #2A2D2E;            /* Markenfarbe, im Profil wählbar */
   --green: var(--brand);
   --green-2: var(--brand);
   --green-soft: color-mix(in srgb, var(--brand) 9%, #fff);
-  --signal: #C4553A;           /* Signalfarbe Sandplatz-Rot: KIOSK-Schriftzug, Striche, „bald“ */
+  --signal: var(--tfb-signature-red);           /* Signalfarbe Sandplatz-Rot: KIOSK-Schriftzug, Striche, „bald“ */
   --clay: var(--signal);
   --clay-soft: #F6E2DA;
   --cream: #F5F0E6;
@@ -1214,7 +1216,29 @@ button.meet-row:hover { background: #FAF8F3; }
 .danger-link { color: var(--clay); }
 
 /* Postfach (Glocke neben dem Profilbild) und regelmäßige Einladungen */
-.top-actions { display: flex; align-items: flex-end; gap: 31px; flex: none; }   /* Glocke unten bündig mit dem Profilbild */
+.top-actions { display: flex; align-items: flex-end; gap: clamp(12px, 4vw, 31px); flex: none; }
+.tfb-brand-buttons { display: flex; align-items: center; gap: 10px; min-height: 27px; flex: none; }
+.tfb-brand-buttons button {
+  position: relative;
+  box-sizing: border-box;
+  width: 14.4px;
+  height: 14.4px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+}
+.tfb-brand-buttons button::before { content: ""; position: absolute; inset: -5px; border-radius: 50%; }
+.tfb-brand-buttons button[data-tfb-brand="signature"] { background: var(--tfb-signature-red); }
+.tfb-brand-buttons button[data-tfb-brand="club"] { background: var(--tfb-signature-yellow); }
+.tfb-brand-buttons button[aria-pressed="true"] { box-shadow: 0 0 0 2px var(--bg), 0 0 0 3px #686868; }
+.tfb-brand-buttons button:focus-visible { outline: 2px solid var(--ink); outline-offset: 4px; }
+@media (max-width: 460px) {
+  .topbar .header-logo { height: clamp(38px, 13vw, 58px); }
+}
+/* Rahmen der eigenständigen Vorführung */
+html.tfb-presentation-page { background: #1c1a17; scrollbar-width: none; }
+html.tfb-presentation-page::-webkit-scrollbar { display: none; }
+html.tfb-presentation-page:has(body.no-scroll) { overflow: hidden; }
 .seg.meet-weekdays { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
 .seg.meet-weekdays button { min-width: 0; height: 38px; padding: 0; border-radius: 8px; font-size: .85rem; letter-spacing: 0; }
 .seg.meet-weekdays button:focus-visible { outline: 2px solid var(--signal); outline-offset: 2px; }

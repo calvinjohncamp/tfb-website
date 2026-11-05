@@ -124,8 +124,6 @@
 .editorial-preview-active :is(.inbox-open, button.meet-row, .team):hover { background: #E5E5E5; }
 .editorial-preview-active .meet-status.is-full { background: var(--meet-yes-soft); }
 .editorial-preview-active .acct-next-match { border-color: var(--ink); border-radius: 8px; }
-.editorial-preview-active .header-focus { color: var(--ink); border-color: var(--ink); background: var(--card); }
-.editorial-preview-active .header-focus:hover { background: #E5E5E5; }
 .editorial-preview-active .feature .link-chip { background: var(--card); color: #171717; --ink: #171717; --muted: #686868; }
 .editorial-preview-active .feature .feature-link .btn.signal { background: var(--signal); border-color: var(--signal); color: #fff; }
 .editorial-preview-active .meet-kind-tile { min-width: 0; }

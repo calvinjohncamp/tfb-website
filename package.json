@@ -5,7 +5,6 @@
     "test:partners": "node --test tools/test-partner-visibility.mjs tools/test-partner-management.mjs",
     "test:browser:partners": "node tools/test-browser-partner-visibility.mjs",
     "test:browser": "npm run test:browser:overview && npm run test:browser:gallery && npm run test:browser:backups",
-    "test:browser:focus": "node tools/test-browser-focus.mjs",
     "test:browser:touch-performance": "node tools/test-browser-touch-performance.mjs",
     "test:browser:meet-sync": "node tools/test-browser-meet-sync.mjs",
     "test:browser:meet-weekdays": "node tools/test-browser-meet-weekdays.mjs",

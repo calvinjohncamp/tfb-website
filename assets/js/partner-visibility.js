@@ -4,14 +4,6 @@
   const cfg=TFB.config.partnerVisibility;
   const remote=()=>Boolean(cfg?.enabled && location.protocol==='https:' && cfg.hosts.includes(location.hostname));
   const SESSION='tfb_splash_visit_v1';
-  const logoPreview = new URLSearchParams(location.search).get('logo-test') === '1';
-  const logoToggleLabel = 'Blau-gelbes TFB-Logo testen';
-
-  function logoToggleAttributes() {
-    return `data-action="toggle-tfb-logo" aria-label="${logoToggleLabel}" title="${logoToggleLabel}" aria-pressed="${TFB.designPreview.isClubBrand()}"`;
-  }
-
-  TFB.logoPreview = logoPreview ? { toggleAttributes: logoToggleAttributes } : null;
   let settings={...defaults}, previewSettings=null, splash=null, started=false, active=null, observer=null, timers=new Map(), candidates=new Set();
   let queue=[], sending=false, flushTimer=null, retryTimer=null, failures=0, report=null, year=new Date().toLocaleDateString('sv-SE',{timeZone:'Europe/Berlin'}).slice(0,4);
   const pageNames={splash:'Einstiegsseite',home:'Home','home-detail':'Home · Themen','home-fotos':'Home · Fotos','home-alle':'Home · Übersicht',aktuell:'Aktuell','aktuell-detail':'Aktuell · Details','aktuell-alle':'Aktuell · Übersicht',chat:'Chat','chat-detail':'Chat · Details',sport:'Sport','sport-training':'Training',team:'Mannschaften',club:'Club','club-detail':'Club · Details',treffen:'Dating 2.0','treffen-detail':'Dating 2.0 · Details',kiosk:'Kiosk',strichliste:'Strichliste',abrechnungen:'Abrechnungen',impressum:'Impressum',satzung:'Satzung'};
@@ -25,7 +17,7 @@
     if(['aktuell','chat','club','treffen'].includes(key))return key+(detail==='alle'&&key==='aktuell'?'-alle':'-detail');
     return pageNames[key]?key:null;
   }
-  function eligible() {return !logoPreview&&remote()&&!admin()&&!document.querySelector('.editing-page')&&!new URLSearchParams(location.search).has('tfbPresentation');}
+  function eligible() {return remote()&&!admin()&&!document.querySelector('.editing-page')&&!new URLSearchParams(location.search).has('tfbPresentation');}
   function event(kind,partner='',slot='') {
     if(!active||!eligible())return;
     const key=[kind,partner,slot].join(':');if(kind!=='click'&&active.sent.has(key))return;
@@ -87,7 +79,7 @@
     if(!partners.length)return '';
     return `<section class="tfb-splash-partners pbsp-slot" aria-label="Premium-Partner"><p class="pbsp-kicker">${esc(settings.partnerLabel)}</p><div class="pbsp-duo">${partners.map((p,i)=>TFB.partnerTile(p,i)).join('')}</div></section>`;
   }
-  function splashMarkup(){return `<div class="tfb-splash-inner"><div class="tfb-splash-top"><div class="tfb-splash-wordmark" role="${admin()||logoPreview?'group':'img'}" aria-label="Tennisfreunde Bielstein"><span class="tfb-logo-noball"></span>${logoPreview?`<button type="button" class="tfb-logo-preview-toggle tfb-logo-preview-splash" ${logoToggleAttributes()}></button>`:''}${admin()?'<button type="button" class="tfb-splash-ball" data-action="partner-report" aria-label="Partner verwalten"><span class="tfb-logo-ball"></span></button>':'<span class="tfb-logo-ball tfb-splash-ball"></span>'}</div>${admin()?`<button class="view-close tfb-splash-edit" data-action="splash-edit" aria-label="Einstiegsseite bearbeiten">${ui().icon.pencil}</button>`:''}</div><div class="tfb-splash-message">${settings.eyebrowEnabled&&settings.eyebrowText?`<p class="tfb-splash-eyebrow">${esc(settings.eyebrowText)}</p>`:''}<h1><span>${esc(settings.headline)}</span><br><em>${esc(settings.accent)}</em></h1><p class="tfb-splash-description">${esc(settings.description)}</p></div><div><button type="button" class="tfb-splash-enter" data-action="splash-enter"><span>${esc(settings.entry)}</span><span aria-hidden="true"><svg class="link-arrow" viewBox="0 0 806 1000" aria-hidden="true" focusable="false"><path transform="translate(0 755) scale(1 -1)" d="M528 -14 448 66 546 164 587 189 581 206 533 198H50V312H533L581 304L587 321L546 346L448 444L528 524L756 296V214Z"/></svg></span></button><button type="button" class="tfb-brand-toggle" data-action="toggle-tfb-logo" aria-pressed="${TFB.designPreview.isClubBrand()}">Farbwelt wechseln</button>${settings.footEnabled&&settings.foot?`<p class="tfb-splash-foot">${esc(settings.foot)}</p>`:''}${premiumMarkup()}</div></div>`;}
+  function splashMarkup(){return `<div class="tfb-splash-inner"><div class="tfb-splash-top"><div class="tfb-splash-wordmark" role="${admin()?'group':'img'}" aria-label="Tennisfreunde Bielstein"><span class="tfb-logo-noball"></span>${admin()?'<button type="button" class="tfb-splash-ball" data-action="partner-report" aria-label="Partner verwalten"><span class="tfb-logo-ball"></span></button>':'<span class="tfb-logo-ball tfb-splash-ball"></span>'}</div><div class="tfb-splash-tools">${admin()?`<button class="view-close tfb-splash-edit" data-action="splash-edit" aria-label="Einstiegsseite bearbeiten">${ui().icon.pencil}</button>`:''}${TFB.designPreview.brandButtons()}</div></div><div class="tfb-splash-message">${settings.eyebrowEnabled&&settings.eyebrowText?`<p class="tfb-splash-eyebrow">${esc(settings.eyebrowText)}</p>`:''}<h1><span>${esc(settings.headline)}</span><br><em>${esc(settings.accent)}</em></h1><p class="tfb-splash-description">${esc(settings.description)}</p></div><div><button type="button" class="tfb-splash-enter" data-action="splash-enter"><span>${esc(settings.entry)}</span><span aria-hidden="true"><svg class="link-arrow" viewBox="0 0 806 1000" aria-hidden="true" focusable="false"><path transform="translate(0 755) scale(1 -1)" d="M528 -14 448 66 546 164 587 189 581 206 533 198H50V312H533L581 304L587 321L546 346L448 444L528 524L756 296V214Z"/></svg></span></button>${settings.footEnabled&&settings.foot?`<p class="tfb-splash-foot">${esc(settings.foot)}</p>`:''}${premiumMarkup()}</div></div>`;}
   async function show(force=false) {
     await refreshSettings();if(!force&&!settings.enabled){rendered();return;}
     if(!splash){splash=document.createElement('section');splash.id='tfb-splash';splash.className='tfb-splash';splash.tabIndex=-1;splash.setAttribute('role','dialog');splash.setAttribute('aria-modal','true');splash.setAttribute('aria-label','Willkommen bei den Tennisfreunden Bielstein');document.body.appendChild(splash);}
@@ -106,7 +98,7 @@
     let last=0;try{last=Number(sessionStorage.getItem(SESSION)||0);}catch(_){}
     const direct=/^#(?:impressum|satzung|partnerzahlen|partner)(?:\/|$)/.test(location.hash)||new URLSearchParams(location.search).has('tfbPresentation');
     const reloaded=performance.getEntriesByType('navigation')[0]?.type==='reload';
-    if(!direct&&(logoPreview||reloaded||Date.now()-last>30*60*1000))await show();else rendered();
+    if(!direct&&(reloaded||Date.now()-last>30*60*1000))await show();else rendered();
   }
   function rendered(){
     if(!started)return;
@@ -148,7 +140,6 @@
   TFB.actions=TFB.actions||{};Object.assign(TFB.actions,{
     'splash-enter':()=>{hide(false);if(location.hash!=='#home')location.hash='#home';else{window.scrollTo(0,0);rendered();document.querySelector('#view h1')?.focus?.();}},
     'splash-open':()=>{ui().closeSheet();show(true);},
-    'toggle-tfb-logo': () => TFB.designPreview.toggleBrand(),
     'splash-edit':edit,
     'partner-report':()=>{if(!admin())return;hide(false);if(location.hash==='#partner')ui().renderView('partner');else location.hash='#partner';},
     'partner-report-refresh':()=>ui().renderView('partnerzahlen'),

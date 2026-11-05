@@ -3,9 +3,7 @@
   const frame = document.getElementById('site');
   const nav = document.querySelector('nav');
   const widths = { desktop: 1440, tablet: 834, phone: 390 };
-  const embedded = window.parent !== window;
   if (location.hash) frame.src = 'index.html?tfbPresentation=1' + location.hash;
-  const sendParent = data => { if (embedded) window.parent.postMessage(data, '*'); };
   let hideTimer;
   let dragging = false;
   lucide.createIcons();
@@ -48,17 +46,11 @@
     if (event.source !== frame.contentWindow || event.data?.type !== 'tfb-presentation') return;
     if (event.data.action === 'key') keyAction(event.data.code);
     if (event.data.action === 'edge') reveal();
-    if (event.data.action === 'route') sendParent({ type: 'tfb-focus-route', hash: event.data.hash });
-    if (event.data.action === 'exit-focus') {
-      if (embedded) sendParent({ type: 'tfb-focus-close' });
-      else window.close();
-    }
+    if (event.data.action === 'close') window.close();
   });
   document.querySelectorAll('[data-mode]').forEach(button => button.addEventListener('click', () => setMode(button.dataset.mode)));
   document.getElementById('fullscreen').addEventListener('click', toggleFullscreen);
-  document.getElementById('close').addEventListener('click', () => {
-    if (embedded) sendParent({ type: 'tfb-focus-close' }); else window.close();
-  });
+  document.getElementById('close').addEventListener('click', () => window.close());
   document.getElementById('reveal').addEventListener('pointerenter', reveal);
   nav.addEventListener('pointerenter', reveal);
   nav.addEventListener('pointerleave', reveal);

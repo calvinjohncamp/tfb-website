@@ -23,7 +23,7 @@
     lastAdd: null,          // { ids, until, text } – Storno-Stempel auf dem Deckel
   };
   // Nur Demo: Admin-Werkzeuge sind beim Laden ausgeblendet (Mitglieder-Ansicht für die Vorführung);
-  // der rote Ball im Logo blendet sie ein und aus. state.member liefert dann isAdmin = false, adminHidden = true –
+  // der Ball im Logo blendet sie ein und aus. state.member liefert dann isAdmin = false, adminHidden = true –
   // egal, wo das Mitglied neu geladen oder gespeichert wird.
   let hideAdmin = true;
   let rawMember = null;
@@ -286,13 +286,12 @@
       <header class="topbar">
         <div class="topbar-row">
           <div class="brand brand-preview-wrap">
-          ${TFB.logoPreview
-            ? `<button type="button" class="brand-home tfb-logo-preview-toggle" ${TFB.logoPreview.toggleAttributes()}>${logo}</button>`
-            : `<a class="brand-home" href="#home" aria-label="${clubName} – Startseite">${logo}</a>`}
+          <a class="brand-home" href="#home" aria-label="${clubName} – Startseite">${logo}</a>
           <button type="button" class="brand-world-switch" data-design-preview aria-label="Gestaltung wechseln" aria-pressed="false"></button>
           </div>
           <div class="top-actions">
-            <div class="header-tools">${TFB.focus?.headerButton() || ''}${state.member && TFB.inbox ? TFB.inbox.button() : ''}</div>
+            ${TFB.designPreview.brandButtons()}
+            ${state.member && TFB.inbox ? TFB.inbox.button() : ''}
             ${state.member
               ? `<button class="avatar" type="button" data-action="profile" aria-label="Profil">${avatarFace(state.member)}</button>`
               : `<button class="avatar guest" type="button" data-action="login" aria-label="Anmelden">${icon.user}</button>`}
@@ -317,11 +316,6 @@
     const tab = document.querySelector('.topnav .tab');
     if (!act || !tab) return;
     const cs = getComputedStyle(tab);
-    const focusButton = act.querySelector('.header-focus');
-    if (focusButton) {
-      focusButton.style.fontSize = `${parseFloat(cs.fontSize) * .9}px`;
-      focusButton.style.fontWeight = '600';
-    }
     act.style.transform = '';
     if (window.innerWidth < 1024) return;
     // Grundlinie direkt an der Schrift: Oberkante der Textzeile + Oberlänge der Schrift
@@ -339,7 +333,7 @@
   }
   window.addEventListener('resize', () => requestAnimationFrame(alignHeader));
 
-  // Nur Demo: Klick auf den roten Ball im Logo oben links blendet die Admin-Werkzeuge (Stifte usw.) aus und
+  // Nur Demo: Klick auf den Ball im Logo oben links blendet die Admin-Werkzeuge (Stifte usw.) aus und
   // wieder ein – so lässt sich die Seite vorführen, wie ein Mitglied sie sieht, ohne sich abzumelden.
   // Der Rest des Logos führt weiter zu Home. Nach dem Neuladen sind die Werkzeuge wieder ausgeblendet.
   document.addEventListener('click', (e) => {
