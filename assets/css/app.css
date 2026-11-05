@@ -1364,7 +1364,7 @@ button.meet-series { cursor: pointer; }
 /* Mehr Signal-Rot: Akzentstrich unter Zwischenüberschriften, Wochentag im Datumsfeld */
 .block-heading::after { content: ""; display: block; width: 28px; height: 3px; border-radius: 2px; background: var(--signal); margin-top: 8px; }
 .date-badge small:first-child { color: color-mix(in srgb, var(--signal) 55%, #fff); opacity: 1; }
-.view[data-view="aktuell"] .date-badge > :is(small, b) { color: var(--signal); opacity: 1; }
+.view[data-view="aktuell"] .date-badge > :is(small, b) { color: #fff; opacity: 1; }
 .btn.signal { background: var(--signal); border-color: var(--signal); color: #fff; text-decoration: none; }
 .btn.signal:hover { filter: brightness(1.06); }
 .page-kicker { font-size: .72rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--signal); margin: 0 0 6px; }
