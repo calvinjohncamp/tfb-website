@@ -6,10 +6,9 @@
   const SESSION='tfb_splash_visit_v1';
   const logoPreview = new URLSearchParams(location.search).get('logo-test') === '1';
   const logoToggleLabel = 'Blau-gelbes TFB-Logo testen';
-  let midnightAmber = false;
 
   function logoToggleAttributes() {
-    return `data-action="toggle-tfb-logo" aria-label="${logoToggleLabel}" title="${logoToggleLabel}" aria-pressed="${midnightAmber}"`;
+    return `data-action="toggle-tfb-logo" aria-label="${logoToggleLabel}" title="${logoToggleLabel}" aria-pressed="${TFB.designPreview.isClubBrand()}"`;
   }
 
   TFB.logoPreview = logoPreview ? { toggleAttributes: logoToggleAttributes } : null;
@@ -88,7 +87,7 @@
     if(!partners.length)return '';
     return `<section class="tfb-splash-partners pbsp-slot" aria-label="Premium-Partner"><p class="pbsp-kicker">${esc(settings.partnerLabel)}</p><div class="pbsp-duo">${partners.map((p,i)=>TFB.partnerTile(p,i)).join('')}</div></section>`;
   }
-  function splashMarkup(){return `<div class="tfb-splash-inner"><div class="tfb-splash-top"><div class="tfb-splash-wordmark" role="${admin()||logoPreview?'group':'img'}" aria-label="Tennisfreunde Bielstein"><span class="tfb-logo-noball"></span>${logoPreview?`<button type="button" class="tfb-logo-preview-toggle tfb-logo-preview-splash" ${logoToggleAttributes()}></button>`:''}${admin()?'<button type="button" class="tfb-splash-ball" data-action="partner-report" aria-label="Partner verwalten"><span class="tfb-logo-ball"></span></button>':'<span class="tfb-logo-ball tfb-splash-ball"></span>'}</div>${admin()?`<button class="view-close tfb-splash-edit" data-action="splash-edit" aria-label="Einstiegsseite bearbeiten">${ui().icon.pencil}</button>`:''}</div><div class="tfb-splash-message">${settings.eyebrowEnabled&&settings.eyebrowText?`<p class="tfb-splash-eyebrow">${esc(settings.eyebrowText)}</p>`:''}<h1><span>${esc(settings.headline)}</span><br><em>${esc(settings.accent)}</em></h1><p class="tfb-splash-description">${esc(settings.description)}</p></div><div><button type="button" class="tfb-splash-enter" data-action="splash-enter"><span>${esc(settings.entry)}</span><span aria-hidden="true"><svg class="link-arrow" viewBox="0 0 806 1000" aria-hidden="true" focusable="false"><path transform="translate(0 755) scale(1 -1)" d="M528 -14 448 66 546 164 587 189 581 206 533 198H50V312H533L581 304L587 321L546 346L448 444L528 524L756 296V214Z"/></svg></span></button>${settings.footEnabled&&settings.foot?`<p class="tfb-splash-foot">${esc(settings.foot)}</p>`:''}${premiumMarkup()}</div></div>`;}
+  function splashMarkup(){return `<div class="tfb-splash-inner"><div class="tfb-splash-top"><div class="tfb-splash-wordmark" role="${admin()||logoPreview?'group':'img'}" aria-label="Tennisfreunde Bielstein"><span class="tfb-logo-noball"></span>${logoPreview?`<button type="button" class="tfb-logo-preview-toggle tfb-logo-preview-splash" ${logoToggleAttributes()}></button>`:''}${admin()?'<button type="button" class="tfb-splash-ball" data-action="partner-report" aria-label="Partner verwalten"><span class="tfb-logo-ball"></span></button>':'<span class="tfb-logo-ball tfb-splash-ball"></span>'}</div>${admin()?`<button class="view-close tfb-splash-edit" data-action="splash-edit" aria-label="Einstiegsseite bearbeiten">${ui().icon.pencil}</button>`:''}${TFB.designPreview.brandSelect()}</div><div class="tfb-splash-message">${settings.eyebrowEnabled&&settings.eyebrowText?`<p class="tfb-splash-eyebrow">${esc(settings.eyebrowText)}</p>`:''}<h1><span>${esc(settings.headline)}</span><br><em>${esc(settings.accent)}</em></h1><p class="tfb-splash-description">${esc(settings.description)}</p></div><div><button type="button" class="tfb-splash-enter" data-action="splash-enter"><span>${esc(settings.entry)}</span><span aria-hidden="true"><svg class="link-arrow" viewBox="0 0 806 1000" aria-hidden="true" focusable="false"><path transform="translate(0 755) scale(1 -1)" d="M528 -14 448 66 546 164 587 189 581 206 533 198H50V312H533L581 304L587 321L546 346L448 444L528 524L756 296V214Z"/></svg></span></button>${settings.footEnabled&&settings.foot?`<p class="tfb-splash-foot">${esc(settings.foot)}</p>`:''}${premiumMarkup()}</div></div>`;}
   async function show(force=false) {
     await refreshSettings();if(!force&&!settings.enabled){rendered();return;}
     if(!splash){splash=document.createElement('section');splash.id='tfb-splash';splash.className='tfb-splash';splash.tabIndex=-1;splash.setAttribute('role','dialog');splash.setAttribute('aria-modal','true');splash.setAttribute('aria-label','Willkommen bei den Tennisfreunden Bielstein');document.body.appendChild(splash);}
@@ -149,14 +148,7 @@
   TFB.actions=TFB.actions||{};Object.assign(TFB.actions,{
     'splash-enter':()=>{hide(false);if(location.hash!=='#home')location.hash='#home';else{window.scrollTo(0,0);rendered();document.querySelector('#view h1')?.focus?.();}},
     'splash-open':()=>{ui().closeSheet();show(true);},
-    'toggle-tfb-logo': () => {
-      if (!logoPreview) return;
-      midnightAmber = !midnightAmber;
-      document.documentElement.classList.toggle('tfb-logo-midnight-amber', midnightAmber);
-      document.querySelectorAll('[data-action="toggle-tfb-logo"]').forEach(button => {
-        button.setAttribute('aria-pressed', String(midnightAmber));
-      });
-    },
+    'toggle-tfb-logo': () => TFB.designPreview.toggleBrand(),
     'splash-edit':edit,
     'partner-report':()=>{if(!admin())return;hide(false);if(location.hash==='#partner')ui().renderView('partner');else location.hash='#partner';},
     'partner-report-refresh':()=>ui().renderView('partnerzahlen'),
@@ -167,7 +159,7 @@
   document.addEventListener('click',e=>{
     const tile=e.target.closest('[data-partner-id]');if(tile?.matches('a[href]')&&active)event('click',tile.dataset.partnerId,tile.dataset.partnerSlot);
   });
-  document.addEventListener('keydown',e=>{if(e.key!=='Tab'||!splash||splash.hidden||document.querySelector('#sheet-root.open'))return;const controls=[...splash.querySelectorAll('button,a[href]')];const first=controls[0],last=controls.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}});
+  document.addEventListener('keydown',e=>{if(e.key!=='Tab'||!splash||splash.hidden||document.querySelector('#sheet-root.open'))return;const controls=[...splash.querySelectorAll('button,select,a[href]')];const first=controls[0],last=controls.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}});
   window.addEventListener('hashchange',()=>{stopObserver();active=null;if(splash&&!splash.hidden)hide(false);markVisit();});
   document.addEventListener('visibilitychange',()=>{cancelTimers();if(document.visibilityState==='visible'){if(splash&&!splash.hidden)begin('splash',splash);else rendered();}else flush();});
   // A modal breaks continuous visibility even when it opens during the half-second interval.

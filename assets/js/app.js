@@ -299,6 +299,7 @@
           </div>
         </div>
         <nav class="topnav" aria-label="Bereiche">${navLinks(area)}</nav>
+        <div class="tfb-header-brand-select">${TFB.designPreview.brandSelect()}</div>
       </header>
       <main class="view" id="view" data-view="${view}"><div class="loading"></div></main>
       <footer class="site-footer">
