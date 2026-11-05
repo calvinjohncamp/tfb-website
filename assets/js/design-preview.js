@@ -1,6 +1,5 @@
 (function () {
   const brandKey = 'tfb_brand_theme';
-  const brandNames = { signature: 'Signature Rot', club: 'Vereinsfarben Blau-Gelb' };
   let brand = 'signature';
   const normalizeBrand = value => value === 'club' ? 'club' : 'signature';
   try { brand = normalizeBrand(localStorage.getItem(brandKey)); } catch (_) {}
@@ -8,20 +7,17 @@
   function applyBrand() {
     document.documentElement.classList.toggle('tfb-logo-midnight-amber', brand === 'club');
     document.querySelectorAll('button[data-tfb-brand]').forEach(button => {
-      button.setAttribute('aria-pressed', String(button.dataset.tfbBrand === brand));
+      button.setAttribute('aria-pressed', String(brand === 'club'));
     });
   }
 
-  function brandButtons() {
-    return `<div class="tfb-brand-buttons" role="group" aria-label="Farbwelt">${Object.entries(brandNames).map(([value, label]) =>
-      `<button type="button" data-tfb-brand="${value}" aria-label="${label}" title="${label}" aria-pressed="${brand === value}"></button>`
-    ).join('')}</div>`;
+  function brandButton() {
+    return `<button type="button" class="tfb-brand-button" data-tfb-brand aria-label="Farbwelt wechseln" title="Farbwelt wechseln" aria-pressed="${brand === 'club'}"><span aria-hidden="true">C</span></button>`;
   }
 
   document.addEventListener('click', event => {
-    const button = event.target.closest('button[data-tfb-brand]');
-    if (!button || button.dataset.tfbBrand === brand) return;
-    brand = normalizeBrand(button.dataset.tfbBrand);
+    if (!event.target.closest('button[data-tfb-brand]')) return;
+    brand = brand === 'club' ? 'signature' : 'club';
     try { localStorage.setItem(brandKey, brand); } catch (_) {}
     applyBrand();
   });
@@ -73,7 +69,7 @@
     if (event.key === key) { world = normalize(event.newValue); apply(); }
   });
   TFB.designPreview = { apply, buttons: () => `<div class="world-switch" role="group" aria-label="Gestaltung">${worlds.map((value, index) => `<button type="button" data-design-world="${value}" aria-pressed="${world === value}">${names[index]}</button>`).join('')}</div>` };
-  TFB.designPreview.brandButtons = brandButtons;
+  TFB.designPreview.brandButton = brandButton;
   applyBrand();
   apply();
 })();

@@ -1217,21 +1217,28 @@ button.meet-row:hover { background: #FAF8F3; }
 
 /* Postfach (Glocke neben dem Profilbild) und regelmäßige Einladungen */
 .top-actions { display: flex; align-items: flex-end; gap: clamp(12px, 4vw, 31px); flex: none; }
-.tfb-brand-buttons { display: flex; align-items: center; gap: 10px; min-height: 27px; flex: none; }
-.tfb-brand-buttons button {
+.tfb-brand-button {
   position: relative;
+  display: grid;
+  place-items: center;
+  flex: none;
   box-sizing: border-box;
-  width: 14.4px;
-  height: 14.4px;
+  width: 21.6px;
+  height: 21.6px;
   padding: 0;
-  border: 0;
+  border: 1.2px solid var(--tfb-signature-red);
   border-radius: 50%;
+  background: transparent;
+  color: #171717;
+  font: 600 12px/1 var(--font);
 }
-.tfb-brand-buttons button::before { content: ""; position: absolute; inset: -5px; border-radius: 50%; }
-.tfb-brand-buttons button[data-tfb-brand="signature"] { background: var(--tfb-signature-red); }
-.tfb-brand-buttons button[data-tfb-brand="club"] { background: var(--tfb-signature-yellow); }
-.tfb-brand-buttons button[aria-pressed="true"] { box-shadow: 0 0 0 2px var(--bg), 0 0 0 3px #686868; }
-.tfb-brand-buttons button:focus-visible { outline: 2px solid var(--ink); outline-offset: 4px; }
+.tfb-brand-button::before { content: ""; position: absolute; inset: -7px; border-radius: 50%; }
+.tfb-brand-button[aria-pressed="true"] {
+  border-color: var(--tfb-signature-yellow);
+  color: var(--tfb-midnight-blue);
+}
+.tfb-brand-button:focus-visible { outline: 2px solid var(--ink); outline-offset: 4px; }
+.top-actions .tfb-brand-button { align-self: flex-end; margin-bottom: 2.7px; }
 @media (max-width: 460px) {
   .topbar .header-logo { height: clamp(38px, 13vw, 58px); }
 }

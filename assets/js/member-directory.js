@@ -6,24 +6,34 @@
   const local = { session: api.session.bind(api), signOut: api.signOut.bind(api),
     memberNames: api.memberNames.bind(api), memberAvatars: api.memberAvatars.bind(api) };
   const KEY = 'tfb_directory_token_v1';
-  let token = sessionStorage.getItem(KEY) || '';
+  let token = '';
+  try { token = localStorage.getItem(KEY) || ''; } catch (_) {}
+  if (!token) token = sessionStorage.getItem(KEY) || '';
+
+  function rememberToken() {
+    try {
+      localStorage.setItem(KEY, token);
+      sessionStorage.removeItem(KEY);
+    } catch (_) { sessionStorage.setItem(KEY, token); }
+  }
   let verified = null;
   const base = cfg.url.replace(/\/$/, '');
   async function call(path, data, options = {}) {
     if (location.protocol !== 'https:') throw Error('Bitte öffne die Website über https://joern-kaemper.de, um dich sicher anzumelden.');
+    const requestToken = token;
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 15000);
     try {
       const response = await fetch(base + path, {
         method: data === undefined ? 'GET' : 'POST', cache: 'no-store', signal: controller.signal,
         headers: { ...(data === undefined ? {} : { 'Content-Type': 'application/json' }),
-          ...(token ? { Authorization: 'Bearer ' + token } : {}) },
+          ...(requestToken ? { Authorization: 'Bearer ' + requestToken } : {}) },
         ...(data === undefined ? {} : { body: JSON.stringify(data) }),
       });
       if(options.raw && response.ok)return response;
       const value = await response.json();
       if (!response.ok) {
-        if (response.status === 401) clear();
+        if (response.status === 401 && requestToken && token === requestToken) clear();
         throw Object.assign(Error(value.error || 'Der Mitgliederzugang ist gerade nicht erreichbar.'),{status:response.status});
       }
       return value;
@@ -35,11 +45,12 @@
   TFB.directoryCall = call;
   TFB.directoryFetch = path => call(path,undefined,{raw:true});
   function clear() {
+    try { if (localStorage.getItem(KEY) === token) localStorage.removeItem(KEY); } catch (_) {}
     token = ''; verified = null; sessionStorage.removeItem(KEY); api.disconnectSync?.();
     api.attachDirectoryMember(null);
   }
   async function accept(result) {
-    token = result.token; sessionStorage.setItem(KEY, token); verified = result.member;
+    token = result.token; rememberToken(); verified = result.member;
     const member = api.attachDirectoryMember(verified);
     return api.connectSync ? api.connectSync(member) : member;
   }
@@ -49,10 +60,22 @@
   api.createPassword = async (identifier, password, code) => accept(await call('/auth/activate', { identifier, password, code }));
   api.session = async () => {
     if (!token) { clear(); return null; }
-    try { const result=await call('/auth/session'); verified=result.member; const member=api.attachDirectoryMember(verified); return api.connectSync ? await api.connectSync(member) : member; }
+    try {
+      const result = await call('/auth/session');
+      if (sessionStorage.getItem(KEY) === token) rememberToken();
+      verified = result.member;
+      const member = api.attachDirectoryMember(verified);
+      return api.connectSync ? await api.connectSync(member) : member;
+    }
     catch { api.attachDirectoryMember(null); return null; }
   };
   api.signOut = async () => { try { if(token) await call('/auth/logout', {}); } finally { clear(); await local.signOut(); } };
+  window.addEventListener('storage', event => {
+    if (event.storageArea === localStorage && (event.key === KEY || event.key === null) && token && event.newValue !== token) {
+      sessionStorage.removeItem(KEY);
+      location.reload();
+    }
+  });
   api.searchMembers = query => call('/members/search?q=' + encodeURIComponent(query));
   api.memberNames = async ids => {
     const unique=[...new Set(ids)]; const result={};

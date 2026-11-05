@@ -290,7 +290,7 @@
           <button type="button" class="brand-world-switch" data-design-preview aria-label="Gestaltung wechseln" aria-pressed="false"></button>
           </div>
           <div class="top-actions">
-            ${TFB.designPreview.brandButtons()}
+            ${TFB.designPreview.brandButton()}
             ${state.member && TFB.inbox ? TFB.inbox.button() : ''}
             ${state.member
               ? `<button class="avatar" type="button" data-action="profile" aria-label="Profil">${avatarFace(state.member)}</button>`
@@ -1304,7 +1304,8 @@
       state.authStep = 'email';
       showAuth();
     } else if (action === 'logout') {
-      await api.signOut();
+      try { await api.signOut(); }
+      catch (error) { toast(error.message); }
       state.member = null;
       state.authStep = 'email';
       render();
