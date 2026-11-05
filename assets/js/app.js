@@ -409,7 +409,9 @@
       }
       if (state.member?.isAdmin) {
         $view.insertAdjacentHTML('afterbegin', `<div class="tfb-admin-design">${TFB.designPreview.buttons()}
-          <div class="tfb-admin-links"><button type="button" class="btn small" data-action="splash-edit">Einstiegsseite bearbeiten</button><a class="btn small" href="#partner">Partner verwalten</a></div></div>`);
+          <div class="tfb-admin-links"><button type="button" class="btn small" data-action="splash-edit">Einstiegsseite bearbeiten</button><a class="btn small" href="#partner">Partner verwalten</a>
+            <button type="button" class="btn small" data-action="members-manage">Mitglieder verwalten</button>
+            <button type="button" class="btn small" data-action="admin-backup">Sicherungen</button></div></div>`);
         const edit = $view.querySelector('.view-close[data-action="site-edit"], .view-close[data-action="edit-start"], .view-close[data-action="feature-edit"], .view-close[data-action="album-edit"], .view-close[data-action="portrait-edit"], .view-close[data-action="chat-text-edit"]');
         if (edit) {
           const tools = document.createElement('div');
@@ -976,33 +978,28 @@
         </form>
 
         ${rawMember?.isAdmin ? '<button type="button" class="link" data-action="splash-open">Einstiegsseite ansehen</button>' : ''}
-        ${rawMember?.isAdmin && TFB.editorial?.enabled ? TFB.editorial.accountBox() : ''}
-        ${m.isAdmin ? `
-        <section class="acct-adminbox">
-          <h3 class="acct-section">Admin</h3>
-          <p class="acct-hint">Seiten und Kiosk bearbeitest du direkt dort über den Stift oben rechts.</p>
-          ${TFB.memberImport ? TFB.memberImport.card() : ''}
-          ${!TFB.editorial?.enabled ? `          <section class="card admin-card">
-            <h2>Sichern &amp; Laden</h2>
-            <p class="muted">Alle Inhalte – Seiten, Fotos, Mitglieder, Sortiment, Striche, Verabredungen – in einer Datei. So bist du vor Datenverlust geschützt und kannst alles auf einen anderen Rechner übertragen.</p>
-            <div class="admin-links">
-              <button type="button" class="btn primary" data-action="backup-save">Inhalte sichern</button>
-              <label class="btn">Sicherung laden<input type="file" accept=".json,application/json" data-backup-input hidden></label>
-              <label class="btn">Chat-Beiträge ergänzen<input type="file" accept=".json,application/json" data-chat-restore-input hidden></label>
-            </div>
-            ${TFB.autosave ? `<h3 class="font-group">Automatisch sichern</h3>${TFB.autosave.box()}` : ''}
-          </section>` : ''}
-          <section class="card admin-card">
-            <h2>Foto-Freigaben</h2>
-            <p class="muted">Öffentliche Profilfotos und Elternfreigaben prüfen.</p>
-            <button type="button" class="btn" data-action="photo-admin">${icon.camera} Freigaben prüfen</button>
-          </section>
-        </section>` : ''}
-
         <button type="button" class="btn block acct-logout" data-action="logout">Abmelden</button>
 
-        ${api.mode === 'demo' ? '<button type="button" class="link center small" data-action="demo-reset">Demo-Daten zurücksetzen</button>' : ''}
       </div>`);
+  }
+
+  function openAdminBackup() {
+    if (!state.member?.isAdmin) return;
+    if (TFB.editorial?.enabled) {
+      openSheet(TFB.editorial.backupPanel());
+      return;
+    }
+    openSheet(`<section class="editor admin-card">
+        <h2>Sichern &amp; Laden</h2>
+        <p class="muted">Sichert die Daten dieser lokalen Vorschau in einer Datei.</p>
+        <div class="admin-links">
+          <button type="button" class="btn primary" data-action="backup-save">Inhalte sichern</button>
+          <label class="btn">Sicherung laden<input type="file" accept=".json,application/json" data-backup-input hidden></label>
+          <label class="btn">Chat-Beiträge ergänzen<input type="file" accept=".json,application/json" data-chat-restore-input hidden></label>
+        </div>
+        ${TFB.autosave ? `<h3 class="font-group">Automatisch sichern</h3>${TFB.autosave.box()}` : ''}
+      ${!api.secureDirectory && api.mode === 'demo' ? '<button type="button" class="link center small" data-action="demo-reset">Demo-Daten zurücksetzen</button>' : ''}
+    </section>`);
   }
 
   // ---------- Bild groß ansehen ----------
@@ -1297,6 +1294,8 @@
       window.scrollTo(0, 0);
     }
     else if (action === 'admin-toggle') toggleAdminTools(el);
+    else if (action === 'members-manage' && state.member?.isAdmin) TFB.memberImport.open();
+    else if (action === 'admin-backup') openAdminBackup();
     else if (action === 'close-sheet') closeSheet();
     else if (action === 'auth-back') { state.authStep = 'email'; showAuth(); }
     else if (action === 'auth-activate') { state.authStep = 'create'; showAuth(); }

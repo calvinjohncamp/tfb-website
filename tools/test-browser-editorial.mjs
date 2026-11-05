@@ -54,18 +54,18 @@ try{
  // A real stale editor must leave a local draft rather than overwrite another device.
  const conflict=await page.evaluate(async()=>{const old=await TFB.api.site();const latest=await TFB.api.site();latest.pages.home.blocks[0].title='Neuerer Serverstand';await TFB.api.saveSite(latest);old.pages.home.blocks[0].title='Nicht veröffentlichter Entwurf';try{await TFB.api.saveSite(old);return false;}catch{return Object.keys(localStorage).some(k=>k.startsWith('tfb_editorial_draft_'));}});assert.equal(conflict,true);
  assert.equal((await f.call('/public/site')).body.documents['page:home'].value.blocks[0].title,'Neuerer Serverstand');
- await page.locator('[data-action="profile"]').click();await page.waitForSelector('[data-action="cms-checkpoint"]');
+ await page.locator('[data-action="admin-backup"]').click();await page.waitForSelector('[data-action="cms-checkpoint"]');
  assert.match(await page.locator('.cms-controls').innerText(),/Stand sichern/);
  await page.locator('[data-action="cms-checkpoint"]').click();await page.locator('[data-cms-checkpoint] [name="label"]').fill('Browser Vorstandsstand');await page.locator('[data-cms-checkpoint] button').click();await page.waitForFunction(()=>!document.querySelector('#sheet-root.open'));
- await page.locator('[data-action="profile"]').click();
+ await page.locator('[data-action="admin-backup"]').click();
  const downloading=page.waitForEvent('download',{timeout:7000}).catch(async e=>{console.log('Export UI:',await page.locator('#toast-root').innerText());throw e;});await page.locator('[data-action="cms-export"]').click();const download=await downloading;await download.saveAs('/private/tmp/tfb-v232-browser-snapshot.zip');assert.match(download.suggestedFilename(),/TFB-Website-Snapshot/);
  const bytes=readFileSync('/private/tmp/tfb-v232-browser-snapshot.zip');
  const zipDetails=await page.evaluate(bytes=>{const files=TFB.snapshotZip.unpack(new Uint8Array(bytes).buffer);const manifest=JSON.parse(new TextDecoder().decode(files['snapshot.json']));return {keys:Object.keys(files),title:manifest.documents['page:home'].value.blocks[0].title};},Array.from(bytes));assert.equal(zipDetails.title,'Neuerer Serverstand');assert.ok(zipDetails.keys.includes('programm/projekt.zip'));assert.ok(zipDetails.keys.some(k=>k.startsWith('medien/')));
  await page.locator('[data-cms-file]').setInputFiles('/private/tmp/tfb-v232-browser-snapshot.zip');await page.waitForSelector('.cms-panel');assert.match(await page.locator('.cms-panel').innerText(),/entspricht bereits/);await page.locator('.cms-panel [data-action="close-sheet"]').click();
- await page.locator('[data-action="profile"]').click();
+ await page.locator('[data-action="admin-backup"]').click();
  await page.locator('[data-action="cms-history"]').click();await page.waitForSelector('[data-cms-preview]');await page.locator('[data-cms-preview]').last().click();await page.waitForSelector('[data-cms-apply]');await page.locator('[data-cms-scope]').selectOption('page:home');await page.locator('[data-cms-apply]').click();await page.waitForFunction(()=>!document.querySelector('#sheet-root.open'));
  assert.equal((await f.call('/public/site')).body.documents['page:home'].value.blocks[0].title,'Zentraler erster Beitrag');
- await page.locator('[data-action="profile"]').click();
+ await page.locator('[data-action="admin-backup"]').click();
  for(const [width,height] of [[390,844],[834,1194],[1440,1100]]){await page.setViewportSize({width,height});assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);}
  await page.locator('.cms-controls').scrollIntoViewIfNeeded();
  await page.screenshot({path:'/private/tmp/tfb-v232-editorial-account.png',fullPage:true});

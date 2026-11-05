@@ -95,7 +95,7 @@
       openSheet(`
         <div class="editor import-preview">
           <h2>Mitgliederliste übernehmen?</h2>
-          <p class="small muted">${esc(file.name)} · ${plan.zeilen} Mitglieder gelesen. Übernommen werden nur Nr., Vorname, Name und E-Mail.</p>
+          <p class="small muted">${esc(file.name)} · ${plan.zeilen} Mitglieder gelesen. Übernommen werden Mitgliedsnummer, Vorname, Nachname und E-Mail-Adressen.</p>
           <ul class="import-plan">
             <li><b>${plan.neu.length}</b> neu${names(plan.neu)}</li>
             <li><b>${plan.geaendert.length}</b> geändert${names(plan.geaendert)}</li>
@@ -108,41 +108,46 @@
           <button type="button" class="link center" data-action="close-sheet">Abbrechen</button>
         </div>`);
       document.querySelector('[data-import-apply]').addEventListener('click', async (e) => {
-        e.currentTarget.disabled = true;
+        if (!ui().state.member?.isAdmin) return;
+        const button = e.currentTarget;
+        button.disabled = true;
         try {
           const done = await api.importMembers(rows, { apply: true });
           closeSheet();
           toast(`Übernommen: ${done.zeilen} Mitglieder – jetzt beim Verabreden per Namen findbar`, true);
           ui().renderView();
-        } catch (err) { toast(err.message); e.currentTarget.disabled = false; }
+        } catch (err) { toast(err.message); button.disabled = false; }
       });
     } catch (err) { toast(err.message || 'Die Datei konnte nicht gelesen werden.'); }
   }
 
-  function card() {
-    setTimeout(async () => {
-      const el = document.querySelector('[data-member-info]');
-      if (!el) return;
-      const info = await ui().api.memberListInfo();
-      el.textContent = info.imported
-        ? `${info.imported} Mitglieder aus der Liste${info.at ? `, Stand ${new Date(info.at).toLocaleDateString('de-DE')}` : ''}.`
-        : 'Noch keine Liste geladen – bisher gibt es nur erfundene Beispielmitglieder.';
-    }, 0);
-    return `
-      <section class="card admin-card">
-        <h2>Mitgliederliste</h2>
-        <p class="muted">Excel-Datei (.xlsx) oder CSV mit den Spalten Nr., Name, Vorname, E-Mail. Handy und Geschlecht werden nicht übernommen. Vor dem Übernehmen siehst du, wer neu, geändert oder nicht mehr dabei ist. Danach sind alle beim Verabreden und in Gruppen per Namen findbar.</p>
-        <p class="small"><b data-member-info>…</b></p>
+  async function open() {
+    if (!ui().state.member?.isAdmin) return;
+    ui().openSheet(`
+      <section class="editor">
+        <h2>Mitglieder verwalten</h2>
+        <p class="muted">Lade eine Excel-Datei (.xlsx) oder CSV mit den Spalten Mitgliedsnummer, Vorname, Nachname und E-Mail. Die Vorschau zeigt neue, geänderte und fehlende Mitglieder vor der Übernahme.</p>
+        <p class="muted">Die Mitgliedsnummer ordnet Einträge beim nächsten Import wieder zu. Kiosk-Umsätze und Profilfotos gehören zum Mitgliedskonto. Die Handynummer können Mitglieder freiwillig in ihrem Profil speichern.</p>
+        <p class="small" data-member-info>Mitgliederstand wird geladen …</p>
         <label class="btn primary">Liste laden<input type="file" accept=".xlsx,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv" data-members-input hidden></label>
-      </section>`;
+      </section>`);
+    const status = document.querySelector('[data-member-info]');
+    try {
+      const info = await ui().api.memberListInfo();
+      status.textContent = info.imported
+        ? `${info.imported} Mitglieder aus der Liste${info.at ? `, Stand ${new Date(info.at).toLocaleDateString('de-DE')}` : ''}.`
+        : 'Noch keine Mitgliederliste geladen.';
+    } catch (error) {
+      status.textContent = error.message || 'Der Mitgliederstand konnte nicht geladen werden.';
+    }
   }
 
   document.addEventListener('change', (e) => {
-    if (!e.target.matches('[data-members-input]') || !e.target.files[0]) return;
+    if (!e.target.matches('[data-members-input]') || !e.target.files[0] || !ui().state.member?.isAdmin) return;
     const file = e.target.files[0];
     e.target.value = '';
     pick(file);
   });
 
-  TFB.memberImport = { card, readXlsx, toMembers };
+  TFB.memberImport = { open, readXlsx, toMembers };
 })();
