@@ -181,10 +181,12 @@ html.tfb-logo-midnight-amber {
   --signature: #FFC300;
   --signature-hover: var(--signature);
   --on-signature: var(--tfb-midnight-blue);
+  --signature-text: var(--signature);
+  --signal: var(--signature);
+  --clay: var(--on-signature);
 }
 html.tfb-logo-midnight-amber body {
-  --signature-text: var(--ink);
-  --signal: var(--signature-text);
+  --clay-soft: color-mix(in srgb, var(--signature) 18%, white);
 }
 html.tfb-logo-midnight-amber .tfb-splash h1 { color: var(--tfb-midnight-blue); }
 html.tfb-logo-midnight-amber .tfb-splash h1 em { color: var(--signature); }
@@ -195,13 +197,19 @@ html.tfb-logo-midnight-amber body :is(.tfb-splash-enter, .focus-enter, .btn.prim
   color: var(--on-signature);
   filter: none;
 }
-html.tfb-logo-midnight-amber .feature-dark .feature-body {
-  --signal: #F7F7F7;
-  --signature-text: #F7F7F7;
-}
+html.tfb-logo-midnight-amber .feature-dark .feature-body,
 html.tfb-logo-midnight-amber .editorial-preview-active .feature-dark .feature-body {
-  --signal: var(--ink);
-  --signature-text: var(--ink);
+  --signal: var(--signature);
+  --signature-text: var(--signature);
+}
+html.tfb-logo-midnight-amber .link-chip-img.icon svg {
+  stroke: var(--on-signature);
+}
+html.tfb-logo-midnight-amber body :is(.team-rank.top, .meet-mine.open, .meet-faces i.yes, .meet-answer button.on.yes, .meet-pill.yes, .inbox-badge, .team-dot, .team-news-btn b, .ed-themes button.on, .sec-bar button:hover:not(:disabled), .sec-insert-btn:hover, .sec-insert.open .sec-insert-btn, .sec-insert-menu button:hover, .sec-add button:hover, .photo-state.wait) {
+  color: var(--on-signature);
+}
+@media (max-width: 639px) {
+  html.tfb-logo-midnight-amber .team-row .team-news.has { color: var(--on-signature); }
 }
 html.tfb-logo-midnight-amber body :is(.tfb-logo-split, .tfb-splash-wordmark) {
   background: url('../brand/tfb-logo-midnight-amber.png') center / contain no-repeat;
