@@ -148,3 +148,24 @@ button.tfb-splash-ball .tfb-logo-ball { width:100%; height:100%; display:block; 
 [data-editor="splash"] .splash-editor-check input:checked::before{visibility:visible}
 [data-editor="splash"] .splash-editor-check input:focus-visible{outline:2px solid #171717;outline-offset:3px}
 [data-editor="splash"] .splash-editor-field:has(.splash-editor-check) .field{margin-bottom:0}
+
+/* Logo-Vergleich über ?logo-test=1 */
+.tfb-logo-preview-toggle {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+.tfb-logo-preview-splash {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+.tfb-logo-preview-splash + button.tfb-splash-ball { z-index: 2; }
+html.tfb-logo-midnight-amber body :is(.tfb-logo-split, .tfb-splash-wordmark) {
+  background: url('../brand/tfb-logo-midnight-amber.png') center / contain no-repeat;
+}
+html.tfb-logo-midnight-amber :is(.tfb-logo-split, .tfb-splash-wordmark) .tfb-logo-noball,
+html.tfb-logo-midnight-amber :is(.tfb-logo-split, .tfb-splash-wordmark) .tfb-logo-ball {
+  visibility: hidden;
+}

@@ -280,13 +280,15 @@
     document.body.classList.toggle('admin-hidden', Boolean(state.member && state.member.adminHidden));
     const area = areaOf(view);
     navArea = area;
+    const clubName = esc(cfg.clubName);
+    const logo = `<span class="tfb-logo-split header-logo" role="img" aria-label="${clubName}"><span class="tfb-logo-noball"></span><span class="tfb-logo-ball"></span></span>`;
     $app.innerHTML = `
       <header class="topbar">
         <div class="topbar-row">
           <div class="brand brand-preview-wrap">
-          <a class="brand-home" href="#home" aria-label="${esc(cfg.clubName)} – Startseite">
-            <span class="tfb-logo-split header-logo" role="img" aria-label="${esc(cfg.clubName)}"><span class="tfb-logo-noball"></span><span class="tfb-logo-ball"></span></span>
-          </a>
+          ${TFB.logoPreview
+            ? `<button type="button" class="brand-home tfb-logo-preview-toggle" ${TFB.logoPreview.toggleAttributes()}>${logo}</button>`
+            : `<a class="brand-home" href="#home" aria-label="${clubName} – Startseite">${logo}</a>`}
           <button type="button" class="brand-world-switch" data-design-preview aria-label="Gestaltung wechseln" aria-pressed="false"></button>
           </div>
           <div class="top-actions">
