@@ -290,8 +290,8 @@
             ${TFB.designPreview.brandButton('header-brand-ball')}
           </div>
           <div class="top-actions">
+            ${rawMember?.isAdmin ? `<button type="button" class="header-admin-edit" data-action="admin-toggle" aria-label="Admin-Werkzeuge" title="Admin-Werkzeuge" aria-pressed="${state.member?.isAdmin === true}"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m4 20 1.4-5.1L16.7 3.6a2.6 2.6 0 0 1 3.7 3.7L9.1 18.6 4 20Z"/><path d="m14.7 5.6 3.7 3.7M5.4 14.9l3.7 3.7"/></svg></button>` : ''}
             ${state.member && TFB.inbox ? TFB.inbox.button() : ''}
-            ${rawMember?.isAdmin ? `<button type="button" class="header-admin-edit" data-action="admin-toggle" aria-label="Admin-Werkzeuge" title="Admin-Werkzeuge" aria-pressed="${state.member?.isAdmin === true}">${icon.pencil}</button>` : ''}
             ${state.member
               ? `<button class="avatar" type="button" data-action="profile" aria-label="Profil">${avatarFace(state.member)}</button>`
               : `<button class="avatar guest" type="button" data-action="login" aria-label="Anmelden">${icon.user}</button>`}

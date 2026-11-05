@@ -1233,15 +1233,25 @@ button.meet-row:hover { background: #FAF8F3; }
 .header-admin-edit {
   display: grid;
   place-items: center;
+  box-sizing: border-box;
   width: 27px;
   height: 27px;
   padding: 0;
-  border: 0;
+  border: 1px solid var(--line);
+  border-radius: 50%;
   background: transparent;
   color: var(--muted);
 }
 .header-admin-edit:hover, .header-admin-edit[aria-pressed="true"] { color: var(--ink); }
-.header-admin-edit svg { width: 19px; height: 19px; }
+.header-admin-edit svg {
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.65;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
 @media (max-width: 460px) {
   .topbar .header-logo { height: clamp(38px, 13vw, 58px); }
 }
