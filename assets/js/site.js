@@ -1231,9 +1231,16 @@
     </aside>`;
   }
 
-  const commentEmojis = ['😊','😂','😉','😍','😮','😅','👍','👏','🙌','💪','🙏','❤️','🎉','🔥','✨','💯','🎾','🏆','📸','☀️'];
-  const emojiPicker = () => `<details class="comment-emoji"><summary class="btn small">☺ Emoji</summary>
-    <div>${commentEmojis.map(emoji => `<button type="button" data-comment-emoji="${emoji}">${emoji}</button>`).join('')}</div></details>`;
+  const commentEmojis = [
+    '🎾','☑️','🍰','🇺🇸','🇳🇱','🌴','🌷','🩸',
+    '👍','👌','☀️','🍾','👏','🇮🇹','❄️','🌧️',
+    '😎','🚘','😱','🎂','🪁','🐟','😉','🤠',
+    '🎈','⚽','🧨','🏠','🌶️','💤','💵','🙏',
+  ];
+  const emojiPicker = () => `<details class="comment-emoji">
+    <summary class="btn small"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8.5 14.5a4 4 0 0 0 7 0M9 9.5h.01m5.99 0h.01"/></svg>Emojis</summary>
+    <div role="group" aria-label="Emoji auswählen">${commentEmojis.map(emoji => `<button type="button" data-comment-emoji="${emoji}">${emoji}</button>`).join('')}</div>
+  </details>`;
   document.addEventListener('click', e => {
     const button = e.target.closest('[data-comment-emoji]');
     if (!button) return;
