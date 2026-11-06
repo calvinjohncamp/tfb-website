@@ -13,3 +13,8 @@ __pycache__/
 
 # Spielermeldungen aus nuLiga (enthalten Namen) – nur lokal
 assets/data/rosters.js
+
+# Archiv-Webmedien liegen in R2, lokale Kopien dürfen bleiben.
+/assets/clubarchiv/medien/*.webp
+/assets/clubarchiv/medien/*.pdf
+/assets/clubarchiv/medien/*.mp4

@@ -372,7 +372,7 @@
       </svg>
     </div>`;
   function picture(ref, seed, alt = '', original = false) {
-    const src = ref && (images[ref] || (/^assets\//.test(ref) ? ref : ''));
+    const src = ref && (images[ref] || (/^assets\//.test(ref) ? (TFB.clubArchive?.mediaUrl?.(ref) || ref) : ''));
     if (src) {
       const frame = !original && TFB.photoFrame?.normalize(site?.photoFrames?.[ref]);
       const img = `<img src="${esc(src)}" alt="${esc(alt)}" loading="lazy"${original ? '' : ` data-photo-ref="${esc(ref)}"`}>`;
@@ -1621,7 +1621,7 @@
     return { ref, kind: 'image', name: file.name };
   }
   const PDF_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5"/><path d="M9.5 16.5h5M9.5 13h5"/></svg>';
-  const attachmentSource = ref => images[ref] || (/^assets\/(?:content\/|clubarchiv\/medien\/[a-f0-9]+\.(?:webp|pdf)$)/.test(ref || '') ? ref : '');
+  const attachmentSource = ref => images[ref] || (/^assets\/(?:content\/|clubarchiv\/medien\/[a-f0-9]+\.(?:webp|pdf)$)/.test(ref || '') ? (TFB.clubArchive?.mediaUrl?.(ref) || ref) : '');
   function attachmentThumb(b, inEditor = false) {
     const a = b.attachment;
     if (!a || !attachmentSource(a.ref)) return '';
@@ -1644,6 +1644,8 @@
     if (!src) return;
     const blobUrl = kind === 'pdf' && src.startsWith('data:') ? dataUrlToBlobUrl(src) : null;
     const documentUrl = blobUrl || src;
+    const downloadName = filename || (kind === 'pdf' ? 'Anhang.pdf' : 'Flyer.jpg');
+    const downloadUrl = TFB.clubArchive?.downloadUrl?.(ref, downloadName);
     const box = document.createElement('div');
     box.className = `viewer ${kind}`;
     box.innerHTML = `
@@ -1655,7 +1657,7 @@
       <div class="viewer-bar">
         <span>${esc(title)}</span>
         ${kind === 'pdf' ? `<a href="${esc(documentUrl)}" target="_blank" rel="noopener">In neuem Tab öffnen <svg class="link-arrow" viewBox="0 0 806 1000" aria-hidden="true" focusable="false"><path transform="translate(0 755) scale(1 -1)" d="M528 -14 448 66 546 164 587 189 581 206 533 198H50V312H533L581 304L587 321L546 346L448 444L528 524L756 296V214Z"/></svg></a>` : '<span class="viewer-hint">Bild antippen: Lesegröße</span>'}
-        <a href="${esc(documentUrl)}" download="${esc(filename || (kind === 'pdf' ? 'Anhang.pdf' : 'Flyer.jpg'))}">Herunterladen</a>
+        <a href="${esc(downloadUrl && downloadUrl !== ref ? downloadUrl : documentUrl)}" download="${esc(downloadName)}">Herunterladen</a>
       </div>
       <button type="button" class="viewer-close" aria-label="Schließen">${ui().icon.close}</button>`;
     const close = () => {

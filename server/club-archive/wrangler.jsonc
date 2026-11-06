@@ -1,0 +1,10 @@
+{
+  "name": "tfb-clubarchiv-media",
+  "main": "worker.mjs",
+  "compatibility_date": "2026-10-15",
+  "workers_dev": true,
+  "preview_urls": false,
+  "r2_buckets": [
+    { "binding": "ARCHIVE", "bucket_name": "tfb-clubarchiv-media" }
+  ]
+}

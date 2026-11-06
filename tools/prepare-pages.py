@@ -20,6 +20,8 @@ tracked = sorted(set(tracked) | {'assets/js/cloud-sync.js', 'assets/js/partner-v
 selected = []
 for name in tracked:
     path = Path(name)
+    if name.startswith('assets/clubarchiv/medien/') and path.suffix.lower() in {'.webp', '.pdf', '.mp4'}:
+        continue
     if name in ENTRY_FILES or (
         name.startswith('assets/') and (
             path.suffix.lower() in ASSET_TYPES

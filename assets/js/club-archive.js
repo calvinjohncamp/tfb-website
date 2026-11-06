@@ -1,6 +1,17 @@
 // Das Clubarchiv liest die redaktionellen Beiträge und den importierten Bestand.
 (() => {
   const root = '#club/archiv';
+  const mediaHost = 'https://tfb-clubarchiv-media.calvinjohncamp.workers.dev/';
+  const liveMedia = location.protocol === 'https:' && TFB.config.memberDirectory?.hosts.includes(location.hostname);
+  const mediaKey = ref => /^assets\/clubarchiv\/medien\/([a-f0-9]{22}\.(?:webp|pdf|mp4))$/.exec(ref)?.[1];
+  const mediaUrl = ref => liveMedia && mediaKey(ref) ? mediaHost + mediaKey(ref) : ref;
+  function resolveMedia(template) {
+    for (const node of template.content.querySelectorAll('img[src], a[href]')) {
+      const attr = node.tagName === 'IMG' ? 'src' : 'href';
+      const ref = node.getAttribute(attr);
+      if (mediaKey(ref)) node.setAttribute(attr, mediaUrl(ref));
+    }
+  }
   const overviewRoute = root + '/alle';
   const collections = ['Bielstein Open', 'Fotogalerien', 'TFB-Life', 'Chronik', 'Mannschaften', 'Vereinsleben'];
   const older = 8;
@@ -73,7 +84,8 @@
     const meta = calendarInfo?.textContent || '';
     const summary = meta && item.summary.startsWith(meta) ? item.summary.slice(meta.length).trim() : item.summary;
     const text = summary.length > 180 ? summary.slice(0, 180).replace(/\s+\S*$/, '') + ' …' : summary;
-    return { ...item, attachments, text, place: meta };
+    resolveMedia(template);
+    return { ...item, attachments, text, place: meta, html: template.innerHTML };
   }
 
   function dateCard(item) {
@@ -137,9 +149,14 @@
     for (const img of images) {
       if (img.closest('details')) continue;
       const link = img.closest('a');
-      if (link && !link.textContent.trim()) link.remove();
-      else img.remove();
+      if (link && !link.textContent.trim()) {
+        const href = link.getAttribute('href') || '';
+        if (/\.pdf(?:[?#]|$)/i.test(href)) link.textContent = 'PDF öffnen';
+        else if (/\.mp4(?:[?#]|$)/i.test(href)) link.textContent = 'Video öffnen';
+        else link.remove();
+      } else img.remove();
     }
+    resolveMedia(template);
     const fullBody = template.innerHTML;
     template.content.querySelectorAll('details').forEach(el => el.remove());
     if (hasAlbums) template.content.querySelectorAll('h2').forEach(el => {
@@ -249,6 +266,11 @@
 
   TFB.clubArchive = {
     rendered: showResults,
+    mediaUrl,
+    downloadUrl(ref, filename) {
+      const url = mediaUrl(ref);
+      return url !== ref ? url + '?' + new URLSearchParams({ download: filename }) : url;
+    },
     selectTab: tab => { archiveTab = tab; },
     photoEntry: id => id.startsWith('archive-') ? byId.get(id.slice('archive-'.length)) : undefined,
     teaser: () => `<a class="club-archive-link" href="${root}">
