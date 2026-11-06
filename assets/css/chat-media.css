@@ -126,11 +126,19 @@
 .chat-replies .comment header { margin-bottom: 4px; }
 .chat-replies .fpost-avatar { width: 34px; height: 34px; }
 .comment-emoji { margin-block: 8px 16px; }
-.comment-emoji > summary.btn { display: inline-flex; align-items: center; width: fit-content; margin: 0; list-style: none; }
-.comment-emoji > summary::-webkit-details-marker { display: none; }
-.comment-emoji > div { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 2px; width: min(100%, 384px); margin-top: 8px; padding: 4px; border: 1px solid var(--line); border-radius: 10px; }
-.comment-emoji > div button { display: grid; place-items: center; min-width: 0; min-height: 40px; padding: 0; border: 0; border-radius: 6px; background: transparent; font: 1.2rem/1 "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif; }
-.comment-emoji > div button:hover { background: var(--paper); }
+.comment-emoji-modes { display: flex; gap: 8px; }
+.comment-emoji-modes > .btn { display: inline-flex; align-items: center; justify-content: center; width: 96px; margin: 0; border-radius: 999px; }
+.comment-emoji-modes > [aria-expanded="true"] { border-color: var(--signal); }
+.comment-emoji-panel { display: grid; grid-template-columns: minmax(0, 8fr) minmax(0, 3fr); gap: 10px; margin-top: 10px; }
+.comment-emoji-panel[hidden] { display: none; }
+.comment-emoji-grid { display: grid; grid-template-columns: repeat(8,minmax(0,1fr)); gap: 2px; padding: 4px; border: 1px solid var(--line); border-radius: 10px; }
+.comment-emoji-grid.faces { grid-template-columns: repeat(3,minmax(0,1fr)); }
+.comment-emoji-grid button { display: grid; place-items: center; min-width: 0; min-height: 40px; padding: 0; border: 0; border-radius: 6px; background: transparent; font: 1.2rem/1 "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif; }
+.comment-emoji-grid button:hover { background: var(--paper); }
+@media (max-width: 540px) {
+  .comment-emoji-panel { grid-template-columns: minmax(0,1fr); }
+  .comment-emoji-grid.faces { grid-template-columns: repeat(6,minmax(0,1fr)); }
+}
 .cs-page-menu { display:flex; align-items:center; flex-wrap:wrap; gap:7px; }
 .cs-inspector :is(input[type="text"], input:not([type]), textarea, select) { width: 100%; border: 1px solid var(--line); border-radius: 6px; background: var(--paper); color: var(--ink); padding: 7px 9px; font-family: inherit; }
 .cs-slideshow { display:block; min-width:40px; margin:6px auto 0; }

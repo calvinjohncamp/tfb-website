@@ -1237,19 +1237,50 @@
     '😎','🚘','😱','🎂','🪁','🐟','😉','🤠',
     '🎈','⚽','🧨','🏠','🌶️','💤','💵','🙏',
   ];
-  const emojiPicker = () => `<details class="comment-emoji">
-    <summary class="btn small"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8.5 14.5a4 4 0 0 0 7 0M9 9.5h.01m5.99 0h.01"/></svg>Emojis</summary>
-    <div role="group" aria-label="Emoji auswählen">${commentEmojis.map(emoji => `<button type="button" data-comment-emoji="${emoji}">${emoji}</button>`).join('')}</div>
-  </details>`;
+  const commentFaces = ['😂','😍','😊','😭','😘','😅','🤔','🙄','🤗','😇','😋','😡'];
+  const emojiButtons = emojis => emojis.map(emoji => `<button type="button" data-comment-emoji="${emoji}">${emoji}</button>`).join('');
+  const emojiPicker = () => `<div class="comment-emoji">
+    <div class="comment-emoji-modes">
+      <button type="button" class="btn small" data-comment-show-emoji aria-expanded="false" aria-controls="comment-emoji-panel"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8.5 14.5a4 4 0 0 0 7 0M9 9.5h.01m5.99 0h.01"/></svg>Emojis</button>
+      <button type="button" class="btn small" data-comment-keyboard aria-label="Tastatur" title="Tastatur"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 9h.01M12 9h.01M17 9h.01M7 12h.01M12 12h.01M17 12h.01M8 15h8"/></svg></button>
+    </div>
+    <div class="comment-emoji-panel" id="comment-emoji-panel" hidden>
+      <div class="comment-emoji-grid" role="group" aria-label="Gewohnte Emojis">${emojiButtons(commentEmojis)}</div>
+      <div class="comment-emoji-grid faces" role="group" aria-label="Beliebte Gesichter">${emojiButtons(commentFaces)}</div>
+    </div>
+  </div>`;
+  function setCommentEmojiOpen(form, open) {
+    form.querySelector('.comment-emoji-panel').hidden = !open;
+    form.querySelector('[data-comment-show-emoji]').setAttribute('aria-expanded',String(open));
+  }
+  document.addEventListener('focusin', e => {
+    const input = e.target.closest('textarea[name="text"]');
+    if (input?.form?.matches('[data-comment-form], [data-comment-edit]')) setCommentEmojiOpen(input.form,false);
+  });
   document.addEventListener('click', e => {
-    const button = e.target.closest('[data-comment-emoji]');
+    const button = e.target.closest('[data-comment-emoji], [data-comment-show-emoji], [data-comment-keyboard]');
     if (!button) return;
-    const input = button.closest('form').elements.text;
+    const form = button.closest('form');
+    const input = form.elements.text;
+    if (button.hasAttribute('data-comment-keyboard')) {
+      setCommentEmojiOpen(form,false);
+      input.focus();
+      return;
+    }
+    if (button.hasAttribute('data-comment-show-emoji')) {
+      input.blur();
+      setCommentEmojiOpen(form,button.getAttribute('aria-expanded') !== 'true');
+      return;
+    }
     const emoji = button.dataset.commentEmoji;
-    if (input.value.length - input.selectionEnd + input.selectionStart + emoji.length > input.maxLength) return;
-    input.setRangeText(emoji, input.selectionStart, input.selectionEnd, 'end');
-    button.closest('details').open = false;
-    input.focus();
+    const {value,selectionStart,selectionEnd,maxLength} = input;
+    const before = value.slice(0,selectionStart);
+    const after = value.slice(selectionEnd);
+    const followsEmoji = /(?:\p{Extended_Pictographic}[\uFE0F\p{Emoji_Modifier}\u{E0020}-\u{E007F}]*|\p{Regional_Indicator}|\u20E3)$/u.test(before);
+    const precedesEmoji = /^(?:\p{Extended_Pictographic}|\p{Regional_Indicator}|[#*0-9]\uFE0F?\u20E3)/u.test(after);
+    const insertion = `${followsEmoji ? ' ' : ''}${emoji}${precedesEmoji ? ' ' : ''}`;
+    if (before.length + insertion.length + after.length > maxLength) return;
+    input.setRangeText(insertion,selectionStart,selectionEnd,'end');
   });
 
   async function openComment(post) {
