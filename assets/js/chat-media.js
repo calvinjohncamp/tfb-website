@@ -1,5 +1,18 @@
 const fonts = { title: 'Bricolage Grotesque', body: 'DM Sans', mono: 'Space Mono' };
-const logos = { rot: 'assets/brand/tfb-logo.png', gelb: 'assets/brand/tfb-logo-midnight-amber.png' };
+const logos = {
+  rot: { label: 'TFB · Signature Rot', src: 'assets/brand/tfb-logo-signature-red.png' },
+  gelb: { label: 'TFB · Signature Gelb', src: 'assets/brand/tfb-logo-midnight-amber.png' },
+  padel: { label: 'Padel Bielstein', src: 'assets/brand/padel-bielstein-logo.png' },
+};
+const textLabels = ['Überschrift', 'Unterüberschrift'];
+const layerLabel = index => textLabels[index] || `Text ${index + 1}`;
+const emphasis = { bold: 'Fett', italic: 'Kursiv', underline: 'Unterstrichen' };
+const alignments = { left: 'Links', center: 'Mittig', right: 'Rechts' };
+const newLayer = index => ({
+  text: '', font: index === 0 ? 'title' : 'body', size: index === 0 ? 8 : 5,
+  opacity: 100, color: '#ffffff', x: 94, y: index === 0 ? 82 : 90,
+  align: 'right', spacing: 0, bold: index === 0, italic: false, underline: false,
+});
 const formats = ['4 / 5', '16 / 9', '9 / 16'];
 const makeSlide = (source, kind = 'image') => ({
   source, kind, format: '4 / 5', x: 50, y: 50, zoom: 1,
@@ -25,16 +38,25 @@ function mediaStyle(slide) {
   return `object-position:${slide.x}% ${slide.y}%;transform-origin:${slide.x}% ${slide.y}%;transform:scale(${slide.zoom})`;
 }
 function design(slide, editing) {
+  const logo = logos[slide.logo];
   return ['top', 'bottom'].map(edge => {
     const { strength, height } = slide[edge];
     return `<div class="cs-gradient ${edge}" style="height:${height}%;--cs-strength:${strength / 100}">${editing ?
       `<button type="button" data-cs-drag="${edge}" aria-label="Höhe des Verlaufs ${edge === 'top' ? 'oben' : 'unten'} ziehen"></button>` : ''}</div>`;
   }).join('') + slide.layers.map((layer, index) => {
+    if (!layer.text.trim()) return '';
     const active = editing && index === layerIndex;
-    return `<span class="cs-layer cs-font-${layer.font}${active ? ' selected' : ''}" ${editing ? `data-cs-drag="layer" data-layer="${index}"` : ''}
-      style="left:${layer.x}%;top:${layer.y}%;font-size:${layer.size}cqw;color:${layer.color};opacity:${layer.opacity / 100}">${esc(layer.text)}</span>`;
-  }).join('') + (slide.logo ? `<img class="cs-logo" ${editing ? 'data-cs-drag="logo"' : ''} src="${logos[slide.logo]}"
-    alt="TFB-Logo" draggable="false" style="left:${slide.logoX}%;top:${slide.logoY}%;width:${slide.logoSize}%">` : '');
+    const styles = [
+      `left:${layer.x}%`, `top:${layer.y}%`, `font-size:${layer.size}cqw`,
+      `color:${layer.color}`, `opacity:${layer.opacity / 100}`, `letter-spacing:${(layer.spacing || 0) / 100}em`,
+    ];
+    if (typeof layer.bold === 'boolean') styles.push(`font-weight:${layer.bold ? 800 : 400}`);
+    if (layer.italic) styles.push('font-style:italic');
+    if (layer.underline) styles.push('text-decoration:underline');
+    return `<span class="cs-layer cs-font-${layer.font} cs-align-${layer.align || 'center'}${active ? ' selected' : ''}" ${editing ? `data-cs-drag="layer" data-layer="${index}"` : ''}
+      style="${styles.join(';')}">${esc(layer.text)}</span>`;
+  }).join('') + (logo ? `<img class="cs-logo" ${editing ? 'data-cs-drag="logo"' : ''} src="${logo.src}"
+    alt="${logo.label}" draggable="false" style="left:${slide.logoX}%;top:${slide.logoY}%;width:${slide.logoSize}%">` : '');
 }
 function stage(slide, editing = false) {
   const src = esc(sourceOf(slide.source));
@@ -124,12 +146,29 @@ let liveEditor;
 export function openLiveMediaEditor(design, source, dots, onSave) {
   liveEditor = onSave;
   const slide = {...structuredClone(design),source,kind:design.ref.startsWith('vid:') ? 'video' : 'image'};
+  while (slide.layers.length < textLabels.length) slide.layers.push(newLayer(slide.layers.length));
   mountEditor({dots,slide});
+}
+
+function typographyMarkup(layer) {
+  return `<div class="cs-type-row">
+      ${select('font', 'Schrift', layer.font, fonts)}
+      ${select('align', 'Ausrichtung', layer.align || 'center', alignments)}
+    </div>
+    <div class="cs-emphasis" role="group" aria-label="Schriftschnitt">${Object.entries(emphasis).map(([name, label]) => {
+      const active = name === 'bold' ? layer.bold ?? layer.font !== 'mono' : layer[name];
+      return `<label><input type="checkbox" name="${name}" ${active ? 'checked' : ''}><span>${label}</span></label>`;
+    }).join('')}</div>
+    ${range('size', 'Schriftgröße', layer.size, 36, 1, 0.1)}
+    ${range('spacing', 'Buchstabenabstand', layer.spacing || 0, 30, -10)}
+    ${range('opacity', 'Deckkraft', layer.opacity)}
+    <div class="cs-color"><label>Hex-Code<input name="hex" value="${layer.color}" maxlength="7" spellcheck="false"></label>
+      <input type="color" name="color" value="${layer.color}" aria-label="Textfarbe">
+      ${'EyeDropper' in window ? '<button type="button" class="btn small" data-cs-pick>Pipette</button>' : ''}</div>`;
 }
 
 function editorMarkup() {
   const slide = currentSlide();
-  const layer = slide.layers[layerIndex];
   return `<header class="cs-editor-head"><h2>Chat-Beitrag gestalten</h2><button type="button" class="btn small" data-cs-cancel>Schließen</button></header>
     <form data-cs-form class="cs-editor-form">
       <div class="cs-editor-preview">
@@ -139,31 +178,24 @@ function editorMarkup() {
         </div>
       </div>
       <div class="cs-inspector">
-        <details open><summary>Beitrag und Format</summary>
+        <details><summary>Beitrag und Format</summary>
           ${select('format', 'Rahmen für diese Seite', slide.format, Object.fromEntries(formats.map(value => [value, value.replace(' / ', ':')])))}
           ${select('dots', 'Wischpunkte', draft.dots, { bottom:'Unter dem Bild', top:'Über dem Bild' })}
           ${range('zoom', 'Zoom', slide.zoom, 3, 1, 0.01)}
           ${range('x', 'Ausschnitt horizontal', Math.round(slide.x))}
           ${range('y', 'Ausschnitt vertikal', Math.round(slide.y))}
         </details>
-        <details open><summary>Texte auf dem Medium</summary>
-          <div class="cs-page-menu">${slide.layers.map((_, index) => `<button type="button" class="btn small" data-cs-layer="${index}" aria-pressed="${index === layerIndex}">Text ${index + 1}</button>`).join('')}
-            <button type="button" class="btn small" data-cs-add-text>+ Text</button></div>
-          ${layer ? `<label>Text<textarea name="layerText" rows="2" maxlength="240">${esc(layer.text)}</textarea></label>
-            ${select('font', 'Schrift', layer.font, fonts)}
-            ${range('size', 'Schriftgröße', layer.size, 36, 1, 0.1)}
-            ${range('opacity', 'Deckkraft', layer.opacity)}
-            <div class="cs-color"><label>Hex-Code<input name="hex" value="${layer.color}" maxlength="7" spellcheck="false"></label>
-              <input type="color" name="color" value="${layer.color}" aria-label="Textfarbe">
-              ${'EyeDropper' in window ? '<button type="button" class="btn small" data-cs-pick>Pipette</button>' : ''}</div>
-            <button type="button" class="btn small" data-cs-remove-text>Text entfernen</button>` : ''}
+        <details open><summary>Text auf dem Medium</summary>
+          ${slide.layers.map((layer, index) => `<label>${layerLabel(index)}<textarea data-cs-text="${index}" rows="1" maxlength="240">${esc(layer.text)}</textarea></label>`).join('')}
+          <div class="cs-page-menu cs-type-chooser" role="group" aria-label="Zeile formatieren">${slide.layers.map((_, index) => `<button type="button" class="btn small" data-cs-layer="${index}" aria-label="${layerLabel(index)} formatieren" aria-pressed="${index === layerIndex}">${layerLabel(index)}</button>`).join('')}</div>
+          <div data-cs-typography>${typographyMarkup(slide.layers[layerIndex])}</div>
         </details>
         <details><summary>Verlauf oben und unten</summary>
           ${range('topStrength', 'Stärke oben', slide.top.strength)}${range('topHeight', 'Höhe oben', slide.top.height)}
           ${range('bottomStrength', 'Stärke unten', slide.bottom.strength)}${range('bottomHeight', 'Höhe unten', slide.bottom.height)}
         </details>
-        <details><summary>TFB-Logo</summary>
-          ${select('logo', 'PNG auf dieser Seite', slide.logo, { '':'Ohne Logo', rot:'Signature Rot', gelb:'Signature Gelb' })}
+        <details><summary>Logo</summary>
+          ${select('logo', 'Logo auf dieser Seite', slide.logo, { '':'Ohne Logo', ...Object.fromEntries(Object.entries(logos).map(([key, logo]) => [key, logo.label])) })}
           ${slide.logo ? range('logoSize', 'Logobreite', slide.logoSize, 80, 6) : ''}
         </details>
       </div>
@@ -173,11 +205,13 @@ function editorMarkup() {
 
 const currentSlide = () => draft.slide;
 function drawEditor() {
+  const inspectorScroll = studio.querySelector('.cs-inspector')?.scrollTop || 0;
   const expanded = [...studio.querySelectorAll('.cs-inspector details')].map(item => item.open);
   studio.innerHTML = editorMarkup();
   studio.querySelectorAll('.cs-inspector details').forEach((item, index) => {
     if (expanded[index] !== undefined) item.open = expanded[index];
   });
+  studio.querySelector('.cs-inspector').scrollTop = inspectorScroll;
 }
 function mountEditor(value) {
   draft = value;
@@ -204,6 +238,15 @@ function repaintDesign() {
   surface.querySelector('.cs-media > *').style.cssText = mediaStyle(slide);
   surface.querySelector('.cs-design').innerHTML = design(slide, true);
 }
+function selectLayer(index) {
+  if (layerIndex === index) return;
+  layerIndex = index;
+  studio.querySelectorAll('[data-cs-layer]').forEach(button => {
+    button.setAttribute('aria-pressed', String(Number(button.dataset.csLayer) === index));
+  });
+  studio.querySelector('[data-cs-typography]').innerHTML = typographyMarkup(currentSlide().layers[index]);
+  repaintDesign();
+}
 const gradientFields = {
   topStrength: ['top', 'strength'], topHeight: ['top', 'height'],
   bottomStrength: ['bottom', 'strength'], bottomHeight: ['bottom', 'height'],
@@ -212,6 +255,7 @@ function updateField(input) {
   const { name, value } = input;
   const slide = currentSlide();
   const layer = slide.layers[layerIndex];
+  if (input.dataset.csText !== undefined) slide.layers[Number(input.dataset.csText)].text = value;
   if (name === 'dots') { draft.dots = value; return; }
   if (['format','logo'].includes(name)) slide[name] = value;
   if (['zoom','logoSize','x','y'].includes(name)) slide[name] = Number(value);
@@ -220,9 +264,9 @@ function updateField(input) {
     slide[edge][key] = Number(value);
   }
   if (layer) {
-    if (name === 'layerText') layer.text = value;
-    if (name === 'font') layer.font = value;
-    if (['size','opacity'].includes(name)) layer[name] = Number(value);
+    if (['font','align'].includes(name)) layer[name] = value;
+    if (['size','opacity','spacing'].includes(name)) layer[name] = Number(value);
+    if (Object.hasOwn(emphasis, name)) layer[name] = input.checked;
     if (name === 'color' || (name === 'hex' && /^#?[\da-f]{6}$/i.test(value))) {
       layer.color = '#' + value.replace(/^#/, '');
       const form = input.form;
@@ -237,6 +281,10 @@ document.addEventListener('input', event => {
   if (!event.target.closest('[data-cs-form]')) return;
   updateField(event.target);
   if (event.target.name === 'logo') drawEditor();
+});
+document.addEventListener('focusin', event => {
+  const input = event.target.closest('[data-cs-text]');
+  if (input && studio?.contains(input)) selectLayer(Number(input.dataset.csText));
 });
 document.addEventListener('click', async event => {
   const button = event.target.closest('button');
@@ -300,20 +348,7 @@ document.addEventListener('click', async event => {
   if (!studio?.contains(button)) return;
   if ('csCancel' in data) { studio.close(); return; }
   if ('csCrop' in data) { cropMode = !cropMode; drawEditor(); }
-  if ('csLayer' in data) { layerIndex = Number(data.csLayer); drawEditor(); }
-  if ('csAddText' in data) {
-    const layers = currentSlide().layers;
-    if (layers.length >= 12) { TFB.ui.toast('Bis zu 12 Texte pro Medium.'); return; }
-    layerIndex = layers.length;
-    layers.push({ text:'Dein Text', font:'title', size:8, opacity:100, color:'#ffffff', x:50, y:70 });
-    drawEditor();
-    studio.querySelector('[name="layerText"]').select();
-  }
-  if ('csRemoveText' in data) {
-    currentSlide().layers.splice(layerIndex, 1);
-    layerIndex = Math.max(0, layerIndex - 1);
-    drawEditor();
-  }
+  if ('csLayer' in data) selectLayer(Number(data.csLayer));
   if ('csEditVideo' in data) {
     const video = studio.querySelector('video');
     if (video.paused) video.play().then(() => { button.textContent = 'Ⅱ'; }).catch(() => {});
@@ -376,7 +411,7 @@ document.addEventListener('pointermove', event => {
 });
 document.addEventListener('pointerup', event => {
   if (drag) {
-    if (drag.kind === 'layer' && drag.index !== layerIndex) { layerIndex = drag.index; drawEditor(); }
+    if (drag.kind === 'layer') selectLayer(drag.index);
     drag = null;
   }
 });

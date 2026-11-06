@@ -43,16 +43,21 @@ const numberIn = (value, min, max, fallback) => Number.isFinite(value) ? Math.mi
 function cleanDesign(slide) {
   const percent = value => numberIn(value, 0, 100, 50);
   const gradient = edge => ({strength: numberIn(edge?.strength,0,100,0), height:numberIn(edge?.height,0,100,36)});
-  if (!slide || typeof slide !== 'object' || !Array.isArray(slide.layers) || slide.layers.length > 12) fail(400, 'Ungültige Gestaltung.');
+  if (!slide || typeof slide !== 'object' || !Array.isArray(slide.layers) || slide.layers.length > 12
+      || slide.layers.some(layer => !layer || typeof layer !== 'object' || Array.isArray(layer))) fail(400, 'Ungültige Gestaltung.');
   const layers = slide.layers.map(layer => ({
-    text:text(layer?.text,240), font:['title','body','mono'].includes(layer.font) ? layer.font : 'title',
+    text:text(layer.text,240), font:['title','body','mono'].includes(layer.font) ? layer.font : 'title',
     size:numberIn(layer.size,1,36,8), opacity:numberIn(layer.opacity,0,100,100),
     color:/^#[a-f0-9]{6}$/i.test(layer.color) ? layer.color : '#ffffff', x:percent(layer.x), y:percent(layer.y),
+    align:['left','center','right'].includes(layer.align) ? layer.align : 'center',
+    spacing:numberIn(layer.spacing,-10,30,0),
+    ...(typeof layer.bold === 'boolean' ? {bold:layer.bold} : {}),
+    italic:layer.italic === true, underline:layer.underline === true,
   }));
   return {ref:slide.ref, format:['4 / 5','16 / 9','9 / 16'].includes(slide.format) ? slide.format : '4 / 5',
     x:percent(slide.x), y:percent(slide.y), zoom:numberIn(slide.zoom,1,3,1),
     top:gradient(slide.top), bottom:gradient(slide.bottom), layers,
-    logo:['rot','gelb'].includes(slide.logo) ? slide.logo : '', logoX:percent(slide.logoX), logoY:percent(slide.logoY),
+    logo:['rot','gelb','padel'].includes(slide.logo) ? slide.logo : '', logoX:percent(slide.logoX), logoY:percent(slide.logoY),
     logoSize:numberIn(slide.logoSize,6,80,25)};
 }
 function timestamp(v) { if(typeof v!=='string'||!Number.isFinite(Date.parse(v))||Date.parse(v)>Date.now()+60000)fail(400,'Ungültiges Datum.');return v; }

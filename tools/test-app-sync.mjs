@@ -100,11 +100,19 @@ test('chat design and video are shared only with members who may see the post', 
   await f.commit([account(f.admin.id)]);
   const upload = await f.call('/app/chat-video', {data}, f.adminToken);
   assert.equal(upload.status, 200);
-  const slide = {ref:upload.body.ref, format:'4 / 5', layers:[{text:'Titel',color:'#abcdef'}], logo:'gelb'};
+  const slide = {ref:upload.body.ref, format:'4 / 5', layers:[
+    {text:'Titel',color:'#abcdef'},
+    {text:'Unterzeile',color:'#ff5522',align:'right',spacing:12,bold:false,italic:true,underline:true},
+  ], logo:'padel'};
   assert.equal((await f.commit([post('foreign-video',{designs:[slide]})],f.otherToken)).status,403);
   assert.equal((await f.commit([post('video-post',{text:'', designs:[slide], dots:'top'})])).status,200);
   const record = (await f.state(f.otherToken)).body.records.find(row => row.id === 'video-post');
   assert.equal(record.value.designs[0].layers[0].text,'Titel');
+  assert.equal(record.value.designs[0].layers[0].bold, undefined);
+  const subtitle = record.value.designs[0].layers[1];
+  assert.deepEqual([subtitle.color,subtitle.align,subtitle.spacing,subtitle.bold,subtitle.italic,subtitle.underline],
+    ['#ff5522','right',12,false,true,true]);
+  assert.equal(record.value.designs[0].logo,'padel');
   assert.equal(record.value.dots,'top');
   const path = '/app/chat-video?' + new URLSearchParams({post:'video-post',ref:slide.ref});
   const {default:worker} = await import('./worker-test-loader.mjs');

@@ -13,6 +13,8 @@
 .cs-gradient.bottom { bottom: 0; background: linear-gradient(to top, rgb(0 0 0 / var(--cs-strength)), transparent); }
 .cs-layer, .cs-logo { position: absolute; transform: translate(-50%, -50%); }
 .cs-layer { max-width: 95%; width: max-content; line-height: 1.1; white-space: pre-wrap; overflow-wrap: anywhere; text-align: center; }
+.cs-layer.cs-align-left { transform: translate(0, -50%); text-align: left; max-width: 90%; }
+.cs-layer.cs-align-right { transform: translate(-100%, -50%); text-align: right; max-width: 90%; }
 .cs-font-title { font: 800 8cqw/1.1 "TFB Bricolage", sans-serif; }
 .cs-font-body { font: 600 8cqw/1.1 "TFB DM Sans", sans-serif; }
 .cs-font-mono { font: 400 8cqw/1.1 "TFB Space Mono", monospace; }
@@ -52,6 +54,14 @@
 .cs-inspector label { display: block; font-size: .78rem; font-weight: 650; margin: 6px 0; }
 .cs-inspector :is(input, textarea, select) { display: block; margin-top: 3px; }
 .cs-inspector input[type="range"] { width: 100%; accent-color: var(--signal); }
+.cs-type-chooser { margin: 12px 0 7px; }
+.cs-type-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.cs-emphasis { display: flex; flex-wrap: wrap; gap: 6px; }
+.cs-emphasis label { display: flex; align-items: center; gap: 5px; min-height: 36px; padding: 4px 9px; margin: 0; border: 1px solid var(--line); border-radius: 8px; cursor: pointer; }
+.cs-emphasis input[type="checkbox"] { width: auto; margin: 0; accent-color: var(--signal); }
+.cs-emphasis [name="bold"] + span { font-weight: 850; }
+.cs-emphasis [name="italic"] + span { font-style: italic; }
+.cs-emphasis [name="underline"] + span { text-decoration: underline; }
 .cs-range { display: grid; grid-template-columns: 1fr 3em; gap: 8px; align-items: center; }
 .cs-range output { text-align: right; font-variant-numeric: tabular-nums; }
 .cs-color { display: flex; align-items: end; flex-wrap: wrap; gap: 6px; }
@@ -67,9 +77,12 @@
 .cs-stage.is-editing .cs-gradient.bottom button { top: -8px; }
 .cs-crop-hit { border: 2px dashed #ffdc87; }
 @media (max-width: 760px) {
-  .cs-editor-form { grid-template-columns: minmax(0, 1fr); }
-  .cs-editor-preview { position: static; }
-  .cs-editor-preview .cs-stage { width: min(100%, calc(44dvh * var(--cs-ratio))); }
+  .cs-editor[open] { display: grid; grid-template-rows: auto minmax(0, 1fr); height: 94dvh; overflow: hidden; }
+  .cs-editor-form { grid-template: auto minmax(0, 1fr) auto / minmax(0, 1fr); gap: 8px; padding-top: 4px; }
+  .cs-editor-preview, .cs-editor-footer { position: static; }
+  .cs-editor-preview .cs-stage { width: min(100%, calc(32dvh * var(--cs-ratio))); }
+  .cs-inspector { overflow-y: auto; padding-inline-end: 3px; }
+  .cs-inspector :is(input[name="hex"], textarea, select) { font-size: 16px; }
 }
 
 .chat-stream:has(.chat-post-row) { width: 100%; }
@@ -91,7 +104,7 @@
 .comment-emoji > div { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); max-width: 260px; }
 .comment-emoji > div button { border: 1px solid var(--line); background: var(--paper); padding: 5px; cursor: pointer; font-size: 1.16rem; min-height: 41px; }
 .cs-page-menu { display:flex; align-items:center; flex-wrap:wrap; gap:7px; }
-.cs-inspector :is(input:not([type="range"]), textarea, select) { width: 100%; border: 1px solid var(--line); border-radius: 6px; background: var(--paper); color: var(--ink); padding: 7px 9px; font: inherit; }
+.cs-inspector :is(input[name="hex"], textarea, select) { width: 100%; border: 1px solid var(--line); border-radius: 6px; background: var(--paper); color: var(--ink); padding: 7px 9px; font-family: inherit; }
 .cs-slideshow { margin-top:6px; }
 .compose-medium { display: grid; align-content: start; gap: 4px; }
 .compose-medium .btn { font-size: .72rem; }
