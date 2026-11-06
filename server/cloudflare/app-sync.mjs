@@ -7,6 +7,54 @@ const key = r => `${r.kind}:${r.id}`;
 const profileFields = ['phone','infoMails','openInvites','groupChatNotices','chatNoticesSince','chatNoticeRead','commentRead','feedRules','parentConsent','consentVersion','consentedAt','avatar','avatarLarge','avatarRevision','photoPublic','photoEvents','photoPending','photoConsentAt','photoConsentVersion'];
 function text(v,max=2000) { if(typeof v!=='string'||v.length>max) fail(400,'Ungültiger Text.'); return v; }
 function image(v,max=2500000) { if(v===null||v===undefined)return null; if(typeof v!=='string'||v.length>max||!/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(v)) fail(400,'Ungültiges Foto.'); return v; }
+const VIDEO_LIMIT = 5 * 1024 * 1024;
+const videoKey = ref => `chat-video/${ref.slice(4)}`;
+const videoRef = ref => typeof ref === 'string' && /^vid:[a-f0-9-]{36}$/.test(ref);
+export async function syncUploadVideo(env, member, value) {
+  if (!env.CMS_BUCKET) fail(503, 'Videospeicher nicht verfügbar.');
+  const account = (await records(env,row => row.kind === 'account' && row.id === member.id))[0];
+  if (!account?.value.feedRules) fail(403, 'Bitte zuerst die Chat-Hinweise bestätigen.');
+  const match = /^data:video\/(mp4|webm);base64,([A-Za-z0-9+/=]+)$/.exec(value.data);
+  if (!match || match[2].length > Math.ceil(VIDEO_LIMIT / 3) * 4) fail(400, 'Bitte MP4 oder WebM bis 5 MB wählen.');
+  let bytes;
+  try { bytes = Uint8Array.from(atob(match[2]), char => char.charCodeAt(0)); }
+  catch (_) { fail(400, 'Ungültige Videodatei.'); }
+  const mp4 = String.fromCharCode(...bytes.slice(4, 8)) === 'ftyp';
+  const webm = bytes[0] === 26 && bytes[1] === 69 && bytes[2] === 223 && bytes[3] === 163;
+  if (bytes.length > VIDEO_LIMIT || !(match[1] === 'mp4' ? mp4 : webm)) fail(400, 'Ungültige Videodatei.');
+  const ref = `vid:${crypto.randomUUID()}`;
+  await env.CMS_BUCKET.put(videoKey(ref), bytes, {
+    httpMetadata:{contentType:`video/${match[1]}`}, customMetadata:{owner:member.id},
+  });
+  return {ref};
+}
+export async function syncChatVideo(env, member, postId, ref) {
+  if (!videoRef(ref) || typeof postId !== 'string') fail(404, 'Video nicht gefunden.');
+  const access = await context(env, member);
+  const post = access.map.get('post:' + postId);
+  if (!access.canPost(post) || !post.value.designs?.some(slide => slide.ref === ref)) fail(404, 'Video nicht gefunden.');
+  const object = await env.CMS_BUCKET?.get(videoKey(ref));
+  if (!object) fail(404, 'Video nicht gefunden.');
+  return new Response(object.body, {headers:{
+    'Content-Type':object.httpMetadata.contentType, 'Cache-Control':'private, no-store', 'X-Content-Type-Options':'nosniff',
+  }});
+}
+const numberIn = (value, min, max, fallback) => Number.isFinite(value) ? Math.min(max, Math.max(min, value)) : fallback;
+function cleanDesign(slide) {
+  const percent = value => numberIn(value, 0, 100, 50);
+  const gradient = edge => ({strength: numberIn(edge?.strength,0,100,0), height:numberIn(edge?.height,0,100,36)});
+  if (!slide || typeof slide !== 'object' || !Array.isArray(slide.layers) || slide.layers.length > 12) fail(400, 'Ungültige Gestaltung.');
+  const layers = slide.layers.map(layer => ({
+    text:text(layer?.text,240), font:['title','body','mono'].includes(layer.font) ? layer.font : 'title',
+    size:numberIn(layer.size,1,36,8), opacity:numberIn(layer.opacity,0,100,100),
+    color:/^#[a-f0-9]{6}$/i.test(layer.color) ? layer.color : '#ffffff', x:percent(layer.x), y:percent(layer.y),
+  }));
+  return {ref:slide.ref, format:['4 / 5','16 / 9','9 / 16'].includes(slide.format) ? slide.format : '4 / 5',
+    x:percent(slide.x), y:percent(slide.y), zoom:numberIn(slide.zoom,1,3,1),
+    top:gradient(slide.top), bottom:gradient(slide.bottom), layers,
+    logo:['rot','gelb'].includes(slide.logo) ? slide.logo : '', logoX:percent(slide.logoX), logoY:percent(slide.logoY),
+    logoSize:numberIn(slide.logoSize,6,80,25)};
+}
 function timestamp(v) { if(typeof v!=='string'||!Number.isFinite(Date.parse(v))||Date.parse(v)>Date.now()+60000)fail(400,'Ungültiges Datum.');return v; }
 async function records(env, filter = () => true) {
   const meta=(await env.DB.prepare('SELECT r.* FROM app_records r JOIN members m ON m.id=r.owner_id WHERE m.active=1').all()).results.filter(filter);
@@ -123,6 +171,24 @@ async function validate(env,member,c,op,all,importing) {
       const alsoTeams=v.alsoTeams||[];
       if(!Array.isArray(alsoTeams)||alsoTeams.length>30||alsoTeams.some(t=>typeof t!=='string'||(!member.is_admin&&!c.teams.has(t))))fail(403,'Mannschaftsberechtigung prüfen.');
       value={id:op.id,authorId:owner,scope,title:text(v.title||'',90),text:text(v.text||''),alsoTeams,images:v.images||[],createdAt:old?.value.createdAt||(importing?timestamp(v.createdAt):now)};
+      if (v.designs !== undefined) {
+        if (!Array.isArray(v.designs) || v.designs.length > 6) fail(400, 'Pro Beitrag sind höchstens sechs Medien möglich.');
+        if (v.designs.length) {
+          value.designs = [];
+          value.dots = v.dots === 'top' ? 'top' : 'bottom';
+          for (const source of v.designs) {
+            const slide = cleanDesign(source);
+            if (videoRef(slide.ref)) {
+              if (!old?.value.designs?.some(previous => previous.ref === slide.ref)) {
+                const object = await env.CMS_BUCKET?.head(videoKey(slide.ref));
+                if (object?.customMetadata?.owner !== member.id) fail(403, 'Video nicht verfügbar.');
+              }
+            } else if (!Array.isArray(value.images) || !value.images.includes(slide.ref)) fail(400, 'Foto nicht verfügbar.');
+            if (value.designs.some(previous => previous.ref === slide.ref)) fail(400, 'Medium doppelt.');
+            value.designs.push(slide);
+          }
+        }
+      }
       if(member.is_admin)value.hidden=Boolean(v.hidden);else value.hidden=Boolean(old?.value.hidden);
     } else {
       const parent=c.map.get('post:'+v.postId)||all.find(r=>r.kind==='post'&&r.id===v.postId);
@@ -132,7 +198,7 @@ async function validate(env,member,c,op,all,importing) {
       value={id:op.id,postId:text(v.postId,120),authorId:owner,text:text(v.text||''),images:v.images||[],createdAt:old?.value.createdAt||(importing?timestamp(v.createdAt):now)};
     }
     if(!Array.isArray(value.images)||value.images.length>(op.kind==='post'?6:3)||value.images.some(ref=>typeof ref!=='string'))fail(400,'Zu viele Fotos.');
-    if(!value.text.trim()&&!value.images.length)fail(400,'Bitte Text oder ein Foto hinzufügen.');
+    if(!value.text.trim()&&!value.images.length&&!value.designs?.length)fail(400,'Bitte Text oder ein Foto hinzufügen.');
     for(const ref of value.images) {
       const media=c.map.get('media:'+ref)||all.find(r=>r.kind==='media'&&r.id===ref);
       if(!media||media.deleted||(media.owner_id||member.id)!==member.id&&!(old?.value.images||[]).includes(ref))fail(403,'Foto nicht verfügbar.');

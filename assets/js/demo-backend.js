@@ -820,7 +820,11 @@
       const member = db.members.find(m => m.id === sessionMemberId() && m.active);
       if (!post || (post.hidden && !member?.isAdmin && post.authorId !== member?.id)) return [];
       return (db.community.comments || []).filter(c => c.postId === postId).sort((a, b) => a.createdAt.localeCompare(b.createdAt)).map(c => ({
-        ...clone(c), author: displayName(db.members.find(m => m.id === c.authorId)), mine: c.authorId === member?.id, canModerate: Boolean(member?.isAdmin),
+        ...clone(c), author: displayName(db.members.find(m => m.id === c.authorId)),
+        avatar: (() => {
+          const author = db.members.find(m => m.id === c.authorId);
+          return author && photoAllowed(author, member ? 'members' : 'public') ? accountOf(author.id).avatar || null : null;
+        })(), mine: c.authorId === member?.id, canModerate: Boolean(member?.isAdmin),
       }));
     },
     async addComment(postId, text, { images = [] } = {}) {
@@ -956,27 +960,43 @@
       await done((await imgStore('readwrite')).put(dataUrl, id));
       return id;
     },
-    async addPost({ scope, title = '', text, images = [], alsoTeams = [] }) {
+    async putMemberVideo(data) {
+      requireMember();
+      const id = 'vid:' + uid();
+      await done((await imgStore('readwrite')).put(data, id));
+      return id;
+    },
+    async getMemberVideo(postId, ref) {
+      if (!db.community.posts.some(p => p.id === postId && p.designs?.some(slide => slide.ref === ref))) throw Error('Video nicht gefunden.');
+      const data = (await this.images())[ref];
+      if (!data) throw Error('Video nicht gefunden.');
+      return (await fetch(data)).blob();
+    },
+    async addPost({ scope, title = '', text, images = [], alsoTeams = [], designs = [], dots = 'bottom' }) {
       const member = requireMember();
       const allowed = mayWrite(member, scope);
       if (!allowed.ok) throw new Error(allowed.reason === 'team' ? 'Insider News schreiben die Spieler dieser Mannschaft.' : 'Bitte zuerst die Hinweise bestätigen.');
       const t = String(text || '').trim();
-      if (!t && !images.length) throw new Error('Bitte einen Text schreiben oder ein Foto wählen.');
+      if (!t && !images.length && !designs.length) throw new Error('Bitte einen Text schreiben oder ein Foto wählen.');
       if (!Array.isArray(images) || images.length > 6) throw new Error('Pro Beitrag sind höchstens 6 Fotos möglich.');
       const mine = alsoTeams.filter((k) => member.isAdmin || inTeam(member, k));
-      const post = { id: 'p-' + uid(), scope, authorId: member.id, createdAt: new Date().toISOString(), ...(String(title || '').trim() ? { title: String(title).trim().slice(0, 90) } : {}), text: t.slice(0, 2000), images: images.slice(0, 6), ...(scope === 'club' && mine.length ? { alsoTeams: mine } : {}) };
+      const post = { id: 'p-' + uid(), scope, authorId: member.id, createdAt: new Date().toISOString(), ...(String(title || '').trim() ? { title: String(title).trim().slice(0, 90) } : {}), text: t.slice(0, 2000), images: images.slice(0, 6), ...(designs.length ? {designs:clone(designs), dots} : {}), ...(scope === 'club' && mine.length ? { alsoTeams: mine } : {}) };
       db.community.posts.push(post);
       if (!save(db)) throw new Error('Speichern nicht möglich.');
       document.dispatchEvent(new Event('tfb-chat-updated'));
       return publicPost(post);
     },
-    async editPost(id, { title = '', text, images, alsoTeams }) {
+    async editPost(id, { title = '', text, images, alsoTeams, designs, dots }) {
       const member = requireMember();
       const p = db.community.posts.find((x) => x.id === id);
       if (!p || (p.authorId !== member.id && !member.isAdmin)) throw new Error('Diesen Beitrag kannst du nicht ändern.');
       if (images && (!Array.isArray(images) || images.length > 6)) throw new Error('Pro Beitrag sind höchstens 6 Fotos möglich.');
       Object.assign(p, { text: String(text || '').trim().slice(0, 2000), images: (images || []).slice(0, 6), editedAt: new Date().toISOString() });
       if (String(title || '').trim()) p.title = String(title).trim().slice(0, 90); else delete p.title;
+      if (designs !== undefined) {
+        if (designs.length) { p.designs = clone(designs); p.dots = dots; }
+        else { delete p.designs; delete p.dots; }
+      }
       if (alsoTeams && p.scope === 'club') p.alsoTeams = alsoTeams.filter((k) => member.isAdmin || inTeam(member, k));
       save(db);
       return publicPost(p);

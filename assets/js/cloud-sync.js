@@ -141,6 +141,14 @@
     if(ownerId&&member){const result=await call('/app/photo',{id:ownerId});return result.image;}
     return localOriginal(preview);
   };
+  api.putMemberVideo = data => serial(async () => {
+    if (!member) throw Error('Bitte zuerst anmelden.');
+    return (await call('/app/chat-video', {data})).ref;
+  });
+  api.getMemberVideo = async (post, ref) => {
+    const query = new URLSearchParams({post, ref});
+    return (await TFB.directoryFetch('/app/chat-video?' + query)).blob();
+  };
   api.putMemberImage=data=>serial(async()=>{
     if(!member)throw Error('Bitte zuerst anmelden.');
     const ref='img:'+id();await commit([{kind:'media',id:ref,revision:0,value:{data}}]);return ref;

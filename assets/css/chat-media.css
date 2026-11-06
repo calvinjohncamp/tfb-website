@@ -1,0 +1,103 @@
+@font-face {
+  font-family: "TFB Space Mono";
+  src: url("../fonts/chat/space-mono.ttf") format("truetype");
+  font-display: swap;
+}
+.cs-stage { position: relative; width: 100%; aspect-ratio: var(--cs-ratio); overflow: hidden; isolation: isolate; container-type: inline-size; background: #191817; }
+.cs-screen { position: relative; border-radius: 5px; overflow: hidden; touch-action: pan-y; }
+.cs-media, .cs-design, .cs-crop-hit { position: absolute; inset: 0; }
+.cs-media :is(img, video) { display: block; width: 100%; height: 100%; object-fit: cover; }
+.cs-design { pointer-events: none; }
+.cs-gradient { position: absolute; inset-inline: 0; pointer-events: none; }
+.cs-gradient.top { top: 0; background: linear-gradient(to bottom, rgb(0 0 0 / var(--cs-strength)), transparent); }
+.cs-gradient.bottom { bottom: 0; background: linear-gradient(to top, rgb(0 0 0 / var(--cs-strength)), transparent); }
+.cs-layer, .cs-logo { position: absolute; transform: translate(-50%, -50%); }
+.cs-layer { max-width: 95%; width: max-content; line-height: 1.1; white-space: pre-wrap; overflow-wrap: anywhere; text-align: center; }
+.cs-font-title { font: 800 8cqw/1.1 "TFB Bricolage", sans-serif; }
+.cs-font-body { font: 600 8cqw/1.1 "TFB DM Sans", sans-serif; }
+.cs-font-mono { font: 400 8cqw/1.1 "TFB Space Mono", monospace; }
+.cs-logo { height: auto; }
+.cs-image-hit { position: absolute; inset: 0; border: 0; background: transparent; cursor: zoom-in; }
+.cs-expand, .cs-play { position: absolute; z-index: 2; border: 0; border-radius: 50%; background: rgb(22 22 22 / .7); color: #fff; cursor: pointer; }
+.cs-expand { top: 8px; right: 8px; width: 36px; height: 36px; font-size: 1.2rem; }
+.cs-play { top: 50%; left: 50%; translate: -50% -50%; width: 54px; height: 54px; font-size: 1.2rem; }
+.cs-dots { display: flex; justify-content: center; flex-wrap: wrap; }
+.cs-dots button { display: grid; place-items: center; width: 28px; height: 30px; padding: 0; border: 0; background: transparent; cursor: pointer; }
+.cs-dots button::before { content: ""; width: 5px; height: 5px; border-radius: 6px; background: var(--muted); opacity: .5; }
+.cs-dots button[aria-current]::before { width: 11px; opacity: 1; background: var(--signal); }
+
+.cs-viewer, .cs-editor { border: 0; border-radius: 12px; color: var(--ink); background: var(--paper); padding: 0; overscroll-behavior: contain; }
+.cs-viewer::backdrop { background: rgb(18 17 16 / .9); }
+.cs-editor::backdrop { background: rgb(18 17 16 / .66); }
+.cs-viewer { max-width: 100%; max-height: 100dvh; width: min(100vw, 76dvh); background: #1c1b1a; color: #fff; }
+.cs-viewer .cs-screen { border-radius: 0; }
+.cs-viewer .cs-stage { width: min(100%, calc(87dvh * var(--cs-ratio))); margin: auto; }
+.cs-viewer.wide { width: min(100vw, 155dvh); }
+.cs-viewer.wide .cs-screen { aspect-ratio: 16 / 9; display: grid; align-items: center; }
+.cs-viewer.wide .cs-stage { width: min(100%, calc(min(100vw, 155dvh) * 9 / 16 * var(--cs-ratio))); }
+.cs-viewer-tools { position: sticky; z-index: 4; top: 0; display: flex; justify-content: flex-end; gap: 7px; padding: 5px 8px; }
+.cs-viewer-tools button { background: #363433; color: #fff; border: 0; border-radius: 22px; min-width: 37px; min-height: 35px; cursor: pointer; }
+
+.cs-editor { width: min(94vw, 1050px); max-width: 100%; max-height: 94dvh; }
+.cs-editor-head { position: sticky; z-index: 5; top: 0; padding: 12px 17px; display: flex; align-items: center; justify-content: space-between; gap: 9px; background: var(--paper); border-bottom: 1px solid var(--line); }
+.cs-editor-head h2 { font-size: 1.15rem; margin: 0; }
+.cs-editor-form { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 16px; padding: 14px 17px 0; }
+.cs-editor-preview { min-width: 0; align-self: start; position: sticky; top: 65px; }
+.cs-editor-preview .cs-stage { width: min(100%, calc(63dvh * var(--cs-ratio))); margin: 8px auto; }
+.cs-page-menu .btn { min-height: 30px; font-size: .76rem; }
+.cs-page-menu [aria-pressed="true"] { box-shadow: inset 0 0 0 1px var(--signal); }
+.cs-inspector { display: grid; align-content: start; gap: 6px; min-width: 0; }
+.cs-inspector details { border-bottom: 1px solid var(--line); padding: 6px 0; }
+.cs-inspector summary { font-weight: 800; margin-bottom: 6px; cursor: pointer; }
+.cs-inspector label { display: block; font-size: .78rem; font-weight: 650; margin: 6px 0; }
+.cs-inspector :is(input, textarea, select) { display: block; margin-top: 3px; }
+.cs-inspector input[type="range"] { width: 100%; accent-color: var(--signal); }
+.cs-range { display: grid; grid-template-columns: 1fr 3em; gap: 8px; align-items: center; }
+.cs-range output { text-align: right; font-variant-numeric: tabular-nums; }
+.cs-color { display: flex; align-items: end; flex-wrap: wrap; gap: 6px; }
+.cs-color label { max-width: 100px; }
+.cs-color input[type="color"] { width: 42px; height: 37px; padding: 3px; margin-bottom: 6px; }
+.cs-color button { margin-bottom: 6px; }
+.cs-editor-footer { grid-column: 1 / -1; position: sticky; bottom: 0; z-index: 5; padding: 10px 0; border-top: 1px solid var(--line); background: var(--paper); display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.cs-editor-footer p { margin: 0; font-size: .75rem; }
+.cs-stage.is-editing :is([data-cs-drag]) { pointer-events: auto; cursor: grab; touch-action: none; }
+.cs-stage.is-editing .cs-layer.selected { outline: 1px dashed #fff; box-shadow: 0 0 0 1px rgb(0 0 0 / .55); }
+.cs-stage.is-editing .cs-gradient button { position: absolute; left: 9px; width: 28px; height: 16px; border: 1px solid #fff; border-radius: 10px; background: #242424a8; }
+.cs-stage.is-editing .cs-gradient.top button { bottom: -8px; }
+.cs-stage.is-editing .cs-gradient.bottom button { top: -8px; }
+.cs-crop-hit { border: 2px dashed #ffdc87; }
+@media (max-width: 760px) {
+  .cs-editor-form { grid-template-columns: minmax(0, 1fr); }
+  .cs-editor-preview { position: static; }
+  .cs-editor-preview .cs-stage { width: min(100%, calc(44dvh * var(--cs-ratio))); }
+}
+
+.chat-stream:has(.chat-post-row) { width: 100%; }
+.chat-stream:has(.chat-post-row) .feed-head { max-width: 760px; }
+.chat-post-row { display: grid; grid-template-columns: minmax(0, 760px) minmax(0, 310px); gap: 20px; align-items: start; }
+.chat-post-row.has-designed-media { grid-template-columns: minmax(0, 470px) minmax(0, 310px); }
+.chat-post-row:not(:has(.chat-replies)) { grid-template-columns: minmax(0, 760px); }
+.chat-post-row.has-designed-media:not(:has(.chat-replies)) { grid-template-columns: minmax(0, 470px); }
+.chat-post-row .fpost { min-width: 0; }
+.fpost-heading { display: flex; justify-content: space-between; align-items: baseline; gap: 8px 12px; margin-bottom: 6px; }
+.fpost-heading .fpost-title { margin: 0; overflow-wrap: anywhere; }
+.chat-comment-button { flex: none; }
+.chat-replies .comment { display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 9px; }
+.chat-replies .comment header { margin-bottom: 4px; }
+.chat-replies .fpost-avatar { width: 34px; height: 34px; }
+.comment-emoji { margin-block: 8px; }
+.comment-emoji summary { width: fit-content; cursor: pointer; }
+.comment-emoji > div { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); max-width: 260px; }
+.comment-emoji > div button { border: 1px solid var(--line); background: var(--paper); padding: 5px; cursor: pointer; font-size: 1.16rem; min-height: 41px; }
+.cs-page-menu { display:flex; align-items:center; flex-wrap:wrap; gap:7px; }
+.cs-inspector :is(input:not([type="range"]), textarea, select) { width: 100%; border: 1px solid var(--line); border-radius: 6px; background: var(--paper); color: var(--ink); padding: 7px 9px; font: inherit; }
+.cs-slideshow { margin-top:6px; }
+.compose-medium { display: grid; align-content: start; gap: 4px; }
+.compose-medium .btn { font-size: .72rem; }
+.compose-video { display: grid; place-items: center; height: 100%; background: var(--ink); color: var(--paper); }
+.cs-published [hidden] { display: none; }
+@media (max-width: 760px) {
+  .chat-post-row { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+  .chat-post-row.has-designed-media { grid-template-columns: minmax(0, 470px); }
+  .chat-replies { padding-inline: 12px; }
+}

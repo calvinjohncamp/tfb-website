@@ -9,6 +9,7 @@ const origin = 'https://tfb-comments-test.invalid';
 const browser = await chromium.launch({ headless: true });
 try {
   const page = await browser.newPage({ serviceWorkers: 'block', viewport: { width: 1100, height: 1000 } });
+  page.setDefaultTimeout(8000);
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));
   await page.addInitScript(() => {
@@ -26,7 +27,7 @@ try {
     try { return route.fulfill({ body: readFileSync(path), contentType: types[extname(path)] || 'application/octet-stream' }); }
     catch { return route.fulfill({ status: 404, body: '' }); }
   });
-  await page.goto(origin);
+  await page.goto(origin + '/?tfbPresentation=1');
   await page.waitForFunction(() => TFB.ui);
   const result = await page.evaluate(async () => {
     const api = TFB.api;
@@ -67,17 +68,21 @@ try {
   await page.reload();
   await page.waitForFunction(() => TFB.ui?.state.member?.id === 'owner');
   await page.evaluate(() => { location.hash = '#chat'; });
-  await page.locator('[data-action="post-comments"]').first().waitFor();
-  assert.equal(await page.locator('.comment-list').count(), 0, 'Comments stay out of the feed');
+  await page.locator('[data-action="comment-unlock"]').first().waitFor();
+  assert.equal(await page.locator('.chat-replies .comment').count(), 4, 'Comments appear beside each feed post');
+  assert.equal(await page.locator('[data-comment-form]').count(), 0, 'The composer opens only on request');
   // The bell opens a complete thread and marks only that thread as read.
   await page.locator('[data-action="inbox"]').click();
   const noticeId = await page.evaluate(() => 'comments-' + commentTest.first);
   await page.locator(`[data-open="${noticeId}"]`).click();
-  await page.locator('.comment').last().waitFor();
+  await page.waitForFunction(() => location.hash.startsWith('#chat/beitrag/') && document.querySelectorAll('.comment').length === 3);
   assert.equal(await page.locator('.comment').count(), 3);
   assert.equal(await page.locator('.comment-text img').count(), 0, 'Comment text is escaped');
   assert.equal(await page.evaluate(() => TFB.api.commentNotices().length), 1);
+  await page.getByRole('button', {name:'Dein Kommentar', exact:true}).click();
   await page.locator('[data-comment-form] textarea').fill('Antwort des Verfassers');
+  await page.locator('.comment-emoji summary').click();
+  await page.locator('[data-comment-emoji="🎾"]').click();
   await page.locator('[data-comment-form] [type="submit"]').click();
   await page.waitForFunction(() => document.querySelectorAll('.comment').length === 4);
   assert.equal(await page.evaluate(() => TFB.api.commentNotices().length), 1);
@@ -102,7 +107,7 @@ try {
   await remove.click(); await remove.click();
   await page.waitForFunction(() => document.querySelectorAll('.comment').length === 4);
   // Admin can remove another person's comment, but cannot edit it.
-  await page.evaluate(async () => { await useCommentMember('moderator', true); TFB.api.secureDirectory = true; await TFB.ui.renderView(); });
+  await page.evaluate(async () => { await useCommentMember('moderator', true); TFB.api.mode = 'test'; TFB.api.secureDirectory = true; await TFB.ui.renderView(); });
   if (await page.evaluate(() => TFB.ui.state.member?.adminHidden)) await page.locator('[data-action="admin-toggle"]').click();
   assert.equal(await page.locator('.comment [data-action="comment-edit"]').count(), 0);
   const modRemove = page.locator('.comment [data-action="comment-delete"]').first();
@@ -111,6 +116,7 @@ try {
   // Photo replies: reject four files, allow three, require consent, open gallery.
   const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jR1kAAAAASUVORK5CYII=', 'base64');
   const files = Array.from({ length: 4 }, (_, i) => ({ name: `foto-${i}.png`, mimeType: 'image/png', buffer: png }));
+  await page.getByRole('button', {name:'Dein Kommentar', exact:true}).click();
   const replyForm = page.locator('[data-comment-form]');
   await replyForm.locator('[data-comment-upload]').setInputFiles(files);
   await replyForm.locator('.form-error').getByText('Pro Kommentar sind höchstens 3 Fotos möglich.').waitFor();
@@ -122,7 +128,7 @@ try {
   await replyForm.locator('[type="submit"]').click();
   const photoReply = page.locator('.comment').filter({ has: page.locator('.message-collage.n3') });
   await photoReply.waitFor();
-  assert.equal(await photoReply.locator('img').count(), 3);
+  assert.equal(await photoReply.locator('.message-collage img').count(), 3);
   await photoReply.locator('[data-action="comment-gallery"]').nth(1).click();
   await page.locator('.viewer.gallery').waitFor();
   await page.locator('.viewer-close').click();
@@ -154,10 +160,31 @@ try {
   await compose.locator('[type="submit"]').click();
   await page.getByRole('heading', { name: 'Freiwillige Überschrift', exact: true }).waitFor();
   assert.deepEqual(await page.evaluate(async () => (await TFB.api.posts('club')).find(p => p.title === 'Freiwillige Überschrift').alsoTeams), ['herren-55-1']);
+  await page.locator('[data-action="post-new"]').first().click();
+  await compose.locator('[name="title"]').fill('Gestaltetes Hochformat');
+  const portrait = await page.evaluate(() => {
+    const canvas = document.createElement('canvas'); canvas.width = 80; canvas.height = 100;
+    canvas.getContext('2d').fillRect(0,0,80,100);
+    return canvas.toDataURL().split(',')[1];
+  });
+  await compose.locator('[data-cphoto]').setInputFiles({name:'hochformat.png', mimeType:'image/png', buffer:Buffer.from(portrait,'base64')});
+  await compose.getByRole('button',{name:'Gestalten',exact:true}).click();
+  const editor = page.getByRole('dialog',{name:'Chat-Beitrag gestalten'});
+  await editor.getByRole('button',{name:'+ Text',exact:true}).click();
+  await editor.locator('[name=layerText]').fill('Text auf dem Foto');
+  await editor.getByRole('button',{name:'Übernehmen',exact:true}).click();
+  await compose.locator('[name="photoOk"]').check();
+  await compose.locator('[type="submit"]').click();
+  const designed = page.locator('.chat-post-row.has-designed-media').filter({hasText:'Gestaltetes Hochformat'});
+  await designed.getByText('Text auf dem Foto',{exact:true}).waitFor();
+  await designed.getByRole('button',{name:'Dein Kommentar',exact:true}).click();
+  await page.locator('[data-comment-form] textarea').fill('Auch hier kommentierbar');
+  await page.locator('[data-comment-form] [type=submit]').click();
+  await designed.locator('.chat-replies').getByText('Auch hier kommentierbar',{exact:true}).waitFor();
   await page.evaluate(() => { location.hash = '#chat/alle'; });
   await page.locator('.mini-comment-count').first().waitFor();
   await page.locator('.mini').filter({ hasText: 'Spontane Nachricht ohne Überschrift' }).click();
-  await page.locator('.post-comments').waitFor();
+  await page.locator('.chat-replies').waitFor();
   for (const width of [1100, 768, 390, 320]) {
     await page.setViewportSize({ width, height: 900 });
     assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), `No overflow at ${width}px`);

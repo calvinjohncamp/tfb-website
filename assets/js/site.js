@@ -1189,7 +1189,7 @@
   const teamLabel = (key) => { const f = findTeam(key); return f ? f.team.name.replace(/\s*\(.*?\)/g, '') : key; };
   const initialsOf = (name) => String(name || '?').split(' ').map((x) => x[0]).join('').slice(0, 2).toUpperCase();
 
-  function postHtml(p, loggedIn) {
+  function postHtml(p, loggedIn, options = {}) {
     p = { ...p, canModerate: p.canModerate && Boolean(ui().state.member?.isAdmin) };
     const imgs = (p.images || []).filter(shownImage);
     return `
@@ -1199,10 +1199,12 @@
           <span class="fpost-who"><b>${esc(p.author)}</b>
             <small>${esc(whenText(p.createdAt))}${p.editedAt ? ' · bearbeitet' : ''}${p.fromClub ? ' · auch im Clubgeflüster' : ''}${p.teaser ? ` · <a href="#team/${esc(p.team)}">Insider News · ${esc(teamLabel(p.team))}</a>` : ''}${p.hidden ? ' · <em>ausgeblendet</em>' : ''}</small></span>
         </header>
-        ${p.title ? `<h3 class="fpost-title">${esc(p.title)}</h3>` : ''}
+        ${options.chat ? `<div class="fpost-heading">${p.title ? `<h3 class="fpost-title">${esc(p.title)}</h3>` : '<span></span>'}
+          ${p.hidden ? '' : `<button type="button" class="btn small chat-comment-button" data-action="comment-unlock" data-id="${esc(p.id)}">Dein Kommentar</button>`}</div>`
+          : p.title ? `<h3 class="fpost-title">${esc(p.title)}</h3>` : ''}
         ${p.text ? `<div class="fpost-text">${postText(p.text)}</div>` : ''}
-        ${imgs.length ? `<div class="message-collage n${imgs.length}">${imgs.map((ref, index) => `<button type="button" class="message-photo" data-action="post-gallery" data-id="${esc(p.id)}" data-index="${index}" aria-label="Foto ${index + 1} von ${imgs.length} ansehen">${picture(ref, ref, '')}</button>`).join('')}</div>` : ''}
-        <a class="post-comments-link" href="#chat/beitrag/${encodeURIComponent(p.id)}" data-action="post-comments" data-id="${esc(p.id)}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H5l-3 3V11.5A7.5 7.5 0 0 1 9.5 4h3a7.5 7.5 0 0 1 7.5 7.5Z"/></svg>${p.commentCount ? `${p.commentCount} ${p.commentCount === 1 ? 'Kommentar' : 'Kommentare'}` : 'Kommentieren'}</a>
+        ${options.media ?? (imgs.length ? `<div class="message-collage n${imgs.length}">${imgs.map((ref, index) => `<button type="button" class="message-photo" data-action="post-gallery" data-id="${esc(p.id)}" data-index="${index}" aria-label="Foto ${index + 1} von ${imgs.length} ansehen">${picture(ref, ref, '')}</button>`).join('')}</div>` : '')}
+        ${options.actions ?? (options.chat ? '' : `<a class="post-comments-link" href="#chat/beitrag/${encodeURIComponent(p.id)}" data-action="post-comments" data-id="${esc(p.id)}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H5l-3 3V11.5A7.5 7.5 0 0 1 9.5 4h3a7.5 7.5 0 0 1 7.5 7.5Z"/></svg>${p.commentCount ? `${p.commentCount} ${p.commentCount === 1 ? 'Kommentar' : 'Kommentare'}` : 'Kommentieren'}</a>`)}
         ${loggedIn ? `<footer class="fpost-tools">
           ${p.mine ? `<button type="button" data-action="post-edit" data-id="${esc(p.id)}">Bearbeiten</button>${p.fromClub ? '' : `<button type="button" data-action="post-delete" data-id="${esc(p.id)}">Löschen</button>`}` : ''}
           ${p.fromClub && (p.mine || p.canModerate) ? `<button type="button" data-action="post-unteam" data-id="${esc(p.id)}" data-team="${esc(p.shownIn)}">Aus dieser Mannschaft entfernen</button>` : ''}
@@ -1213,23 +1215,53 @@
   }
   async function commentsMarkup(post) {
     const { api, state } = ui();
-    const comments = await api.comments(post.id);
-    const may = state.member ? await api.canWrite(post.scope) : { reason: 'login' };
-    return `<section class="post-comments" id="post-comments" aria-label="Kommentare">
-      <h2>${comments.length ? `${comments.length} ${comments.length === 1 ? 'Kommentar' : 'Kommentare'}` : 'Kommentare'}</h2>
+    const comments = (await api.comments(post.id)).slice().reverse();
+    if (!comments.length) return '';
+    return `<aside class="chat-replies" aria-label="Kommentare">
       ${comments.length ? `<div class="comment-list">${comments.map(c => `<article class="comment" data-comment="${esc(c.id)}">
-        <header><b>${esc(c.author)}</b><small>${esc(whenText(c.createdAt))}${c.editedAt ? ' · bearbeitet' : ''}</small></header>
+        <span class="fpost-avatar">${c.avatar ? `<img src="${esc(c.avatar)}" alt="">` : esc(initialsOf(c.author))}</span><div class="chat-reply-body"><header><b>${esc(c.author)}</b><small>${esc(whenText(c.createdAt))}${c.editedAt ? ' · bearbeitet' : ''}</small></header>
         ${c.text ? `<div class="comment-text">${postText(c.text)}</div>` : ''}
         ${(c.images || []).length ? `<div class="message-collage n${c.images.length}">${c.images.map((ref, index) => `<button type="button" class="message-photo" data-action="comment-gallery" data-post="${esc(post.id)}" data-id="${esc(c.id)}" data-index="${index}" aria-label="Foto ${index + 1} von ${c.images.length} ansehen">${picture(ref, ref, '')}</button>`).join('')}</div>` : ''}
         ${c.mine || (c.canModerate && state.member?.isAdmin) ? `<footer>${c.mine ? `<button type="button" data-action="comment-edit" data-id="${esc(c.id)}" data-post="${esc(post.id)}">Bearbeiten</button>` : ''}<button type="button" data-action="comment-delete" data-id="${esc(c.id)}">${c.mine ? 'Löschen' : 'Entfernen (Verwaltung)'}</button></footer>` : ''}
-      </article>`).join('')}</div>` : '<p class="muted">Noch keine Kommentare. Schreib die erste Antwort.</p>'}
-      ${post.hidden ? '<p class="muted">Dieser Beitrag ist ausgeblendet. Neue Kommentare sind hier nicht möglich.</p>' : may.ok ? `<form data-comment-form="${esc(post.id)}" class="comment-form">
-        <label class="field"><span>Dein Kommentar</span><textarea name="text" rows="3" maxlength="2000" placeholder="Dein Kommentar …"></textarea></label>
-        <div data-comment-attachments>${commentAttachments([])}</div>
-        <p class="form-error" role="alert"></p><button type="submit" class="btn signal">Senden</button></form>`
-        : state.member ? may.reason === 'team' ? '<p class="muted">Hier kommentieren die Spieler dieser Mannschaft.</p>' : `<button type="button" class="btn" data-action="comment-unlock" data-id="${esc(post.id)}">${may.reason === 'parents' ? 'Einverständnis der Eltern hinterlegen' : 'Hinweise bestätigen und kommentieren'}</button>`
-        : '<button type="button" class="btn" data-action="login">Zum Kommentieren anmelden</button>'}
-    </section>`;
+      </div></article>`).join('')}</div>` : ''}
+    </aside>`;
+  }
+
+  const commentEmojis = ['😊','😂','😉','😍','😮','😅','👍','👏','🙌','💪','🙏','❤️','🎉','🔥','✨','💯','🎾','🏆','📸','☀️'];
+  const emojiPicker = () => `<details class="comment-emoji"><summary class="btn small">☺ Emoji</summary>
+    <div>${commentEmojis.map(emoji => `<button type="button" data-comment-emoji="${emoji}">${emoji}</button>`).join('')}</div></details>`;
+  document.addEventListener('click', e => {
+    const button = e.target.closest('[data-comment-emoji]');
+    if (!button) return;
+    const input = button.closest('form').elements.text;
+    const emoji = button.dataset.commentEmoji;
+    if (input.value.length - input.selectionEnd + input.selectionStart + emoji.length > input.maxLength) return;
+    input.setRangeText(emoji, input.selectionStart, input.selectionEnd, 'end');
+    button.closest('details').open = false;
+    input.focus();
+  });
+
+  async function openComment(post) {
+    const { api, state, openSheet, toast } = ui();
+    if (!post || post.hidden) return;
+    if (!state.member) { document.querySelector('.top-actions [data-action="login"]')?.click(); return; }
+    const may = await api.canWrite(post.scope);
+    const resume = () => openComment(post);
+    if (may.reason === 'parents') return openParentConsent(post.scope, resume);
+    if (may.reason === 'rules') return openRules(post.scope, resume);
+    if (!may.ok) return toast('Hier kommentieren die Spieler dieser Mannschaft.');
+    openSheet(`<form data-comment-form="${esc(post.id)}" class="editor comment-form">
+      <h2>Dein Kommentar</h2>
+      <textarea name="text" rows="4" maxlength="2000" aria-label="Dein Kommentar" placeholder="Dein Kommentar …"></textarea>
+      ${emojiPicker()}<div data-comment-attachments>${commentAttachments([])}</div>
+      <p class="form-error" role="alert"></p><button type="submit" class="btn signal">Senden</button></form>`);
+    document.querySelector('[data-comment-form] textarea')?.focus();
+  }
+
+  async function chatPostMarkup(post) {
+    const media = post.designs && await import('./chat-media.js').then(studio => studio.publishedGallery(post, ref => images[ref] || ref));
+    const replies = await commentsMarkup(post);
+    return `<div class="chat-post-row${media && post.designs.some(slide => slide.format !== '16 / 9') ? ' has-designed-media' : ''}">${postHtml(post, Boolean(ui().state.member), {chat:true, media:media || undefined})}${replies}</div>`;
   }
   document.addEventListener('submit', async e => {
     const form = e.target.closest('[data-comment-form]');
@@ -1240,8 +1272,8 @@
       const refs = commentImages.get(form) || [];
       if (refs.length && !form.elements.commentPhotoOk?.checked) throw Error('Bitte bestätigen, dass die abgebildeten Personen einverstanden sind.');
       await ui().api.addComment(form.dataset.commentForm, form.elements.text.value, { images: refs });
+      ui().closeSheet();
       await ui().renderView();
-      document.getElementById('post-comments')?.scrollIntoView({ block: 'start' });
     } catch (error) { form.querySelector('.form-error').textContent = error.message; button.disabled = false; }
   });
   const commentImages = new WeakMap();
@@ -1294,6 +1326,7 @@
     if (!state.member) action = `<button type="button" class="btn small" data-action="login">${esc(copy.loginLabel)}</button>`;
     else if (may.ok || may.reason === 'rules' || may.reason === 'parents') action = `<button type="button" class="btn signal small" data-action="post-new" data-scope="${esc(scope)}">${icon.plus} ${esc(copy.writeLabel)}</button>`;
     else if (may.reason === 'team') action = '<small class="muted">Schreiben dürfen die Spieler dieser Mannschaft.</small>';
+    const cards = await Promise.all(shown.map(p => opts.chat ? chatPostMarkup(p) : postHtml(p, Boolean(state.member))));
     const overviewLink = opts.chat ? `<a class="btn small" href="#chat/alle">${esc(copy.allLabel)} ${icon.chevron}</a>` : `<a class="feed-overview" href="${isTeam ? '#gefluester/' + esc(scope.slice(5)) : '#chat/alle'}" title="Übersicht aller Beiträge mit Suche und Filtern" aria-label="Übersicht aller Beiträge">${icon.chevron}</a>`;
     return `
       <section class="feed" data-scope="${esc(scope)}">
@@ -1304,7 +1337,7 @@
             <div class="feed-actions">${action}${overviewLink}</div>
           </div>
         </header>
-        ${shown.length ? `<div class="feed-list">${shown.map((p) => postHtml(p, Boolean(state.member))).join('')}</div>`
+        ${cards.length ? `<div class="feed-list">${cards.join('')}</div>`
           : `<p class="feed-empty muted">${isTeam ? 'Noch keine Insider News – schreibt den ersten Bericht!' : esc(copy.feedEmpty)}</p>`}
         ${list.length > shown.length ? `<button type="button" class="link center" data-action="feed-more" data-scope="${esc(scope)}">${esc(copy.olderLabel)} (${list.length - shown.length})</button>` : ''}
         ${isTeam && state.member ? `<details class="feed-roster"><summary>Wer darf hier schreiben?</summary><p class="small muted">Die gemeldeten Spieler der Mannschaft – im Echtbetrieb automatisch aus der nuLiga-Spielermeldung – und die Admins${roster.length ? `: ${esc(roster.join(', '))}` : '.'}</p></details>` : ''}
@@ -1371,10 +1404,9 @@
       if (!p) return `${ui().viewHead('Chat', '', false)}<p class="muted">Dieser Beitrag ist nicht mehr verfügbar.</p>`;
       postCache[p.id] = p;
       if (ui().state.member) await ui().api.readChatPosts([p.id]);
-      const comments = await commentsMarkup(p);
       if (ui().state.member) await ui().api.readCommentPosts([p.id]);
       setTimeout(() => TFB.inbox?.refresh(), 0);
-      return `<header class="view-head"><div><h1>Chat</h1></div><a class="view-close" href="#chat" aria-label="Zurück zum Chat">${ui().icon.close}</a></header><div class="chat-stream">${postHtml(p, Boolean(ui().state.member))}${comments}</div>`;
+      return `<header class="view-head"><div><h1>Chat</h1></div><a class="view-close" href="#chat" aria-label="Zurück zum Chat">${ui().icon.close}</a></header><div class="chat-stream">${await chatPostMarkup(p)}</div>`;
     }
     if (location.hash.split('/')[1] === 'alle') return overviewView();
     await ensure();
@@ -1432,7 +1464,28 @@
     if (!editId && may.reason === 'parents') return openParentConsent(scope);
     if (!editId && may.reason === 'rules') return openRules(scope);
     const existing = editId ? postCache[editId] : null;
-    const draft = { title: existing ? (existing.title || '') : '', text: existing ? existing.text : '', images: existing ? (existing.images || []).filter(shownImage) : [], alsoTeams: existing ? (existing.alsoTeams || []) : [] };
+    const draft = {
+      title: existing?.title || '', text: existing?.text || '',
+      alsoTeams: existing?.alsoTeams || [],
+      dots: existing?.dots || 'bottom', designed: Boolean(existing?.designs?.length),
+      media: existing?.designs?.length
+        ? existing.designs.map(design => ({ref:design.ref,design:structuredClone(design)}))
+        : (existing?.images || []).filter(shownImage).map(ref => ({ref})),
+    };
+    const readFile = file => new Promise((resolve,reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = () => reject(Error('Die Datei konnte nicht gelesen werden.'));
+      reader.readAsDataURL(file);
+    });
+    const videoSize = file => new Promise((resolve,reject) => {
+      const video = document.createElement('video');
+      const url = URL.createObjectURL(file);
+      video.preload = 'metadata';
+      video.onloadedmetadata = () => { URL.revokeObjectURL(url); resolve([video.videoWidth,video.videoHeight]); };
+      video.onerror = () => { URL.revokeObjectURL(url); reject(Error('Das Video kann in diesem Browser nicht gelesen werden.')); };
+      video.src = url;
+    });
     const myTeams = scope === 'club' ? (state.member.teams || []) : [];
     const isTeam = scope.startsWith('team:');
     const render = () => {
@@ -1442,12 +1495,14 @@
           <textarea name="text" rows="5" maxlength="2000" placeholder="${isTeam ? 'Wie lief das Spiel? Was war los bei der Tour?' : 'Was gibt’s Neues im Club?'}">${esc(draft.text)}</textarea>
           <label class="field compose-heading"><span>Überschrift (freiwillig)</span><input class="compose-title" name="title" maxlength="90" value="${esc(draft.title)}" placeholder="z. B. ${isTeam ? 'Auswärtssieg in Hennef' : 'Grillabend am Mittwoch'}"></label>
           <div class="compose-photos">
-            ${draft.images.map((ref, i) => `<div class="gallery-thumb">${picture(ref, ref)}${frameButton(ref, true)}<button type="button" data-cremove="${i}" aria-label="Foto entfernen">×</button>
-              <span class="thumb-move"><button type="button" data-cmove="${i}" data-dir="-1" ${i === 0 ? 'disabled' : ''} aria-label="Nach vorne">‹</button><button type="button" data-cmove="${i}" data-dir="1" ${i === draft.images.length - 1 ? 'disabled' : ''} aria-label="Nach hinten">›</button></span></div>`).join('')}
-            ${draft.images.length < 6 ? `<label class="gallery-add">${ui().icon.camera}<span>Foto${draft.images.length ? '' : 's'}</span><input type="file" accept="image/*" multiple data-cphoto hidden></label>` : ''}
+            ${draft.media.map(({ref}, i) => `<div class="compose-medium"><div class="gallery-thumb">${ref.startsWith('vid:') ? '<span class="compose-video">▶ Video</span>' : picture(ref, ref)}${scope !== 'club' && !ref.startsWith('vid:') ? frameButton(ref, true) : ''}
+              <button type="button" data-cremove="${i}" aria-label="Medium entfernen">×</button>
+              <span class="thumb-move"><button type="button" data-cmove="${i}" data-dir="-1" ${i === 0 ? 'disabled' : ''} aria-label="Nach vorne">‹</button><button type="button" data-cmove="${i}" data-dir="1" ${i === draft.media.length - 1 ? 'disabled' : ''} aria-label="Nach hinten">›</button></span></div>
+              ${scope === 'club' ? `<button type="button" class="btn small" data-cdesign="${i}">Gestalten</button>` : ''}</div>`).join('')}
+            ${draft.media.length < 6 ? `<label class="gallery-add">${ui().icon.camera}<span>${scope === 'club' ? 'Medien hinzufügen' : 'Fotos'}</span><input type="file" accept="${scope === 'club' ? 'image/*,video/mp4,video/webm' : 'image/*'}" multiple data-cphoto hidden></label>` : ''}
           </div>
-          <p class="small muted">Bis zu 6 Fotos.</p>
-          ${draft.images.length ? '<label class="meet-check"><input type="checkbox" name="photoOk" required><span>Die abgebildeten Personen sind mit der Veröffentlichung einverstanden.</span></label>' : ''}
+          <p class="small muted">${scope === 'club' ? 'Bis zu 6 Fotos oder kurze Videos in Hoch- oder Querformat. Videos als MP4 oder WebM bis 5 MB.' : 'Bis zu 6 Fotos.'}</p>
+          ${draft.media.length ? '<label class="meet-check"><input type="checkbox" name="photoOk" required><span>Die abgebildeten Personen sind mit der Veröffentlichung einverstanden.</span></label>' : ''}
           ${scope === 'club' ? `<div class="compose-teams"><p class="small muted">${myTeams.length > 1 ? 'Auch in meinen Mannschaften anzeigen' : 'Auch in meiner Mannschaft anzeigen'}</p>
             ${myTeams.map(k => `<label class="meet-check"><input type="checkbox" name="alsoTeam" value="${esc(k)}" ${draft.alsoTeams.includes(k) ? 'checked' : ''}><span>${esc(teamLabel(k))}</span></label>`).join('')}
             ${myTeams.length ? '' : '<p class="small muted">Deinem Konto ist noch keine Mannschaft zugeordnet.</p>'}
@@ -1462,40 +1517,90 @@
         draft.text = form.elements.text.value;
         draft.alsoTeams = [...draft.alsoTeams.filter(k => !myTeams.includes(k)), ...[...form.querySelectorAll('[name=alsoTeam]:checked')].map(input => input.value)];
       };
-      form.addEventListener('click', (e) => {
+      let busy = false;
+      const submit = form.querySelector('[type="submit"]');
+      const setBusy = value => { busy = value; submit.disabled = value; };
+      form.addEventListener('click', async e => {
+        if (busy) return;
         const rm = e.target.closest('[data-cremove]');
-        if (rm) { keep(); draft.images.splice(Number(rm.dataset.cremove), 1); render(); return; }
+        if (rm) { keep(); draft.media.splice(Number(rm.dataset.cremove), 1); render(); return; }
         const mv = e.target.closest('[data-cmove]');
-        if (mv) { keep(); const a = Number(mv.dataset.cmove); const b = a + Number(mv.dataset.dir); [draft.images[a], draft.images[b]] = [draft.images[b], draft.images[a]]; render(); }
+        if (mv) {
+          keep();
+          const a = Number(mv.dataset.cmove), b = a + Number(mv.dataset.dir);
+          [draft.media[a], draft.media[b]] = [draft.media[b], draft.media[a]];
+          render();
+          return;
+        }
+        const designButton = e.target.closest('[data-cdesign]');
+        if (!designButton) return;
+        keep();
+        setBusy(true);
+        try {
+          const media = draft.media[Number(designButton.dataset.cdesign)];
+          const studio = await import('./chat-media.js');
+          const source = media.file || (media.ref.startsWith('vid:') ? await api.getMemberVideo(existing.id,media.ref) : images[media.ref] || media.ref);
+          if (!form.isConnected) return;
+          studio.openLiveMediaEditor(media.design || studio.mediaDesign(media.ref,16,9),source,draft.dots,(design,dots) => {
+            media.design = design;
+            draft.dots = dots;
+            draft.designed = true;
+          });
+        } catch (error) { toast(error.message); }
+        finally { setBusy(false); }
       });
-      form.addEventListener('change', async (e) => {
-        if (!e.target.matches('[data-cphoto]') || !e.target.files.length) return;
+      form.addEventListener('change', async e => {
+        if (!e.target.matches('[data-cphoto]') || !e.target.files.length || busy) return;
         keep();
         const files = [...e.target.files];
-        if (files.length + draft.images.length > 6) { toast('Pro Beitrag sind höchstens 6 Fotos möglich.'); e.target.value = ''; return; }
+        if (files.length + draft.media.length > 6) { toast('Pro Beitrag sind höchstens 6 Medien möglich.'); e.target.value = ''; return; }
+        setBusy(true);
         try {
+          const studio = scope === 'club' ? await import('./chat-media.js') : null;
           for (const file of files) {
-            const img = await ui().loadImage(file);
-            const url = ui().largeImage(img, 1600);
-            const ref = await api.putMemberImage(url);
-            images[ref] = url;
-            draft.images.push(ref);
+            if (!form.isConnected) return;
+            if (file.type.startsWith('video/')) {
+              if (!studio || !['video/mp4','video/webm'].includes(file.type) || file.size > 5*1024*1024) throw Error('Bitte MP4 oder WebM bis 5 MB wählen.');
+              const [width,height] = await videoSize(file);
+              const ref = 'vid:' + crypto.randomUUID();
+              draft.media.push({ref,file,design:studio.mediaDesign(ref,width,height,'video')});
+              draft.designed = true;
+            } else {
+              const img = await ui().loadImage(file);
+              const url = ui().largeImage(img,1600);
+              const ref = await api.putMemberImage(url);
+              images[ref] = url;
+              draft.media.push({ref,design:studio?.mediaDesign(ref,img.naturalWidth,img.naturalHeight)});
+              if (studio && img.naturalHeight > img.naturalWidth) draft.designed = true;
+            }
           }
-          render();
-        } catch (err) { toast(err.message); }
+        } catch (error) { toast(error.message); }
+        finally { setBusy(false); if (form.isConnected) { keep(); render(); } }
       });
-      form.addEventListener('submit', async (e) => {
+      form.addEventListener('submit', async e => {
         e.preventDefault();
+        if (busy) return;
         keep();
         const err = form.querySelector('.form-error');
-        if (draft.images.length && !form.elements.photoOk.checked) { err.textContent = 'Bitte bestätigen, dass die Abgebildeten einverstanden sind.'; return; }
+        if (draft.media.length && !form.elements.photoOk.checked) { err.textContent = 'Bitte bestätigen, dass die Abgebildeten einverstanden sind.'; return; }
+        setBusy(true);
         try {
-          if (existing) await api.editPost(existing.id, draft);
-          else await api.addPost({ scope, ...draft });
+          for (const media of draft.media) {
+            if (!media.file) continue;
+            media.ref = await api.putMemberVideo(await readFile(media.file));
+            media.design.ref = media.ref;
+            delete media.file;
+          }
+          const studio = draft.designed ? await import('./chat-media.js') : null;
+          const payload = {title:draft.title,text:draft.text,alsoTeams:draft.alsoTeams,dots:draft.dots,
+            images:draft.media.filter(media => !media.ref.startsWith('vid:')).map(media => media.ref),
+            designs:studio ? draft.media.map(media => media.design || studio.mediaDesign(media.ref,16,9)) : []};
+          if (existing) await api.editPost(existing.id,payload);
+          else await api.addPost({scope,...payload});
           closeSheet();
           toast(existing ? 'Gespeichert' : 'Veröffentlicht – danke!', true);
           ui().renderView();
-        } catch (ex) { err.textContent = ex.message; }
+        } catch (error) { err.textContent = error.message; setBusy(false); }
       });
       form.elements.text.focus();
     };
@@ -2901,26 +3006,13 @@
       showNewsDatesTab(el);
     },
     'post-new': (el) => openCompose(el.dataset.scope),
-    'post-comments': (el) => {
-      ui().closeSheet();
-      const hash = '#chat/beitrag/' + encodeURIComponent(el.dataset.id);
-      if (location.hash !== hash) location.hash = hash;
-      else { document.getElementById('post-comments')?.scrollIntoView({ block: 'start' }); document.querySelector('[data-comment-form] textarea')?.focus(); }
-    },
-    'comment-unlock': async (el) => {
-      const post = postCache[el.dataset.id];
-      if (!post) return;
-      const resume = () => TFB.actions['comment-unlock'](el);
-      const may = await ui().api.canWrite(post.scope);
-      if (may.reason === 'parents') return openParentConsent(post.scope, resume);
-      if (may.reason === 'rules') return openRules(post.scope, resume);
-      await ui().renderView(); document.querySelector('[data-comment-form] textarea')?.focus();
-    },
+    'post-comments': (el) => openPost(el.dataset.id),
+    'comment-unlock': (el) => openComment(postCache[el.dataset.id]),
     'comment-edit': async (el) => {
       const { api, openSheet, closeSheet, toast } = ui();
       const comment = (await api.comments(el.dataset.post)).find(c => c.id === el.dataset.id && c.mine);
       if (!comment) return;
-      openSheet(`<form class="editor comment-edit-form" data-comment-edit><h2>Kommentar bearbeiten</h2><label class="field"><span>Dein Kommentar</span><textarea name="text" rows="4" maxlength="2000">${esc(comment.text)}</textarea></label><div data-comment-attachments>${commentAttachments(comment.images || [])}</div><p class="form-error" role="alert"></p><button type="submit" class="btn signal block">Speichern</button></form>`);
+      openSheet(`<form class="editor comment-edit-form" data-comment-edit><h2>Kommentar bearbeiten</h2><label class="field"><span>Dein Kommentar</span><textarea name="text" rows="4" maxlength="2000">${esc(comment.text)}</textarea></label>${emojiPicker()}<div data-comment-attachments>${commentAttachments(comment.images || [])}</div><p class="form-error" role="alert"></p><button type="submit" class="btn signal block">Speichern</button></form>`);
       const form = document.querySelector('[data-comment-edit]');
       commentImages.set(form, (comment.images || []).slice());
       form.addEventListener('submit', async e => {

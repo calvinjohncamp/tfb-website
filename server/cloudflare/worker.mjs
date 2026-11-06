@@ -1,6 +1,6 @@
 // TFB: protected member directory. Invitations/Kiosk remain a local simulation.
 import schema from './schema.sql';
-import {syncState, syncCommit, syncRevision, syncFaces, syncPhoto} from './app-sync.mjs';
+import {syncState, syncCommit, syncRevision, syncFaces, syncPhoto, syncUploadVideo, syncChatVideo} from './app-sync.mjs';
 import { managementPage } from './management.mjs';
 import {collectVisibility, visibilityReport} from './partner-visibility.mjs';
 import {publicPartnerContent,adminPartnerContent,savePartner,savePartnerSettings,savePartnerRotation,removePartner,partnerLogo} from './partner-management.mjs';
@@ -236,6 +236,11 @@ async function route(request, env, url) {
   if (request.method === 'GET' && path === '/app/revision') return {revision:await syncRevision(env,member)};
   if (request.method === 'POST' && path === '/app/photo') return syncPhoto(env,member,(await body(request)).id);
   if (request.method === 'POST' && path === '/app/faces') return syncFaces(env,member,(await body(request)).ids);
+  if (request.method === 'POST' && path === '/app/chat-video') {
+    await rate(env, request, 'chat-video', 30);
+    return syncUploadVideo(env,member,await body(request,7*1024*1024));
+  }
+  if (request.method === 'GET' && path === '/app/chat-video') return syncChatVideo(env,member,url.searchParams.get('post'),url.searchParams.get('ref'));
   if (request.method === 'GET' && path === '/app/state') return syncState(env,member);
   if (request.method === 'POST' && path === '/app/commit') return syncCommit(env,member,await body(request,8*1024*1024));
   if (request.method === 'GET' && path === '/auth/session') return { member: await publicMember(env, member) };

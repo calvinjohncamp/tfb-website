@@ -86,3 +86,35 @@ test('profile approval cannot be forged; pending and removed photos cannot be lo
   await f.commit([account(f.admin.id,{avatar:null,avatarLarge:null},1)]);
   assert.equal((await f.call('/app/photo',{id:f.admin.id},f.otherToken)).body.image,null);
 });
+
+test('chat design and video are shared only with members who may see the post', async () => {
+  const f = await fixture();
+  const objects = new Map();
+  f.env.CMS_BUCKET = {
+    async put(key, bytes, metadata) { objects.set(key, {bytes, ...metadata}); },
+    async head(key) { return objects.get(key); },
+    async get(key) { const item = objects.get(key); return item && {...item, body:item.bytes}; },
+  };
+  const mp4 = Buffer.from([0,0,0,12,102,116,121,112,0,0,0,0]);
+  const data = 'data:video/mp4;base64,' + mp4.toString('base64');
+  await f.commit([account(f.admin.id)]);
+  const upload = await f.call('/app/chat-video', {data}, f.adminToken);
+  assert.equal(upload.status, 200);
+  const slide = {ref:upload.body.ref, format:'4 / 5', layers:[{text:'Titel',color:'#abcdef'}], logo:'gelb'};
+  assert.equal((await f.commit([post('foreign-video',{designs:[slide]})],f.otherToken)).status,403);
+  assert.equal((await f.commit([post('video-post',{text:'', designs:[slide], dots:'top'})])).status,200);
+  const record = (await f.state(f.otherToken)).body.records.find(row => row.id === 'video-post');
+  assert.equal(record.value.designs[0].layers[0].text,'Titel');
+  assert.equal(record.value.dots,'top');
+  const path = '/app/chat-video?' + new URLSearchParams({post:'video-post',ref:slide.ref});
+  const {default:worker} = await import('./worker-test-loader.mjs');
+  const request = token => worker.fetch(new Request('https://tfb-api.test' + path, {headers:{
+    Origin:'https://joern-kaemper.de', ...(token ? {Authorization:'Bearer ' + token} : {}),
+  }}),f.env);
+  assert.equal((await request()).status,401);
+  const visible = await request(f.otherToken);
+  assert.equal(visible.headers.get('Content-Type'),'video/mp4');
+  assert.deepEqual(Buffer.from(await visible.arrayBuffer()),mp4);
+  assert.equal((await f.commit([post('video-post',{designs:[slide],hidden:true},1)])).status,200);
+  assert.equal((await request(f.otherToken)).status,404);
+});
