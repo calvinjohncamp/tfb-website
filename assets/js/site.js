@@ -284,7 +284,10 @@
         ${x.type === 'text' ? field('', `sec_${i}`, x.text, { area: true, rich: true, simple: true, rows: 6, placeholder: 'Text schreiben – Wort markieren, dann Fett, Kursiv oder Rot' })
           : x.type === 'h' ? `<textarea class="sec-h-input" name="sec_${i}" rows="1" placeholder="z. B. 365 Tage geöffnet">${esc(x.text || '')}</textarea>`
           : `<textarea class="sec-q-input" name="sec_${i}" rows="2" placeholder="z. B. Eat. Sleep. Padel. Repeat.">${esc(x.text || '')}</textarea>
-             <input class="sec-q-by" name="sec_${i}_by" value="${esc(x.by || '')}" placeholder="Zitat von (freiwillig)">`}
+             <details class="sec-q-source"${(x.by || '').trim() ? ' open' : ''}>
+               <summary>Herkunft des Zitats</summary>
+               <input class="sec-q-by" name="sec_${i}_by" value="${esc(x.by || '')}" aria-label="Herkunft des Zitats" placeholder="z. B. Seneca">
+             </details>`}
       </div>`).join('')}</div>
       <div class="sec-add"><b>Abschnitt hinzufügen</b>
         <span><button type="button" data-secadd="text">+ Text</button>
@@ -790,7 +793,10 @@
               return secs.map((x) => {
                 const color = x.color === 'signature' ? ' is-signature' : '';
                 if (x.type === 'h') return `<h2 class="story-h${color}">${esc(x.text)}</h2>`;
-                if (x.type === 'quote') return `<blockquote class="story-quote${color}"><p>${esc(x.text)}</p>${x.by ? `<cite>${esc(x.by)}</cite>` : ''}</blockquote>`;
+                if (x.type === 'quote') {
+                  const by = (x.by || '').trim();
+                  return `<blockquote class="story-quote${color}"><p>${esc(x.text)}</p>${by ? `<div class="story-quote-source"><span aria-hidden="true">→</span> ${esc(by)}</div>` : ''}</blockquote>`;
+                }
                 const html = first ? leadLetters(paragraphs(x.text), drop) : paragraphs(x.text);
                 first = false;
                 return `<div class="story-text">${html}</div>`;

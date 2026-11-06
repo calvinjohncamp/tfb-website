@@ -1535,7 +1535,8 @@ button.meet-series { cursor: pointer; }
 .story-quote p { font-family: var(--serif); font-size: clamp(1.5rem, 5vw, 2.1rem); line-height: 1.2; font-weight: 800; letter-spacing: -.02em; margin: 0; }
 .story-quote p::before { content: "„"; color: var(--quote-mark, var(--signal)); }
 .story-quote p::after { content: "“"; color: var(--quote-mark, var(--signal)); }
-.story-quote cite { display: block; margin-top: 10px; font-style: normal; font-size: .82rem; color: var(--muted); font-weight: 650; }
+.story-quote-source { margin-top: 8px; font-size: .8rem; line-height: 1.4; color: var(--muted); font-weight: 600; }
+.story-quote-source > span { margin-right: .2em; font-size: .9rem; font-weight: 850; }
 .story-foot { max-width: 680px; margin: 28px auto 0; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px; }
 .story-foot .feature-link { margin: 0; }
 
@@ -2432,6 +2433,8 @@ h1, h2, h3, .event h3, .feature-body h2, .story-head h1, .post-body h3 { -webkit
 }
 .sec:has(.sec-color option[value="signature"]:checked) :is(.sec-h-input, .sec-q-input) { color: var(--signal); }
 .sec:has(.sec-color option[value="signature"]:checked) .sec-q-input { border-left-color: var(--ink); }
+.sec-q-source { margin-top: 7px; }
+.sec-q-source summary { cursor: pointer; color: var(--muted); font-size: .78rem; font-weight: 650; }
 .sec-q-by { width: 100%; margin-top: 6px; border: 1.5px solid var(--line); border-radius: 10px; padding: 7px 10px; font-size: .85rem; background: var(--paper); }
 .sec-text { border-color: transparent; background: transparent; padding: 0; }
 .sec-text .sec-bar { padding: 0 2px; }
