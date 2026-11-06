@@ -936,8 +936,9 @@
         ${key === 'home' && !edit && !list.some(b => b.type === 'feature') ? contentOverviewLink(key) : ''}
         ${key === 'home' && edit ? `
           <section class="home-editor-settings" aria-label="Gestaltung und Menü">${lookPicker()}${navCard()}</section>
-          <div class="home-editor-add">${homeAddButton(list)}</div>` : ''}
+          ${homeAddButtons(list)}` : ''}
         ${blocks}
+        ${key === 'home' && edit ? homeAddButtons(list) : ''}
         ${edit && key !== 'home' && (key !== 'sport' || training) ? `<button type="button" class="btn block add-section" data-action="block-new">${icon.plus} Baustein hinzufügen</button>` : ''}
         ${edit || legal ? '' : partnerSlot(key, page.partnerKicker || 'Präsentiert von')}
       </div>`;
@@ -1034,12 +1035,13 @@
   }
 
   const MAX_HOME_FEATURES = 10;
-  function homeAddButton(list) {
+  function homeAddButtons(list) {
     const n = list.filter((b) => b.type === 'feature').length;
     const feature = n >= MAX_HOME_FEATURES
       ? `<p class="muted small add-limit">Die Startseite zeigt höchstens ${MAX_HOME_FEATURES} Themen. Für ein neues Thema bitte zuerst eines löschen.</p>`
       : `<button type="button" class="btn block add-section add-feature" data-action="block-add" data-type="feature">${ui().icon.plus} Neues Thema <small>${n} von ${MAX_HOME_FEATURES}</small></button>`;
-    return feature + ['gallery', 'collage'].map(type => `<button type="button" class="btn block add-section" data-action="block-add" data-type="${type}">${ui().icon.camera} ${type === 'gallery' ? 'Galerie' : 'Collage'} hinzufügen</button>`).join('');
+    const photoButtons = ['collage', 'gallery'].map(type => `<button type="button" class="btn block add-section" data-action="block-add" data-type="${type}">${ui().icon.camera} ${type === 'gallery' ? 'Galerie' : 'Collage'} hinzufügen</button>`).join('');
+    return `<div class="home-editor-add">${feature}${photoButtons}</div>`;
   }
   let requestedHomeLook = null;
   let savingHomeLook = false;
