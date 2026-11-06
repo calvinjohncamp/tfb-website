@@ -1495,14 +1495,6 @@
       reader.onerror = () => reject(Error('Die Datei konnte nicht gelesen werden.'));
       reader.readAsDataURL(file);
     });
-    const videoSize = file => new Promise((resolve,reject) => {
-      const video = document.createElement('video');
-      const url = URL.createObjectURL(file);
-      video.preload = 'metadata';
-      video.onloadedmetadata = () => { URL.revokeObjectURL(url); resolve([video.videoWidth,video.videoHeight]); };
-      video.onerror = () => { URL.revokeObjectURL(url); reject(Error('Das Video kann in diesem Browser nicht gelesen werden.')); };
-      video.src = url;
-    });
     const myTeams = scope === 'club' ? (state.member.teams || []) : [];
     const isTeam = scope.startsWith('team:');
     const render = () => {
@@ -1516,14 +1508,15 @@
               <button type="button" data-cremove="${i}" aria-label="Medium entfernen">×</button>
               <span class="thumb-move"><button type="button" data-cmove="${i}" data-dir="-1" ${i === 0 ? 'disabled' : ''} aria-label="Nach vorne">‹</button><button type="button" data-cmove="${i}" data-dir="1" ${i === draft.media.length - 1 ? 'disabled' : ''} aria-label="Nach hinten">›</button></span></div>
               ${scope === 'club' ? `<button type="button" class="btn small" data-cdesign="${i}">Gestalten</button>` : ''}</div>`).join('')}
-            ${draft.media.length < 6 ? `<label class="gallery-add">${ui().icon.camera}<span>${scope === 'club' ? 'Medien hinzufügen' : 'Fotos'}</span><input type="file" accept="${scope === 'club' ? 'image/*,video/mp4,video/webm' : 'image/*'}" multiple data-cphoto hidden></label>` : ''}
+            ${draft.media.length < 6 ? `<label class="gallery-add">${ui().icon.camera}<span>${scope === 'club' ? 'Medien hinzufügen' : 'Fotos'}</span><input type="file" accept="${scope === 'club' ? 'image/*,video/*,.mov,.mp4,.m4v,.webm' : 'image/*'}" multiple data-cphoto hidden></label>` : ''}
           </div>
-          <p class="small muted">${scope === 'club' ? 'Bis zu 6 Fotos oder kurze Videos in Hoch- oder Querformat. Videos als MP4 oder WebM bis 5 MB.' : 'Bis zu 6 Fotos.'}</p>
+          <p class="small muted">${scope === 'club' ? 'Bis zu 6 Fotos oder Videos. Clips bis 30 Sekunden werden bei Bedarf automatisch verkleinert.' : 'Bis zu 6 Fotos.'}</p>
           ${draft.media.length ? '<label class="meet-check"><input type="checkbox" name="photoOk" required><span>Die abgebildeten Personen sind mit der Veröffentlichung einverstanden.</span></label>' : ''}
           ${scope === 'club' ? `<div class="compose-teams"><p class="small muted">${myTeams.length > 1 ? 'Auch in meinen Mannschaften anzeigen' : 'Auch in meiner Mannschaft anzeigen'}</p>
             ${myTeams.map(k => `<label class="meet-check"><input type="checkbox" name="alsoTeam" value="${esc(k)}" ${draft.alsoTeams.includes(k) ? 'checked' : ''}><span>${esc(teamLabel(k))}</span></label>`).join('')}
             ${myTeams.length ? '' : '<p class="small muted">Deinem Konto ist noch keine Mannschaft zugeordnet.</p>'}
           </div>` : ''}
+          <p class="small muted" role="status" data-video-progress hidden></p>
           <p class="form-error" role="alert"></p>
           <button type="submit" class="btn signal block big">${existing ? 'Speichern' : 'Veröffentlichen'}</button>
           <p class="fineprint">Öffentlich sichtbar mit deinem Namen${state.member.isMinor ? ' (Vorname und Anfangsbuchstabe)' : ''}.</p>
@@ -1536,7 +1529,12 @@
       };
       let busy = false;
       const submit = form.querySelector('[type="submit"]');
-      const setBusy = value => { busy = value; submit.disabled = value; };
+      const picker = form.querySelector('[data-cphoto]');
+      const setBusy = value => {
+        busy = value;
+        submit.disabled = value;
+        if (picker) picker.disabled = value;
+      };
       form.addEventListener('click', async e => {
         if (busy) return;
         const rm = e.target.closest('[data-cremove]');
@@ -1572,16 +1570,30 @@
         const files = [...e.target.files];
         if (files.length + draft.media.length > 6) { toast('Pro Beitrag sind höchstens 6 Medien möglich.'); e.target.value = ''; return; }
         setBusy(true);
+        const controller = new AbortController();
+        const disconnect = new MutationObserver(() => {
+          if (!form.isConnected) controller.abort();
+        });
+        disconnect.observe(document.getElementById('sheet-root'), {childList: true, subtree: true});
+        const progress = form.querySelector('[data-video-progress]');
         try {
           const studio = scope === 'club' ? await import('./chat-media.js') : null;
           for (const file of files) {
             if (!form.isConnected) return;
-            if (file.type.startsWith('video/')) {
-              if (!studio || !['video/mp4','video/webm'].includes(file.type) || file.size > 5*1024*1024) throw Error('Bitte MP4 oder WebM bis 5 MB wählen.');
-              const [width,height] = await videoSize(file);
+            if (file.type.startsWith('video/') || /\.(mov|mp4|m4v|webm)$/i.test(file.name)) {
+              if (!studio) throw Error('Bitte ein Foto auswählen.');
+              progress.hidden = false;
+              progress.textContent = 'Video wird vorbereitet …';
+              const {prepareChatVideo} = await import('./chat-video.js');
+              const result = await prepareChatVideo(file, value => {
+                const message = `Video wird verkleinert … ${Math.min(99, Math.floor(value * 20) * 5)} %`;
+                if (progress.textContent !== message) progress.textContent = message;
+              }, controller.signal);
+              if (!form.isConnected) return;
               const ref = 'vid:' + crypto.randomUUID();
-              draft.media.push({ref,file,design:studio.mediaDesign(ref,width,height,'video')});
+              draft.media.push({ref,file:result.file,design:studio.mediaDesign(ref,result.width,result.height,'video')});
               draft.designed = true;
+              progress.hidden = true;
             } else {
               const img = await ui().loadImage(file);
               const url = ui().largeImage(img,1600);
@@ -1591,8 +1603,12 @@
               if (studio && img.naturalHeight > img.naturalWidth) draft.designed = true;
             }
           }
-        } catch (error) { toast(error.message); }
-        finally { setBusy(false); if (form.isConnected) { keep(); render(); } }
+        } catch (error) { if (!controller.signal.aborted) toast(error.message); }
+        finally {
+          disconnect.disconnect();
+          setBusy(false);
+          if (form.isConnected) { keep(); render(); }
+        }
       });
       form.addEventListener('submit', async e => {
         e.preventDefault();

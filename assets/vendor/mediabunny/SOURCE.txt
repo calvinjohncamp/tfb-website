@@ -1,0 +1,4 @@
+Mediabunny 1.65.2 by Vanilagy and contributors, MPL 2.0.
+This is the unmodified browser ES module bundle from the npm release.
+Corresponding source: https://registry.npmjs.org/mediabunny/-/mediabunny-1.65.2.tgz (package/src).
+Project: https://github.com/Vanilagy/mediabunny
