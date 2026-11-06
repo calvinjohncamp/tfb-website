@@ -1,6 +1,29 @@
 # TFB – Übergabe für die nächste Sitzung
 
-## Aktueller Gesamtstand und Wiederaufnahme – 26.10.2026
+## Wiederaufnahme – 06.11.2026
+
+- Live-Website v267 unter https://joern-kaemper.de. Veröffentlichung über GitHub
+  Pages aus `calvinjohncamp/tfb-website`, Branch `main`, Workflow
+  `publish-website.yml`. Der aktive Dropbox-Arbeitsordner ist `01 Software`.
+  Dort liegen ältere lokale Änderungen neben dem Live-Stand. Bei Übernahmen
+  gezielt Änderungen abgleichen und die vorhandene Arbeit erhalten.
+- Cloudflare-Worker `tfb-api` zuletzt für Typografie und Logo-Auswahl
+  aktualisiert (Version `7513fc08-8cab-4de0-99e9-e7cbe0e8764b`).
+  Die Korrekturen in v267 betreffen nur die Website. Kein Schemawechsel.
+- Video-Standbilder und Startlogik liegen in `assets/js/chat-media.js`,
+  `assets/js/app.js` und `assets/js/partner-visibility.js`. Die Videoquelle
+  bleibt im privaten R2-Bucket und wird in Sichtnähe pro Ansicht einmal über den
+  vorhandenen geschützten Endpunkt geladen. Derselbe Abruf dient Standbild und
+  Wiedergabe. Die Gestaltung der Beiträge liegt in D1. Vorhandene Beiträge
+  müssen für das Standbild weder bearbeitet noch neu hochgeladen werden.
+- Die Tests für Splash prüfen in Chromium und WebKit Erstaufruf, drei Reloads
+  und direkte Links. Beim Reload muss die sichtbare Splash bereits vor der
+  App-Kopfzeile vorhanden sein. Für Videos Hoch- und Querformat, Editor,
+  Vollbild und Start nach Klick prüfen. Keine Testbeiträge in der Live-App nötig.
+- Der letzte ausführlich dokumentierte Sicherungsnachweis steht im folgenden
+  Abschnitt. Daraus keinen neuen erfolgreichen Nachtlauf ableiten.
+
+## Historischer Gesamtstand – 26.10.2026
 
 Aktueller veröffentlichter Stand ist **v233** auf https://joern-kaemper.de.
 Die folgenden älteren Versions- und Konzeptabschnitte sind historische Nachweise;

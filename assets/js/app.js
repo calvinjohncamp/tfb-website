@@ -106,7 +106,7 @@
 
   // ---------- Start ----------
   async function boot() {
-    await TFB.partnerContent?.ready;
+    const splash = TFB.partnerVisibility?.start();
     await TFB.editorial?.ready;
     state.catalog = await api.catalog();
     state.member = await api.session();
@@ -115,8 +115,12 @@
     const nav = (performance.getEntriesByType && performance.getEntriesByType('navigation')[0]) || {};
     const deepLink = location.hash.includes('/');
     if (!location.hash || (nav.type !== 'reload' && !deepLink && !['#impressum','#satzung','#partnerzahlen','#partner'].includes(location.hash))) history.replaceState(null, '', '#home');
+    // Decide on the splash before mounting the app shell to avoid exposing a
+    // frame of the previous page during a reload.
+    await splash;
     await render();
-    await TFB.partnerVisibility?.start();
+    document.body.classList.remove('tfb-starting');
+    TFB.partnerVisibility?.ready();
   }
 
   function currentView() {
@@ -409,7 +413,10 @@
     if (!$view) return;
     try {
       if (KIOSK_AREA.includes(view)) {
-        if (!state.member) return showAuth();
+        if (!state.member) {
+          if (!document.body.classList.contains('tfb-splash-open')) showAuth();
+          return;
+        }
         if (!state.member.hasConsent) { $view.innerHTML = consentMarkup(); return; }
         const body = view === 'kiosk' ? await kioskView() : view === 'strichliste' ? await tallyView() : await statementsView();
         if(request!==viewRender)return;
@@ -443,6 +450,8 @@
     } catch (err) {
       if(request!==viewRender)return;
       $view.innerHTML = `<div class="card error-card"><h2>Das hat nicht geklappt</h2><p>${esc(err.message)}</p></div>`;
+    } finally {
+      if (request === viewRender) TFB.loadChatVideoPreviews?.($view);
     }
   }
 

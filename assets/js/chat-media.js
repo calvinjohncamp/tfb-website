@@ -33,6 +33,94 @@ const releaseSource = source => {
   blobUrls.delete(source);
 };
 
+function prepareVideoFrame(video) {
+  return new Promise(resolve => {
+    let captureTimer;
+    const stop = () => {
+      clearTimeout(timeout);
+      clearTimeout(captureTimer);
+      video.removeEventListener('loadedmetadata', seek);
+      video.removeEventListener('seeked', afterSeek);
+      video.removeEventListener('error', stop);
+      resolve();
+    };
+    const capture = () => {
+      try {
+        if (!video.videoWidth || !video.videoHeight) return;
+        const canvas = document.createElement('canvas');
+        const scale = Math.min(1, 640 / Math.max(video.videoWidth, video.videoHeight));
+        canvas.width = Math.max(1, Math.round(video.videoWidth * scale));
+        canvas.height = Math.max(1, Math.round(video.videoHeight * scale));
+        canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+        video.poster = canvas.toDataURL('image/jpeg', .85);
+      } catch (_) { /* The decoded video remains available even if capture fails. */ }
+      finally { stop(); }
+    };
+    const seek = () => {
+      if (!Number.isFinite(video.duration) || video.duration <= 0) { stop(); return; }
+      video.currentTime = Math.min(.3, video.duration / 2);
+    };
+    // WebKit can signal seeked before the paused frame is ready for canvas.
+    const afterSeek = () => { captureTimer = setTimeout(capture, 150); };
+    const timeout = setTimeout(stop, 4000);
+    video.addEventListener('error', stop, {once:true});
+    video.addEventListener('seeked', afterSeek, {once:true});
+    if (video.readyState >= 1) seek();
+    else video.addEventListener('loadedmetadata', seek, {once:true});
+  });
+}
+
+const videoLoads = new WeakMap();
+const editorFrames = new WeakMap();
+const videoUrls = new Map();
+function releaseDetachedVideos() {
+  for (const [video, url] of videoUrls) {
+    if (!video.isConnected) {
+      URL.revokeObjectURL(url);
+      videoUrls.delete(video);
+    }
+  }
+}
+function loadPublishedVideo(button) {
+  const video = button.closest('.cs-screen').querySelector('video');
+  if (videoLoads.has(video)) return videoLoads.get(video);
+  const post = button.closest('[data-cs-post]').dataset.csPost;
+  const load = TFB.ui.api.getMemberVideo(post, button.dataset.csLoadVideo).then(async blob => {
+    if (!video.isConnected) return video;
+    const url = URL.createObjectURL(blob);
+    videoUrls.set(video, url);
+    video.preload = 'auto';
+    video.src = url;
+    if (!video.poster) await prepareVideoFrame(video);
+    return video;
+  }).catch(error => {
+    videoLoads.delete(video);
+    throw error;
+  });
+  videoLoads.set(video, load);
+  return load;
+}
+const videoPreviews = new IntersectionObserver(entries => {
+  for (const {target, isIntersecting} of entries) {
+    if (!isIntersecting) continue;
+    videoPreviews.unobserve(target);
+    const button = target.querySelector('[data-cs-load-video]');
+    if (button?.isConnected) loadPublishedVideo(button).catch(() => {});
+  }
+}, {rootMargin:'100px'});
+function observeVideoPreview(root) {
+  for (const button of root.querySelectorAll('[data-cs-published-page]:not([hidden]) [data-cs-load-video]')) {
+    const screen = button.closest('.cs-screen');
+    const video = screen.querySelector('video');
+    if (!video.poster && !videoLoads.has(video)) videoPreviews.observe(screen);
+  }
+}
+TFB.loadChatVideoPreviews = root => {
+  videoPreviews.disconnect();
+  releaseDetachedVideos();
+  if (!document.body.classList.contains('tfb-splash-open')) observeVideoPreview(root);
+};
+
 let draft, studio, layerIndex = 0, cropMode = false;
 function mediaStyle(slide) {
   return `object-position:${slide.x}% ${slide.y}%;transform-origin:${slide.x}% ${slide.y}%;transform:scale(${slide.zoom})`;
@@ -61,7 +149,7 @@ function design(slide, editing) {
 function stage(slide, editing = false) {
   const src = esc(sourceOf(slide.source));
   const media = slide.kind === 'video'
-    ? `<video ${src ? `src="${src}"` : ''} style="${mediaStyle(slide)}" playsinline preload="metadata" ${editing ? 'muted' : ''}></video>`
+    ? `<video ${src ? `src="${src}"` : ''} style="${mediaStyle(slide)}" playsinline preload="${editing ? 'auto' : 'none'}" ${editing ? 'muted' : ''}></video>`
     : `<img src="${src}" style="${mediaStyle(slide)}" alt="${typeof slide.source === 'string' ? 'Foto zum Beitrag' : 'Eigenes Foto'}" draggable="false">`;
   return `<div class="cs-stage${editing ? ' is-editing' : ''}" style="--cs-ratio:${slide.format}">
     <div class="cs-media">${media}</div><div class="cs-design">${design(slide, editing)}</div>
@@ -117,13 +205,17 @@ function selectPublished(gallery, index) {
   const pages = [...gallery.querySelectorAll('[data-cs-published-page]')];
   if (!pages[index]) return;
   pages.forEach((page, i) => {
-    if (i !== index) page.querySelector('video')?.pause();
+    if (i !== index) {
+      page.querySelector('video')?.pause();
+      videoPreviews.unobserve(page);
+    }
     page.hidden = i !== index;
   });
   gallery.querySelectorAll('[data-cs-published-dot]').forEach((button, i) => {
     if (i === index) button.setAttribute('aria-current','true');
     else button.removeAttribute('aria-current');
   });
+  observeVideoPreview(gallery);
 }
 let publishedSwipe;
 document.addEventListener('touchstart', event => {
@@ -212,6 +304,8 @@ function drawEditor() {
     if (expanded[index] !== undefined) item.open = expanded[index];
   });
   studio.querySelector('.cs-inspector').scrollTop = inspectorScroll;
+  const video = studio.querySelector('video[src]');
+  if (video) editorFrames.set(video, prepareVideoFrame(video));
 }
 function mountEditor(value) {
   draft = value;
@@ -319,23 +413,25 @@ document.addEventListener('click', async event => {
     wide.onclick = () => wide.setAttribute('aria-pressed', String(dialog.classList.toggle('wide')));
     close.onclick = () => dialog.close();
     dialog.addEventListener('click', event => { if (event.target === dialog) dialog.close(); });
-    dialog.addEventListener('close', () => { stopSlideshow(copy); dialog.remove(); button.focus(); }, {once:true});
+    dialog.addEventListener('close', () => {
+      stopSlideshow(copy);
+      copy.querySelectorAll('.cs-screen').forEach(screen => videoPreviews.unobserve(screen));
+      dialog.remove();
+      releaseDetachedVideos();
+      button.focus();
+    }, {once:true});
     dialog.append(copy);
     document.body.append(dialog);
     dialog.showModal();
+    observeVideoPreview(copy);
     return;
   }
   if (gallery && 'csLoadVideo' in data) {
-    const video = button.closest('.cs-screen').querySelector('video');
     button.disabled = true;
     try {
-      if (!video.getAttribute('src')) {
-        const blob = await TFB.ui.api.getMemberVideo(gallery.dataset.csPost, data.csLoadVideo);
-        const url = URL.createObjectURL(blob);
-        if (!video.isConnected) { URL.revokeObjectURL(url); return; }
-        video.src = url;
-        video.addEventListener('loadeddata', () => URL.revokeObjectURL(url), {once:true});
-      }
+      const video = await loadPublishedVideo(button);
+      if (!video.isConnected) return;
+      video.currentTime = 0;
       await video.play();
       video.controls = true;
       button.hidden = true;
@@ -351,7 +447,12 @@ document.addEventListener('click', async event => {
   if ('csLayer' in data) selectLayer(Number(data.csLayer));
   if ('csEditVideo' in data) {
     const video = studio.querySelector('video');
-    if (video.paused) video.play().then(() => { button.textContent = 'Ⅱ'; }).catch(() => {});
+    if (video.paused) {
+      await editorFrames.get(video);
+      if (!video.isConnected) return;
+      if (!video.dataset.started) { video.currentTime = 0; video.dataset.started = '1'; }
+      video.play().then(() => { button.textContent = 'Ⅱ'; }).catch(() => {});
+    }
     else { video.pause(); button.textContent = '▶'; }
     video.onended = () => { button.textContent = '▶'; };
   }

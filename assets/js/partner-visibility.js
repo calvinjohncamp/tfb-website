@@ -4,7 +4,7 @@
   const cfg=TFB.config.partnerVisibility;
   const remote=()=>Boolean(cfg?.enabled && location.protocol==='https:' && cfg.hosts.includes(location.hostname));
   const SESSION='tfb_splash_visit_v1';
-  let settings={...defaults}, previewSettings=null, splash=null, started=false, active=null, observer=null, timers=new Map(), candidates=new Set();
+  let settings={...defaults}, previewSettings=null, splash=null, started=false, appReady=false, active=null, observer=null, timers=new Map(), candidates=new Set();
   let queue=[], sending=false, flushTimer=null, retryTimer=null, failures=0, report=null, year=new Date().toLocaleDateString('sv-SE',{timeZone:'Europe/Berlin'}).slice(0,4);
   const pageNames={splash:'Einstiegsseite',home:'Home','home-detail':'Home · Themen','home-fotos':'Home · Fotos','home-alle':'Home · Übersicht',aktuell:'Aktuell','aktuell-detail':'Aktuell · Details','aktuell-alle':'Aktuell · Übersicht',chat:'Chat','chat-detail':'Chat · Details',sport:'Sport','sport-training':'Training',team:'Mannschaften',club:'Club','club-detail':'Club · Details',treffen:'Dating 2.0','treffen-detail':'Dating 2.0 · Details',kiosk:'Kiosk',strichliste:'Strichliste',abrechnungen:'Abrechnungen',impressum:'Impressum',satzung:'Satzung'};
   function pageKey() {
@@ -17,7 +17,7 @@
     if(['aktuell','chat','club','treffen'].includes(key))return key+(detail==='alle'&&key==='aktuell'?'-alle':'-detail');
     return pageNames[key]?key:null;
   }
-  function eligible() {return remote()&&!admin()&&!document.querySelector('.editing-page')&&!new URLSearchParams(location.search).has('tfbPresentation');}
+  function eligible() {return appReady&&remote()&&!admin()&&!document.querySelector('.editing-page')&&!new URLSearchParams(location.search).has('tfbPresentation');}
   function event(kind,partner='',slot='') {
     if(!active||!eligible())return;
     const key=[kind,partner,slot].join(':');if(kind!=='click'&&active.sent.has(key))return;
@@ -103,7 +103,15 @@
     let last=0;try{last=Number(sessionStorage.getItem(SESSION)||0);}catch(_){}
     const direct=/^#(?:impressum|satzung|partnerzahlen|partner|club\/archiv)(?:\/|$)/.test(location.hash)||new URLSearchParams(location.search).has('tfbPresentation');
     const reloaded=performance.getEntriesByType('navigation')[0]?.type==='reload';
-    if(!direct&&(reloaded||Date.now()-last>30*60*1000))await show();else rendered();
+    await TFB.partnerContent?.ready;
+    if(!direct&&(reloaded||Date.now()-last>30*60*1000)) {
+      const saved = TFB.partnerContent?.isRemote ? TFB.partnerContent.splash : (await ui().api.site()).splash;
+      await show(false, {...defaults, ...saved});
+    }
+  }
+  function ready() {
+    appReady=true;
+    if(splash&&!splash.hidden)begin('splash',splash);else rendered();
   }
   function rendered(){
     if(!started)return;
@@ -168,5 +176,5 @@
   new MutationObserver(()=>{cancelTimers();const open=Boolean(document.querySelector('#sheet-root .sheet'));if(splash&&!splash.hidden)splash.inert=open;if(!open)for(const image of candidates)schedule(image);}).observe(document.getElementById('sheet-root'),{childList:true,attributes:true});
   window.addEventListener('pagehide',()=>{markVisit();flush();});
   let activityAt=0;for(const type of ['pointerdown','keydown','scroll'])document.addEventListener(type,()=>{if(Date.now()-activityAt>60000){activityAt=Date.now();markVisit();}},{passive:true});
-  TFB.partnerVisibility={start,rendered,show,defaults};
+  TFB.partnerVisibility={start,ready,rendered,show,defaults};
 })();

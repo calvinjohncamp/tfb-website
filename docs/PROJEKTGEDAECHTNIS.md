@@ -1,6 +1,33 @@
 # TFB-Kiosk – Projektgedächtnis und Übergabe
 
-## Aktueller Gesamtstand und Wiederaufnahme – 26.10.2026
+## Clubgeflüster und Startverhalten – 06.11.2026
+
+- Website-Stand v267 auf https://joern-kaemper.de. Einstieg für die Fortsetzung
+  ist die [aktuelle Übergabe](UEBERGABE.md). Der folgende Stand v233 dient als
+  historischer Nachweis für Redaktion und Sicherungen.
+- Clubgeflüster bleibt eigenständig. „Schreib was“ ist der gemeinsame Einstieg für
+  normale Beiträge und gestaltete Medien. Fotos und Clips verwenden bei Bedarf
+  4:5, 16:9 oder 9:16. Die Kommentare bleiben pro Desktop-Beitrag auf dessen Höhe
+  begrenzt und scrollen separat. Home und Aktuell erhalten diese Medienfunktionen
+  nur bei einem neuen Auftrag.
+- Clips bis 30 Sekunden werden bei Bedarf im Browser auf höchstens 5 MiB gebracht.
+  Die Gestaltung speichert Überschrift, Unterüberschrift, Typografie, Verlauf,
+  Ausschnitt und Logo pro Medium. Nutzbar sind TFB Signature Rot, TFB Signature
+  Gelb und Padel Bielstein. Die Vorschau und die Veröffentlichung rendern dieselbe
+  Gestaltung über dem Medium.
+- Veröffentlichte Clips erhalten in Sichtnähe aus dem geschützten Video ein
+  Standbild etwa 0,3 Sekunden nach Beginn. Das gilt auch für vorhandene Beiträge
+  ohne neue Veröffentlichung. Kein Autoplay. Die Wiedergabe beginnt beim Antippen
+  am Anfang. Vorschaubilder entstehen im Browser und werden nicht dauerhaft
+  gespeichert. Es gibt keinen neuen öffentlichen Medienzugriff.
+- Bei Start und Neuladen wird die Splash-Entscheidung vor dem App-Rahmen
+  umgesetzt. Reguläre Reloads zeigen die Einstiegsseite zuerst. Bestehende
+  Ausnahmen für direkte Links und die Präsentationsansicht bleiben erhalten.
+- Der Browser merkt sich die Anmeldung. Eine gültige Sitzung wird beim Öffnen
+  der App höchstens einmal am Tag auf 30 Tage verlängert. Abmelden beendet die
+  Sitzung. Bereits abgelaufene Sitzungen erfordern eine neue Anmeldung.
+
+## Historischer Gesamtstand – 26.10.2026
 
 Aktueller veröffentlichter Stand ist **v233** auf https://joern-kaemper.de.
 Die folgenden älteren Versions- und Konzeptabschnitte sind historische Nachweise;

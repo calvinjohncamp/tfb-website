@@ -68,8 +68,7 @@ svg { display: block; }
 }
 
 /* ---------- Logo ---------- */
-.boot { min-height: 100vh; display: grid; place-items: center; color: var(--logo); }
-.boot-mark { width: 120px; }
+body.tfb-starting { background: #EFEFEF; transition: none; }
 .app-label {
   font-size: .78rem; font-weight: 600; text-transform: uppercase; letter-spacing: .32em;
   color: var(--signal);
