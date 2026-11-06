@@ -293,7 +293,10 @@
     return list.map((x, i) => {
       const el = form.elements[`sec_${i}`];
       const text = el ? (x.type === 'h' ? el.value.replace(/\s*\n\s*/g, ' ') : el.value).trim() : (x.text || '');
-      return x.type === 'quote' ? { type: 'quote', text, by: (form.elements[`sec_${i}_by`]?.value || '').trim() } : { type: x.type, text };
+      const section = x.type === 'quote' ? { type: 'quote', text, by: (form.elements[`sec_${i}_by`]?.value || '').trim() } : { type: x.type, text };
+      const history = richHistories.get(x);
+      if (history) richHistories.set(section, history);
+      return section;
     });
   }
   // Pfeile, Löschen, Hinzufügen – liefert true, wenn die Liste geändert wurde
@@ -1699,9 +1702,8 @@
           <button type="button" data-rich="italic" title="Kursiv"><i>K</i></button>
           <button type="button" data-rich="rot" title="Rot"><span class="sw sw-red"></span></button>
         </span>
-        <span class="rich-group" role="group" aria-label="Weiteres">
+        <span class="rich-group" role="group" aria-label="Verlinkung">
           <button type="button" data-rich="link" title="Link"><svg class="link-arrow" viewBox="0 0 806 1000" aria-hidden="true" focusable="false"><path transform="translate(0 755) scale(1 -1)" d="M528 -14 448 66 546 164 587 189 581 206 533 198H50V312H533L581 304L587 321L546 346L448 444L528 524L756 296V214Z"/></svg> Link</button>
-          <button type="button" data-rich="clear" title="Markierten Text wieder ganz schlicht machen">⌫ Schlicht</button>
         </span>` : `
         <span class="rich-group" role="group" aria-label="Schrift">
           <button type="button" data-rich="bold" title="Fett"><b>F</b></button>
@@ -1724,8 +1726,11 @@
         <span class="rich-group" role="group" aria-label="Absatz">
           <button type="button" data-rich="h" title="Markierten Absatz zur Zwischenüberschrift machen (nochmal = zurück)">Überschrift</button>
           <button type="button" data-rich="link" title="Link"><svg class="link-arrow" viewBox="0 0 806 1000" aria-hidden="true" focusable="false"><path transform="translate(0 755) scale(1 -1)" d="M528 -14 448 66 546 164 587 189 581 206 533 198H50V312H533L581 304L587 321L546 346L448 444L528 524L756 296V214Z"/></svg> Link</button>
-          <button type="button" data-rich="clear" title="Markierten Text wieder ganz schlicht machen">⌫ Schlicht</button>
         </span>`}
+        <span class="rich-group rich-history" role="group" aria-label="Textänderungen">
+          <button type="button" data-rich="undo" aria-label="Rückgängig" title="Rückgängig" disabled>↶</button>
+          <button type="button" data-rich="redo" aria-label="Wiederherstellen" title="Wiederherstellen" disabled>↷</button>
+        </span>
       </div>
       <div class="rich-area" contenteditable="true" data-rich-for="${name}" data-placeholder="${esc(opts.placeholder || '')}">${paragraphs(value || '')}</div>
       <textarea name="${name}" hidden>${v}</textarea></div>`;
@@ -1983,6 +1988,7 @@
           <button type="button" class="btn block danger" data-delete>${live ? 'Thema löschen' : 'Baustein löschen'}</button>
         </form>`);
       const form = document.querySelector('[data-editor=block]');
+      bindRichFields(form, draft, draft.more?.sections);
       refreshPhotoPreview();
       // Die Liste ordnet sich schon während des Ziehens neu, ohne das Formular zu ersetzen.
       let pointerDrag = null;
@@ -2507,6 +2513,7 @@
       document.body.classList.remove('no-scroll');
       document.querySelector('#sheet-root .sheet').scrollTop = keep;
       const form = document.querySelector('[data-editor=portrait]');
+      bindRichFields(form, draft, draft.sections);
       const collect = () => {
         ['kicker', 'title', 'subtitle'].forEach((k) => { draft[k] = form.elements[k].value.trim(); });
         draft.sections = readSections(form, draft.sections || []);
@@ -3026,7 +3033,130 @@
     const ta = area.parentElement.querySelector(`textarea[name="${area.dataset.richFor}"]`);
     if (ta) ta.value = toMarkup(area);
   };
-  document.addEventListener('input', (e) => { if (e.target.matches && e.target.matches('.rich-area')) syncRich(e.target); });
+  const richHistories = new WeakMap();
+  const RICH_HISTORY_LIMIT = 60;
+
+  function richSnapshot(area) {
+    const selection = window.getSelection();
+    const point = (node, offset) => {
+      const path = [];
+      for (; node !== area; node = node.parentNode) {
+        path.unshift([...node.parentNode.childNodes].indexOf(node));
+      }
+      return { path, offset };
+    };
+    const inside = area.contains(selection.anchorNode) && area.contains(selection.focusNode);
+    return {
+      html: area.innerHTML,
+      nodes: [...area.childNodes].map(node => node.cloneNode(true)),
+      selection: inside ? [
+        point(selection.anchorNode, selection.anchorOffset),
+        point(selection.focusNode, selection.focusOffset)
+      ] : null,
+    };
+  }
+
+  function richHistory(area) {
+    if (!richHistories.has(area)) {
+      richHistories.set(area, { past: [], future: [], current: richSnapshot(area) });
+    }
+    return richHistories.get(area);
+  }
+
+  function updateHistoryButtons(area, history) {
+    const field = area.parentElement;
+    field.querySelector('[data-rich="undo"]').disabled = !history.past.length;
+    field.querySelector('[data-rich="redo"]').disabled = !history.future.length;
+  }
+
+  function restoreRichContents(area, snapshot) {
+    area.replaceChildren(...snapshot.nodes.map(node => node.cloneNode(true)));
+  }
+
+  function bindRichFields(form, draft, sections = []) {
+    for (const area of form.querySelectorAll('.rich-area')) {
+      const name = area.dataset.richFor;
+      const owner = name.startsWith('sec_') ? sections[Number(name.slice(4))] : draft;
+      const previous = richHistories.get(owner);
+      if (previous) {
+        restoreRichContents(area, previous.current);
+        richHistories.set(area, previous);
+        syncRich(area);
+      } else if (owner) {
+        richHistories.set(owner, richHistory(area));
+      }
+      updateHistoryButtons(area, richHistory(area));
+    }
+  }
+
+  function moveRichHistory(area, undo) {
+    const history = richHistory(area);
+    const from = undo ? history.past : history.future;
+    const to = undo ? history.future : history.past;
+    const snapshot = from.pop();
+    if (!snapshot) return;
+    to.push(history.current);
+    history.before = null;
+    history.current = snapshot;
+    restoreRichContents(area, snapshot);
+    area.focus({ preventScroll: true });
+    const selection = window.getSelection();
+    if (snapshot.selection) {
+      const [anchor, focus] = snapshot.selection;
+      const node = point => point.path.reduce((parent, index) => parent.childNodes[index], area);
+      selection.setBaseAndExtent(node(anchor), anchor.offset, node(focus), focus.offset);
+    } else {
+      selection.collapse(area, area.childNodes.length);
+    }
+    area.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+
+  document.addEventListener('beforeinput', (e) => {
+    if (!e.target.matches?.('.rich-area')) return;
+    const area = e.target;
+    if (['historyUndo', 'historyRedo'].includes(e.inputType) && e.cancelable) {
+      e.preventDefault();
+      moveRichHistory(area, e.inputType === 'historyUndo');
+      return;
+    }
+    const history = richHistory(area);
+    if (!history.formatting && !history.composing && !e.isComposing) history.before = richSnapshot(area);
+  });
+  document.addEventListener('input', (e) => {
+    if (!e.target.matches?.('.rich-area')) return;
+    const area = e.target;
+    const history = richHistory(area);
+    if (history.formatting) return;
+    syncRich(area);
+    if (history.composing || e.isComposing) return;
+    const before = history.before || history.current;
+    history.before = null;
+    if (area.innerHTML !== before.html) {
+      history.past.push(before);
+      if (history.past.length > RICH_HISTORY_LIMIT) history.past.shift();
+      history.future.length = 0;
+      history.current = richSnapshot(area);
+    }
+    updateHistoryButtons(area, history);
+  });
+  document.addEventListener('compositionstart', (e) => {
+    if (!e.target.matches?.('.rich-area')) return;
+    const history = richHistory(e.target);
+    history.composing = true;
+    history.before = richSnapshot(e.target);
+  });
+  document.addEventListener('compositionend', (e) => {
+    if (!e.target.matches?.('.rich-area')) return;
+    richHistory(e.target).composing = false;
+    e.target.dispatchEvent(new Event('input', { bubbles: true }));
+  });
+  document.addEventListener('keydown', (e) => {
+    if (!e.target.matches?.('.rich-area') || e.isComposing || e.altKey || !(e.ctrlKey || e.metaKey)) return;
+    const key = e.key.toLowerCase();
+    if (key !== 'z' && key !== 'y') return;
+    e.preventDefault();
+    moveRichHistory(e.target, key === 'z' && !e.shiftKey);
+  });
   document.addEventListener('focusin', (e) => {
     if (e.target.matches && e.target.matches('.rich-area')) { try { document.execCommand('defaultParagraphSeparator', false, 'p'); } catch (_) {} }
   });
@@ -3046,7 +3176,8 @@
     if (!sel.rangeCount || sel.isCollapsed || !area.contains(sel.anchorNode)) { ui().toast('Bitte zuerst Wörter im Text markieren'); return; }
     const range = sel.getRangeAt(0);
     // Gleiche Gestaltung nochmal = wieder entfernen
-    const inside = sel.anchorNode.parentElement && sel.anchorNode.parentElement.closest(`span.${className}`);
+    const anchor = sel.anchorNode.nodeType === 1 ? sel.anchorNode : sel.anchorNode.parentElement;
+    const inside = anchor?.closest(`span.${className}`);
     if (inside && area.contains(inside)) { inside.replaceWith(...inside.childNodes); return; }
     const group = Object.values(SPAN_GROUPS).find((g) => g.includes(className));
     // Markierung deckt eine vorhandene Farbe/Größe derselben Gruppe ganz ab → nur austauschen
@@ -3107,6 +3238,25 @@
       if (keep) { sel.removeAllRanges(); sel.addRange(keep); }
     }
     const cmd = btn.dataset.rich;
+    if (cmd === 'undo' || cmd === 'redo') {
+      moveRichHistory(area, cmd === 'undo');
+      return;
+    }
+    const history = richHistory(area);
+    const before = richSnapshot(area);
+    history.formatting = true;
+    try {
+      applyRichFormat(area, cmd);
+    } finally {
+      history.formatting = false;
+    }
+    if (before.html !== area.innerHTML) {
+      history.before = before;
+      area.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+  });
+
+  function applyRichFormat(area, cmd) {
     if (['bold', 'italic', 'underline'].includes(cmd)) {
       const sel = window.getSelection();
       if (!sel.rangeCount || sel.isCollapsed) { ui().toast('Bitte zuerst Wörter im Text markieren'); return; }
@@ -3118,17 +3268,23 @@
     else if (cmd === 'h') {
       const block = window.getSelection().anchorNode && window.getSelection().anchorNode.parentElement.closest('h3, p, div');
       document.execCommand('formatBlock', false, block && block.tagName === 'H3' ? 'p' : 'h3');
-    } else if (cmd === 'clear') {
-      const sel = window.getSelection();
-      if (!sel.rangeCount || sel.isCollapsed) { ui().toast('Bitte zuerst den Text markieren, der wieder schlicht werden soll'); return; }
-      const range = sel.getRangeAt(0);
-      const text = range.toString();
-      range.deleteContents();
-      range.insertNode(document.createTextNode(text));
     } else if (cmd === 'link') {
       const sel = window.getSelection();
       const chosen = sel.rangeCount ? sel.toString() : '';
       const range = sel.rangeCount ? sel.getRangeAt(0).cloneRange() : null;
+      const node = range?.commonAncestorContainer;
+      const existing = (node?.nodeType === 1 ? node : node?.parentElement)?.closest('a.inline-link');
+      if (existing && area.contains(existing)) {
+        const target = prompt('Linkziel ändern oder das Feld leeren, um den Link zu entfernen.', existing.getAttribute('href'));
+        if (target === null) return;
+        if (!target.trim()) {
+          existing.querySelector('.inline-ext')?.remove();
+          existing.replaceWith(...existing.childNodes);
+        } else if (/^(https?:\/\/|#)/.test(target.trim())) {
+          existing.setAttribute('href', target.trim());
+        }
+        return;
+      }
       const url = prompt('Wohin soll der Link führen?\n(Website mit https://… oder eine Seite wie #kiosk, #sport, #club)', 'https://');
       if (!url || url === 'https://' || !/^(https?:\/\/|#)/.test(url.trim())) return;
       const label = chosen || prompt('Welcher Text soll im Fließtext stehen?', '') || url.replace(/^https?:\/\/(www\.)?/, '');
@@ -3138,6 +3294,5 @@
       a.textContent = label;
       if (range && area.contains(range.commonAncestorContainer)) { range.deleteContents(); range.insertNode(a); } else area.appendChild(a);
     }
-    syncRich(area);
-  });
+  }
 })();
