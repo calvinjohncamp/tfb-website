@@ -2,7 +2,7 @@
 
 ## Clubgeflüster und Startverhalten – 06.11.2026
 
-- Website-Stand v267 auf https://joern-kaemper.de. Einstieg für die Fortsetzung
+- Website-Stand v268 auf https://joern-kaemper.de. Einstieg für die Fortsetzung
   ist die [aktuelle Übergabe](UEBERGABE.md). Der folgende Stand v233 dient als
   historischer Nachweis für Redaktion und Sicherungen.
 - Clubgeflüster bleibt eigenständig. „Schreib was“ ist der gemeinsame Einstieg für
@@ -15,6 +15,10 @@
   Ausschnitt und Logo pro Medium. Nutzbar sind TFB Signature Rot, TFB Signature
   Gelb und Padel Bielstein. Die Vorschau und die Veröffentlichung rendern dieselbe
   Gestaltung über dem Medium.
+- Pro Video-Textzeile kann die Sichtbarkeit zeitgesteuert werden. Standard ist
+  „Immer sichtbar“. Der Editor liest die Dauer aus dem Video und akzeptiert
+  Dezimalkomma für Ein- und Ausblendzeiten. Die drei Überblendstufen sind
+  0,25, 0,6 und 1,2 Sekunden je Übergang, begrenzt auf die halbe Textdauer.
 - Veröffentlichte Clips erhalten in Sichtnähe aus dem geschützten Video ein
   Standbild etwa 0,3 Sekunden nach Beginn. Das gilt auch für vorhandene Beiträge
   ohne neue Veröffentlichung. Kein Autoplay. Die Wiedergabe beginnt beim Antippen

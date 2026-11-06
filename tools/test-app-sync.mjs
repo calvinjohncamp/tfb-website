@@ -102,16 +102,21 @@ test('chat design and video are shared only with members who may see the post', 
   assert.equal(upload.status, 200);
   const slide = {ref:upload.body.ref, format:'4 / 5', layers:[
     {text:'Titel',color:'#abcdef'},
-    {text:'Unterzeile',color:'#ff5522',align:'right',spacing:12,bold:false,italic:true,underline:true},
+    {text:'Unterzeile',color:'#ff5522',align:'right',spacing:12,bold:false,italic:true,underline:true,
+      timing:{start:2.3,end:5.8,fade:'medium'}},
   ], logo:'padel'};
   assert.equal((await f.commit([post('foreign-video',{designs:[slide]})],f.otherToken)).status,403);
   assert.equal((await f.commit([post('video-post',{text:'', designs:[slide], dots:'top'})])).status,200);
   const record = (await f.state(f.otherToken)).body.records.find(row => row.id === 'video-post');
   assert.equal(record.value.designs[0].layers[0].text,'Titel');
   assert.equal(record.value.designs[0].layers[0].bold, undefined);
+  assert.equal(record.value.designs[0].layers[0].timing, undefined);
   const subtitle = record.value.designs[0].layers[1];
   assert.deepEqual([subtitle.color,subtitle.align,subtitle.spacing,subtitle.bold,subtitle.italic,subtitle.underline],
     ['#ff5522','right',12,false,true,true]);
+  assert.deepEqual(subtitle.timing,{start:2.3,end:5.8,fade:'medium'});
+  const invalid = {...slide,layers:[{text:'Zu spät',timing:{start:6,end:5,fade:'short'}}]};
+  assert.equal((await f.commit([post('invalid-video',{designs:[invalid]})])).status,400);
   assert.equal(record.value.designs[0].logo,'padel');
   assert.equal(record.value.dots,'top');
   const path = '/app/chat-video?' + new URLSearchParams({post:'video-post',ref:slide.ref});

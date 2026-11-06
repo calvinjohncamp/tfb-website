@@ -122,6 +122,49 @@ TFB.loadChatVideoPreviews = root => {
 };
 
 let draft, studio, layerIndex = 0, cropMode = false;
+const fades = { none:0, short:.25, medium:.6, long:1.2 };
+const fadeLabels = { none:'Ohne Überblenden', short:'Kurz · 0,25 s', medium:'Mittel · 0,6 s', long:'Lang · 1,2 s' };
+const seconds = value => /^\d+(?:[,.]\d{1,2})?$/.test(String(value).trim()) ? Number(String(value).replace(',', '.')) : NaN;
+const decimal = value => String(value).replace('.', ',');
+function timingOf(layer) {
+  if (!layer.timing) return null;
+  const start = seconds(layer.timing.start), end = seconds(layer.timing.end);
+  if (!Number.isFinite(start) || !Number.isFinite(end) || start >= end) return null;
+  return {start,end,fade:layer.timing.fade};
+}
+function updateTimedText(video) {
+  const stage = video.closest('.cs-stage');
+  if (!stage) return;
+  const editing = stage.classList.contains('is-editing');
+  const time = video.ended ? Infinity : video.dataset.started ? video.currentTime : 0;
+  for (const layer of stage.querySelectorAll('[data-cs-timed]')) {
+    const { start, end, fade, opacity } = layer.dataset;
+    const span = Number(end) - Number(start);
+    const ramp = Math.min(Number(fade), span / 2);
+    const elapsed = time - Number(start);
+    const factor = editing && !video.dataset.started ? 1 : elapsed < 0 || elapsed >= span ? 0
+      : ramp ? Math.min(1, elapsed / ramp, (span - elapsed) / ramp) : 1;
+    layer.style.opacity = Number(opacity) * factor;
+  }
+}
+const textFrames = new WeakMap();
+document.addEventListener('play', event => {
+  const video = event.target;
+  if (!video.matches?.('.cs-stage video')) return;
+  video.dataset.started = '1';
+  cancelAnimationFrame(textFrames.get(video));
+  const tick = () => {
+    if (!video.isConnected) return;
+    updateTimedText(video);
+    if (!video.paused && !video.ended) textFrames.set(video, requestAnimationFrame(tick));
+  };
+  tick();
+}, true);
+for (const eventName of ['pause','seeked','ended']) {
+  document.addEventListener(eventName, event => {
+    if (event.target.matches?.('.cs-stage video')) updateTimedText(event.target);
+  }, true);
+}
 function mediaStyle(slide) {
   return `object-position:${slide.x}% ${slide.y}%;transform-origin:${slide.x}% ${slide.y}%;transform:scale(${slide.zoom})`;
 }
@@ -134,14 +177,19 @@ function design(slide, editing) {
   }).join('') + slide.layers.map((layer, index) => {
     if (!layer.text.trim()) return '';
     const active = editing && index === layerIndex;
+    const timing = slide.kind === 'video' && timingOf(layer);
+    const fade = timing ? fades[timing.fade] || 0 : 0;
+    const opacity = layer.opacity / 100;
     const styles = [
       `left:${layer.x}%`, `top:${layer.y}%`, `font-size:${layer.size}cqw`,
-      `color:${layer.color}`, `opacity:${layer.opacity / 100}`, `letter-spacing:${(layer.spacing || 0) / 100}em`,
+      `color:${layer.color}`, `opacity:${timing && !editing && (timing.start > 0 || fade) ? 0 : opacity}`,
+      `letter-spacing:${(layer.spacing || 0) / 100}em`,
     ];
     if (typeof layer.bold === 'boolean') styles.push(`font-weight:${layer.bold ? 800 : 400}`);
     if (layer.italic) styles.push('font-style:italic');
     if (layer.underline) styles.push('text-decoration:underline');
     return `<span class="cs-layer cs-font-${layer.font} cs-align-${layer.align || 'center'}${active ? ' selected' : ''}" ${editing ? `data-cs-drag="layer" data-layer="${index}"` : ''}
+      ${timing ? `data-cs-timed data-start="${timing.start}" data-end="${timing.end}" data-fade="${fade}" data-opacity="${opacity}"` : ''}
       style="${styles.join(';')}">${esc(layer.text)}</span>`;
   }).join('') + (logo ? `<img class="cs-logo" ${editing ? 'data-cs-drag="logo"' : ''} src="${logo.src}"
     alt="${logo.label}" draggable="false" style="left:${slide.logoX}%;top:${slide.logoY}%;width:${slide.logoSize}%">` : '');
@@ -243,7 +291,8 @@ export function openLiveMediaEditor(design, source, dots, onSave) {
 }
 
 function typographyMarkup(layer) {
-  return `<div class="cs-type-row">
+  return `${currentSlide().kind === 'video' ? `<div data-cs-timing>${timingMarkup(layer)}</div>` : ''}
+    <div class="cs-type-row">
       ${select('font', 'Schrift', layer.font, fonts)}
       ${select('align', 'Ausrichtung', layer.align || 'center', alignments)}
     </div>
@@ -257,6 +306,19 @@ function typographyMarkup(layer) {
     <div class="cs-color"><label>Hex-Code<input name="hex" value="${layer.color}" maxlength="7" spellcheck="false"></label>
       <input type="color" name="color" value="${layer.color}" aria-label="Textfarbe">
       ${'EyeDropper' in window ? '<button type="button" class="btn small" data-cs-pick>Pipette</button>' : ''}</div>`;
+}
+
+function timingMarkup(layer) {
+  const duration = draft.duration;
+  if (!duration) return '<p class="small muted">Videodauer wird ermittelt …</p>';
+  const timed = Boolean(layer.timing);
+  return `<fieldset class="cs-timing"><legend>Text im Video · ${decimal(duration)} s</legend>
+    ${select('timingMode', 'Sichtbarkeit', timed ? 'timed' : 'always', { always:'Immer sichtbar', timed:'Zeitgesteuert' })}
+    ${timed ? `<div class="cs-type-row">
+      <label>Einblenden bei (s)<input name="timingStart" inputmode="decimal" value="${esc(decimal(layer.timing.start))}"></label>
+      <label>Ausblenden bei (s)<input name="timingEnd" inputmode="decimal" value="${esc(decimal(layer.timing.end))}"></label>
+    </div>${select('timingFade', 'Überblenden', layer.timing.fade, fadeLabels)}` : ''}
+  </fieldset>`;
 }
 
 function editorMarkup() {
@@ -305,7 +367,18 @@ function drawEditor() {
   });
   studio.querySelector('.cs-inspector').scrollTop = inspectorScroll;
   const video = studio.querySelector('video[src]');
-  if (video) editorFrames.set(video, prepareVideoFrame(video));
+  if (video) {
+    editorFrames.set(video, prepareVideoFrame(video));
+    const setDuration = () => {
+      if (!video.isConnected || !Number.isFinite(video.duration) || video.duration <= 0) return;
+      const duration = Number(video.duration.toFixed(2));
+      if (draft.duration === duration) return;
+      draft.duration = duration;
+      studio.querySelector('[data-cs-timing]').innerHTML = timingMarkup(currentSlide().layers[layerIndex]);
+    };
+    video.addEventListener('loadedmetadata', setDuration, {once:true});
+    if (video.readyState >= 1) queueMicrotask(setDuration);
+  }
 }
 function mountEditor(value) {
   draft = value;
@@ -331,6 +404,8 @@ function repaintDesign() {
   surface.style.setProperty('--cs-ratio', slide.format);
   surface.querySelector('.cs-media > *').style.cssText = mediaStyle(slide);
   surface.querySelector('.cs-design').innerHTML = design(slide, true);
+  const video = surface.querySelector('video');
+  if (video) updateTimedText(video);
 }
 function selectLayer(index) {
   if (layerIndex === index) return;
@@ -358,6 +433,16 @@ function updateField(input) {
     slide[edge][key] = Number(value);
   }
   if (layer) {
+    if (name === 'timingMode') {
+      if (value === 'timed') layer.timing = {start:0,end:draft.duration,fade:'none'};
+      else delete layer.timing;
+      const panel = studio.querySelector('[data-cs-timing]');
+      panel.innerHTML = timingMarkup(layer);
+      panel.querySelector('[name="timingMode"]').focus();
+    }
+    if (name === 'timingStart') layer.timing.start = value;
+    if (name === 'timingEnd') layer.timing.end = value;
+    if (name === 'timingFade') layer.timing.fade = value;
     if (['font','align'].includes(name)) layer[name] = value;
     if (['size','opacity','spacing'].includes(name)) layer[name] = Number(value);
     if (Object.hasOwn(emphasis, name)) layer[name] = input.checked;
@@ -406,7 +491,12 @@ document.addEventListener('click', async event => {
     dialog.setAttribute('aria-label', 'Medium im Vollbild');
     const copy = gallery.cloneNode(true);
     copy.querySelectorAll('[data-cs-published-full]').forEach(control => control.remove());
-    copy.querySelectorAll('video').forEach(video => { video.removeAttribute('src'); video.controls = false; });
+    copy.querySelectorAll('video').forEach(video => {
+      video.removeAttribute('src');
+      delete video.dataset.started;
+      video.controls = false;
+      updateTimedText(video);
+    });
     copy.querySelectorAll('[data-cs-load-video]').forEach(control => { control.hidden = false; control.disabled = false; });
     dialog.innerHTML = '<div class="cs-viewer-tools"><button type="button" aria-pressed="false">16:9</button><button type="button" aria-label="Vollbild schließen">×</button></div>';
     const [wide, close] = dialog.querySelectorAll('button');
@@ -450,7 +540,7 @@ document.addEventListener('click', async event => {
     if (video.paused) {
       await editorFrames.get(video);
       if (!video.isConnected) return;
-      if (!video.dataset.started) { video.currentTime = 0; video.dataset.started = '1'; }
+      if (!video.dataset.started || video.ended) video.currentTime = 0;
       video.play().then(() => { button.textContent = 'Ⅱ'; }).catch(() => {});
     }
     else { video.pause(); button.textContent = '▶'; }
@@ -526,6 +616,20 @@ document.addEventListener('submit', async event => {
   if (!form.matches('[data-cs-form]')) return;
   event.preventDefault();
   const {source,kind,...design} = currentSlide();
+  const layers = design.layers.map(layer => {
+    if (!layer.timing) return layer;
+    return {...layer,timing:timingOf(layer)};
+  });
+  const invalid = layers.findIndex((layer, index) => design.layers[index].timing &&
+    (!layer.timing || (draft.duration && layer.timing.end > draft.duration)));
+  if (invalid !== -1) {
+    selectLayer(invalid);
+    const range = draft.duration ? ` zwischen 0 und ${decimal(draft.duration)} s` : '';
+    form.querySelector('[data-cs-status]').textContent = `${layerLabel(invalid)}: Gib zwei Zeiten${range} ein. Die Ausblendzeit muss später liegen.`;
+    form.querySelector('[name="timingStart"]')?.focus();
+    return;
+  }
+  design.layers = layers;
   liveEditor(design,draft.dots);
   studio.close();
 });

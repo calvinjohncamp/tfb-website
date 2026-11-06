@@ -2,14 +2,15 @@
 
 ## Wiederaufnahme – 06.11.2026
 
-- Live-Website v267 unter https://joern-kaemper.de. Veröffentlichung über GitHub
+- Live-Website v268 unter https://joern-kaemper.de. Veröffentlichung über GitHub
   Pages aus `calvinjohncamp/tfb-website`, Branch `main`, Workflow
   `publish-website.yml`. Der aktive Dropbox-Arbeitsordner ist `01 Software`.
   Dort liegen ältere lokale Änderungen neben dem Live-Stand. Bei Übernahmen
   gezielt Änderungen abgleichen und die vorhandene Arbeit erhalten.
-- Cloudflare-Worker `tfb-api` zuletzt für Typografie und Logo-Auswahl
-  aktualisiert (Version `7513fc08-8cab-4de0-99e9-e7cbe0e8764b`).
-  Die Korrekturen in v267 betreffen nur die Website. Kein Schemawechsel.
+- Cloudflare-Worker `tfb-api` für die Video-Textzeiten zusammen mit v268
+  aktualisiert. `cleanVideoTiming` in `server/cloudflare/app-sync.mjs` validiert
+  und speichert pro Video-Textzeile optional Start, Ende und Überblendstufe.
+  Bestehende Beiträge ohne Zeitsteuerung bleiben immer sichtbar. Kein Schemawechsel.
 - Video-Standbilder und Startlogik liegen in `assets/js/chat-media.js`,
   `assets/js/app.js` und `assets/js/partner-visibility.js`. Die Videoquelle
   bleibt im privaten R2-Bucket und wird in Sichtnähe pro Ansicht einmal über den

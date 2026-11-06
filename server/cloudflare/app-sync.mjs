@@ -40,6 +40,12 @@ export async function syncChatVideo(env, member, postId, ref) {
   }});
 }
 const numberIn = (value, min, max, fallback) => Number.isFinite(value) ? Math.min(max, Math.max(min, value)) : fallback;
+function cleanVideoTiming(timing) {
+  const {start,end,fade} = timing;
+  if (!Number.isFinite(start) || !Number.isFinite(end) || start < 0 || start >= end || end > 86400 ||
+      !['none','short','medium','long'].includes(fade)) fail(400, 'Ungültige Textzeiten im Video.');
+  return {start,end,fade};
+}
 function cleanDesign(slide) {
   const percent = value => numberIn(value, 0, 100, 50);
   const gradient = edge => ({strength: numberIn(edge?.strength,0,100,0), height:numberIn(edge?.height,0,100,36)});
@@ -53,6 +59,7 @@ function cleanDesign(slide) {
     spacing:numberIn(layer.spacing,-10,30,0),
     ...(typeof layer.bold === 'boolean' ? {bold:layer.bold} : {}),
     italic:layer.italic === true, underline:layer.underline === true,
+    ...(videoRef(slide.ref) && layer.timing ? {timing:cleanVideoTiming(layer.timing)} : {}),
   }));
   return {ref:slide.ref, format:['4 / 5','16 / 9','9 / 16'].includes(slide.format) ? slide.format : '4 / 5',
     x:percent(slide.x), y:percent(slide.y), zoom:numberIn(slide.zoom,1,3,1),
