@@ -916,7 +916,7 @@ button.shop-card { border: 0; text-align: left; font: inherit; }
 }
 
 /* ---------- Kopfzeile 3: Logo +25 %, Bild unten bündig, Menü auf Logo- und Bildkante ---------- */
-.header-logo { height: 81px; }                       /* Breite folgt: 81 × 900/402 ≈ 181 px */
+.header-logo { height: 89.1px; } /* Width follows the 900:402 aspect ratio. */
 .topbar-row { align-items: flex-end; }               /* Profilbild unten bündig mit „TENNISFREUNDE BIELSTEIN“ */
 .topbar .avatar { width: 58px; height: 58px; }
 .topnav { justify-content: space-between; gap: 8px; margin: 12px 0 0; padding: 0; }
@@ -1253,7 +1253,7 @@ button.meet-row:hover { background: #FAF8F3; }
   stroke-linejoin: round;
 }
 @media (max-width: 460px) {
-  .topbar .header-logo { height: clamp(38px, 13vw, 58px); }
+  .topbar .header-logo { height: clamp(41.8px, 14.3vw, 63.8px); }
 }
 /* Rahmen der eigenständigen Vorführung */
 html.tfb-presentation-page { background: #1c1a17; scrollbar-width: none; }
