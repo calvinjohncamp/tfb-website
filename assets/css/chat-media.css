@@ -34,6 +34,16 @@
 .cs-clip-controls { position:absolute; inset:auto 0 0; z-index:1; display:flex; align-items:center; gap:8px; min-height:52px; padding:6px 8px 6px 54px; background:rgb(22 22 22 / .72); color:#fff; }
 .cs-clip-controls input { flex:1; min-width:0; accent-color:var(--signal); }
 .cs-clip-controls button { flex:none; border:0; background:transparent; color:inherit; font-size:.8rem; padding:8px; }
+.cs-mobile-video { position: fixed; inset: 0; width: 100%; height: 100%; max-width: none; max-height: none; margin: 0; padding: 0; border: 0; background: #efefef; overflow: hidden; }
+.cs-mobile-video[open] { display: grid; place-items: center; }
+.cs-mobile-video .cs-published { width: min(calc(100vw - env(safe-area-inset-left) - env(safe-area-inset-right)),calc((100dvh - 24px) * var(--cs-video-ratio))); }
+.cs-mobile-video .cs-screen { border-radius: 0; }
+.cs-mobile-video .cs-stage { cursor: pointer; }
+.cs-mobile-video-close { position: absolute; z-index: 5; top: max(8px,env(safe-area-inset-top)); right: max(8px,env(safe-area-inset-right)); width: 40px; height: 40px; border: 1px solid #0002; border-radius: 50%; background: #efefef; color: #191817; font-size: 1.35rem; }
+body:has(.cs-mobile-video[open]) { overflow: hidden; }
+.cs-mobile-video .is-playing > :is(.cs-play,.cs-clip-controls):not(:focus-visible):not(:has(:focus-visible)) {
+  opacity: 0; pointer-events: none; transition: opacity .2s ease .65s;
+}
 .cs-dots { display: flex; justify-content: center; flex-wrap: wrap; }
 .cs-dots button { display: grid; place-items: center; width: 28px; height: 30px; padding: 0; border: 0; background: transparent; cursor: pointer; }
 .cs-dots button::before { content: ""; width: 5px; height: 5px; border-radius: 6px; background: var(--muted); opacity: .5; }
@@ -118,6 +128,8 @@
 .chat-post-row:not(:has(.chat-replies)) { grid-template-columns: minmax(0, 760px); }
 .chat-post-row.has-designed-media:not(:has(.chat-replies)) { grid-template-columns: minmax(0, 470px); }
 .chat-post-row .fpost { min-width: 0; }
+.fpost-tools .chat-mobile-comment { display: none; }
+.chat-post-row .fpost-tools:not(:has(button:not(.chat-mobile-comment))) { display: none; }
 .fpost-heading { display: flex; justify-content: space-between; align-items: baseline; gap: 8px 12px; margin-bottom: 6px; }
 .fpost-heading .fpost-title { margin: 0; overflow-wrap: anywhere; }
 .chat-comment-button { flex: none; }
@@ -157,7 +169,11 @@
   .compose .compose-photos { grid-template-columns: repeat(3,minmax(0,1fr)); }
 }
 @media (max-width: 760px) {
-  .chat-post-row { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+  .chat-post-row { grid-template-columns: minmax(0, 1fr); gap: 0; border: 1px solid #0002; border-radius: 12px; overflow: hidden; background: var(--paper); }
   .chat-post-row.has-designed-media { grid-template-columns: minmax(0, 470px); }
-  .chat-replies { padding-inline: 12px; }
+  .chat-post-row .fpost { border-radius: 0; box-shadow: none; background: transparent; }
+  .chat-post-row .chat-comment-button { display: none; }
+  .chat-post-row .fpost-tools:has(.chat-mobile-comment) { display: flex; }
+  .fpost-tools .chat-mobile-comment { display: block; margin-right: auto; color: var(--ink); }
+  .chat-replies { padding: 0 12px 6px; border-top: 1px solid #0002; }
 }

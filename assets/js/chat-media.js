@@ -141,8 +141,10 @@ function clipBounds(video) {
   return {start:Math.min(Number(video.dataset.clipStart || 0),end),end};
 }
 function syncClipButton(video) {
-  const button = video.closest('.cs-screen, .is-editing')?.querySelector('[data-cs-load-video], [data-cs-edit-video]');
-  if (!button || (!hasVideoEdit(video) && !button.hasAttribute('data-cs-edit-video'))) return;
+  const player = video.closest('.cs-screen, .is-editing');
+  const button = player?.querySelector('[data-cs-load-video], [data-cs-edit-video]');
+  if (!button || (!hasVideoEdit(video) && !video.closest('.cs-mobile-video') && !button.hasAttribute('data-cs-edit-video'))) return;
+  player.classList.toggle('is-playing', !video.paused && !video.ended);
   button.textContent = video.paused || video.ended ? '▶' : 'Ⅱ';
   button.setAttribute('aria-label', video.paused || video.ended ? 'Video abspielen' : 'Video pausieren');
 }
@@ -179,11 +181,11 @@ function updateTimedText(video) {
     const fadeIn = Math.min(Number(video.dataset.clipIn),duration / 2);
     const fadeOut = Math.min(Number(video.dataset.clipOut),duration / 2);
     video.style.opacity = started && !inspect ? Math.min(1, fadeIn ? time / fadeIn : 1, fadeOut ? (duration - time) / fadeOut : 1) : 1;
-    const seek = stage.closest('.cs-screen')?.querySelector('[data-cs-clip-seek]');
-    if (seek && Number.isFinite(duration)) {
-      if (Number(seek.max) !== duration) seek.max = duration;
-      if (!seek.matches(':active')) seek.value = time;
-    }
+  }
+  const seek = stage.closest('.cs-screen')?.querySelector('[data-cs-clip-seek]');
+  if (seek && Number.isFinite(duration)) {
+    if (Number(seek.max) !== duration) seek.max = duration;
+    if (!seek.matches(':active')) seek.value = time;
   }
 }
 const textFrames = new WeakMap();
@@ -300,7 +302,7 @@ export function publishedGallery(post, imageOf) {
       const html = stage({...slide, source, kind:video ? 'video' : 'image'}, false, slideshow);
       return `<div class="cs-screen" data-cs-published-page="${index}"${index ? ' hidden' : ''}>${html}
         ${video ? `<button type="button" class="cs-play" data-cs-load-video="${esc(slide.ref)}" aria-label="Video abspielen">▶</button>` : ''}
-        ${video && slide.videoEdit ? '<div class="cs-clip-controls" hidden><input type="range" min="0" step="any" value="0" data-cs-clip-seek aria-label="Position im Video"><button type="button" data-cs-clip-mute aria-pressed="false">Ton aus</button></div>' : ''}
+        ${video ? '<div class="cs-clip-controls" hidden><input type="range" min="0" step="any" value="0" data-cs-clip-seek aria-label="Position im Video"><button type="button" data-cs-clip-mute aria-pressed="false">Ton aus</button></div>' : ''}
         <button type="button" class="cs-expand" data-cs-published-full aria-label="Vollbild">⛶</button>
         ${video ? '' : '<button type="button" class="cs-image-hit" data-cs-published-full aria-label="Bild groß ansehen"></button>'}
       </div>`;
@@ -765,6 +767,50 @@ function openPublishedViewer(gallery, button, fromStart = false) {
   observeVideoPreview(copy);
   if (slideshow) observeSlideshows(dialog);
 }
+function openMobileVideo(gallery, button) {
+  const screen = button.closest('.cs-screen');
+  const video = screen.querySelector('video');
+  const play = screen.querySelector('[data-cs-load-video]');
+  const controls = screen.querySelector('.cs-clip-controls');
+  const ratio = screen.querySelector('.cs-stage').style.getPropertyValue('--cs-ratio');
+  const placeholder = document.createElement('div');
+  placeholder.style.aspectRatio = ratio;
+  screen.before(placeholder);
+  const dialog = document.createElement('dialog');
+  dialog.className = 'cs-mobile-video';
+  dialog.setAttribute('aria-label','Video im Vollbild');
+  dialog.innerHTML = '<button type="button" class="cs-mobile-video-close" aria-label="Video schließen">×</button><div class="cs-published"></div>';
+  const player = dialog.querySelector('.cs-published');
+  player.dataset.csPost = gallery.dataset.csPost;
+  player.style.setProperty('--cs-video-ratio',ratio);
+  player.append(screen);
+  video.controls = false;
+  play.hidden = false;
+  const tapVideo = event => {
+    if (!event.target.closest('button,input') && event.target.closest('.cs-stage')) play.click();
+  };
+  screen.addEventListener('click',tapVideo);
+  dialog.addEventListener('click',event => {
+    if (event.target === dialog || event.target.closest('.cs-mobile-video-close')) dialog.close();
+  });
+  dialog.addEventListener('close',() => {
+    video.pause();
+    screen.removeEventListener('click',tapVideo);
+    if (!hasVideoEdit(video)) {
+      controls.hidden = true;
+      play.textContent = '▶';
+      play.setAttribute('aria-label','Video abspielen');
+    }
+    screen.classList.remove('is-playing');
+    if (placeholder.isConnected) placeholder.replaceWith(screen);
+    dialog.remove();
+    releaseDetachedVideos();
+    button.focus({preventScroll:true});
+  },{once:true});
+  document.body.append(dialog);
+  dialog.showModal();
+  play.click();
+}
 document.addEventListener('click', async event => {
   const button = event.target.closest('button');
   if (!button) return;
@@ -799,17 +845,29 @@ document.addEventListener('click', async event => {
     return;
   }
   if (gallery && 'csPublishedFull' in data) {
+    if (button.closest('.cs-screen')?.querySelector('video') &&
+        (event.pointerType === 'touch' || matchMedia('(pointer: coarse)').matches)) {
+      openMobileVideo(gallery,button);
+      return;
+    }
     openPublishedViewer(gallery, button);
     return;
   }
   if (gallery && 'csLoadVideo' in data) {
+    const mobilePlayer = button.closest('.cs-mobile-video');
+    if (!mobilePlayer && !button.closest('.cs-viewer') &&
+        (event.pointerType === 'touch' || matchMedia('(pointer: coarse)').matches)) {
+      openMobileVideo(gallery,button);
+      return;
+    }
     button.disabled = true;
     try {
-      const video = await loadPublishedVideo(button);
+      const source = button.closest('.cs-screen').querySelector('video');
+      const video = source.readyState >= 1 ? source : await loadPublishedVideo(button);
       if (!video.isConnected) return;
       if (!video.paused) video.pause();
       else await playClip(video);
-      if (hasVideoEdit(video)) button.closest('.cs-screen').querySelector('.cs-clip-controls').hidden = false;
+      if (hasVideoEdit(video) || mobilePlayer) button.closest('.cs-screen').querySelector('.cs-clip-controls').hidden = false;
       else {
         video.controls = true;
         button.hidden = true;
@@ -903,7 +961,7 @@ document.addEventListener('pointerup', event => {
 });
 document.addEventListener('pointercancel', () => { drag = null; });
 window.addEventListener('hashchange', () => {
-  document.querySelector('.cs-viewer')?.close();
+  document.querySelector('.cs-viewer, .cs-mobile-video')?.close();
   studio?.close();
 });
 document.addEventListener('submit', async event => {

@@ -1208,12 +1208,13 @@
         ${p.text ? `<div class="fpost-text">${postText(p.text)}</div>` : ''}
         ${options.media ?? postCollage(p, imgs)}
         ${options.actions ?? (options.chat ? '' : `<a class="post-comments-link" href="#chat/beitrag/${encodeURIComponent(p.id)}" data-action="post-comments" data-id="${esc(p.id)}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H5l-3 3V11.5A7.5 7.5 0 0 1 9.5 4h3a7.5 7.5 0 0 1 7.5 7.5Z"/></svg>${p.commentCount ? `${p.commentCount} ${p.commentCount === 1 ? 'Kommentar' : 'Kommentare'}` : 'Kommentieren'}</a>`)}
-        ${loggedIn ? `<footer class="fpost-tools">
-          ${p.mine || (p.canModerate && options.editSlideshow) ? `<button type="button" data-action="post-edit" data-id="${esc(p.id)}">Bearbeiten</button>` : ''}
+        ${loggedIn || options.chat ? `<footer class="fpost-tools">
+          ${options.chat && !p.hidden ? `<button type="button" class="chat-mobile-comment" data-action="comment-unlock" data-id="${esc(p.id)}">Kommentare schreiben</button>` : ''}
+          ${loggedIn ? `${p.mine || (p.canModerate && options.editSlideshow) ? `<button type="button" data-action="post-edit" data-id="${esc(p.id)}">Bearbeiten</button>` : ''}
           ${p.mine && !p.fromClub ? `<button type="button" data-action="post-delete" data-id="${esc(p.id)}">Löschen</button>` : ''}
           ${p.fromClub && (p.mine || p.canModerate) ? `<button type="button" data-action="post-unteam" data-id="${esc(p.id)}" data-team="${esc(p.shownIn)}">Aus dieser Mannschaft entfernen</button>` : ''}
           ${p.canModerate && !p.mine ? `<button type="button" data-action="post-hide" data-id="${esc(p.id)}" data-hidden="${p.hidden ? '0' : '1'}">${p.hidden ? 'Wieder zeigen' : 'Ausblenden (Admin)'}</button>` : ''}
-          ${!p.mine && !p.canModerate ? `<button type="button" data-action="post-report" data-id="${esc(p.id)}">Melden</button>` : ''}
+          ${!p.mine && !p.canModerate ? `<button type="button" data-action="post-report" data-id="${esc(p.id)}">Melden</button>` : ''}` : ''}
         </footer>` : ''}
       </article>`;
   }
@@ -1768,6 +1769,7 @@
     let index = start != null && start >= 0 && start < list.length ? start : list.length > 1 ? -1 : 0;
     const box = document.createElement('div');
     box.className = 'viewer gallery';
+    let swiped = false;
     const draw = () => {
       const single = index >= 0;
       box.innerHTML = `
@@ -1779,7 +1781,7 @@
         <div class="viewer-bar">
           ${single && list.length > 1 ? `<button type="button" class="gal-back" data-gback>▦ Alle Fotos</button><span>${index + 1} / ${list.length}</span>` : `<span>${esc(title)}</span>`}
         </div>
-        ${single && list.length > 1 ? `<button type="button" class="gal-nav prev" data-gstep="-1" aria-label="Vorheriges Foto">‹</button><button type="button" class="gal-nav next" data-gstep="1" aria-label="Nächstes Foto">›</button>` : ''}
+        ${single && list.length > 1 && !swiped ? `<button type="button" class="gal-nav prev" data-gstep="-1" aria-label="Vorheriges Foto">‹</button><button type="button" class="gal-nav next" data-gstep="1" aria-label="Nächstes Foto">›</button>` : ''}
         <button type="button" class="viewer-close" aria-label="Schließen">${ui().icon.close}</button>`;
     };
     const step = (d) => { if (index < 0) return; index = (index + d + list.length) % list.length; draw(); };
@@ -1821,6 +1823,7 @@
       touch = null;
       if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.3) {
         suppressClickUntil = Date.now() + 500;
+        if (!magazine && index >= 0 && list.length > 1) swiped = true;
         if (index < 0) { index = 0; draw(); } else step(dx < 0 ? 1 : -1);
       }
     }, { passive: true });
@@ -3151,7 +3154,7 @@
     },
     'post-hide': async (el) => { await ui().api.hidePost(el.dataset.id, el.dataset.hidden === '1'); ui().toast(el.dataset.hidden === '1' ? 'Ausgeblendet' : 'Wieder sichtbar', true); ui().renderView(); },
     'post-report': async (el) => { await ui().api.reportPost(el.dataset.id); ui().toast('Danke – der Vorstand schaut sich das an.', true); },
-    'post-gallery': (el) => { const p = postCache[el.dataset.id]; if (p) openGallery(p.images || [], `${p.author} · ${whenText(p.createdAt)}`); },
+    'post-gallery': (el) => { const p = postCache[el.dataset.id]; if (p) openGallery(p.images || [], `${p.author} · ${whenText(p.createdAt)}`, false, Number(el.dataset.index)); },
     'news-gallery': (el) => {
       const archived = TFB.clubArchive?.photoEntry(el.dataset.block);
       if (archived) {
