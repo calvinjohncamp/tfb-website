@@ -1,6 +1,6 @@
 // TFB-Kiosk – Service Worker.
 // Netz zuerst, damit Änderungen sofort ankommen; ohne Netz startet die App aus dem Zwischenspeicher.
-const CACHE = 'tfb-kiosk-v250';
+const CACHE = 'tfb-kiosk-v251';
 const SHELL = [
   './assets/js/member-directory.js', './assets/js/cloud-sync.js',
   './assets/js/snapshot-zip.js', './assets/js/editorial.js',
@@ -13,6 +13,7 @@ const SHELL = [
   './assets/icons/icon-maskable-512.png?v=221', './assets/icons/icon-180.png?v=221',
   './assets/icons/icon-512.png', './assets/icons/icon-maskable-512.png', './assets/icons/icon-180.png',
   './assets/brand/tfb-logo-midnight-amber.png',
+  './assets/css/club-archive.css', './assets/js/club-archive.js',
   './assets/css/brand.css', './assets/css/app.css',
   './assets/css/design-preview.css', './assets/js/design-preview.js',
   './assets/css/partner-visibility.css', './assets/js/partner-visibility.js', './assets/js/partner-content.js', './assets/js/partner-admin.js',
@@ -49,6 +50,8 @@ self.addEventListener('fetch', (event) => {
   const req = event.request;
   if (/\/api\/membership(?:\/|$)|\/mitgliedschaft-bestaetigen\.html$/.test(new URL(req.url).pathname)) return;
   if (req.method !== 'GET' || new URL(req.url).origin !== self.location.origin) return;
+  // Große Archivdateien und Video-Teilabrufe bleiben im normalen Browsercache.
+  if (new URL(req.url).pathname.includes('/assets/clubarchiv/medien/')) return;
   event.respondWith(
     // Revalidate documents and scripts so a reload sees changed consent/settings
     // even within GitHub Pages' ten-minute HTTP cache lifetime.

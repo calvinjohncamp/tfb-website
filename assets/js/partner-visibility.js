@@ -97,7 +97,7 @@
   async function start() {
     if(started)return;started=true;
     let last=0;try{last=Number(sessionStorage.getItem(SESSION)||0);}catch(_){}
-    const direct=/^#(?:impressum|satzung|partnerzahlen|partner)(?:\/|$)/.test(location.hash)||new URLSearchParams(location.search).has('tfbPresentation');
+    const direct=/^#(?:impressum|satzung|partnerzahlen|partner|club\/archiv)(?:\/|$)/.test(location.hash)||new URLSearchParams(location.search).has('tfbPresentation');
     const reloaded=performance.getEntriesByType('navigation')[0]?.type==='reload';
     if(!direct&&(reloaded||Date.now()-last>30*60*1000))await show();else rendered();
   }

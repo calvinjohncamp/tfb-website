@@ -38,6 +38,7 @@ TFB.siteSeed = {
   // Einmalige Text-Updates für Geräte, auf denen schon gepflegt wurde: ersetzen nur die
   // genannten Felder (Fotos und Link bleiben). Jedes Update läuft genau einmal.
   updates: [
+    { id: 'jhvs-june-2026-date', page: 'aktuell', block: 'e-3', setWhenDate: '2027-06-10', set: { date: '2026-06-10' } },
     { id: 'club-history-2026-10-11', page: 'verein', insertAfter: 'v-koop', insertBlock: { id: 'v-history', type: 'text', title: 'History', text: 'Fünf Jahrzehnte Tennisfreunde Bielstein – Fotos und Geschichten aus unserer Clubgeschichte.' } },
     { id: 'club-padel-rabatt-2026-10-11', page: 'verein', block: 'v-mitglied-btn', set: { note: 'TFB-Mitglieder erhalten 10 Prozent Rabatt auf alle Padel-Buchungen.' } },
     { id: 'home-kiosk-direkt-2026-10-11', page: 'home', block: 'h-kiosk', set: { navigation: 'link', showMore: false } },

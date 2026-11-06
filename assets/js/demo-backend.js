@@ -318,7 +318,9 @@
           block.more = { ...(block.more || {}), images: [block.image, ...imgs] };
           block.image = null;
         }
-        if (!u.setWhenText || block.text === u.setWhenText) Object.assign(block, clone(u.set || {}));
+        if ((!u.setWhenText || block.text === u.setWhenText) && (!u.setWhenDate || block.date === u.setWhenDate)) {
+          Object.assign(block, clone(u.set || {}));
+        }
         if (u.fillFacts && block.type === 'facts') {
           block.items = block.items || [];
           while (block.items.length < u.fillFacts) block.items.push({ value: '–', label: 'Kennzahl' });

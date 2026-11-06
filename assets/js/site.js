@@ -485,25 +485,9 @@
           <p class="feature-more"><a class="more-link" href="#club/history">${esc(b.linkLabel || 'Mehr erfahren')} <span aria-hidden="true"><svg class="link-arrow" viewBox="0 0 806 1000" aria-hidden="true" focusable="false"><path transform="translate(0 755) scale(1 -1)" d="M528 -14 448 66 546 164 587 189 581 206 533 198H50V312H533L581 304L587 321L546 346L448 444L528 524L756 296V214Z"/></svg></span></a></p></section>`;
         return `<section class="block-text" data-site-content="${esc(b.id)}">${b.title ? `<h2>${esc(b.title)}</h2>` : ''}${paragraphs(b.text)}</section>`;
       case 'event':
-        return `
-          <article class="event card">
-            <div class="event-side">${dateBadge(b.date)}${attachmentThumb(b)}</div>
-            <div class="event-body">
-              <h3>${esc(b.title)}</h3>
-              <p class="muted small">${[b.time && `${esc(b.time)} Uhr`, esc(b.place)].filter(Boolean).join(' · ')}</p>
-              ${b.text ? `<p class="event-text">${esc(b.text)}</p>` : ''}
-            </div>
-          </article>`;
+        return eventCard(b);
       case 'post':
-        return `
-          <article class="post card" data-site-content="${esc(b.id)}">
-            ${postPhotos(b)}
-            <div class="post-body">
-              <p class="post-date">${esc(fmt(b.date, { day: 'numeric', month: 'long', year: 'numeric' }))}</p>
-              <h3>${esc(b.title)}</h3>
-              ${paragraphs(b.text)}
-            </div>
-          </article>`;
+        return newsPost(b);
       case 'image':
         return b.original
           ? `<figure class="block-image natural ${alignClass(b.align)}" data-site-content="${esc(b.id)}">${picture(b.image, b.id, b.caption)}${b.caption ? `<figcaption>${esc(b.caption)}</figcaption>` : ''}</figure>`
@@ -532,6 +516,7 @@
             <div class="people-grid">${(b.id === 'v-vorstand' ? boardPeople : b.people || []).map((p, i) => `
               <div class="person card">${b.id === 'v-vorstand' && p.avatar ? `<button type="button" class="person-dot board-photo" data-action="board-photo-open" data-index="${i}" title="Originalfoto von ${esc(p.name)} ansehen" aria-label="Originalfoto von ${esc(p.name)} ansehen"><img src="${esc(p.avatar)}" alt=""></button>` : `<span class="person-dot">${p.avatar ? `<img src="${esc(p.avatar)}" alt="">` : esc((p.name || p.role || '?').split(/\s+/).filter(Boolean).map((n) => n[0]).slice(0, 2).join(''))}</span>`}<div><small>${esc(p.role)}</small><strong>${esc(p.name)}</strong>${p.phone ? `<a class="board-email" href="tel:${esc(p.phone.replace(/[^+0-9]/g, ''))}">${esc(p.phone)}</a>` : ''}${p.email ? `<a class="board-email" href="mailto:${esc(p.email)}">${esc(p.email)}</a>` : ''}</div></div>`).join('')}
             </div>
+            ${b.id === 'v-vorstand' && page === 'verein' && editing !== 'verein' ? TFB.clubArchive?.teaser() || '' : ''}
           </section>`;
       case 'facts':
         return `<section class="block-facts">${(b.items || []).map((f) => `<div><b>${esc(f.value)}</b><span>${esc(f.label)}</span></div>`).join('')}</section>`;
@@ -668,16 +653,48 @@
       </div>`;
   }
 
+  function eventCard(b, { href = '', body, attachments } = {}) {
+    const thumbs = attachments
+      ? attachments.map(attachment => attachmentThumb({ ...b, attachment })).join('')
+      : attachmentThumb(b);
+    return `
+      <article class="event card">
+        <div class="event-side">${dateBadge(b.date)}${thumbs}</div>
+        <div class="event-body">
+          <h3>${href ? `<a class="post-title-link" href="${esc(href)}">${esc(b.title)}</a>` : esc(b.title)}</h3>
+          <p class="muted small">${[b.time && `${esc(b.time)} Uhr`, esc(b.place)].filter(Boolean).join(' · ')}</p>
+          ${body ?? (b.text ? `<p class="event-text">${esc(b.text)}</p>` : '')}
+        </div>
+      </article>`;
+  }
+
+  function newsPost(b, archive = null) {
+    const photos = postPhotos(b, Boolean(archive));
+    const fullDate = fmt(b.date, { day: 'numeric', month: 'long', year: 'numeric' }) || archive?.year || '';
+    return `
+      <article class="post card" data-site-content="${esc(b.id)}">
+        ${photos}
+        <div class="post-body">
+          ${archive && !photos && b.date ? `<div class="archive-date-standalone">${dateBadge(b.date)}</div>` : ''}
+          ${!archive || fullDate ? `<p class="post-date">${esc(fullDate)}</p>` : ''}
+          <h3>${archive?.href ? `<a class="post-title-link" href="${esc(archive.href)}">${esc(b.title)}</a>` : esc(b.title)}</h3>
+          ${archive ? archive.body : paragraphs(b.text)}
+        </div>
+      </article>`;
+  }
+
   // Beitrag (Aktuell): 1 Foto breit, 2–4 als gleich große Quadrate nebeneinander; jedes Foto einpassbar
-  function postPhotos(b) {
+  function postPhotos(b, archive = false) {
     const list = (b.images || []).filter(shownImage);
     const refs = list.length ? list : [b.image];
+    if (archive && !refs.some(shownImage)) return '';
+    const badge = !archive || b.date ? dateBadge(b.date) : '';
     if (refs.length <= 1) {
       const pic = picture(refs[0], list.length ? refs[0] : b.id, b.title);
-      return `<div class="post-media">${list.length ? `<button type="button" class="post-open" data-action="news-gallery" data-block="${esc(b.id)}" aria-label="Foto groß ansehen">${pic}</button>` : pic}${dateBadge(b.date)}</div>`;
+      return `<div class="post-media">${list.length ? `<button type="button" class="post-open" data-action="news-gallery" data-block="${esc(b.id)}" aria-label="Foto groß ansehen">${pic}</button>` : pic}${badge}</div>`;
     }
     const shown = refs.slice(0, 4);
-    return `<div class="post-photos n${shown.length}">${shown.map((r, i) => `<button type="button" class="post-square" data-action="news-gallery" data-block="${esc(b.id)}" aria-label="Fotos groß ansehen">${picture(r, r, '')}${i === shown.length - 1 && refs.length > 4 ? `<span class="photo-count">+${refs.length - 4}</span>` : ''}</button>`).join('')}${dateBadge(b.date)}</div>`;
+    return `<div class="post-photos n${shown.length}">${shown.map((r, i) => `<button type="button" class="post-square" data-action="news-gallery" data-block="${esc(b.id)}" aria-label="Fotos groß ansehen">${picture(r, r, '')}${i === shown.length - 1 && refs.length > 4 ? `<span class="photo-count">+${refs.length - 4}</span>` : ''}</button>`).join('')}${badge}</div>`;
   }
   function postPhotosField(draft) {
     const refs = (draft.images || []).filter(shownImage);
@@ -838,6 +855,16 @@
   async function pageView(key) {
     await ensure();
     const section = location.hash.split('/')[1];
+    if (key === 'verein' && section === 'archiv' && TFB.clubArchive) {
+      editing = null;
+      return TFB.clubArchive.view(location.hash, {
+        blocks: [
+          ...[...contentBlocks('aktuell'), ...site.pages.aktuell.blocks.filter(b => b.type === 'event' && !b._new)].map(b => ({ b, page: 'aktuell' })),
+          ...contentBlocks('home').map(b => ({ b, page: 'home' })),
+        ],
+        newsPost, eventCard, newsDatesLayout, contentOverviewLink, paragraphs, picture, shownImage,
+      });
+    }
     if (['home', 'aktuell'].includes(key) && section === 'alle') { editing = null; return contentOverview(key); }
     if (key === 'aktuell' && section === 'beitrag') aktuellTab = 'news';
     if (key === 'home' && preview?.tab === 'album') return albumDetail(preview.id);
@@ -997,6 +1024,28 @@
   // breiten Bildschirmen in Spalten ordnen. Termine (mit ihrer Überschrift davor)
   // wandern in eine eigene Spalte – auf dem Handy stehen sie oben.
   let aktuellTab = 'news';
+  function newsDatesLayout(news, dates, tab, action) {
+    return `
+      <div class="seg aktuell-switch" role="tablist">
+        ${[['news', 'News'], ['dates', 'Save the Date']].map(([v, label]) => `<button type="button" role="tab" aria-selected="${tab === v}" class="${tab === v ? 'on' : ''}" data-action="${action}" data-tab="${v}">${label}</button>`).join('')}
+      </div>
+      <div class="page-grid news-dates show-${tab}">
+        <div class="page-main col-news">${news}</div>
+        <aside class="page-aside col-dates">${dates}</aside>
+      </div>`;
+  }
+
+  function showNewsDatesTab(button) {
+    const switcher = button.closest('.aktuell-switch');
+    switcher.querySelectorAll('button').forEach(tab => {
+      tab.classList.toggle('on', tab === button);
+      tab.setAttribute('aria-selected', String(tab === button));
+    });
+    const grid = switcher.nextElementSibling;
+    grid.classList.toggle('show-news', button.dataset.tab === 'news');
+    grid.classList.toggle('show-dates', button.dataset.tab === 'dates');
+  }
+
   function layoutBlocks(list, key) {
     const eventIdx = list.map((b, i) => (b.type === 'event' ? i : -1)).filter((i) => i >= 0);
     const asideIdx = new Set(eventIdx);
@@ -1031,14 +1080,7 @@
       i = j;
     }
     if (key === 'aktuell' && aside.length) {
-      return `
-        <div class="seg aktuell-switch" role="tablist">
-          ${[['news', 'News'], ['dates', 'Save the Date']].map(([v, l]) => `<button type="button" role="tab" aria-selected="${aktuellTab === v}" class="${aktuellTab === v ? 'on' : ''}" data-action="aktuell-tab" data-tab="${v}">${l}</button>`).join('')}
-        </div>
-        <div class="page-grid news-dates show-${aktuellTab}">
-          <div class="page-main col-news">${html}</div>
-          <aside class="page-aside col-dates">${aside.map((b, i) => renderColumnBlock(b, i === 0)).join('')}</aside>
-        </div>`;
+      return newsDatesLayout(html, aside.map((b, i) => renderColumnBlock(b, i === 0)).join(''), aktuellTab, 'aktuell-tab');
     }
     if (!aside.length) return `<div class="page-grid single"><div class="page-main">${html}</div></div>`;
     return `
@@ -1579,7 +1621,7 @@
     return { ref, kind: 'image', name: file.name };
   }
   const PDF_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5"/><path d="M9.5 16.5h5M9.5 13h5"/></svg>';
-  const attachmentSource = ref => images[ref] || (/^assets\/content\//.test(ref || '') ? ref : '');
+  const attachmentSource = ref => images[ref] || (/^assets\/(?:content\/|clubarchiv\/medien\/[a-f0-9]+\.(?:webp|pdf)$)/.test(ref || '') ? ref : '');
   function attachmentThumb(b, inEditor = false) {
     const a = b.attachment;
     if (!a || !attachmentSource(a.ref)) return '';
@@ -2819,9 +2861,11 @@
     'feature-edit': (el) => { editing = 'home'; detailEditing = true; openBlockEditor(el.dataset.id, false, 'sub'); },
     'aktuell-tab': (el) => {
       aktuellTab = el.dataset.tab;
-      document.querySelectorAll('.aktuell-switch button').forEach((b) => { b.classList.toggle('on', b === el); b.setAttribute('aria-selected', String(b === el)); });
-      const grid = document.querySelector('.page-grid.news-dates');
-      if (grid) grid.className = `page-grid news-dates show-${aktuellTab}`;
+      showNewsDatesTab(el);
+    },
+    'archive-tab': (el) => {
+      TFB.clubArchive.selectTab(el.dataset.tab);
+      showNewsDatesTab(el);
     },
     'post-new': (el) => openCompose(el.dataset.scope),
     'post-comments': (el) => {
@@ -2881,6 +2925,11 @@
     'post-report': async (el) => { await ui().api.reportPost(el.dataset.id); ui().toast('Danke – der Vorstand schaut sich das an.', true); },
     'post-gallery': (el) => { const p = postCache[el.dataset.id]; if (p) openGallery(p.images || [], `${p.author} · ${whenText(p.createdAt)}`); },
     'news-gallery': (el) => {
+      const archived = TFB.clubArchive?.photoEntry(el.dataset.block);
+      if (archived) {
+        openGallery(archived.photos, archived.title, true);
+        return;
+      }
       const b = Object.values(site.pages).flatMap(p => p.blocks).find(b => b.id === el.dataset.block);
       if (b) openGallery((b.images || []).slice(0, 100), b.title, true);
     },

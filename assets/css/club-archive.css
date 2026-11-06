@@ -1,0 +1,77 @@
+/* Archive entry point below the board directory. */
+.club-archive-link {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: clamp(10px, 2vw, 18px);
+  width: min(100%, 570px);
+  margin: 24px 0 0;
+  padding: 12px clamp(12px, 2vw, 20px);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--card);
+  color: var(--ink);
+  text-decoration: none;
+  box-shadow: 0 2px 7px rgba(0, 0, 0, .05);
+  transition: box-shadow .18s ease, border-color .18s ease;
+}
+.club-archive-link:is(:hover, :focus-visible) {
+  border-color: var(--signature-text, var(--ink));
+  box-shadow: 0 4px 14px rgba(0, 0, 0, .09);
+}
+.club-archive-link-icon, .club-archive-link-arrow { display: grid; place-items: center; }
+.club-archive-link-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--paper);
+}
+.club-archive-link-icon svg, .club-archive-link-arrow svg { width: 18px; height: 18px; }
+.club-archive-link-copy { display: grid; gap: 3px; }
+.club-archive-link-copy strong { font-size: 1rem; }
+.club-archive-link-copy > span { color: var(--muted); font-size: .8rem; }
+.club-archive [hidden] { display: none; }
+.archive-reading { max-width: 900px; }
+.archive-head { align-items: center; }
+.archive-head .content-overview-tools { margin: 0; }
+.archive-home > .page-grid { margin-top: 16px; }
+.archive-feed, .archive-dates { display: grid; gap: 14px; }
+.archive-home .col-news, .archive-home .col-dates { min-width: 0; }
+.archive-home .post-title-link { text-decoration: none; }
+.archive-home .post-title-link:is(:hover, :focus-visible) { text-decoration: underline; }
+@media (max-width: 1023px) {
+  .archive-home > .archive-head > .content-overview-tools { display: none; }
+}
+.archive-date-standalone { margin: -10px 0 10px; }
+.club-archive .date-badge > :is(small, b) { color: #fff; opacity: 1; }
+.archive-panel { padding: 16px; border: 1px solid var(--line); border-radius: 14px; background: var(--card); }
+.archive-panel h2 { margin: 0 0 10px; font-size: 1.08rem; }
+.archive-text { overflow-wrap: anywhere; }
+.archive-text:empty { display: none; }
+.archive-text img { max-width: 100%; height: auto; border-radius: 8px; }
+.archive-text figure { margin: 16px 0; }
+.archive-text figure:empty { display: none; }
+.archive-text figcaption { font-size: .85em; }
+.archive-text table { display: block; max-width: 100%; overflow-x: auto; border-collapse: collapse; }
+.archive-text td, .archive-text th { border: 1px solid var(--line); padding: 6px 10px; }
+.archive-text .archive-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 160px), 1fr)); gap: 8px; }
+.archive-text .archive-gallery img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; }
+.archive-source { margin-top: 24px; }
+@media (min-width: 740px) {
+  .archive-filters { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr) auto; }
+}
+
+/* Die chronologische Reihenfolge läuft über die Zeilen, wie die Karten gelesen werden. */
+.club-archive [data-archive-results] {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: 12px;
+}
+.club-archive [data-archive-results] > .mini { margin: 0; min-width: 0; }
+@media (min-width: 1024px) {
+  .club-archive [data-archive-results] { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+@media (max-width: 639px) {
+  .club-archive [data-archive-results] { gap: 8px; }
+}

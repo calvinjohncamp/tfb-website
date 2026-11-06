@@ -423,6 +423,7 @@
           $view.appendChild(tools);
         }
       }
+      if (view === 'club') TFB.clubArchive?.rendered();
       TFB.scrollToSiteContent?.();
       TFB.partnerVisibility?.rendered();
     } catch (err) {

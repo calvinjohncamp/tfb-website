@@ -21,7 +21,12 @@ selected = []
 for name in tracked:
     path = Path(name)
     if name in ENTRY_FILES or (
-        name.startswith('assets/') and path.suffix.lower() in ASSET_TYPES
+        name.startswith('assets/') and (
+            path.suffix.lower() in ASSET_TYPES
+            or name == 'assets/clubarchiv/bestand.json'
+            or (name.startswith('assets/clubarchiv/medien/')
+                and path.suffix.lower() in {'.mp4', '.mp3', '.pptx', '.docx', '.xlsx'})
+        )
         and name != 'assets/data/rosters.js'
         and not any(part.startswith('.') for part in path.parts)
     ):
