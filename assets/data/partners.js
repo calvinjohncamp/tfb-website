@@ -12,7 +12,7 @@ TFB.partners=[
   {
     "id": "safenetworx",
     "name": "SafeNetworX",
-    "tier": "partner",
+    "tier": "regional",
     "sort": 2000,
     "logo": "assets/partners/tfb-safenetworx.png",
     "url": "https://www.safenetworx.de"
@@ -20,7 +20,7 @@ TFB.partners=[
   {
     "id": "sparkasse-gummersbach",
     "name": "Sparkasse Gummersbach",
-    "tier": "partner",
+    "tier": "regional",
     "sort": 3000,
     "logo": "assets/partners/tfb-sparkasse-gummersbach.jpg",
     "url": "https://www.sparkasse-gm.de"
@@ -28,7 +28,7 @@ TFB.partners=[
   {
     "id": "steffen-werkshage",
     "name": "Steffen Werkshage",
-    "tier": "partner",
+    "tier": "regional",
     "sort": 4000,
     "logo": "assets/partners/tfb-steffen-werkshage.png",
     "url": "https://www.werkshage.de/"
@@ -36,7 +36,7 @@ TFB.partners=[
   {
     "id": "stubs-dienstleistungen",
     "name": "STUBS Dienstleistungen",
-    "tier": "partner",
+    "tier": "regional",
     "sort": 5000,
     "logo": "assets/partners/tfb-stubs-dienstleistungen.jpg",
     "url": "https://www.stubsgmbh.de/"
@@ -44,7 +44,7 @@ TFB.partners=[
   {
     "id": "volksbank-oberberg-eg",
     "name": "Volksbank Oberberg eG",
-    "tier": "partner",
+    "tier": "regional",
     "sort": 6000,
     "logo": "assets/partners/tfb-volksbank-oberberg-eg.png",
     "url": "https://www.vb-oberberg.de"
@@ -52,7 +52,7 @@ TFB.partners=[
   {
     "id": "aggerenergie",
     "name": "AggerEnergie",
-    "tier": "partner",
+    "tier": "regional",
     "sort": 7000,
     "logo": "assets/partners/tfb-aggerenergie.jpg",
     "url": "https://www.aggerenergie.de/"
@@ -60,7 +60,7 @@ TFB.partners=[
   {
     "id": "oberberg-partyservice",
     "name": "Oberberg Partyservice",
-    "tier": "partner",
+    "tier": "regional",
     "sort": 8000,
     "logo": "assets/partners/tfb-oberberg-partyservice.png",
     "url": "https://partyservice-oberberg.de/"
@@ -68,7 +68,7 @@ TFB.partners=[
   {
     "id": "torsten-dehler",
     "name": "Württembergische · Torsten Dehler",
-    "tier": "partner",
+    "tier": "regional",
     "sort": 9000,
     "logo": "assets/partners/tfb-torsten-dehler.jpg",
     "url": "https://www.wuerttembergische.de/versicherungen/agentur.dehler"
@@ -76,7 +76,7 @@ TFB.partners=[
   {
     "id": "atelier-althoefer",
     "name": "Atelier Althöfer · Uhren + Schmuck",
-    "tier": "partner",
+    "tier": "regional",
     "sort": 10000,
     "logo": "assets/partners/tfb-atelier-althoefer.jpg",
     "url": "https://www.atelier-althoefer.de/"
@@ -84,7 +84,7 @@ TFB.partners=[
   {
     "id": "autohaus-halstenbach",
     "name": "Autohaus Halstenbach",
-    "tier": "partner",
+    "tier": "regional",
     "sort": 11000,
     "logo": "assets/partners/tfb-autohaus-halstenbach.jpg",
     "url": "https://www.autohaus-halstenbach.de/"
@@ -92,7 +92,7 @@ TFB.partners=[
   {
     "id": "schuhmann",
     "name": "Schuh Mann",
-    "tier": "partner",
+    "tier": "regional",
     "sort": 12000,
     "logo": "assets/partners/tfb-schuhmann.png",
     "url": ""
@@ -100,7 +100,7 @@ TFB.partners=[
   {
     "id": "sport-hennecken",
     "name": "Sport Hennecken",
-    "tier": "partner",
+    "tier": "regional",
     "sort": 13000,
     "logo": "assets/partners/tfb-sport-hennecken.png",
     "url": "https://www.sport-hennecken.de/"
@@ -108,7 +108,7 @@ TFB.partners=[
   {
     "id": "mueller-klein",
     "name": "Müller & Klein",
-    "tier": "partner",
+    "tier": "regional",
     "sort": 14000,
     "logo": "assets/partners/tfb-mueller-klein.jpg",
     "url": "https://www.mueller-klein.de/"
@@ -116,7 +116,7 @@ TFB.partners=[
   {
     "id": "lta",
     "name": "LTA",
-    "tier": "partner",
+    "tier": "regional",
     "sort": 15000,
     "logo": "assets/partners/tfb-lta.png",
     "url": "https://www.lta-gmbh.de"
@@ -124,7 +124,7 @@ TFB.partners=[
   {
     "id": "metzgerei-muller",
     "name": "Metzgerei Müller",
-    "tier": "partner",
+    "tier": "regional",
     "sort": 16000,
     "logo": "assets/partners/tfb-metzgerei-muller.jpg",
     "url": "http://www.metzger-mueller.com/"
@@ -132,7 +132,7 @@ TFB.partners=[
   {
     "id": "werner-dieball",
     "name": "Dr. Werner Dieball",
-    "tier": "partner",
+    "tier": "regional",
     "sort": 17000,
     "logo": "assets/partners/tfb-werner-dieball.png",
     "url": "https://wernerdieball.de"
@@ -140,7 +140,7 @@ TFB.partners=[
   {
     "id": "blumen-schmidt",
     "name": "Blumen Schmidt",
-    "tier": "partner",
+    "tier": "regional",
     "sort": 18000,
     "logo": "assets/partners/tfb-blumen-schmidt.png",
     "url": "https://www.fleurop.de/partnerfloristen/fleurop-filialen/51674-wiehl/blumen-schmidt-bielsteiner-str-107"
@@ -148,7 +148,7 @@ TFB.partners=[
   {
     "id": "sapv-oberberg",
     "name": "SAPV Oberberg",
-    "tier": "partner",
+    "tier": "regional",
     "sort": 19000,
     "logo": "assets/partners/tfb-sapv-oberberg.jpg",
     "url": "https://sapv-oberberg.de/"
@@ -156,7 +156,7 @@ TFB.partners=[
   {
     "id": "tanzart-broichhagen",
     "name": "TanzART Broichhagen",
-    "tier": "partner",
+    "tier": "regional",
     "sort": 20000,
     "logo": "assets/partners/tfb-tanzart-broichhagen.png",
     "url": "https://tanzschule-bielstein.de/"
@@ -164,7 +164,7 @@ TFB.partners=[
   {
     "id": "pollmann-steuerberater",
     "name": "Pollmann Steuerberater",
-    "tier": "partner",
+    "tier": "regional",
     "sort": 21000,
     "logo": "assets/partners/tfb-pollmann-steuerberater.jpg",
     "url": "https://www.stb-pollmann.de/"
@@ -172,7 +172,7 @@ TFB.partners=[
   {
     "id": "oberbantenberger-hof",
     "name": "Oberbantenberger Hof · Alt Athen",
-    "tier": "partner",
+    "tier": "regional",
     "sort": 22000,
     "logo": "assets/partners/tfb-oberbantenberger-hof.png",
     "url": "http://oberbantenberger-hof.de/"
@@ -180,7 +180,7 @@ TFB.partners=[
   {
     "id": "gsg-grosshandel",
     "name": "GSG Farben",
-    "tier": "partner",
+    "tier": "regional",
     "sort": 23000,
     "logo": "assets/partners/tfb-gsg-grosshandel.png",
     "url": "https://www.gsg-farben.de/"
@@ -188,7 +188,7 @@ TFB.partners=[
   {
     "id": "town-country-haus",
     "name": "Town & Country Haus",
-    "tier": "partner",
+    "tier": "regional",
     "sort": 24000,
     "logo": "assets/partners/tfb-town-country-haus.jpg",
     "url": "https://www.tc.de/"
@@ -196,7 +196,7 @@ TFB.partners=[
   {
     "id": "hans-installationen",
     "name": "Hans · Installationen und Heizungsbau",
-    "tier": "partner",
+    "tier": "regional",
     "sort": 25000,
     "logo": "assets/partners/tfb-hans-installationen.jpg",
     "url": "https://www.hans-gmbh.com/"
@@ -204,7 +204,7 @@ TFB.partners=[
   {
     "id": "kanzlei-sattler",
     "name": "Kanzlei Sattler",
-    "tier": "partner",
+    "tier": "regional",
     "sort": 26000,
     "logo": "assets/partners/tfb-kanzlei-sattler.jpg",
     "url": "https://www.kanzlei-sattler.de/"
@@ -212,7 +212,7 @@ TFB.partners=[
   {
     "id": "autohaus-schumacher",
     "name": "Autohaus Schumacher",
-    "tier": "partner",
+    "tier": "regional",
     "sort": 27000,
     "logo": "assets/partners/tfb-autohaus-schumacher.jpg",
     "url": "https://www.renault-schumacher.de/"
@@ -220,7 +220,7 @@ TFB.partners=[
   {
     "id": "dornseifer",
     "name": "Dornseifers Frischemarkt",
-    "tier": "partner",
+    "tier": "regional",
     "sort": 28000,
     "logo": "assets/partners/tfb-dornseifer.jpg",
     "url": "https://www.dornseifer.de/"
@@ -228,15 +228,15 @@ TFB.partners=[
   {
     "id": "auge-ohr-althofer",
     "name": "Auge + Ohr Althöfer",
-    "tier": "partner",
+    "tier": "regional",
     "sort": 29000,
-    "logo": "assets/partners/tfb-auge-ohr-althofer.png",
+    "logo": "assets/partners/tfb-auge-ohr-althofer-padel.png",
     "url": "https://www.althoefer.de/"
   },
   {
     "id": "erzquell-brauerei-bielstein-haas-gmbh-co-kg",
     "name": "Zunft Kölsch",
-    "tier": "partner",
+    "tier": "regional",
     "sort": 30000,
     "logo": "assets/partners/tfb-erzquell-brauerei-bielstein-haas-gmbh-co-kg.jpg",
     "url": "https://www.zunft-koelsch.de"
@@ -244,7 +244,7 @@ TFB.partners=[
   {
     "id": "medica-agger-apotheken",
     "name": "Medica Apotheke und Agger Apotheke",
-    "tier": "partner",
+    "tier": "regional",
     "sort": 31000,
     "logo": "assets/partners/tfb-medica-agger-apotheken.jpg",
     "url": "https://www.medica-apotheke-gm.de/"
@@ -252,7 +252,7 @@ TFB.partners=[
   {
     "id": "berster-koch",
     "name": "Berster Koch",
-    "tier": "partner",
+    "tier": "regional",
     "sort": 32000,
     "logo": "assets/partners/tfb-berster-koch.png",
     "url": "https://www.bersterkoch.de/"
@@ -260,7 +260,7 @@ TFB.partners=[
   {
     "id": "welp-media-service",
     "name": "welp media service",
-    "tier": "partner",
+    "tier": "regional",
     "sort": 33000,
     "logo": "assets/partners/tfb-welp-media-service.jpg",
     "url": "https://welp-media-service.de"
@@ -268,7 +268,7 @@ TFB.partners=[
   {
     "id": "asbach-und-winkler-zurich",
     "name": "Zurich · Asbach und Winkler",
-    "tier": "partner",
+    "tier": "regional",
     "sort": 34000,
     "logo": "assets/partners/tfb-asbach-und-winkler-zurich.jpg",
     "url": "https://www.zurich.de/de-de/vor-ort/asbach-winkler"

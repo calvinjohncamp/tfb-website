@@ -1,14 +1,26 @@
 const fail=(status,message)=>{throw Object.assign(Error(message),{status});};
 const txt=(s,max=200)=>{if(typeof s!=='string'||s.length>max||/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/.test(s))fail(400,'Bitte die Textangaben prüfen.');return s.trim();};
 const validId=id=>typeof id==='string'&&/^[a-z0-9][a-z0-9-]{0,79}$/.test(id);
+const rotationDefaults={premium:3,partner:3,regional:1};
+const validWeight=weight=>Number.isInteger(weight)&&weight>=1&&weight<=12;
+const rotationWeights=rotation=>Object.fromEntries(Object.entries(rotationDefaults)
+  .map(([tier,weight])=>[tier,validWeight(rotation?.[tier])?rotation[tier]:weight]));
+
+async function partnerSettings(env){
+ const setting=await env.DB.prepare('SELECT revision,payload FROM tfb_partner_settings WHERE id=1').first();
+ if(!setting)fail(503,'Die Partnerpflege wird eingerichtet.');
+ const {rotation,...splash}=JSON.parse(setting.payload);
+ return {revision:setting.revision,splash,rotation:rotationWeights(rotation)};
+}
 function safeUrl(value){const s=txt(value||'',1000);if(!s)return '';let u;try{u=new URL(s);}catch{fail(400,'Die Website-Adresse ist ungültig.');}if(!['http:','https:'].includes(u.protocol)||u.username||u.password)fail(400,'Bitte eine öffentliche Website-Adresse verwenden.');return u.href;}
 function readPartner(value,id,previous){
  if(!value||typeof value!=='object'||Array.isArray(value))fail(400,'Partnerangaben fehlen.');
- const premium=id==='bmw-kaltenbach-gruppe';
- const p={name:txt(value.name,160),company:txt(value.company||'',200),tier:premium?'premium':'partner',active:true,
+ const tier=value.tier??previous?.tier??(id==='bmw-kaltenbach-gruppe'?'premium':'regional');
+ if(typeof tier!=='string'||!Object.hasOwn(rotationDefaults,tier))fail(400,'Bitte eine Partnerstufe auswählen.');
+ const p={name:txt(value.name,160),company:txt(value.company||'',200),tier,active:true,
    url:safeUrl(value.url),contactName:txt(value.contactName||'',160),contactEmail:txt(value.contactEmail||'',160),contactPhone:txt(value.contactPhone||'',80),
    street:txt(value.street||'',200),postalCode:txt(value.postalCode||'',24),city:txt(value.city||'',100),
-   annualCents:premium?(previous?.annualCents??0):30000,sort:previous?.sort??0,logo:previous?.logo||''};
+   annualCents:tier==='regional'?30000:(previous?.annualCents??0),sort:previous?.sort??0,logo:previous?.logo||''};
  if(!p.name)fail(400,'Bitte einen Partnernamen angeben.');
  if(p.contactEmail&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(p.contactEmail))fail(400,'Bitte die Kontakt-E-Mail prüfen.');
  if(p.logo&&!/^assets\/partners\/[a-z0-9-]+\.(png|jpg|jpeg|webp)$/i.test(p.logo))fail(400,'Bitte ein Logo über die Dateiauswahl hochladen.');
@@ -17,13 +29,12 @@ function readPartner(value,id,previous){
 const logoUrl=(row,base)=>row.uploaded?`${base}/public/partner-logo/${row.id}?v=${row.revision}`:JSON.parse(row.payload).logo;
 export async function publicPartnerContent(env,base){
  const rows=(await env.DB.prepare('SELECT id,revision,payload,(logo_data IS NOT NULL) AS uploaded FROM tfb_partners ORDER BY json_extract(payload,\'$.sort\'),id').all()).results;
- const setting=await env.DB.prepare('SELECT revision,payload FROM tfb_partner_settings WHERE id=1').first();
- if(!setting)fail(503,'Die Partnerpflege wird eingerichtet.');
- return {revision:setting.revision,splash:JSON.parse(setting.payload),partners:rows.filter(r=>JSON.parse(r.payload).active).map(r=>{const p=JSON.parse(r.payload);return {id:r.id,name:p.name,tier:p.tier,sort:p.sort,logo:logoUrl(r,base),url:p.url};}),measurementEnabled:false,plannedStart:'2027-01-01'};
+ return {...await partnerSettings(env),partners:rows.filter(r=>JSON.parse(r.payload).active).map(r=>{const p=JSON.parse(r.payload);return {id:r.id,name:p.name,tier:p.tier,sort:p.sort,logo:logoUrl(r,base),url:p.url};}),measurementEnabled:false,plannedStart:'2027-01-01'};
 }
 export async function adminPartnerContent(env,base){
- const rows=(await env.DB.prepare("SELECT id,revision,payload,(logo_data IS NOT NULL) AS uploaded FROM tfb_partners ORDER BY json_extract(payload,'$.tier') DESC,json_extract(payload,'$.name') COLLATE NOCASE,id").all()).results;
- return {partners:rows.map(r=>{
+ const rows=(await env.DB.prepare("SELECT id,revision,payload,(logo_data IS NOT NULL) AS uploaded FROM tfb_partners ORDER BY CASE json_extract(payload,'$.tier') WHEN 'premium' THEN 0 WHEN 'partner' THEN 1 ELSE 2 END,json_extract(payload,'$.name') COLLATE NOCASE,id").all()).results;
+ const {revision,rotation}=await partnerSettings(env);
+ return {revision,rotation,partners:rows.map(r=>{
    const {name,company,tier,url,contactName,contactEmail,contactPhone,street,postalCode,city}=JSON.parse(r.payload);
    return {id:r.id,revision:r.revision,logoPreview:logoUrl(r,base),name,company,tier,url,contactName,contactEmail,contactPhone,street,postalCode,city};
  })};
@@ -40,9 +51,15 @@ export async function savePartner(env,data){
  }
  if(!p.logo&&!(replace?logo:old?.uploaded))fail(400,'Ein sichtbarer Partner benötigt ein Logo.');
  const now=new Date().toISOString();
- const row=old
-   ? await env.DB.prepare('UPDATE tfb_partners SET payload=?,logo_data=CASE WHEN ? THEN ? ELSE logo_data END,revision=revision+1,updated_at=? WHERE id=? AND revision=? RETURNING revision').bind(JSON.stringify(p),replace?1:0,logo,now,data.id,data.revision).first()
-   : await env.DB.prepare('INSERT INTO tfb_partners(id,payload,logo_data,updated_at) VALUES (?,?,?,?) ON CONFLICT(id) DO NOTHING RETURNING revision').bind(data.id,JSON.stringify(p),logo,now).first();
+ let row;
+ try {
+   row=old
+     ? await env.DB.prepare('UPDATE tfb_partners SET payload=?,logo_data=CASE WHEN ? THEN ? ELSE logo_data END,revision=revision+1,updated_at=? WHERE id=? AND revision=? RETURNING revision').bind(JSON.stringify(p),replace?1:0,logo,now,data.id,data.revision).first()
+     : await env.DB.prepare('INSERT INTO tfb_partners(id,payload,logo_data,updated_at) VALUES (?,?,?,?) ON CONFLICT(id) DO NOTHING RETURNING revision').bind(data.id,JSON.stringify(p),logo,now).first();
+ } catch(error) {
+   if(String(error.message).includes('Maximal zwei'))fail(400,'Bitte höchstens zwei Premium-Partner pflegen.');
+   throw error;
+ }
  if(!row)fail(409,'Der Partner wurde inzwischen geändert. Bitte neu laden.');return {ok:true,id:data.id,revision:row.revision};
 }
 export async function savePartnerSettings(env,data){
@@ -56,8 +73,18 @@ export async function savePartnerSettings(env,data){
  if(typeof clean.footEnabled!=='boolean')fail(400,'Bitte die Anzeige der Zeile unter dem Button prüfen.');
  clean.eyebrowText=txt(s.eyebrowText===undefined?(old.eyebrowText??'Tennisfreunde Bielstein'):s.eyebrowText,120);
  for(const [key,max] of Object.entries(fields)){clean[key]=txt(s[key],max);if(!clean[key]&&key!=='description'&&key!=='foot')fail(400,'Bitte die Texte vervollständigen.');}
- const row=await env.DB.prepare('UPDATE tfb_partner_settings SET payload=?,revision=revision+1,updated_at=? WHERE id=1 AND revision=? RETURNING revision').bind(JSON.stringify(clean),new Date().toISOString(),data.revision).first();
+ const row=await env.DB.prepare('UPDATE tfb_partner_settings SET payload=?,revision=revision+1,updated_at=? WHERE id=1 AND revision=? RETURNING revision').bind(JSON.stringify({...clean,rotation:rotationWeights(old.rotation)}),new Date().toISOString(),data.revision).first();
  if(!row)fail(409,'Die Texte wurden inzwischen geändert. Bitte die Einstiegsseite neu laden.');return {revision:row.revision,splash:clean};
+}
+export async function savePartnerRotation(env,data){
+ const {rotation,revision}=data;
+ if(!Number.isSafeInteger(revision)||!Object.keys(rotationDefaults).every(tier=>validWeight(rotation?.[tier])))
+   fail(400,'Bitte je Stufe ein Gewicht von 1 bis 12 eintragen.');
+ const weights=rotationWeights(rotation);
+ const row=await env.DB.prepare("UPDATE tfb_partner_settings SET payload=json_set(payload,'$.rotation',json(?)),revision=revision+1,updated_at=? WHERE id=1 AND revision=? RETURNING revision")
+   .bind(JSON.stringify(weights),new Date().toISOString(),revision).first();
+ if(!row)fail(409,'Die Einstellungen wurden inzwischen geändert. Bitte neu laden.');
+ return {revision:row.revision,rotation:weights};
 }
 export async function removePartner(env,data){
  if(!validId(data.id)||!Number.isSafeInteger(data.revision)||data.revision<1)fail(400,'Ungültiger Partner.');

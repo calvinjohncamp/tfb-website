@@ -1,61 +1,61 @@
-// Each regular partner gets one slot per round. BMW gets three, plus the Splash.
 (function () {
-  const key = 'tfb_partner_weighted_rotation_v2';
-  const premiumId = 'bmw-kaltenbach-gruppe';
+  const storageKey = 'tfb_partner_rotation_v3';
+  const defaults = {premium: 3, partner: 3, regional: 1};
   let state;
-  const assignments = new Map();
+  let assignment;
 
-  function round(ids) {
-    const regular = ids.filter(id => id !== premiumId);
-    for (let i = regular.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [regular[i], regular[j]] = [regular[j], regular[i]];
+  function playlist(partners) {
+    const weighted = [...partners.values()];
+    const total = weighted.reduce((sum, partner) => sum + partner.weight, 0);
+    // A partner can occupy at most one of the two positions on each page.
+    const quotas = weighted.map(partner => Math.min(partner.weight, total - partner.weight));
+    const quotaTotal = quotas.reduce((sum, quota) => sum + quota, 0);
+    const multiplier = quotaTotal % 2 ? 2 : 1;
+    const pairCount = quotaTotal * multiplier / 2;
+    const rows = weighted.map((partner, i) => ({
+      id: partner.id, quota: quotas[i] * multiplier, used: 0
+    }));
+    const pairs = [];
+    for (let index = 0; index < pairCount; index++) {
+      const remainingPairs = pairCount - index;
+      const available = rows.filter(row => row.used < row.quota);
+      available.sort((a, b) => {
+        const urgent = row => row.quota - row.used === remainingPairs;
+        const score = row => row.quota * (index + 1) - row.used * pairCount;
+        return Number(urgent(b)) - Number(urgent(a)) || score(b) - score(a);
+      });
+      const pair = available.slice(0, 2);
+      pair.forEach(row => row.used++);
+      // Alternate the sides without changing the partners assigned to the page.
+      if (index % 2) pair.reverse();
+      pairs.push(pair.map(row => row.id));
     }
-    if (!ids.includes(premiumId)) return regular;
-    if (!regular.length) return [premiumId];
-    const count = regular.length;
-    for (let slot = 2; slot >= 0; slot--) {
-      regular.splice(Math.floor(slot * count / 3), 0, premiumId);
-    }
-    return regular;
+    return pairs;
   }
 
-  TFB.resetPartnerRotation = () => { state = undefined; assignments.clear(); };
-  TFB.partnerPair = page => {
+  TFB.resetPartnerRotation = () => { state = undefined; assignment = undefined; };
+  TFB.partnerPair = visit => {
+    const weights = TFB.partnerContent?.rotation || defaults;
     const partners = new Map((TFB.partners || [])
-      .filter(p => p.logo && p.active !== false).map(p => [p.id, p]));
-    if (!partners.size) return [];
-    const ids = [...partners.keys()].sort();
-    const signature = ids.join('|');
+      .filter(p => p.logo && p.active !== false)
+      .map(p => [p.id, { ...p, weight: weights[p.tier] || defaults[p.tier] || 1 }]));
+    if (partners.size < 2) return [...partners.values()];
+    const signature = [...partners.values()].map(p => p.id + ':' + p.weight).join('|');
     if (state?.signature !== signature) {
-      const order = round(ids);
+      const pairs = playlist(partners);
       let saved;
-      try { saved = JSON.parse(sessionStorage.getItem(key)); } catch (_) {}
-      const counts = sequence => sequence.slice().sort().join('|');
-      state = saved?.signature === signature && Array.isArray(saved.order)
-        && counts(saved.order) === counts(order) && Number.isInteger(saved.cursor)
-        && saved.cursor >= 0 && saved.cursor <= order.length
-        ? saved : { signature, order, cursor: Math.floor(Math.random() * order.length) };
-      assignments.clear();
+      try { saved = JSON.parse(sessionStorage.getItem(storageKey)); } catch (_) {}
+      const cursor = saved?.signature === signature && Number.isInteger(saved.cursor)
+        && saved.cursor >= 0 && saved.cursor < pairs.length
+        ? saved.cursor : Math.floor(Math.random() * pairs.length);
+      state = { signature, pairs, cursor };
+      assignment = undefined;
     }
-    if (assignments.has(page)) return assignments.get(page);
-    const pair = [];
-    while (pair.length < Math.min(2, partners.size)) {
-      if (state.cursor >= state.order.length) {
-        state.order = round(ids);
-        state.cursor = 0;
-        // A regular-only round can end and start with the same partner.
-        if (!partners.has(premiumId) && state.order[0] === pair[0]?.id) {
-          [state.order[0], state.order[1]] = [state.order[1], state.order[0]];
-        }
-      }
-      const id = state.order[state.cursor];
-      if (id === pair[0]?.id) break;
-      state.cursor++;
-      pair.push(partners.get(id));
-    }
-    try { sessionStorage.setItem(key, JSON.stringify(state)); } catch (_) {}
-    assignments.set(page, pair);
-    return pair;
+    if (assignment?.visit === visit) return assignment.ids.map(id => partners.get(id));
+    const ids = state.pairs[state.cursor];
+    state.cursor = (state.cursor + 1) % state.pairs.length;
+    try { sessionStorage.setItem(storageKey, JSON.stringify({signature, cursor: state.cursor})); } catch (_) {}
+    assignment = { visit, ids };
+    return ids.map(id => partners.get(id));
   };
 })();

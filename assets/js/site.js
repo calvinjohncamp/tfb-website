@@ -1364,7 +1364,7 @@
     await ensure();
     return `<div class="chat-page"><header class="view-head page-head"><div><h1>${esc(chatText().feedTitle)}</h1></div>${chatEditButton()}</header>
       <div class="chat-stream">${await feedSection('club', { withTeams: true, chat: true })}</div>
-      ${ui().partnerSlot('aktuell', 'Der Chat wird dir präsentiert von')}</div>`;
+      ${ui().partnerSlot('chat', 'Der Chat wird dir präsentiert von')}</div>`;
   };
   let ovPeriod = '';
   function applyOverviewFilters() {

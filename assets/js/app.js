@@ -382,11 +382,23 @@
         `<a href="#${id}" class="${id === view ? 'on' : ''}" ${id === view ? 'aria-current="page"' : ''}>${label}</a>`).join('')}
     </nav>`;
 
-  // Zwei Partner je Seite – Rotation wie in der Padel-App (partner-rotation.js)
+  // Allocate the pair only when the requested view has actually rendered.
+  let partnerVisit = 0;
   function partnerSlot(page, kicker) {
-    const pair = TFB.partnerPair ? TFB.partnerPair(page) : [];
-    if (!pair.length) return '';
-    return `<section class="pbsp-slot" aria-label="Partner"><div class="pbsp-kicker">${esc(kicker)}</div><div class="pbsp-duo">${pair.map(TFB.partnerTile).join('')}</div></section>`;
+    return `<section class="pbsp-slot" aria-label="Partner" hidden><div class="pbsp-kicker">${esc(kicker)}</div><div class="pbsp-duo" data-partner-rotation="${esc(page)}"></div></section>`;
+  }
+
+  const partnerViews = new Set(['home', 'kiosk', 'strichliste', 'abrechnungen', 'chat', 'aktuell', 'gefluester', 'sport', 'team', 'club', 'treffen']);
+  function renderPartnerSlot(root, view) {
+    if (!partnerViews.has(view) || root.querySelector('.editing-page, .editbar') || (view === 'kiosk' && isEditing())) return;
+    if (!root.querySelector('[data-partner-rotation]')) {
+      root.insertAdjacentHTML('beforeend', partnerSlot(view, 'Präsentiert von'));
+    }
+    const pair = TFB.partnerPair?.(partnerVisit) || [];
+    for (const slot of root.querySelectorAll('[data-partner-rotation]')) {
+      slot.innerHTML = pair.map(TFB.partnerTile).join('');
+      slot.closest('.pbsp-slot').hidden = !pair.length;
+    }
   }
 
   let viewRender = 0;
@@ -423,6 +435,7 @@
           $view.appendChild(tools);
         }
       }
+      renderPartnerSlot($view, view);
       if (view === 'club') TFB.clubArchive?.rendered();
       TFB.scrollToSiteContent?.();
       TFB.partnerVisibility?.rendered();
@@ -1390,6 +1403,7 @@
   });
 
   window.addEventListener('hashchange', () => {
+    partnerVisit++;
     const view = currentView();
     navArea = areaOf(view);
     document.querySelectorAll('.topnav .tab').forEach((t) => {

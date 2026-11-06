@@ -3,7 +3,7 @@ import schema from './schema.sql';
 import {syncState, syncCommit, syncRevision, syncFaces, syncPhoto} from './app-sync.mjs';
 import { managementPage } from './management.mjs';
 import {collectVisibility, visibilityReport} from './partner-visibility.mjs';
-import {publicPartnerContent,adminPartnerContent,savePartner,savePartnerSettings,removePartner,partnerLogo} from './partner-management.mjs';
+import {publicPartnerContent,adminPartnerContent,savePartner,savePartnerSettings,savePartnerRotation,removePartner,partnerLogo} from './partner-management.mjs';
 import {editorialState,uploadEditorialMedia,editorialMedia,editorialCommit,editorialCheckpoint,editorialHistory,editorialPreview,editorialRestore,editorialExport,editorialScheduled} from './editorial.mjs';
 import {backupEditorialSystem} from './editorial-backup.mjs';
 
@@ -229,6 +229,7 @@ async function route(request, env, url) {
   if (request.method === 'GET' && path === '/admin/partners') return adminPartnerContent(env,url.origin);
   if (request.method === 'POST' && path === '/admin/partners/save') return savePartner(env,await body(request,450000));
   if (request.method === 'POST' && path === '/admin/partners/remove') return removePartner(env,await body(request,1024));
+  if (request.method === 'POST' && path === '/admin/partners/rotation') return savePartnerRotation(env,await body(request,1024));
   if (request.method === 'POST' && path === '/admin/partner-settings') return savePartnerSettings(env,await body(request,4096));
   if (request.method === 'GET' && path === '/admin/partner-visibility' && env.PARTNER_MEASUREMENT_ENABLED !== '1') return {enabled:false,plannedStart:'2027-01-01'};
   if (request.method === 'GET' && path === '/admin/partner-visibility') return visibilityReport(env,url.searchParams.get('year'));

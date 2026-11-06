@@ -21,7 +21,7 @@ async function open(admin=false){
   }
   if(url.origin!==site)return route.abort();
   const path=resolve(root,'.'+decodeURIComponent(url.pathname==='/'?'/index.html':url.pathname));if(!path.startsWith(root))return route.abort();
-  const types={'.html':'text/html','.js':'text/javascript','.css':'text/css','.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg','.ttf':'font/ttf'};
+  const types={'.html':'text/html','.js':'text/javascript','.css':'text/css','.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg','.ttf':'font/ttf','.json':'application/json'};
   try{return route.fulfill({body:readFileSync(path),contentType:types[extname(path)]||'application/octet-stream'});}catch{return route.fulfill({status:404,body:''});}
  });
  await page.goto(site);await page.waitForSelector('#tfb-splash');await page.evaluate(()=>document.fonts.ready);return {page,context};
@@ -32,6 +32,15 @@ try{
  assert.equal(await guest.page.locator('[data-action="partner-report"]').count(),0);
  await guest.page.locator('.tfb-splash-partners').scrollIntoViewIfNeeded();await guest.page.waitForTimeout(1600);assert.equal(collectRequests,0);
  await guest.page.locator('[data-action="splash-enter"]').click();await guest.page.evaluate(()=>location.hash='#partner');await guest.page.waitForSelector('.partner-admin');assert.match(await guest.page.locator('.partner-admin').innerText(),/nur für angemeldete Admins/);
+ const pairs=[];
+ for(const hash of ['#chat','#aktuell','#chat','#club/archiv']){
+  await guest.page.evaluate(target=>{location.hash=target;},hash);
+  await guest.page.waitForFunction(target=>document.querySelector('#view [data-partner-rotation]')?.dataset.partnerRotation===target,hash.slice(1).split('/')[0]);
+  await guest.page.waitForSelector('#view .pbsp-tile:nth-child(2)');
+  const pair=await guest.page.locator('#view .pbsp-tile').evaluateAll(nodes=>nodes.map(n=>n.dataset.partnerId).sort().join('|'));
+  assert.notEqual(pair,pairs.at(-1));
+  pairs.push(pair);
+ }
  const {page}=await open(true);assert.equal(await page.evaluate(()=>TFB.ui.isAdmin()),true,'Server admin session should be restored');
  await page.locator('[data-action="splash-enter"]').click();await page.locator('[data-action="profile"]').click();await page.waitForSelector('.acct');
  assert.equal(await page.locator('.acct [data-action="sync-import"]').count(),0);
@@ -45,9 +54,17 @@ try{
  await page.waitForSelector('[data-partner-row]');
  assert.equal(await page.locator('[data-partner-row]').count(),34);
  assert.equal(await page.getByText('Zahlungseingänge').count(),0);
+ await page.getByText('Partnerrotation einstellen',{exact:true}).click();
+ const rotationForm=page.locator('[data-editor="partner-rotation"]');
+ assert.equal(await rotationForm.locator('[name="regional"]').inputValue(),'1');
+ await rotationForm.locator('[name="premium"]').fill('4');
+ await rotationForm.getByRole('button',{name:'Gewichte speichern'}).click();
+ await page.getByText('Partnerrotation gespeichert',{exact:true}).waitFor();
+ assert.equal((await f.call('/public/partner-content')).body.rotation.premium,4);
  await page.locator('[data-action="partner-new"]').click();
  await page.locator('[name="name"]').fill('Unser TFB-Testpartner');
  await page.locator('[name="company"]').fill('TFB Musterfirma');
+ assert.equal(await page.locator('[name="tier"]').inputValue(),'regional');
  await page.locator('[name="logoFile"]').setInputFiles({name:'test.png',mimeType:'image/png',buffer:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aQWQAAAAASUVORK5CYII=','base64')});
  await page.locator('[data-editor="partner"] [type="submit"]').click();
  const row=page.locator('[data-partner-row]').filter({hasText:'Unser TFB-Testpartner'});

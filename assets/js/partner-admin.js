@@ -4,6 +4,8 @@
   const esc = value => ui().esc(value ?? '');
   let partners = [];
   let search = '';
+  let rotation, revision;
+  const tiers = {premium: 'Premium-Partner', partner: 'Partner', regional: 'Regionalpartner'};
 
   function rows() {
     const query = search.trim().toLocaleLowerCase('de');
@@ -15,7 +17,7 @@
         <div class="partner-admin-name">
           <h3>${esc(p.name)}</h3>
           ${p.company && p.company !== p.name ? `<p>${esc(p.company)}</p>` : ''}
-          <small>${p.tier === 'premium' ? 'Premium-Partner' : 'Regulärer Partner · 300 € pro Jahr'}</small>
+          <small>${tiers[p.tier] || tiers.regional}${p.tier === 'regional' ? ' · 300 € pro Jahr' : ''}</small>
         </div>
         <div class="partner-admin-actions">
           <button type="button" class="btn small" data-action="partner-edit" data-id="${esc(p.id)}">Bearbeiten</button>
@@ -31,9 +33,12 @@
       <button type="button" class="btn primary small" data-action="partner-new">Partner hinzufügen</button>
     </header>`;
     try {
-      partners = TFB.partnerContent?.isRemote
-        ? (await TFB.directoryCall('/admin/partners')).partners
-        : (TFB.partners || []).map(p => ({ ...p, logoPreview: p.logo }));
+      if (TFB.partnerContent?.isRemote) {
+        ({partners, rotation, revision} = await TFB.directoryCall('/admin/partners'));
+      } else {
+        partners = (TFB.partners || []).map(p => ({ ...p, logoPreview: p.logo }));
+        rotation = {premium: 3, partner: 3, regional: 1};
+      }
     } catch (error) {
       partners = [];
       return header + `<p class="partner-admin-empty" role="alert">${esc(error.message)}</p>
@@ -41,6 +46,17 @@
     }
     if (!admin()) return '';
     return header + `
+      <details class="partner-admin-rotation">
+        <summary>Partnerrotation einstellen</summary>
+        <p>Die Gewichte gelten pro Partner der jeweiligen Stufe. Gewicht 3 bedeutet dreimal so viele Einblendungen wie Gewicht 1.</p>
+        <form data-editor="partner-rotation">
+          <div class="partner-rotation-fields">
+            ${Object.entries(tiers).map(([tier,label]) => field(tier,label,rotation[tier],'type="number" min="1" max="12" step="1" required')).join('')}
+          </div>
+          <p class="form-error" role="alert"></p>
+          <button type="submit" class="btn small">Gewichte speichern</button>
+        </form>
+      </details>
       <label class="partner-admin-search">Partner suchen
         <input type="search" data-partner-search value="${esc(search)}" placeholder="Name oder Firma">
       </label>
@@ -97,6 +113,10 @@
       ${field('name', 'Partnername / Marke', p.name, 'maxlength="160" required')}
       ${field('company', 'Firmenname', p.company, 'maxlength="200"')}
       ${field('url', 'Website', p.url, 'type="url" maxlength="1000" placeholder="https://…"')}
+      <label class="field"><span>Partnerstufe</span>
+        <select name="tier">${Object.entries(tiers).map(([tier,label]) =>
+          `<option value="${tier}" ${(p.tier || 'regional') === tier ? 'selected' : ''}>${label}</option>`).join('')}</select>
+      </label>
       <div class="partner-editor-logo">
         ${p.logoPreview ? `<img src="${esc(p.logoPreview)}" alt="Aktuelles Partnerlogo">` : ''}
         <label class="btn small">Logo auswählen<input name="logoFile" type="file" accept="image/png,image/jpeg,image/webp" ${current ? '' : 'required'}></label>
@@ -114,7 +134,7 @@
       form.querySelector('[data-logo-name]').textContent = form.elements.logoFile.files[0]?.name || 'PNG, JPEG oder WebP';
     };
     submit(form, async () => {
-      const partner = Object.fromEntries(['name', 'company', 'url', ...details.map(([name]) => name)]
+      const partner = Object.fromEntries(['name', 'company', 'url', 'tier', ...details.map(([name]) => name)]
         .map(name => [name, form.elements[name].value.trim()]));
       const body = {id: p.id, revision: p.revision, partner};
       const file = form.elements.logoFile.files[0];
@@ -145,6 +165,26 @@
     'partner-edit': el => edit(el.dataset.id),
     'partner-remove': el => remove(el.dataset.id),
     'partner-admin-refresh': () => ui().renderView('partner')
+  });
+  document.addEventListener('submit', async event => {
+    const form = event.target;
+    if (!form.matches('[data-editor="partner-rotation"]')) return;
+    event.preventDefault();
+    const button = form.querySelector('[type="submit"]');
+    button.disabled = true;
+    form.querySelector('.form-error').textContent = '';
+    try {
+      if (!admin() || !TFB.partnerContent?.isRemote) throw Error('Bitte die veröffentlichte Website als Admin öffnen.');
+      const weights = Object.fromEntries(Object.keys(tiers).map(tier => [tier, form.elements[tier].valueAsNumber]));
+      const result = await TFB.directoryCall('/admin/partners/rotation', {revision, rotation: weights});
+      ({rotation,revision} = result);
+      await TFB.partnerContent.refresh();
+      ui().toast('Partnerrotation gespeichert', true);
+    } catch (error) {
+      form.querySelector('.form-error').textContent = error.message;
+    } finally {
+      button.disabled = false;
+    }
   });
   document.addEventListener('input', event => {
     if (!event.target.matches('[data-partner-search]') || !admin()) return;

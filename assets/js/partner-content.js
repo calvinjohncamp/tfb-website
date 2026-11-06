@@ -1,9 +1,9 @@
 (function(){
  const cfg=TFB.config.memberDirectory;
  const isRemote=Boolean(cfg?.enabled&&location.protocol==='https:'&&cfg.hosts.includes(location.hostname));
- const fallback=TFB.partners.slice();let splash=null,revision=0;
- const cache='tfb_partner_public_v2';
- function apply(data){if(!data||!Array.isArray(data.partners)||!data.splash)return false;const changed=JSON.stringify(TFB.partners)!==JSON.stringify(data.partners);TFB.partners=data.partners;splash=data.splash;revision=data.revision;if(changed)TFB.resetPartnerRotation?.();return true;}
+ const fallback=TFB.partners.slice();let splash=null,revision=0,rotation=null;
+ const cache='tfb_partner_public_v3';
+ function apply(data){if(!data||!Array.isArray(data.partners)||!data.splash)return false;const changed=JSON.stringify(TFB.partners)!==JSON.stringify(data.partners);TFB.partners=data.partners;splash=data.splash;revision=data.revision;rotation=data.rotation||null;if(changed)TFB.resetPartnerRotation?.();return true;}
  if(isRemote){try{apply(JSON.parse(localStorage.getItem(cache)||'null'));}catch(_){}}
  async function refresh(){
   if(!isRemote)return;
@@ -15,6 +15,6 @@
   if(!TFB.ui?.isAdmin())throw Error('Nur Admins dürfen die Einstiegsseite ändern.');
   const result=await TFB.directoryCall('/admin/partner-settings',{revision,splash:value});splash=result.splash;revision=result.revision;await refresh();
  }
- TFB.partnerContent={isRemote,refresh,saveSplash,get splash(){return splash;},get revision(){return revision;},fallback};
+ TFB.partnerContent={isRemote,refresh,saveSplash,get splash(){return splash;},get revision(){return revision;},get rotation(){return rotation;},fallback};
  TFB.partnerContent.ready=refresh();
 })();

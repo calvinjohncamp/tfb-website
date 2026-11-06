@@ -106,17 +106,16 @@ button.tfb-splash-ball .tfb-logo-ball { width:100%; height:100%; display:block; 
 .partner-admin select,.partner-admin-search input{font:inherit;padding:10px 12px;border:1px solid var(--line);border-radius:6px;background:var(--card);color:var(--ink)}
 
 .partner-admin-list{margin:36px 0}
+.partner-admin-rotation { margin: 0 0 24px; }
+.partner-admin-rotation summary { cursor: pointer; font-weight: 650; }
+.partner-admin-rotation > p { margin: 10px 0; color: var(--muted); }
+.partner-rotation-fields { display: flex; flex-wrap: wrap; gap: 12px; }
+.partner-rotation-fields .field { flex: 1 1 125px; max-width: 185px; }
 .partner-admin-search{display:block;font-size:13px;color:var(--muted);margin:0 0 20px}
 .partner-admin-search input{display:block;width:min(100%,380px);margin-top:5px}
 .partner-admin-row{display:grid;grid-template-columns:100px minmax(0,1fr) auto;align-items:center;gap:20px;padding:20px 0;border-bottom:1px solid var(--line)}
 .partner-admin-logo{display:flex;align-items:center;justify-content:center;width:100px;height:64px;padding:9px;background:#fff;border:1px solid #d7d7d7;border-radius:8px}
 .partner-admin-logo img{max-width:100%;max-height:100%;object-fit:contain}
-/* This supplied logo contains white lettering on a transparent background. */
-.pbsp-tile[data-partner-id="auge-ohr-althofer"] img,
-[data-partner-row="auge-ohr-althofer"] .partner-admin-logo img {
-  padding: 4px;
-  background: #252525;
-}
 .partner-admin-name h3{font:650 17px/1.3 var(--font);text-transform:none;letter-spacing:0;color:var(--ink)}
 .partner-admin-name p,.partner-admin-name small{font-size:12px;color:var(--muted);margin-top:5px;line-height:1.6}
 .partner-admin-tag{display:inline-block;font-size:11px;font-weight:600;color:var(--muted);background:var(--green-soft);border-radius:4px;padding:3px 7px}

@@ -75,7 +75,7 @@
   }
   async function refreshSettings(){if(TFB.partnerContent?.isRemote){await TFB.partnerContent.refresh();settings={...defaults,...TFB.partnerContent.splash};}else{const site=await ui().api.site();settings={...defaults,...site.splash};}}
   function premiumMarkup(){
-    const partner = (TFB.partners || []).find(p => p.id === 'bmw-kaltenbach-gruppe' && p.logo && p.active !== false);
+    const partner = (TFB.partners || []).find(p => p.id === 'bmw-kaltenbach-gruppe' && p.tier === 'premium' && p.logo && p.active !== false);
     if (!partner) return '';
     return `<section class="tfb-splash-partners pbsp-slot" aria-label="Premium-Partner"><p class="pbsp-kicker">${esc(settings.partnerLabel)}</p><div class="pbsp-duo">${TFB.partnerTile(partner, 0)}</div></section>`;
   }
