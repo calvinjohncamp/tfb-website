@@ -1217,7 +1217,7 @@
     const { api, state } = ui();
     const comments = (await api.comments(post.id)).slice().reverse();
     if (!comments.length) return '';
-    return `<aside class="chat-replies" aria-label="Kommentare">
+    return `<aside class="chat-replies" aria-label="Kommentare" tabindex="0">
       ${comments.length ? `<div class="comment-list">${comments.map(c => `<article class="comment" data-comment="${esc(c.id)}">
         <span class="fpost-avatar">${c.avatar ? `<img src="${esc(c.avatar)}" alt="">` : esc(initialsOf(c.author))}</span><div class="chat-reply-body"><header><b>${esc(c.author)}</b><small>${esc(whenText(c.createdAt))}${c.editedAt ? ' · bearbeitet' : ''}</small></header>
         ${c.text ? `<div class="comment-text">${postText(c.text)}</div>` : ''}
@@ -1257,6 +1257,23 @@
       <p class="form-error" role="alert"></p><button type="submit" class="btn signal">Senden</button></form>`);
     document.querySelector('[data-comment-form] textarea')?.focus();
   }
+
+  let chatPostSizes;
+  function fitChatReplies(post) {
+    const replies = post.nextElementSibling;
+    if (replies?.classList.contains('chat-replies')) replies.style.maxBlockSize = `${post.offsetHeight}px`;
+  }
+  TFB.fitChatReplies = root => {
+    chatPostSizes?.disconnect();
+    if (!root) return;
+    chatPostSizes ||= new ResizeObserver(entries => {
+      for (const { target } of entries) fitChatReplies(target);
+    });
+    for (const post of root.querySelectorAll('.chat-post-row:has(> .chat-replies) > .fpost')) {
+      fitChatReplies(post);
+      chatPostSizes.observe(post, { box: 'border-box' });
+    }
+  };
 
   async function chatPostMarkup(post) {
     const media = post.designs && await import('./chat-media.js').then(studio => studio.publishedGallery(post, ref => images[ref] || ref));

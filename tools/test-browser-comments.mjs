@@ -181,6 +181,36 @@ try {
   await page.locator('[data-comment-form] textarea').fill('Auch hier kommentierbar');
   await page.locator('[data-comment-form] [type=submit]').click();
   await designed.locator('.chat-replies').getByText('Auch hier kommentierbar',{exact:true}).waitFor();
+  // A long discussion scrolls independently on both layouts and after resizing.
+  const titles = ['Freiwillige Überschrift', 'Gestaltetes Hochformat'];
+  await page.evaluate(async titles => {
+    for (const post of (await TFB.api.posts('club')).filter(post => titles.includes(post.title))) {
+      for (let i = 0; i < 10; i++) {
+        await TFB.api.addComment(post.id, `Kommentar ${i} · ${'Das Clubgeflüster bleibt gut lesbar. '.repeat(7)}`);
+      }
+    }
+    await TFB.ui.renderView();
+  }, titles);
+  for (const width of [1100, 390]) {
+    await page.setViewportSize({ width, height: 900 });
+    for (const title of titles) {
+      const row = page.locator('.chat-post-row').filter({has: page.getByRole('heading', {name:title, exact:true})});
+      const replies = row.locator('.chat-replies');
+      await page.waitForFunction(title => {
+        const row = [...document.querySelectorAll('.chat-post-row')].find(row => row.querySelector('h3')?.textContent === title);
+        const post = row?.querySelector('.fpost');
+        const replies = row?.querySelector('.chat-replies');
+        return replies && post && replies.offsetHeight === post.offsetHeight && replies.scrollHeight > replies.clientHeight;
+      }, title);
+      assert.match(await replies.locator('.comment-text').first().innerText(), /^Kommentar 9/);
+      await replies.press('End');
+      await replies.locator('.comment-text').last().waitFor({state:'visible'});
+      await page.waitForFunction(title => [...document.querySelectorAll('.chat-post-row')].find(row =>
+        row.querySelector('h3')?.textContent === title)?.querySelector('.chat-replies').scrollTop > 0, title);
+    }
+  }
+  await page.setViewportSize({ width: 1100, height: 900 });
+
   await page.evaluate(() => { location.hash = '#chat/alle'; });
   await page.locator('.mini-comment-count').first().waitFor();
   await page.locator('.mini').filter({ hasText: 'Spontane Nachricht ohne Überschrift' }).click();

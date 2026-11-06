@@ -82,6 +82,7 @@
 .fpost-heading { display: flex; justify-content: space-between; align-items: baseline; gap: 8px 12px; margin-bottom: 6px; }
 .fpost-heading .fpost-title { margin: 0; overflow-wrap: anywhere; }
 .chat-comment-button { flex: none; }
+.chat-replies { min-width: 0; overflow-y: auto; }
 .chat-replies .comment { display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 9px; }
 .chat-replies .comment header { margin-bottom: 4px; }
 .chat-replies .fpost-avatar { width: 34px; height: 34px; }

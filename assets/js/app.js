@@ -436,6 +436,7 @@
         }
       }
       renderPartnerSlot($view, view);
+      TFB.fitChatReplies?.(view === 'chat' ? $view : null);
       if (view === 'club') TFB.clubArchive?.rendered();
       TFB.scrollToSiteContent?.();
       TFB.partnerVisibility?.rendered();
