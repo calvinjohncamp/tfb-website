@@ -8,13 +8,17 @@
   const KEY = 'tfb_directory_token_v1';
   let token = '';
   try { token = localStorage.getItem(KEY) || ''; } catch (_) {}
-  if (!token) token = sessionStorage.getItem(KEY) || '';
+  if (!token) {
+    try { token = sessionStorage.getItem(KEY) || ''; } catch (_) {}
+  }
 
   function rememberToken() {
     try {
       localStorage.setItem(KEY, token);
       sessionStorage.removeItem(KEY);
-    } catch (_) { sessionStorage.setItem(KEY, token); }
+    } catch (_) {
+      try { sessionStorage.setItem(KEY, token); } catch (_) {}
+    }
   }
   let verified = null;
   const base = cfg.url.replace(/\/$/, '');
@@ -46,13 +50,28 @@
   TFB.directoryFetch = path => call(path,undefined,{raw:true});
   function clear() {
     try { if (localStorage.getItem(KEY) === token) localStorage.removeItem(KEY); } catch (_) {}
-    token = ''; verified = null; sessionStorage.removeItem(KEY); api.disconnectSync?.();
+    try { sessionStorage.removeItem(KEY); } catch (_) {}
+    token = ''; verified = null; api.disconnectSync?.();
     api.attachDirectoryMember(null);
   }
-  async function accept(result) {
-    token = result.token; rememberToken(); verified = result.member;
+  async function attachVerified(result, requestToken) {
+    if (token !== requestToken) return null;
+    verified = result.member;
     const member = api.attachDirectoryMember(verified);
-    return api.connectSync ? api.connectSync(member) : member;
+    try {
+      const synced = api.connectSync ? await api.connectSync(member) : member;
+      return token === requestToken ? synced : null;
+    } catch (err) {
+      if (token !== requestToken) return null;
+      // Profile/content sync may fail independently of successful authentication.
+      api.syncError = err.message;
+      return member;
+    }
+  }
+  async function accept(result) {
+    token = result.token;
+    rememberToken();
+    return attachVerified(result, token);
   }
   api.secureDirectory = true;
   api.lookupEmail = async () => ({ known: true, hasPassword: true }); // Never disclose membership before login.
@@ -60,19 +79,23 @@
   api.createPassword = async (identifier, password, code) => accept(await call('/auth/activate', { identifier, password, code }));
   api.session = async () => {
     if (!token) { clear(); return null; }
+    const requestToken = token;
+    let result;
     try {
-      const result = await call('/auth/session');
-      if (sessionStorage.getItem(KEY) === token) rememberToken();
-      verified = result.member;
-      const member = api.attachDirectoryMember(verified);
-      return api.connectSync ? await api.connectSync(member) : member;
+      result = await call('/auth/session');
+    } catch (err) {
+      if (token !== requestToken || (err.status && err.status < 500 && err.status !== 429)) return null;
+      // A short network interruption during reload must not force a new login.
+      try { result = await call('/auth/session'); } catch (_) { return null; }
     }
-    catch { api.attachDirectoryMember(null); return null; }
+    if (token !== requestToken) return null;
+    rememberToken();
+    return attachVerified(result, requestToken);
   };
   api.signOut = async () => { try { if(token) await call('/auth/logout', {}); } finally { clear(); await local.signOut(); } };
   window.addEventListener('storage', event => {
     if (event.storageArea === localStorage && (event.key === KEY || event.key === null) && token && event.newValue !== token) {
-      sessionStorage.removeItem(KEY);
+      try { sessionStorage.removeItem(KEY); } catch (_) {}
       location.reload();
     }
   });

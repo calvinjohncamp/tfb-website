@@ -36,7 +36,9 @@ Cloudflare-Zugangsdaten gehören niemals in Git oder das Pages-Paket.
 - Passwörter: HMAC mit eigenem geheimem Server-Pepper, zufälliges Salt, PBKDF2
   SHA-256 mit 100.000 Iterationen (workerd-Grenze). Rate-Limit vor jeder Anmeldung.
 - Sitzungen: zufällige 256-Bit-Bearer-Tokens, nur deren SHA-256-Hashes in D1,
-  12 Stunden gültig. Browser speichert sein Token nur im Sitzungsspeicher.
+  30 Tage gültig. Beim Öffnen der App verlängert der Server die noch gültige
+  Sitzung auf 30 Tage, höchstens einmal am Tag. Die Website speichert ihr Token
+  im lokalen Browserspeicher und entfernt es beim Abmelden.
 - Suche ab zwei Zeichen, maximal acht Treffer; Namen/IDs ohne E-Mail-Adressen.
   Keine Schnittstelle für den Download der gesamten Liste durch Mitglieder.
 - Listenimport ist atomar, bietet eine Vorschau, übernimmt nur Nummer, Namen

@@ -8,7 +8,8 @@ import {editorialState,uploadEditorialMedia,editorialMedia,editorialCommit,edito
 import {backupEditorialSystem} from './editorial-backup.mjs';
 
 const ORIGINS = new Set(['https://joern-kaemper.de', 'https://www.joern-kaemper.de', 'https://calvinjohncamp.github.io']);
-const SESSION_MS = 12 * 60 * 60 * 1000;
+const DAY_MS = 24 * 60 * 60 * 1000;
+const SESSION_MS = 30 * DAY_MS;
 const CODE_MS = 24 * 60 * 60 * 1000;
 const encoder = new TextEncoder();
 const hex = bytes => [...new Uint8Array(bytes)].map(n => n.toString(16).padStart(2, '0')).join('');
@@ -243,7 +244,13 @@ async function route(request, env, url) {
   if (request.method === 'GET' && path === '/app/chat-video') return syncChatVideo(env,member,url.searchParams.get('post'),url.searchParams.get('ref'));
   if (request.method === 'GET' && path === '/app/state') return syncState(env,member);
   if (request.method === 'POST' && path === '/app/commit') return syncCommit(env,member,await body(request,8*1024*1024));
-  if (request.method === 'GET' && path === '/auth/session') return { member: await publicMember(env, member) };
+  if (request.method === 'GET' && path === '/auth/session') {
+    const now = Date.now();
+    // Renew remembered sessions on app entry, at most once a day.
+    await env.DB.prepare('UPDATE sessions SET expires_at=? WHERE token_hash=? AND expires_at>? AND expires_at<=?')
+      .bind(now + SESSION_MS, tokenHash, now, now + SESSION_MS - DAY_MS).run();
+    return { member: await publicMember(env, member) };
+  }
   if (request.method === 'POST' && path === '/auth/logout') {
     await env.DB.prepare('DELETE FROM sessions WHERE token_hash=?').bind(tokenHash).run(); return { ok: true };
   }

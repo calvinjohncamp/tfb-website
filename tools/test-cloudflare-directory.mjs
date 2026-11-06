@@ -120,3 +120,20 @@ test('email changes revoke login, expired sessions and excessive login attempts 
   for(let i=0;i<16;i++) result=await f.call('/auth/login',{identifier:'nobody',password:'wrong'});
   assert.equal(result.status,429);
 });
+test('opening the app renews a valid remembered session, but never an expired one', async () => {
+  const f = await fixture();
+  const db = f.env.DB.sqlite;
+  const expiration = () => db.prepare('SELECT expires_at FROM sessions').get().expires_at;
+  const halfDay = 12 * 60 * 60 * 1000;
+  const day = 2 * halfDay;
+  assert.ok(expiration() > Date.now() + 29 * day);
+  db.prepare('UPDATE sessions SET expires_at=?').run(Date.now() + halfDay);
+  assert.equal((await f.call('/auth/session', undefined, f.admin)).status, 200);
+  const renewed = expiration();
+  assert.ok(renewed > Date.now() + 29 * day);
+  assert.equal((await f.call('/auth/session', undefined, f.admin)).status, 200);
+  assert.equal(expiration(), renewed);
+  db.exec('UPDATE sessions SET expires_at=0');
+  assert.equal((await f.call('/auth/session', undefined, f.admin)).status, 401);
+  assert.equal(expiration(), 0);
+});
