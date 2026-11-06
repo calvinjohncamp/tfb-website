@@ -1531,10 +1531,10 @@ button.meet-series { cursor: pointer; }
 .story-text { font-size: 1.06rem; line-height: 1.7; }
 .story-text p { margin: 0 0 1em; }
 .dropcap > p:first-child::first-letter { float: left; font-family: var(--serif); font-weight: 800; font-size: 3.9em; line-height: .8; margin: .06em .1em 0 0; color: var(--signal); }
-.story-quote { margin: 30px 0; padding: 0 0 0 22px; border-left: 4px solid var(--signal); }
+.story-quote { margin: 30px 0; padding: 0 0 0 22px; border-left: 4px solid var(--quote-mark, var(--signal)); }
 .story-quote p { font-family: var(--serif); font-size: clamp(1.5rem, 5vw, 2.1rem); line-height: 1.2; font-weight: 800; letter-spacing: -.02em; margin: 0; }
-.story-quote p::before { content: "„"; color: var(--signal); }
-.story-quote p::after { content: "“"; color: var(--signal); }
+.story-quote p::before { content: "„"; color: var(--quote-mark, var(--signal)); }
+.story-quote p::after { content: "“"; color: var(--quote-mark, var(--signal)); }
 .story-quote cite { display: block; margin-top: 10px; font-style: normal; font-size: .82rem; color: var(--muted); font-weight: 650; }
 .story-foot { max-width: 680px; margin: 28px auto 0; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px; }
 .story-foot .feature-link { margin: 0; }
@@ -2366,9 +2366,8 @@ h1, h2, h3, .event h3, .feature-body h2, .story-head h1, .post-body h3 { -webkit
 .field .rich-tools .rich-group { display: inline-flex; gap: 3px; padding: 3px; border-radius: 10px; background: #F2EEE6; }
 .rich-tools .rich-group button { border: 0; background: transparent; min-width: 30px; height: 30px; padding: 0 8px; border-radius: 7px; display: inline-grid; place-items: center; }
 .rich-tools .rich-group button:enabled:hover { background: #fff; color: var(--ink); box-shadow: 0 0 0 1px var(--line); }
-.rich-tools .rich-history button { color: #171717; }
 .rich-tools .rich-history svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2.7; stroke-linecap: round; stroke-linejoin: round; }
-.rich-tools .rich-history button:disabled { opacity: .55; cursor: default; }
+.rich-tools .rich-history button:disabled { opacity: 1; cursor: default; }
 .rich-tools .rich-group button[data-rich="link"] { display: inline-flex; align-items: center; gap: 5px; }
 .field .rich-tools .sw { display: block; width: 16px; height: 16px; border-radius: 50%; }
 .field .rich-tools .sw-red { background: var(--signal); }
@@ -2401,7 +2400,9 @@ h1, h2, h3, .event h3, .feature-body h2, .story-head h1, .post-body h3 { -webkit
 /* =====================================================================
    Unterseite aus Abschnitten: Text · Überschrift (rot) · Zitat – feste Gestaltung
    ===================================================================== */
-.story-h { font-family: var(--serif); font-size: 1.4rem; font-weight: 800; line-height: 1.2; letter-spacing: -.015em; color: var(--signal); margin: 1.5em 0 .4em; text-transform: none; }
+.story-h { font-family: var(--serif); font-size: 1.4rem; font-weight: 800; line-height: 1.2; letter-spacing: -.015em; color: var(--ink); margin: 1.5em 0 .4em; text-transform: none; }
+.story .story-body > .story-h.is-signature, .story-quote.is-signature p { color: var(--signal); }
+.story-quote.is-signature { --quote-mark: var(--ink); }
 .story-body > .story-h:first-child { margin-top: 0; }
 .story-body > .story-text + .story-text { margin-top: 0; }
 
@@ -2415,9 +2416,22 @@ h1, h2, h3, .event h3, .feature-body h2, .story-head h1, .post-body h3 { -webkit
 .sec-bar button:disabled { opacity: .35; cursor: default; }
 .sec-bar button:hover:not(:disabled) { background: var(--signal); color: #fff; }
 .sec .field { margin: 0; }
-.sec-h-input { width: 100%; border: 0; border-bottom: 1.5px dashed var(--line); background: transparent; padding: 6px 2px; font-family: var(--serif); font-size: 1.4rem; font-weight: 800; letter-spacing: -.015em; color: var(--signal); outline: none; }
-.sec-h-input::placeholder { color: color-mix(in srgb, var(--signal) 40%, #fff); }
+.sec-h-input { width: 100%; border: 0; border-bottom: 1.5px dashed var(--line); background: transparent; padding: 6px 2px; font-family: var(--serif); font-size: 1.4rem; font-weight: 800; letter-spacing: -.015em; color: var(--ink); outline: none; }
+.sec-h-input::placeholder { color: color-mix(in srgb, currentColor 40%, #fff); }
 .sec-q-input { width: 100%; border: 0; border-left: 4px solid var(--signal); background: transparent; padding: 4px 0 4px 14px; font-family: var(--serif); font-size: 1.45rem; font-weight: 800; line-height: 1.2; letter-spacing: -.02em; color: var(--ink); resize: vertical; outline: none; }
+.sec-bar .sec-color {
+  min-width: 0;
+  max-width: 115px;
+  height: 28px;
+  padding: 0 5px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--paper);
+  color: var(--ink);
+  font: 650 .75rem var(--font);
+}
+.sec:has(.sec-color option[value="signature"]:checked) :is(.sec-h-input, .sec-q-input) { color: var(--signal); }
+.sec:has(.sec-color option[value="signature"]:checked) .sec-q-input { border-left-color: var(--ink); }
 .sec-q-by { width: 100%; margin-top: 6px; border: 1.5px solid var(--line); border-radius: 10px; padding: 7px 10px; font-size: .85rem; background: var(--paper); }
 .sec-text { border-color: transparent; background: transparent; padding: 0; }
 .sec-text .sec-bar { padding: 0 2px; }

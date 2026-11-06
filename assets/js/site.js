@@ -273,6 +273,10 @@
     return `<div class="secs">${list.map((x, i) => `${inserter(i)}
       <div class="sec sec-${x.type}" data-sec="${x.type}">
         <div class="sec-bar"><span>${SECTION_LABELS[x.type]}</span>
+          ${x.type === 'h' || x.type === 'quote' ? `<select class="sec-color" name="sec_${i}_color" aria-label="Textfarbe für ${SECTION_LABELS[x.type]}">
+            <option value="black">Schwarz</option>
+            <option value="signature" ${x.color === 'signature' ? 'selected' : ''}>Signaturfarbe</option>
+          </select>` : ''}
           <button type="button" data-secmove="-1" data-sec-i="${i}" ${i === 0 ? 'disabled' : ''} aria-label="Nach oben">${icon.up}</button>
           <button type="button" data-secmove="1" data-sec-i="${i}" ${i === list.length - 1 ? 'disabled' : ''} aria-label="Nach unten">${icon.down}</button>
           <button type="button" data-secdel="${i}" aria-label="Abschnitt löschen" title="Abschnitt löschen">×</button>
@@ -294,6 +298,8 @@
       const el = form.elements[`sec_${i}`];
       const text = el ? (x.type === 'h' ? el.value.replace(/\s*\n\s*/g, ' ') : el.value).trim() : (x.text || '');
       const section = x.type === 'quote' ? { type: 'quote', text, by: (form.elements[`sec_${i}_by`]?.value || '').trim() } : { type: x.type, text };
+      const color = form.elements[`sec_${i}_color`]?.value ?? x.color;
+      if ((x.type === 'h' || x.type === 'quote') && color === 'signature') section.color = color;
       const history = richHistories.get(x);
       if (history) richHistories.set(section, history);
       return section;
@@ -782,8 +788,9 @@
               if (!secs.some((x) => x.type === 'text') && b.text) secs.unshift({ type: 'text', text: b.text });
               let first = true;
               return secs.map((x) => {
-                if (x.type === 'h') return `<h2 class="story-h">${esc(x.text)}</h2>`;
-                if (x.type === 'quote') return `<blockquote class="story-quote"><p>${esc(x.text)}</p>${x.by ? `<cite>${esc(x.by)}</cite>` : ''}</blockquote>`;
+                const color = x.color === 'signature' ? ' is-signature' : '';
+                if (x.type === 'h') return `<h2 class="story-h${color}">${esc(x.text)}</h2>`;
+                if (x.type === 'quote') return `<blockquote class="story-quote${color}"><p>${esc(x.text)}</p>${x.by ? `<cite>${esc(x.by)}</cite>` : ''}</blockquote>`;
                 const html = first ? leadLetters(paragraphs(x.text), drop) : paragraphs(x.text);
                 first = false;
                 return `<div class="story-text">${html}</div>`;
@@ -1694,7 +1701,7 @@
   // ---------- Baustein-Editor ----------
   const wideScreen = () => window.matchMedia('(min-width: 1100px)').matches;
   const historyArrow = (mirror = false) => `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-    <path ${mirror ? 'transform="translate(24 0) scale(-1 1)"' : ''} d="M3.5 8.5a8 8 0 1 1 4 10.5M8 4 3.5 8.5 8 13"/>
+    <path ${mirror ? 'transform="translate(24 0) scale(-1 1)"' : ''} d="M8 6h4a7 7 0 1 1-6.8 8.7M12 2l-4 4 4 4"/>
   </svg>`;
   function field(label, name, value, opts = {}) {
     const v = esc(value == null ? '' : value);
