@@ -117,12 +117,18 @@ function observeVideoPreview(root) {
 }
 TFB.loadChatVideoPreviews = root => {
   videoPreviews.disconnect();
+  slideshowVisibility.disconnect();
   releaseDetachedVideos();
-  if (!document.body.classList.contains('tfb-splash-open')) observeVideoPreview(root);
+  if (!document.body.classList.contains('tfb-splash-open')) {
+    observeVideoPreview(root);
+    observeSlideshows(root);
+  }
 };
 
 let draft, studio, layerIndex = 0, cropMode = false;
 const fades = { none:0, short:.25, medium:.6, long:1.2 };
+const SLIDE_SECONDS = 2.4;
+const slideshowDuration = count => Number((count * SLIDE_SECONDS).toFixed(1));
 const fadeLabels = { none:'Ohne Überblenden', short:'Kurz · 0,25 s', medium:'Mittel · 0,6 s', long:'Lang · 1,2 s' };
 const seconds = value => /^\d+(?:[,.]\d{1,2})?$/.test(String(value).trim()) ? Number(String(value).replace(',', '.')) : NaN;
 const decimal = value => String(value).replace('.', ',');
@@ -132,20 +138,23 @@ function timingOf(layer) {
   if (!Number.isFinite(start) || !Number.isFinite(end) || start >= end) return null;
   return {start,end,fade:layer.timing.fade};
 }
-function updateTimedText(video) {
-  const stage = video.closest('.cs-stage');
-  if (!stage) return;
-  const editing = stage.classList.contains('is-editing');
-  const time = video.ended ? Infinity : video.dataset.started ? video.currentTime : 0;
-  for (const layer of stage.querySelectorAll('[data-cs-timed]')) {
+function showTimedText(root, time, showAll = false, duration = Infinity) {
+  for (const layer of root.querySelectorAll('[data-cs-timed]')) {
     const { start, end, fade, opacity } = layer.dataset;
-    const span = Number(end) - Number(start);
+    const span = Math.min(Number(end), duration) - Number(start);
     const ramp = Math.min(Number(fade), span / 2);
     const elapsed = time - Number(start);
-    const factor = editing && !video.dataset.started ? 1 : elapsed < 0 || elapsed >= span ? 0
+    const factor = showAll ? 1 : elapsed < 0 || elapsed >= span ? 0
       : ramp ? Math.min(1, elapsed / ramp, (span - elapsed) / ramp) : 1;
     layer.style.opacity = Number(opacity) * factor;
   }
+}
+function updateTimedText(video) {
+  const stage = video.closest('.cs-stage');
+  if (!stage) return;
+  const started = Boolean(video.dataset.started);
+  const time = video.ended ? Infinity : started ? video.currentTime : 0;
+  showTimedText(stage, time, stage.classList.contains('is-editing') && !started);
 }
 const textFrames = new WeakMap();
 document.addEventListener('play', event => {
@@ -174,10 +183,14 @@ function design(slide, editing) {
     const { strength, height } = slide[edge];
     return `<div class="cs-gradient ${edge}" style="height:${height}%;--cs-strength:${strength / 100}">${editing ?
       `<button type="button" data-cs-drag="${edge}" aria-label="Höhe des Verlaufs ${edge === 'top' ? 'oben' : 'unten'} ziehen"></button>` : ''}</div>`;
-  }).join('') + slide.layers.map((layer, index) => {
+  }).join('') + textLayersMarkup(slide, editing) + (logo ? `<img class="cs-logo" ${editing ? 'data-cs-drag="logo"' : ''} src="${logo.src}"
+    alt="${logo.label}" draggable="false" style="left:${slide.logoX}%;top:${slide.logoY}%;width:${slide.logoSize}%">` : '');
+}
+function textLayersMarkup(slide, editing = false) {
+  return slide.layers.map((layer, index) => {
     if (!layer.text.trim()) return '';
     const active = editing && index === layerIndex;
-    const timing = slide.kind === 'video' && timingOf(layer);
+    const timing = slide.kind !== 'image' && timingOf(layer);
     const fade = timing ? fades[timing.fade] || 0 : 0;
     const opacity = layer.opacity / 100;
     const styles = [
@@ -191,8 +204,7 @@ function design(slide, editing) {
     return `<span class="cs-layer cs-font-${layer.font} cs-align-${layer.align || 'center'}${active ? ' selected' : ''}" ${editing ? `data-cs-drag="layer" data-layer="${index}"` : ''}
       ${timing ? `data-cs-timed data-start="${timing.start}" data-end="${timing.end}" data-fade="${fade}" data-opacity="${opacity}"` : ''}
       style="${styles.join(';')}">${esc(layer.text)}</span>`;
-  }).join('') + (logo ? `<img class="cs-logo" ${editing ? 'data-cs-drag="logo"' : ''} src="${logo.src}"
-    alt="${logo.label}" draggable="false" style="left:${slide.logoX}%;top:${slide.logoY}%;width:${slide.logoSize}%">` : '');
+  }).join('');
 }
 function stage(slide, editing = false) {
   const src = esc(sourceOf(slide.source));
@@ -221,8 +233,11 @@ export function mediaDesign(ref, width, height, kind = 'image') {
 }
 
 export function publishedGallery(post, imageOf) {
-  return `<div class="cs-published" data-cs-post="${esc(post.id)}">
+  const slideshow = post.designs.length > 1 && post.designs.every(slide => !slide.ref.startsWith('vid:'));
+  const format = post.designs[0]?.format || '4 / 5';
+  return `<div class="cs-published" data-cs-post="${esc(post.id)}"${slideshow ? ` data-cs-auto style="--cs-slideshow-ratio:${format}"` : ''}>
     ${post.dots === 'top' ? pageDots(post.designs) : ''}
+    <div class="cs-screens">
     ${post.designs.map((slide, index) => {
       const video = slide.ref.startsWith('vid:');
       const source = video ? '' : imageOf(slide.ref);
@@ -233,8 +248,10 @@ export function publishedGallery(post, imageOf) {
         ${video ? '' : '<button type="button" class="cs-image-hit" data-cs-published-full aria-label="Bild groß ansehen"></button>'}
       </div>`;
     }).join('')}
+    ${slideshow && post.slideshowLayers?.length ? `<div class="cs-slideshow-text">${textLayersMarkup({layers:post.slideshowLayers,kind:'slideshow'})}</div>` : ''}
+    </div>
     ${post.dots !== 'top' ? pageDots(post.designs) : ''}
-    ${post.designs.length > 1 && post.designs.every(slide => !slide.ref.startsWith('vid:')) ? '<button type="button" class="btn small cs-slideshow" data-cs-slideshow>Diashow</button>' : ''}
+    ${slideshow ? '<button type="button" class="btn small cs-slideshow" data-cs-slideshow aria-label="Bilder abspielen">▶</button>' : ''}
   </div>`;
 }
 
@@ -243,11 +260,83 @@ function pageDots(slides) {
     `<button type="button" data-cs-published-dot="${index}" aria-label="Seite ${index + 1}"${index ? '' : ' aria-current="true"'}></button>`).join('')}</div>`;
 }
 const slideshows = new WeakMap();
-function stopSlideshow(gallery) {
-  clearInterval(slideshows.get(gallery));
-  slideshows.delete(gallery);
-  const button = gallery.querySelector('[data-cs-slideshow]');
-  if (button) button.textContent = 'Diashow';
+function slideshowState(gallery) {
+  if (!slideshows.has(gallery)) {
+    const pages = [...gallery.querySelectorAll('[data-cs-published-page]')];
+    slideshows.set(gallery, {pages, duration:slideshowDuration(pages.length), text:gallery.querySelector('.cs-slideshow-text'),
+      button:gallery.querySelector('[data-cs-slideshow]'), index:pages.findIndex(page => !page.hidden), elapsed:0, frame:null, paused:false});
+  }
+  return slideshows.get(gallery);
+}
+function pauseSlideshow(gallery) {
+  const state = slideshows.get(gallery);
+  if (!state) return;
+  cancelAnimationFrame(state.frame);
+  state.frame = null;
+  state.button.textContent = '▶';
+  state.button.setAttribute('aria-label','Bilder abspielen');
+}
+function slideshowPage(gallery, state, index) {
+  const previous = state.pages[state.index];
+  const incoming = state.pages[index];
+  state.transition?.cancel();
+  selectPublished(gallery, index);
+  state.index = index;
+  if (!previous || previous === incoming || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  previous.hidden = false;
+  previous.inert = true;
+  previous.dataset.csOutgoing = '';
+  const animation = incoming.animate([{opacity:0},{opacity:1}], {duration:360,easing:'ease-in-out'});
+  state.transition = animation;
+  const finish = () => {
+    if (state.index !== Number(previous.dataset.csPublishedPage)) previous.hidden = true;
+    previous.inert = false;
+    delete previous.dataset.csOutgoing;
+  };
+  animation.onfinish = finish;
+  animation.oncancel = finish;
+}
+function startSlideshow(gallery) {
+  const state = slideshowState(gallery);
+  if (state.frame !== null) return;
+  gallery.classList.add('is-slideshow');
+  state.button.textContent = 'Ⅱ';
+  state.button.setAttribute('aria-label','Bilder pausieren');
+  const anchor = performance.now() - state.elapsed * 1000;
+  const tick = now => {
+    if (!gallery.isConnected) { pauseSlideshow(gallery); return; }
+    state.elapsed = (Math.max(0, now - anchor) / 1000) % state.duration;
+    const index = Math.min(state.pages.length - 1, Math.floor(state.elapsed / SLIDE_SECONDS));
+    if (index !== state.index) slideshowPage(gallery, state, index);
+    if (state.text) showTimedText(state.text,state.elapsed,false,state.duration);
+    state.frame = requestAnimationFrame(tick);
+  };
+  state.frame = requestAnimationFrame(tick);
+}
+function pickGalleryPage(gallery, index) {
+  if (!gallery.hasAttribute('data-cs-auto')) { selectPublished(gallery,index); return; }
+  const state = slideshowState(gallery);
+  if (!state.pages[index]) return;
+  gallery.classList.add('is-slideshow');
+  pauseSlideshow(gallery);
+  state.paused = true;
+  state.transition?.cancel();
+  state.index = index;
+  state.elapsed = index * SLIDE_SECONDS;
+  selectPublished(gallery,index);
+  if (state.text) showTimedText(state.text,state.elapsed,false,state.duration);
+}
+const slideshowVisibility = new IntersectionObserver(entries => {
+  for (const {target,isIntersecting} of entries) {
+    if (!target.isConnected) continue;
+    const state = slideshowState(target);
+    state.visible = isIntersecting;
+    if (isIntersecting && !state.paused && !state.inViewer) startSlideshow(target);
+    else if (!isIntersecting) pauseSlideshow(target);
+  }
+});
+function observeSlideshows(root) {
+  for (const gallery of root.querySelectorAll('[data-cs-auto]')) slideshowVisibility.observe(gallery);
 }
 function selectPublished(gallery, index) {
   const pages = [...gallery.querySelectorAll('[data-cs-published-page]')];
@@ -277,9 +366,8 @@ document.addEventListener('touchend', event => {
   const end = event.changedTouches[0];
   const dx = end.clientX - x;
   if (Math.abs(dx) < 45 || Math.abs(dx) <= Math.abs(end.clientY - y)) return;
-  const current = gallery.querySelector('[data-cs-published-page]:not([hidden])');
-  stopSlideshow(gallery);
-  if (current) selectPublished(gallery, Number(current.dataset.csPublishedPage) + (dx < 0 ? 1 : -1));
+  const current = gallery.querySelector('[data-cs-published-page]:not([hidden]):not([data-cs-outgoing])');
+  if (current) pickGalleryPage(gallery, Number(current.dataset.csPublishedPage) + (dx < 0 ? 1 : -1));
 }, {passive:true});
 
 let liveEditor;
@@ -289,9 +377,15 @@ export function openLiveMediaEditor(design, source, dots, onSave) {
   while (slide.layers.length < textLabels.length) slide.layers.push(newLayer(slide.layers.length));
   mountEditor({dots,slide});
 }
+export function openSlideshowEditor(first, source, layers, count, onSave) {
+  liveEditor = design => onSave(design.layers.some(layer => layer.text.trim()) ? design.layers : []);
+  const slide = {...structuredClone(first), source, kind:'slideshow', layers:structuredClone(layers)};
+  while (slide.layers.length < textLabels.length) slide.layers.push(newLayer(slide.layers.length));
+  mountEditor({slide,duration:slideshowDuration(count)});
+}
 
 function typographyMarkup(layer) {
-  return `${currentSlide().kind === 'video' ? `<div data-cs-timing>${timingMarkup(layer)}</div>` : ''}
+  return `${currentSlide().kind !== 'image' ? `<div data-cs-timing>${timingMarkup(layer)}</div>` : ''}
     <div class="cs-type-row">
       ${select('font', 'Schrift', layer.font, fonts)}
       ${select('align', 'Ausrichtung', layer.align || 'center', alignments)}
@@ -312,7 +406,7 @@ function timingMarkup(layer) {
   const duration = draft.duration;
   if (!duration) return '<p class="small muted">Videodauer wird ermittelt …</p>';
   const timed = Boolean(layer.timing);
-  return `<fieldset class="cs-timing"><legend>Text im Video · ${decimal(duration)} s</legend>
+  return `<fieldset class="cs-timing"><legend>${currentSlide().kind === 'slideshow' ? 'Text in der Diashow' : 'Text im Video'} · ${decimal(duration)} s</legend>
     ${select('timingMode', 'Sichtbarkeit', timed ? 'timed' : 'always', { always:'Immer sichtbar', timed:'Zeitgesteuert' })}
     ${timed ? `<div class="cs-type-row">
       <label>Einblenden bei (s)<input name="timingStart" inputmode="decimal" value="${esc(decimal(layer.timing.start))}"></label>
@@ -323,35 +417,36 @@ function timingMarkup(layer) {
 
 function editorMarkup() {
   const slide = currentSlide();
-  return `<header class="cs-editor-head"><h2>Chat-Beitrag gestalten</h2><button type="button" class="btn small" data-cs-cancel>Schließen</button></header>
+  const slideshow = slide.kind === 'slideshow';
+  return `<header class="cs-editor-head"><h2>${slideshow ? 'Text für alle Bilder' : 'Chat-Beitrag gestalten'}</h2><button type="button" class="btn small" data-cs-cancel>Schließen</button></header>
     <form data-cs-form class="cs-editor-form">
       <div class="cs-editor-preview">
         <div data-cs-editor-stage>${stage(slide, true)}</div>
-        <div class="cs-page-menu">
+        ${slideshow ? '<p class="small muted">Vorschau am ersten Bild</p>' : `<div class="cs-page-menu">
           <button type="button" class="btn small" data-cs-crop aria-pressed="${cropMode}">Ausschnitt ziehen</button>
-        </div>
+        </div>`}
       </div>
       <div class="cs-inspector">
-        <details><summary>Beitrag und Format</summary>
+        ${slideshow ? '' : `<details><summary>Beitrag und Format</summary>
           ${select('format', 'Rahmen für diese Seite', slide.format, Object.fromEntries(formats.map(value => [value, value.replace(' / ', ':')])))}
           ${select('dots', 'Wischpunkte', draft.dots, { bottom:'Unter dem Bild', top:'Über dem Bild' })}
           ${range('zoom', 'Zoom', slide.zoom, 3, 1, 0.01)}
           ${range('x', 'Ausschnitt horizontal', Math.round(slide.x))}
           ${range('y', 'Ausschnitt vertikal', Math.round(slide.y))}
-        </details>
+        </details>`}
         <details open><summary>Text auf dem Medium</summary>
           ${slide.layers.map((layer, index) => `<label>${layerLabel(index)}<textarea data-cs-text="${index}" rows="1" maxlength="240">${esc(layer.text)}</textarea></label>`).join('')}
           <div class="cs-page-menu cs-type-chooser" role="group" aria-label="Zeile formatieren">${slide.layers.map((_, index) => `<button type="button" class="btn small" data-cs-layer="${index}" aria-label="${layerLabel(index)} formatieren" aria-pressed="${index === layerIndex}">${layerLabel(index)}</button>`).join('')}</div>
           <div data-cs-typography>${typographyMarkup(slide.layers[layerIndex])}</div>
         </details>
-        <details><summary>Verlauf oben und unten</summary>
+        ${slideshow ? '' : `<details><summary>Verlauf oben und unten</summary>
           ${range('topStrength', 'Stärke oben', slide.top.strength)}${range('topHeight', 'Höhe oben', slide.top.height)}
           ${range('bottomStrength', 'Stärke unten', slide.bottom.strength)}${range('bottomHeight', 'Höhe unten', slide.bottom.height)}
         </details>
         <details><summary>Logo</summary>
           ${select('logo', 'Logo auf dieser Seite', slide.logo, { '':'Ohne Logo', ...Object.fromEntries(Object.entries(logos).map(([key, logo]) => [key, logo.label])) })}
           ${slide.logo ? range('logoSize', 'Logobreite', slide.logoSize, 80, 6) : ''}
-        </details>
+        </details>`}
       </div>
       <footer class="cs-editor-footer"><p role="status" data-cs-status></p><button class="btn signal" type="submit">Übernehmen</button></footer>
     </form>`;
@@ -386,7 +481,7 @@ function mountEditor(value) {
   cropMode = false;
   studio = document.createElement('dialog');
   studio.className = 'cs-editor';
-  studio.setAttribute('aria-label', 'Chat-Beitrag gestalten');
+  studio.setAttribute('aria-label', value.slide.kind === 'slideshow' ? 'Text für alle Bilder' : 'Chat-Beitrag gestalten');
   drawEditor();
   document.body.append(studio);
   studio.showModal();
@@ -469,27 +564,50 @@ document.addEventListener('click', async event => {
   const button = event.target.closest('button');
   if (!button) return;
   const data = button.dataset;
+  if ('csShowSlideshow' in data || 'csShowCollage' in data) {
+    const view = button.closest('[data-cs-photo-view]');
+    const collage = view.querySelector('[data-cs-collage]');
+    const carousel = view.querySelector('[data-cs-carousel]');
+    const gallery = carousel.querySelector('[data-cs-auto]');
+    const show = 'csShowSlideshow' in data;
+    carousel.hidden = !show;
+    collage.hidden = show;
+    if (show) {
+      pickGalleryPage(gallery,0);
+      slideshowState(gallery).paused = false;
+      startSlideshow(gallery);
+      gallery.scrollIntoView({block:'nearest'});
+      gallery.querySelector('[data-cs-slideshow]').focus({preventScroll:true});
+    } else {
+      pauseSlideshow(gallery);
+      collage.querySelector('[data-cs-show-slideshow]').focus({preventScroll:true});
+    }
+    return;
+  }
   const gallery = button.closest('.cs-published');
-  if (gallery && 'csPublishedDot' in data) { stopSlideshow(gallery); selectPublished(gallery, Number(data.csPublishedDot)); return; }
+  if (gallery && 'csPublishedDot' in data) { pickGalleryPage(gallery, Number(data.csPublishedDot)); return; }
   if (gallery && 'csSlideshow' in data) {
-    if (slideshows.has(gallery)) { stopSlideshow(gallery); return; }
-    selectPublished(gallery,0);
-    button.textContent = 'Pause';
-    let index = 0;
-    slideshows.set(gallery,setInterval(() => {
-      if (!gallery.isConnected || ++index >= gallery.querySelectorAll('[data-cs-published-page]').length) stopSlideshow(gallery);
-      else selectPublished(gallery,index);
-    },2400));
+    const state = slideshowState(gallery);
+    state.paused = state.frame !== null;
+    if (state.paused) pauseSlideshow(gallery); else startSlideshow(gallery);
     return;
   }
   if (gallery && 'csPublishedFull' in data) {
-    stopSlideshow(gallery);
+    pauseSlideshow(gallery);
+    const slideshow = slideshows.get(gallery);
+    if (slideshow) slideshow.inViewer = true;
     const original = button.closest('.cs-screen');
     original.querySelector('video')?.pause();
     const dialog = document.createElement('dialog');
     dialog.className = 'cs-viewer';
     dialog.setAttribute('aria-label', 'Medium im Vollbild');
     const copy = gallery.cloneNode(true);
+    copy.querySelectorAll('[data-cs-outgoing]').forEach(page => {
+      page.hidden = true;
+      page.inert = false;
+      delete page.dataset.csOutgoing;
+    });
+    if (slideshow) slideshowState(copy).elapsed = slideshow.elapsed;
     copy.querySelectorAll('[data-cs-published-full]').forEach(control => control.remove());
     copy.querySelectorAll('video').forEach(video => {
       video.removeAttribute('src');
@@ -504,16 +622,25 @@ document.addEventListener('click', async event => {
     close.onclick = () => dialog.close();
     dialog.addEventListener('click', event => { if (event.target === dialog) dialog.close(); });
     dialog.addEventListener('close', () => {
-      stopSlideshow(copy);
+      pauseSlideshow(copy);
+      slideshowVisibility.unobserve(copy);
       copy.querySelectorAll('.cs-screen').forEach(screen => videoPreviews.unobserve(screen));
       dialog.remove();
       releaseDetachedVideos();
+      if (slideshow) {
+        slideshow.inViewer = false;
+        if (slideshow.visible && !slideshow.paused) startSlideshow(gallery);
+      }
       button.focus();
     }, {once:true});
     dialog.append(copy);
     document.body.append(dialog);
     dialog.showModal();
     observeVideoPreview(copy);
+    if (slideshow) {
+      slideshowVisibility.observe(copy);
+      if (slideshow.paused) slideshowState(copy).paused = true;
+    }
     return;
   }
   if (gallery && 'csLoadVideo' in data) {

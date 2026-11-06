@@ -46,12 +46,11 @@ function cleanVideoTiming(timing) {
       !['none','short','medium','long'].includes(fade)) fail(400, 'Ungültige Textzeiten im Video.');
   return {start,end,fade};
 }
-function cleanDesign(slide) {
+function cleanLayers(layers, limit, timed) {
   const percent = value => numberIn(value, 0, 100, 50);
-  const gradient = edge => ({strength: numberIn(edge?.strength,0,100,0), height:numberIn(edge?.height,0,100,36)});
-  if (!slide || typeof slide !== 'object' || !Array.isArray(slide.layers) || slide.layers.length > 12
-      || slide.layers.some(layer => !layer || typeof layer !== 'object' || Array.isArray(layer))) fail(400, 'Ungültige Gestaltung.');
-  const layers = slide.layers.map(layer => ({
+  if (!Array.isArray(layers) || layers.length > limit ||
+      layers.some(layer => !layer || typeof layer !== 'object' || Array.isArray(layer))) fail(400, 'Ungültige Gestaltung.');
+  return layers.map(layer => ({
     text:text(layer.text,240), font:['title','body','mono'].includes(layer.font) ? layer.font : 'title',
     size:numberIn(layer.size,1,36,8), opacity:numberIn(layer.opacity,0,100,100),
     color:/^#[a-f0-9]{6}$/i.test(layer.color) ? layer.color : '#ffffff', x:percent(layer.x), y:percent(layer.y),
@@ -59,8 +58,14 @@ function cleanDesign(slide) {
     spacing:numberIn(layer.spacing,-10,30,0),
     ...(typeof layer.bold === 'boolean' ? {bold:layer.bold} : {}),
     italic:layer.italic === true, underline:layer.underline === true,
-    ...(videoRef(slide.ref) && layer.timing ? {timing:cleanVideoTiming(layer.timing)} : {}),
+    ...(timed && layer.timing ? {timing:cleanVideoTiming(layer.timing)} : {}),
   }));
+}
+function cleanDesign(slide) {
+  const percent = value => numberIn(value, 0, 100, 50);
+  const gradient = edge => ({strength: numberIn(edge?.strength,0,100,0), height:numberIn(edge?.height,0,100,36)});
+  if (!slide || typeof slide !== 'object') fail(400, 'Ungültige Gestaltung.');
+  const layers = cleanLayers(slide.layers,12,videoRef(slide.ref));
   return {ref:slide.ref, format:['4 / 5','16 / 9','9 / 16'].includes(slide.format) ? slide.format : '4 / 5',
     x:percent(slide.x), y:percent(slide.y), zoom:numberIn(slide.zoom,1,3,1),
     top:gradient(slide.top), bottom:gradient(slide.bottom), layers,
@@ -200,6 +205,15 @@ async function validate(env,member,c,op,all,importing) {
             value.designs.push(slide);
           }
         }
+      }
+      const slideshowLayers = v.slideshowLayers ?? old?.value.slideshowLayers;
+      const photoView = v.photoView ?? old?.value.photoView;
+      if (photoView === 'slideshow' && value.images.length > 1 && !value.designs?.some(slide => videoRef(slide.ref))) {
+        value.photoView = photoView;
+      }
+      if (slideshowLayers && value.designs?.length > 1 && value.designs.every(slide => !videoRef(slide.ref))) {
+        const layers = cleanLayers(slideshowLayers,2,true);
+        if (layers.some(layer => layer.text.trim())) value.slideshowLayers = layers;
       }
       if(member.is_admin)value.hidden=Boolean(v.hidden);else value.hidden=Boolean(old?.value.hidden);
     } else {

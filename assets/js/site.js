@@ -1189,6 +1189,9 @@
   const teamLabel = (key) => { const f = findTeam(key); return f ? f.team.name.replace(/\s*\(.*?\)/g, '') : key; };
   const initialsOf = (name) => String(name || '?').split(' ').map((x) => x[0]).join('').slice(0, 2).toUpperCase();
 
+  function postCollage(p, refs) {
+    return refs.length ? `<div class="message-collage n${refs.length}">${refs.map((ref, index) => `<button type="button" class="message-photo" data-action="post-gallery" data-id="${esc(p.id)}" data-index="${index}" aria-label="Foto ${index + 1} von ${refs.length} ansehen">${picture(ref, ref, '')}</button>`).join('')}</div>` : '';
+  }
   function postHtml(p, loggedIn, options = {}) {
     p = { ...p, canModerate: p.canModerate && Boolean(ui().state.member?.isAdmin) };
     const imgs = (p.images || []).filter(shownImage);
@@ -1203,10 +1206,11 @@
           ${p.hidden ? '' : `<button type="button" class="btn small chat-comment-button" data-action="comment-unlock" data-id="${esc(p.id)}">Dein Kommentar</button>`}</div>`
           : p.title ? `<h3 class="fpost-title">${esc(p.title)}</h3>` : ''}
         ${p.text ? `<div class="fpost-text">${postText(p.text)}</div>` : ''}
-        ${options.media ?? (imgs.length ? `<div class="message-collage n${imgs.length}">${imgs.map((ref, index) => `<button type="button" class="message-photo" data-action="post-gallery" data-id="${esc(p.id)}" data-index="${index}" aria-label="Foto ${index + 1} von ${imgs.length} ansehen">${picture(ref, ref, '')}</button>`).join('')}</div>` : '')}
+        ${options.media ?? postCollage(p, imgs)}
         ${options.actions ?? (options.chat ? '' : `<a class="post-comments-link" href="#chat/beitrag/${encodeURIComponent(p.id)}" data-action="post-comments" data-id="${esc(p.id)}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H5l-3 3V11.5A7.5 7.5 0 0 1 9.5 4h3a7.5 7.5 0 0 1 7.5 7.5Z"/></svg>${p.commentCount ? `${p.commentCount} ${p.commentCount === 1 ? 'Kommentar' : 'Kommentare'}` : 'Kommentieren'}</a>`)}
         ${loggedIn ? `<footer class="fpost-tools">
-          ${p.mine ? `<button type="button" data-action="post-edit" data-id="${esc(p.id)}">Bearbeiten</button>${p.fromClub ? '' : `<button type="button" data-action="post-delete" data-id="${esc(p.id)}">Löschen</button>`}` : ''}
+          ${p.mine || (p.canModerate && options.editSlideshow) ? `<button type="button" data-action="post-edit" data-id="${esc(p.id)}">Bearbeiten</button>` : ''}
+          ${p.mine && !p.fromClub ? `<button type="button" data-action="post-delete" data-id="${esc(p.id)}">Löschen</button>` : ''}
           ${p.fromClub && (p.mine || p.canModerate) ? `<button type="button" data-action="post-unteam" data-id="${esc(p.id)}" data-team="${esc(p.shownIn)}">Aus dieser Mannschaft entfernen</button>` : ''}
           ${p.canModerate && !p.mine ? `<button type="button" data-action="post-hide" data-id="${esc(p.id)}" data-hidden="${p.hidden ? '0' : '1'}">${p.hidden ? 'Wieder zeigen' : 'Ausblenden (Admin)'}</button>` : ''}
           ${!p.mine && !p.canModerate ? `<button type="button" data-action="post-report" data-id="${esc(p.id)}">Melden</button>` : ''}
@@ -1276,9 +1280,20 @@
   };
 
   async function chatPostMarkup(post) {
-    const media = post.designs && await import('./chat-media.js').then(studio => studio.publishedGallery(post, ref => images[ref] || ref));
+    const photos = (post.images || []).filter(ref => images[ref] || /^assets\//.test(ref));
+    const editSlideshow = photos.length > 1 && (!post.designs ||
+      (post.designs.length > 1 && !post.designs.some(slide => slide.ref.startsWith('vid:'))));
+    const gallery = (post.designs || photos.length > 1) && await import('./chat-media.js').then(studio =>
+      studio.publishedGallery(post.designs ? post : {...post, designs:photos.map(ref => studio.mediaDesign(ref,16,9))}, ref => images[ref] || ref));
+    const slideshow = post.photoView === 'slideshow';
+    const media = editSlideshow ? `<div data-cs-photo-view>
+      <div data-cs-collage${slideshow ? ' hidden' : ''}>${postCollage(post, photos)}
+        <button type="button" class="btn small cs-slideshow" data-cs-show-slideshow aria-label="Bilder als Diashow abspielen">▶</button></div>
+      <div data-cs-carousel${slideshow ? '' : ' hidden'}>${gallery}
+        <button type="button" class="btn small cs-collage-toggle" data-cs-show-collage aria-label="Collage ansehen"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 13h18M14 3v10M10 13v8"/></svg></button></div>
+    </div>` : gallery;
     const replies = await commentsMarkup(post);
-    return `<div class="chat-post-row${media && post.designs.some(slide => slide.format !== '16 / 9') ? ' has-designed-media' : ''}">${postHtml(post, Boolean(ui().state.member), {chat:true, media:media || undefined})}${replies}</div>`;
+    return `<div class="chat-post-row${media && (!editSlideshow || slideshow) && post.designs?.some(slide => slide.format !== '16 / 9') ? ' has-designed-media' : ''}">${postHtml(post, Boolean(ui().state.member), {chat:true, editSlideshow, media:media || undefined})}${replies}</div>`;
   }
   document.addEventListener('submit', async e => {
     const form = e.target.closest('[data-comment-form]');
@@ -1485,6 +1500,8 @@
       title: existing?.title || '', text: existing?.text || '',
       alsoTeams: existing?.alsoTeams || [],
       dots: existing?.dots || 'bottom', designed: Boolean(existing?.designs?.length),
+      photoView: existing?.photoView || 'collage',
+      slideshowLayers: structuredClone(existing?.slideshowLayers || []),
       media: existing?.designs?.length
         ? existing.designs.map(design => ({ref:design.ref,design:structuredClone(design)}))
         : (existing?.images || []).filter(shownImage).map(ref => ({ref})),
@@ -1497,6 +1514,8 @@
     });
     const myTeams = scope === 'club' ? (state.member.teams || []) : [];
     const isTeam = scope.startsWith('team:');
+    const hasSlideshow = () => scope === 'club' && draft.media.length > 1 &&
+      draft.media.every(media => !media.ref.startsWith('vid:') && (images[media.ref] || /^assets\//.test(media.ref)));
     const render = () => {
       openSheet(`
         <form class="editor compose" data-compose novalidate>
@@ -1510,6 +1529,9 @@
               ${scope === 'club' ? `<button type="button" class="btn small" data-cdesign="${i}">Gestalten</button>` : ''}</div>`).join('')}
             ${draft.media.length < 6 ? `<label class="gallery-add">${ui().icon.camera}<span>${scope === 'club' ? 'Medien hinzufügen' : 'Fotos'}</span><input type="file" accept="${scope === 'club' ? 'image/*,video/*,.mov,.mp4,.m4v,.webm' : 'image/*'}" multiple data-cphoto hidden></label>` : ''}
           </div>
+          ${hasSlideshow() ? `<div class="compose-photo-view"><label class="field"><span>Bilder anzeigen als</span>
+            <select name="photoView"><option value="collage"${draft.photoView === 'collage' ? ' selected' : ''}>Collage</option><option value="slideshow"${draft.photoView === 'slideshow' ? ' selected' : ''}>Diashow</option></select></label>
+            <button type="button" class="btn small" data-cslideshow>Text für alle Bilder</button></div>` : ''}
           <p class="small muted">${scope === 'club' ? 'Bis zu 6 Fotos oder Videos. Clips bis 30 Sekunden werden bei Bedarf automatisch verkleinert.' : 'Bis zu 6 Fotos.'}</p>
           ${draft.media.length ? '<label class="meet-check"><input type="checkbox" name="photoOk" required><span>Die abgebildeten Personen sind mit der Veröffentlichung einverstanden.</span></label>' : ''}
           ${scope === 'club' ? `<div class="compose-teams"><p class="small muted">${myTeams.length > 1 ? 'Auch in meinen Mannschaften anzeigen' : 'Auch in meiner Mannschaft anzeigen'}</p>
@@ -1525,6 +1547,7 @@
       const keep = () => {
         draft.title = form.elements.title.value.trim();
         draft.text = form.elements.text.value;
+        if (form.elements.photoView) draft.photoView = form.elements.photoView.value;
         draft.alsoTeams = [...draft.alsoTeams.filter(k => !myTeams.includes(k)), ...[...form.querySelectorAll('[name=alsoTeam]:checked')].map(input => input.value)];
       };
       let busy = false;
@@ -1548,14 +1571,21 @@
           return;
         }
         const designButton = e.target.closest('[data-cdesign]');
-        if (!designButton) return;
+        const slideshowButton = e.target.closest('[data-cslideshow]');
+        if (!designButton && !slideshowButton) return;
         keep();
         setBusy(true);
         try {
-          const media = draft.media[Number(designButton.dataset.cdesign)];
+          const media = draft.media[designButton ? Number(designButton.dataset.cdesign) : 0];
           const studio = await import('./chat-media.js');
           const source = media.file || (media.ref.startsWith('vid:') ? await api.getMemberVideo(existing.id,media.ref) : images[media.ref] || media.ref);
           if (!form.isConnected) return;
+          if (slideshowButton) {
+            studio.openSlideshowEditor(media.design || studio.mediaDesign(media.ref,16,9), source, draft.slideshowLayers, draft.media.length, layers => {
+              draft.slideshowLayers = layers;
+            });
+            return;
+          }
           studio.openLiveMediaEditor(media.design || studio.mediaDesign(media.ref,16,9),source,draft.dots,(design,dots) => {
             media.design = design;
             draft.dots = dots;
@@ -1624,10 +1654,12 @@
             media.design.ref = media.ref;
             delete media.file;
           }
-          const studio = draft.designed ? await import('./chat-media.js') : null;
+          const slideshowLayers = hasSlideshow() ? draft.slideshowLayers : [];
+          const studio = draft.designed || slideshowLayers.length ? await import('./chat-media.js') : null;
           const payload = {title:draft.title,text:draft.text,alsoTeams:draft.alsoTeams,dots:draft.dots,
             images:draft.media.filter(media => !media.ref.startsWith('vid:')).map(media => media.ref),
-            designs:studio ? draft.media.map(media => media.design || studio.mediaDesign(media.ref,16,9)) : []};
+            designs:studio ? draft.media.map(media => media.design || studio.mediaDesign(media.ref,16,9)) : [],
+            slideshowLayers, photoView:hasSlideshow() ? draft.photoView : 'collage'};
           if (existing) await api.editPost(existing.id,payload);
           else await api.addPost({scope,...payload});
           closeSheet();

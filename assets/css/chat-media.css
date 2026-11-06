@@ -5,6 +5,11 @@
 }
 .cs-stage { position: relative; width: 100%; aspect-ratio: var(--cs-ratio); overflow: hidden; isolation: isolate; container-type: inline-size; background: #191817; }
 .cs-screen { position: relative; border-radius: 5px; overflow: hidden; touch-action: pan-y; }
+.cs-screens { position: relative; isolation: isolate; }
+.is-slideshow .cs-stage { --cs-ratio: var(--cs-slideshow-ratio) !important; }
+.is-slideshow .cs-screen { z-index: 2; }
+.is-slideshow .cs-screen[data-cs-outgoing] { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+.cs-slideshow-text { position: absolute; top: 50%; left: 50%; translate: -50% -50%; width: 100%; aspect-ratio: var(--cs-slideshow-ratio); container-type: inline-size; pointer-events: none; z-index: 3; }
 .cs-media, .cs-design, .cs-crop-hit { position: absolute; inset: 0; }
 .cs-media :is(img, video) { display: block; width: 100%; height: 100%; object-fit: cover; }
 .cs-design { pointer-events: none; }
@@ -34,9 +39,11 @@
 .cs-viewer { max-width: 100%; max-height: 100dvh; width: min(100vw, 76dvh); background: #1c1b1a; color: #fff; }
 .cs-viewer .cs-screen { border-radius: 0; }
 .cs-viewer .cs-stage { width: min(100%, calc(87dvh * var(--cs-ratio))); margin: auto; }
+.cs-viewer .cs-slideshow-text { width: min(100%, calc(87dvh * var(--cs-slideshow-ratio))); }
 .cs-viewer.wide { width: min(100vw, 155dvh); }
 .cs-viewer.wide .cs-screen { aspect-ratio: 16 / 9; display: grid; align-items: center; }
 .cs-viewer.wide .cs-stage { width: min(100%, calc(min(100vw, 155dvh) * 9 / 16 * var(--cs-ratio))); }
+.cs-viewer.wide .cs-slideshow-text { width: min(100%, calc(min(100vw, 155dvh) * 9 / 16 * var(--cs-slideshow-ratio))); }
 .cs-viewer-tools { position: sticky; z-index: 4; top: 0; display: flex; justify-content: flex-end; gap: 7px; padding: 5px 8px; }
 .cs-viewer-tools button { background: #363433; color: #fff; border: 0; border-radius: 22px; min-width: 37px; min-height: 35px; cursor: pointer; }
 
@@ -107,7 +114,11 @@
 .comment-emoji > div button { border: 1px solid var(--line); background: var(--paper); padding: 5px; cursor: pointer; font-size: 1.16rem; min-height: 41px; }
 .cs-page-menu { display:flex; align-items:center; flex-wrap:wrap; gap:7px; }
 .cs-inspector :is(input[type="text"], input:not([type]), textarea, select) { width: 100%; border: 1px solid var(--line); border-radius: 6px; background: var(--paper); color: var(--ink); padding: 7px 9px; font-family: inherit; }
-.cs-slideshow { margin-top:6px; }
+.cs-slideshow { display:block; min-width:40px; margin:6px auto 0; }
+.compose-photo-view { display:flex; align-items:end; gap:8px 12px; flex-wrap:wrap; }
+.compose-photo-view .field { margin:0; }
+[data-cs-carousel] { position:relative; }
+.cs-collage-toggle { position:absolute; bottom:0; right:0; }
 .compose-medium { display: grid; align-content: start; gap: 4px; }
 .compose-medium .btn { font-size: .72rem; }
 .compose-video { display: grid; place-items: center; height: 100%; background: var(--ink); color: var(--paper); }

@@ -972,7 +972,7 @@
       if (!data) throw Error('Video nicht gefunden.');
       return (await fetch(data)).blob();
     },
-    async addPost({ scope, title = '', text, images = [], alsoTeams = [], designs = [], dots = 'bottom' }) {
+    async addPost({ scope, title = '', text, images = [], alsoTeams = [], designs = [], dots = 'bottom', slideshowLayers = [], photoView }) {
       const member = requireMember();
       const allowed = mayWrite(member, scope);
       if (!allowed.ok) throw new Error(allowed.reason === 'team' ? 'Insider News schreiben die Spieler dieser Mannschaft.' : 'Bitte zuerst die Hinweise bestätigen.');
@@ -981,12 +981,14 @@
       if (!Array.isArray(images) || images.length > 6) throw new Error('Pro Beitrag sind höchstens 6 Fotos möglich.');
       const mine = alsoTeams.filter((k) => member.isAdmin || inTeam(member, k));
       const post = { id: 'p-' + uid(), scope, authorId: member.id, createdAt: new Date().toISOString(), ...(String(title || '').trim() ? { title: String(title).trim().slice(0, 90) } : {}), text: t.slice(0, 2000), images: images.slice(0, 6), ...(designs.length ? {designs:clone(designs), dots} : {}), ...(scope === 'club' && mine.length ? { alsoTeams: mine } : {}) };
+      if (slideshowLayers.length) post.slideshowLayers = clone(slideshowLayers);
+      if (photoView === 'slideshow') post.photoView = photoView;
       db.community.posts.push(post);
       if (!save(db)) throw new Error('Speichern nicht möglich.');
       document.dispatchEvent(new Event('tfb-chat-updated'));
       return publicPost(post);
     },
-    async editPost(id, { title = '', text, images, alsoTeams, designs, dots }) {
+    async editPost(id, { title = '', text, images, alsoTeams, designs, dots, slideshowLayers, photoView }) {
       const member = requireMember();
       const p = db.community.posts.find((x) => x.id === id);
       if (!p || (p.authorId !== member.id && !member.isAdmin)) throw new Error('Diesen Beitrag kannst du nicht ändern.');
@@ -997,6 +999,8 @@
         if (designs.length) { p.designs = clone(designs); p.dots = dots; }
         else { delete p.designs; delete p.dots; }
       }
+      if (slideshowLayers !== undefined) p.slideshowLayers = clone(slideshowLayers);
+      if (photoView !== undefined) p.photoView = photoView;
       if (alsoTeams && p.scope === 'club') p.alsoTeams = alsoTeams.filter((k) => member.isAdmin || inTeam(member, k));
       save(db);
       return publicPost(p);

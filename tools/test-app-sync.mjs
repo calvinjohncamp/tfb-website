@@ -131,3 +131,19 @@ test('chat design and video are shared only with members who may see the post', 
   assert.equal((await f.commit([post('video-post',{designs:[slide],hidden:true},1)])).status,200);
   assert.equal((await request(f.otherToken)).status,404);
 });
+
+test('a photo slideshow keeps shared timing separate from individual photo text', async () => {
+  const f = await fixture();
+  const refs = ['img:one','img:two'];
+  const photos = refs.map(id => ({kind:'media',id,revision:0,value:{data:'data:image/png;base64,AAAA'}}));
+  const designs = refs.map(ref => ({ref,format:'16 / 9',layers:[{text:'Pro Bild'}]}));
+  const slideshowLayers = [{text:''},{text:'Für beide',timing:{start:1.2,end:4.2,fade:'short'}}];
+  assert.equal((await f.commit([...photos,post('gallery',{images:refs,designs,slideshowLayers,photoView:'slideshow'})])).status,200);
+  const gallery = async () => (await f.state(f.otherToken)).body.records.find(row => row.id === 'gallery').value;
+  assert.deepEqual((await gallery()).slideshowLayers[1].timing,slideshowLayers[1].timing);
+  assert.equal((await gallery()).designs[0].layers[0].text,'Pro Bild');
+  assert.equal((await gallery()).photoView,'slideshow');
+  assert.equal((await f.commit([post('gallery',{images:refs,designs,slideshowLayers:[],photoView:'collage'},1)])).status,200);
+  assert.equal((await gallery()).slideshowLayers,undefined);
+  assert.equal((await gallery()).photoView,undefined);
+});
