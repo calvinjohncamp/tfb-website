@@ -175,6 +175,7 @@ for (const eventName of ['pause','seeked','ended']) {
   }, true);
 }
 function mediaStyle(slide) {
+  if (slide.kind === 'slideshow') return '';
   return `object-position:${slide.x}% ${slide.y}%;transform-origin:${slide.x}% ${slide.y}%;transform:scale(${slide.zoom})`;
 }
 function design(slide, editing) {
@@ -206,17 +207,27 @@ function textLayersMarkup(slide, editing = false) {
       style="${styles.join(';')}">${esc(layer.text)}</span>`;
   }).join('');
 }
-function stage(slide, editing = false) {
+function stage(slide, editing = false, fitPhoto = false) {
   const src = esc(sourceOf(slide.source));
   const media = slide.kind === 'video'
     ? `<video ${src ? `src="${src}"` : ''} style="${mediaStyle(slide)}" playsinline preload="${editing ? 'auto' : 'none'}" ${editing ? 'muted' : ''}></video>`
-    : `<img src="${src}" style="${mediaStyle(slide)}" alt="${typeof slide.source === 'string' ? 'Foto zum Beitrag' : 'Eigenes Foto'}" draggable="false">`;
-  return `<div class="cs-stage${editing ? ' is-editing' : ''}" style="--cs-ratio:${slide.format}">
-    <div class="cs-media">${media}</div><div class="cs-design">${design(slide, editing)}</div>
+    : `<img src="${src}" style="${fitPhoto ? '' : mediaStyle(slide)}" alt="${typeof slide.source === 'string' ? 'Foto zum Beitrag' : 'Eigenes Foto'}" draggable="false">`;
+  const content = `<div class="cs-media">${media}</div><div class="cs-design">${design(slide, editing)}</div>`;
+  return `<div class="cs-stage${editing ? ' is-editing' : ''}${slide.kind === 'slideshow' ? ' cs-shared-preview' : ''}" style="--cs-ratio:${slide.format}">
+    ${fitPhoto ? `<div class="cs-photo-frame" style="--cs-photo-ratio:${slide.format}">${content}</div>` : content}
     ${editing && cropMode ? '<div class="cs-crop-hit" data-cs-drag="crop" aria-label="Ausschnitt ziehen"></div>' : ''}
     ${editing && slide.kind === 'video' ? '<button class="cs-play" type="button" data-cs-edit-video aria-label="Video abspielen">▶</button>' : ''}
   </div>`;
 }
+
+function fitSlideshowImage(image) {
+  if (image.naturalWidth && image.naturalHeight) {
+    image.closest('.cs-photo-frame')?.style.setProperty('--cs-photo-ratio', image.naturalWidth / image.naturalHeight);
+  }
+}
+document.addEventListener('load', event => {
+  if (event.target.matches?.('.cs-photo-frame img:not(.cs-logo)')) fitSlideshowImage(event.target);
+}, true);
 
 function range(name, label, value, max = 100, min = 0, step = 1) {
   return `<label>${label}<span class="cs-range"><input type="range" name="${name}" min="${min}" max="${max}" step="${step}" value="${value}"><output>${value}</output></span></label>`;
@@ -241,7 +252,7 @@ export function publishedGallery(post, imageOf) {
     ${post.designs.map((slide, index) => {
       const video = slide.ref.startsWith('vid:');
       const source = video ? '' : imageOf(slide.ref);
-      const html = stage({...slide, source, kind:video ? 'video' : 'image'});
+      const html = stage({...slide, source, kind:video ? 'video' : 'image'}, false, slideshow);
       return `<div class="cs-screen" data-cs-published-page="${index}"${index ? ' hidden' : ''}>${html}
         ${video ? `<button type="button" class="cs-play" data-cs-load-video="${esc(slide.ref)}" aria-label="Video abspielen">▶</button>` : ''}
         <button type="button" class="cs-expand" data-cs-published-full aria-label="Vollbild">⛶</button>
@@ -336,6 +347,7 @@ const slideshowVisibility = new IntersectionObserver(entries => {
   }
 });
 function observeSlideshows(root) {
+  root.querySelectorAll('.cs-photo-frame .cs-media img').forEach(fitSlideshowImage);
   for (const gallery of root.querySelectorAll('[data-cs-auto]')) slideshowVisibility.observe(gallery);
 }
 function selectPublished(gallery, index) {
@@ -560,6 +572,60 @@ document.addEventListener('focusin', event => {
   const input = event.target.closest('[data-cs-text]');
   if (input && studio?.contains(input)) selectLayer(Number(input.dataset.csText));
 });
+function openPublishedViewer(gallery, button, fromStart = false) {
+  pauseSlideshow(gallery);
+  const slideshow = gallery.hasAttribute('data-cs-auto') ? slideshowState(gallery) : null;
+  if (slideshow) slideshow.inViewer = true;
+  button.closest('.cs-screen')?.querySelector('video')?.pause();
+  const dialog = document.createElement('dialog');
+  dialog.className = slideshow ? 'cs-viewer cs-viewer-slideshow' : 'cs-viewer';
+  dialog.setAttribute('aria-label', 'Medium im Vollbild');
+  const copy = gallery.cloneNode(true);
+  copy.querySelectorAll('[data-cs-outgoing]').forEach(page => {
+    page.hidden = true;
+    page.inert = false;
+    delete page.dataset.csOutgoing;
+  });
+  if (slideshow) {
+    const state = slideshowState(copy);
+    if (fromStart) pickGalleryPage(copy,0);
+    else state.elapsed = slideshow.elapsed;
+    state.paused = !fromStart && slideshow.paused;
+    copy.classList.add('is-slideshow');
+  }
+  copy.querySelectorAll('[data-cs-published-full], .cs-image-hit').forEach(control => control.remove());
+  copy.querySelectorAll('video').forEach(video => {
+    video.removeAttribute('src');
+    delete video.dataset.started;
+    video.controls = false;
+    updateTimedText(video);
+  });
+  copy.querySelectorAll('[data-cs-load-video]').forEach(control => { control.hidden = false; control.disabled = false; });
+  dialog.innerHTML = `<div class="cs-viewer-tools">
+    ${slideshow ? '' : '<button type="button" aria-pressed="false" data-cs-wide>16:9</button>'}
+    <button type="button" aria-label="Vollbild schließen" data-cs-viewer-close>×</button></div>`;
+  const wide = dialog.querySelector('[data-cs-wide]');
+  if (wide) wide.onclick = () => wide.setAttribute('aria-pressed', String(dialog.classList.toggle('wide')));
+  dialog.querySelector('[data-cs-viewer-close]').onclick = () => dialog.close();
+  dialog.addEventListener('click', event => { if (event.target === dialog) dialog.close(); });
+  dialog.addEventListener('close', () => {
+    pauseSlideshow(copy);
+    slideshowVisibility.unobserve(copy);
+    copy.querySelectorAll('.cs-screen').forEach(screen => videoPreviews.unobserve(screen));
+    dialog.remove();
+    releaseDetachedVideos();
+    if (slideshow) {
+      slideshow.inViewer = false;
+      if (gallery.isConnected && slideshow.visible && !slideshow.paused) startSlideshow(gallery);
+    }
+    button.focus({preventScroll:true});
+  }, {once:true});
+  dialog.append(copy);
+  document.body.append(dialog);
+  dialog.showModal();
+  observeVideoPreview(copy);
+  if (slideshow) observeSlideshows(dialog);
+}
 document.addEventListener('click', async event => {
   const button = event.target.closest('button');
   if (!button) return;
@@ -569,17 +635,11 @@ document.addEventListener('click', async event => {
     const collage = view.querySelector('[data-cs-collage]');
     const carousel = view.querySelector('[data-cs-carousel]');
     const gallery = carousel.querySelector('[data-cs-auto]');
-    const show = 'csShowSlideshow' in data;
-    carousel.hidden = !show;
-    collage.hidden = show;
-    if (show) {
-      pickGalleryPage(gallery,0);
-      slideshowState(gallery).paused = false;
-      startSlideshow(gallery);
-      gallery.scrollIntoView({block:'nearest'});
-      gallery.querySelector('[data-cs-slideshow]').focus({preventScroll:true});
-    } else {
+    if ('csShowSlideshow' in data) openPublishedViewer(gallery, button, true);
+    else {
       pauseSlideshow(gallery);
+      carousel.hidden = true;
+      collage.hidden = false;
       collage.querySelector('[data-cs-show-slideshow]').focus({preventScroll:true});
     }
     return;
@@ -593,54 +653,7 @@ document.addEventListener('click', async event => {
     return;
   }
   if (gallery && 'csPublishedFull' in data) {
-    pauseSlideshow(gallery);
-    const slideshow = slideshows.get(gallery);
-    if (slideshow) slideshow.inViewer = true;
-    const original = button.closest('.cs-screen');
-    original.querySelector('video')?.pause();
-    const dialog = document.createElement('dialog');
-    dialog.className = 'cs-viewer';
-    dialog.setAttribute('aria-label', 'Medium im Vollbild');
-    const copy = gallery.cloneNode(true);
-    copy.querySelectorAll('[data-cs-outgoing]').forEach(page => {
-      page.hidden = true;
-      page.inert = false;
-      delete page.dataset.csOutgoing;
-    });
-    if (slideshow) slideshowState(copy).elapsed = slideshow.elapsed;
-    copy.querySelectorAll('[data-cs-published-full]').forEach(control => control.remove());
-    copy.querySelectorAll('video').forEach(video => {
-      video.removeAttribute('src');
-      delete video.dataset.started;
-      video.controls = false;
-      updateTimedText(video);
-    });
-    copy.querySelectorAll('[data-cs-load-video]').forEach(control => { control.hidden = false; control.disabled = false; });
-    dialog.innerHTML = '<div class="cs-viewer-tools"><button type="button" aria-pressed="false">16:9</button><button type="button" aria-label="Vollbild schließen">×</button></div>';
-    const [wide, close] = dialog.querySelectorAll('button');
-    wide.onclick = () => wide.setAttribute('aria-pressed', String(dialog.classList.toggle('wide')));
-    close.onclick = () => dialog.close();
-    dialog.addEventListener('click', event => { if (event.target === dialog) dialog.close(); });
-    dialog.addEventListener('close', () => {
-      pauseSlideshow(copy);
-      slideshowVisibility.unobserve(copy);
-      copy.querySelectorAll('.cs-screen').forEach(screen => videoPreviews.unobserve(screen));
-      dialog.remove();
-      releaseDetachedVideos();
-      if (slideshow) {
-        slideshow.inViewer = false;
-        if (slideshow.visible && !slideshow.paused) startSlideshow(gallery);
-      }
-      button.focus();
-    }, {once:true});
-    dialog.append(copy);
-    document.body.append(dialog);
-    dialog.showModal();
-    observeVideoPreview(copy);
-    if (slideshow) {
-      slideshowVisibility.observe(copy);
-      if (slideshow.paused) slideshowState(copy).paused = true;
-    }
+    openPublishedViewer(gallery, button);
     return;
   }
   if (gallery && 'csLoadVideo' in data) {

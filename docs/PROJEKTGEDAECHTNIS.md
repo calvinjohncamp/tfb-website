@@ -2,7 +2,7 @@
 
 ## Clubgeflüster und Startverhalten – 06.11.2026
 
-- Website-Stand v269 auf https://joern-kaemper.de. Einstieg für die Fortsetzung
+- Website-Stand v270 auf https://joern-kaemper.de. Einstieg für die Fortsetzung
   ist die [aktuelle Übergabe](UEBERGABE.md). Der folgende Stand v233 dient als
   historischer Nachweis für Redaktion und Sicherungen.
 - Clubgeflüster bleibt eigenständig. „Schreib was“ ist der gemeinsame Einstieg für
@@ -25,6 +25,9 @@
   mit Play/Pause und einer Überblendung von rund 0,36 Sekunden. „Text für alle
   Bilder“ steuert Überschrift und Unterüberschrift über den gesamten Durchlauf.
   Die Gesamtdauer ergibt sich aus 2,4 Sekunden je Foto.
+- Play unter der Collage öffnet die Diashow in der großen Betrachtungsansicht.
+  Hoch- und Querformat werden dort vollständig eingepasst. Gemeinsamer Text
+  bleibt auf einer festen Textfläche, individuelle Gestaltung folgt dem Foto.
 - Veröffentlichte Clips erhalten in Sichtnähe aus dem geschützten Video ein
   Standbild etwa 0,3 Sekunden nach Beginn. Das gilt auch für vorhandene Beiträge
   ohne neue Veröffentlichung. Kein Autoplay. Die Wiedergabe beginnt beim Antippen
