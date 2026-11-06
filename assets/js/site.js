@@ -342,8 +342,8 @@
 
   const parseDate = (iso) => { const [y, m, d] = String(iso || '').split('-').map(Number); return y ? new Date(Date.UTC(y, m - 1, d)) : null; };
   const fmt = (iso, opts) => { const d = parseDate(iso); return d ? d.toLocaleDateString('de-DE', { timeZone: 'UTC', ...opts }) : ''; };
-  const dateBadge = (iso) => `
-    <span class="date-badge" aria-hidden="true">
+  const dateBadge = (iso, accent = false) => `
+    <span class="date-badge${accent ? ' date-badge-accent' : ''}" aria-hidden="true">
       <small>${esc(fmt(iso, { weekday: 'short' }))}</small>
       <b>${esc(fmt(iso, { day: 'numeric' }))}</b>
       <small>${esc(fmt(iso, { month: 'short' }).replace('.', ''))}</small>
@@ -433,7 +433,7 @@
   }
 
   // ---------- Bausteine darstellen ----------
-  function renderBlock(b, page) {
+  function renderBlock(b, page, accentDate = false) {
     switch (b.type) {
       case 'feature': {
         const list = page === 'home' ? homeBlocks().filter((x) => x.type === 'feature' && (!x._new || (preview && x.id === preview.id))) : [];
@@ -506,9 +506,9 @@
         return `<section class="block-text" data-site-content="${esc(b.id)}">${b.title ? `<h2>${esc(b.title)}</h2>` : ''}${paragraphs(b.text)}</section>`;
       }
       case 'event':
-        return eventCard(b);
+        return eventCard(b, { accentDate });
       case 'post':
-        return newsPost(b);
+        return newsPost(b, null, accentDate);
       case 'image':
         return b.original
           ? `<figure class="block-image natural ${alignClass(b.align)}" data-site-content="${esc(b.id)}">${picture(b.image, b.id, b.caption)}${b.caption ? `<figcaption>${esc(b.caption)}</figcaption>` : ''}</figure>`
@@ -524,7 +524,7 @@
             ${b.title ? `<h2>${esc(b.title)}</h2>` : ''}
             ${b.textPosition === 'above' ? text : ''}
             ${list.length
-              ? `<div class="gallery-media"><div class="${mosaic ? `collage module-collage collage-${Math.min(list.length, 5)}` : 'gallery-grid'}">${list.map((ref, i) => `<button type="button" class="${mosaic ? 'collage-item' : 'gallery-item'}" data-action="gallery-open" data-block="${esc(b.id)}" data-index="${i}" aria-label="Foto ${i + 1} von ${list.length} groß ansehen">${picture(ref, ref)}</button>`).join('')}</div>${b.date ? dateBadge(b.date) : ''}</div>`
+              ? `<div class="gallery-media"><div class="${mosaic ? `collage module-collage collage-${Math.min(list.length, 5)}` : 'gallery-grid'}">${list.map((ref, i) => `<button type="button" class="${mosaic ? 'collage-item' : 'gallery-item'}" data-action="gallery-open" data-block="${esc(b.id)}" data-index="${i}" aria-label="Foto ${i + 1} von ${list.length} groß ansehen">${picture(ref, ref)}</button>`).join('')}</div>${b.date ? dateBadge(b.date, accentDate) : ''}</div>`
               : '<p class="muted small empty-hint">Noch keine Fotos – über den Stift Fotos hinzufügen.</p>'}
             ${b.date ? `<p class="post-date"><time datetime="${esc(b.date)}">${esc(fmt(b.date, { day: 'numeric', month: 'long', year: 'numeric' }))}</time></p>` : ''}
             ${b.textPosition !== 'above' ? text : ''}
@@ -673,13 +673,13 @@
       </div>`;
   }
 
-  function eventCard(b, { href = '', body, attachments } = {}) {
+  function eventCard(b, { href = '', body, attachments, accentDate = false } = {}) {
     const thumbs = attachments
       ? attachments.map(attachment => attachmentThumb({ ...b, attachment })).join('')
       : attachmentThumb(b);
     return `
       <article class="event card">
-        <div class="event-side">${dateBadge(b.date)}${thumbs}</div>
+        <div class="event-side">${dateBadge(b.date, accentDate)}${thumbs}</div>
         <div class="event-body">
           <h3>${href ? `<a class="post-title-link" href="${esc(href)}">${esc(b.title)}</a>` : esc(b.title)}</h3>
           <p class="muted small">${[b.time && `${esc(b.time)} Uhr`, esc(b.place)].filter(Boolean).join(' · ')}</p>
@@ -688,8 +688,8 @@
       </article>`;
   }
 
-  function newsPost(b, archive = null) {
-    const photos = postPhotos(b, Boolean(archive));
+  function newsPost(b, archive = null, accentDate = false) {
+    const photos = postPhotos(b, Boolean(archive), accentDate);
     const fullDate = fmt(b.date, { day: 'numeric', month: 'long', year: 'numeric' }) || archive?.year || '';
     return `
       <article class="post card" data-site-content="${esc(b.id)}">
@@ -704,11 +704,11 @@
   }
 
   // Beitrag (Aktuell): 1 Foto breit, 2–4 als gleich große Quadrate nebeneinander; jedes Foto einpassbar
-  function postPhotos(b, archive = false) {
+  function postPhotos(b, archive = false, accentDate = false) {
     const list = (b.images || []).filter(shownImage);
     const refs = list.length ? list : [b.image];
     if (archive && !refs.some(shownImage)) return '';
-    const badge = !archive || b.date ? dateBadge(b.date) : '';
+    const badge = !archive || b.date ? dateBadge(b.date, accentDate) : '';
     if (refs.length <= 1) {
       const pic = picture(refs[0], list.length ? refs[0] : b.id, b.title);
       return `<div class="post-media">${list.length ? `<button type="button" class="post-open" data-action="news-gallery" data-block="${esc(b.id)}" aria-label="Foto groß ansehen">${pic}</button>` : pic}${badge}</div>`;
@@ -904,9 +904,17 @@
     const list = (key === 'home' ? homeBlocks() : page.blocks).map(b => photoPreview?.id === b.id ? photoPreview.draft : b).filter((b) => (!b._new || (preview && b.id === preview.id) || photoPreview?.id === b.id)
       && (key !== 'sport' || (training ? b.type !== 'teams' : b.type === 'teams')));
     const legal = key === 'impressum' || key === 'satzung';
+    let newsDates = 0;
+    let eventDates = 0;
+    const accentDates = new Set(key === 'aktuell' ? list.filter(b => {
+      if (b.type === 'event') return eventDates++ % 2 === 1;
+      const photoDate = ['gallery', 'collage'].includes(b.type) && b.date && b.images?.some(shownImage);
+      return (b.type === 'post' || photoDate) && newsDates++ % 2 === 1;
+    }) : []);
+    const renderPageBlock = b => renderBlock(b, key, accentDates.has(b));
     const blocks = edit
-      ? list.map((b, i) => editWrap(b, i, list.length, renderBlock(b, key))).join('')
-      : legal ? `<div class="legal-document">${list.map(b => renderBlock(b, key)).join('')}</div>` : layoutBlocks(list, key);
+      ? list.map((b, i) => editWrap(b, i, list.length, renderPageBlock(b))).join('')
+      : legal ? `<div class="legal-document">${list.map(renderPageBlock).join('')}</div>` : layoutBlocks(list, key, renderPageBlock);
     return `
       <div class="site-page ${edit ? 'editing-page' : ''} ${key === 'home' ? `home-look-${homeLook()}` : ''}" data-page="${key}">
         ${edit ? `
@@ -915,7 +923,7 @@
             <button type="button" class="btn primary" data-action="site-done">Fertig</button>
           </div>` : ''}
         ${key === 'home' && !edit
-          ? (admin ? `<div class="home-tools"><button type="button" class="view-close" data-action="site-edit" data-page="home" aria-label="Startseite bearbeiten">${icon.pencil}</button></div>` : '')
+          ? ''
           : `<header class="view-head page-head">
           <div><h1>${esc(page.title)}</h1>${page.intro ? `<p class="muted">${esc(page.intro)}</p>` : ''}</div>
           ${key === 'aktuell' ? '<div class="page-head-tools">' : ''}${admin && !edit ? `<button type="button" class="view-close" data-action="site-edit" data-page="${key}" aria-label="Seite bearbeiten">${icon.pencil}</button>` : ''}${key === 'aktuell' ? `${!edit ? contentOverviewLink(key) : ''}</div>` : ''}
@@ -926,9 +934,10 @@
         </nav>` : ''}
         ${key === 'home' ? `<div class="home-masthead"><span>Neu im Club</span><span>${esc(new Date().toLocaleDateString('de-DE', { month: 'long', year: 'numeric' }))}</span></div>` : ''}
         ${key === 'home' && !edit && !list.some(b => b.type === 'feature') ? contentOverviewLink(key) : ''}
-        ${key === 'home' && edit ? lookPicker() + navCard() : ''}
+        ${key === 'home' && edit ? `
+          <section class="home-editor-settings" aria-label="Gestaltung und Menü">${lookPicker()}${navCard()}</section>
+          <div class="home-editor-add">${homeAddButton(list)}</div>` : ''}
         ${blocks}
-        ${edit && key === 'home' ? homeAddButton(list) : ''}
         ${edit && key !== 'home' && (key !== 'sport' || training) ? `<button type="button" class="btn block add-section" data-action="block-new">${icon.plus} Baustein hinzufügen</button>` : ''}
         ${edit || legal ? '' : partnerSlot(key, page.partnerKicker || 'Präsentiert von')}
       </div>`;
@@ -1032,14 +1041,59 @@
       : `<button type="button" class="btn block add-section add-feature" data-action="block-add" data-type="feature">${ui().icon.plus} Neues Thema <small>${n} von ${MAX_HOME_FEATURES}</small></button>`;
     return feature + ['gallery', 'collage'].map(type => `<button type="button" class="btn block add-section" data-action="block-add" data-type="${type}">${ui().icon.camera} ${type === 'gallery' ? 'Galerie' : 'Collage'} hinzufügen</button>`).join('');
   }
-  const homeLook = () => (HOME_LOOKS.some(([k]) => k === site?.homeLook) ? site.homeLook : '6');
+  let requestedHomeLook = null;
+  let savingHomeLook = false;
+  const homeLook = () => requestedHomeLook || (HOME_LOOKS.some(([k]) => k === site?.homeLook) ? site.homeLook : '6');
+
+  function showHomeLook() {
+    const page = document.querySelector('.site-page[data-page="home"]');
+    if (!page) return;
+    const look = homeLook();
+    for (const [id] of HOME_LOOKS) page.classList.toggle(`home-look-${id}`, id === look);
+    for (const button of page.querySelectorAll('[data-action="home-look"]')) {
+      const active = button.dataset.look === look;
+      button.classList.toggle('on', active);
+      button.setAttribute('aria-pressed', String(active));
+    }
+  }
+
+  async function changeHomeLook(button) {
+    const next = button.dataset.look;
+    if (!ui().state.member?.isAdmin || !HOME_LOOKS.some(([id]) => id === next) || next === homeLook()) return;
+    requestedHomeLook = next;
+    showHomeLook();
+    if (savingHomeLook) return;
+    savingHomeLook = true;
+    // Give the browser a chance to paint before the CMS copies and saves the site.
+    await new Promise(resolve => setTimeout(resolve, 0));
+    try {
+      while (requestedHomeLook) {
+        const look = requestedHomeLook;
+        try {
+          site = await ui().api.saveSite({ ...site, homeLook: look });
+          if (requestedHomeLook === look) {
+            requestedHomeLook = null;
+            ui().toast(`Look „${HOME_LOOKS.find(([id]) => id === look)[1]}“ gespeichert`, true);
+          }
+        } catch (err) {
+          if (requestedHomeLook === look) {
+            requestedHomeLook = null;
+            showHomeLook();
+            ui().toast(err.message);
+          }
+        }
+      }
+    } finally {
+      savingHomeLook = false;
+    }
+  }
   function lookPicker() {
     const cur = homeLook();
     return `<section class="look-picker" aria-label="Look der Startseite">
       <h2>Look der Startseite</h2>
       <div class="look-options">${HOME_LOOKS.map(([k, l, d]) => `<button type="button" class="${k === cur ? 'on' : ''}" data-action="home-look" data-look="${k}" aria-pressed="${k === cur}">
         <b>${esc(l)}${k === '6' ? ' <small>Standard</small>' : ''}</b><span>${esc(d)}</span></button>`).join('')}</div>
-      <p class="muted small">Gilt für alle Besucher. Die Seite darunter zeigt sofort den gewählten Look – so bearbeitest du genau, was die Besucher sehen.</p>
+      <p class="muted small">Die Vorschau wechselt sofort. Der gewählte Look wird im Hintergrund für alle Besucher gespeichert.</p>
     </section>`;
   }
   ['home', 'aktuell', 'sport', 'verein', 'impressum', 'satzung'].forEach((key) => { TFB.views[routeOf(key)] = () => pageView(key); });
@@ -1070,14 +1124,14 @@
     grid.classList.toggle('show-dates', button.dataset.tab === 'dates');
   }
 
-  function layoutBlocks(list, key) {
+  function layoutBlocks(list, key, renderPageBlock) {
     const eventIdx = list.map((b, i) => (b.type === 'event' ? i : -1)).filter((i) => i >= 0);
     const asideIdx = new Set(eventIdx);
     if (eventIdx.length && list[eventIdx[0] - 1] && list[eventIdx[0] - 1].type === 'heading') asideIdx.add(eventIdx[0] - 1);
     const main = list.filter((_, i) => !asideIdx.has(i));
     const aside = list.filter((_, i) => asideIdx.has(i));
     const renderColumnBlock = (b, first) => {
-      const block = renderBlock(b, key);
+      const block = renderPageBlock(b);
       if (key !== 'aktuell' || !first) return block;
       return b.type === 'heading'
         ? `<div class="aktuell-column-head">${block}${contentOverviewLink(key)}</div>`
@@ -1088,7 +1142,7 @@
     const units = [];
     main.forEach((b) => {
       const last = units[units.length - 1];
-      if (b.type === 'button' && last && last.kind === 'text') last.html += renderBlock(b, key);
+      if (b.type === 'button' && last && last.kind === 'text') last.html += renderPageBlock(b);
       else units.push({ kind: b.id === 's-training' ? 'trainer' : b.type === 'text' ? 'text' : b.type, html: renderColumnBlock(b, b === main[0]) });
     });
     // Läufe gleicher Art zusammenfassen (Beiträge, Texte)
@@ -1110,7 +1164,7 @@
     return `
       <div class="page-grid">
         <div class="page-main">${html}</div>
-        <aside class="page-aside">${aside.map((b) => renderBlock(b, key)).join('')}</aside>
+        <aside class="page-aside">${aside.map(renderPageBlock).join('')}</aside>
       </div>`;
   }
 
@@ -2049,8 +2103,11 @@
       if (!photoModule) return;
       photoPreview = { id, draft };
       const module = [...document.querySelectorAll('#view [data-photo-module]')].find(el => el.dataset.photoModule === id);
-      if (module) module.outerHTML = renderBlock(draft, editing);
-      else ui().renderView();
+      const badge = module?.querySelector('.date-badge');
+      const showsBadge = draft.date && draft.images?.some(shownImage);
+      if (module && (editing !== 'aktuell' || Boolean(badge) === Boolean(showsBadge))) {
+        module.outerHTML = renderBlock(draft, editing, badge?.classList.contains('date-badge-accent'));
+      } else ui().renderView();
     };
     const label = (BLOCK_TYPES.find(([t]) => t === draft.type) || [0, 'Baustein'])[1];
 
@@ -3062,13 +3119,7 @@
       window.scrollTo(0, el.dataset.keepScroll ? y : 0);
     },
     'nav-edit': () => openNavEditor(),
-    'home-look': async (el) => {
-      try {
-        site = await ui().api.saveSite({ ...JSON.parse(JSON.stringify(site)), homeLook: el.dataset.look });
-        ui().toast(`Look „${(HOME_LOOKS.find(([k]) => k === el.dataset.look) || [])[1]}“ gewählt`, true);
-        const y = window.scrollY; await ui().renderView(); window.scrollTo(0, y);
-      } catch (err) { ui().toast(err.message); }
-    },
+    'home-look': changeHomeLook,
     'site-done': () => { editing = null; ui().renderView(); window.scrollTo(0, 0); },
     'block-move': (el) => {
       const list = blocksOf();

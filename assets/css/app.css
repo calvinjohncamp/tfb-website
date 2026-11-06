@@ -1364,6 +1364,9 @@ button.meet-series { cursor: pointer; }
 .block-heading::after { content: ""; display: block; width: 28px; height: 3px; border-radius: 2px; background: var(--signal); margin-top: 8px; }
 .date-badge small:first-child { color: color-mix(in srgb, var(--signal) 55%, #fff); opacity: 1; }
 .view[data-view="aktuell"] .date-badge > :is(small, b) { color: #fff; opacity: 1; }
+.view[data-view="aktuell"] .date-badge-accent { background: var(--tfb-signature-red); }
+:root.tfb-logo-midnight-amber .view[data-view="aktuell"] .date-badge-accent { background: var(--tfb-signature-yellow); }
+:root.tfb-logo-midnight-amber .view[data-view="aktuell"] .date-badge-accent > :is(small, b) { color: #171717; }
 .btn.signal { background: var(--signal); border-color: var(--signal); color: #fff; text-decoration: none; }
 .btn.signal:hover { filter: brightness(1.06); }
 .page-kicker { font-size: .72rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--signal); margin: 0 0 6px; }
@@ -1375,7 +1378,6 @@ button.meet-series { cursor: pointer; }
 :root[data-font="sans"] .date-badge b, :root[data-font="sans"] .coaster-amount { font-weight: 800; letter-spacing: -.03em; }
 
 /* Home: drei große Themen */
-.home-tools { display: flex; justify-content: flex-end; margin: 0 0 -6px; }
 .page-bottom-tools { display: flex; justify-content: flex-end; margin: 24px 0 8px; }
 .view[data-view="home"] .page-grid.single .page-main { display: grid; gap: 56px; }
 .feature { display: grid; gap: 20px; }
@@ -2500,6 +2502,11 @@ h1, h2, h3, .event h3, .feature-body h2, .story-head h1, .post-body h3 { -webkit
 
 /* Admin: Menü oben bearbeiten */
 .nav-card { margin-top: -12px; }
+.home-editor-settings { display: grid; gap: 12px; padding: 12px; border: 1px solid var(--line); border-radius: 18px; }
+.home-editor-settings > :is(.look-picker, .nav-card) { margin: 0; }
+.home-editor-add { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 20px; }
+.home-editor-add > .add-section { flex: 1 1 145px; width: auto; margin: 0; }
+.home-editor-add > .add-limit { flex-basis: 100%; }
 .nav-preview { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 12px; }
 .nav-preview span { font-size: .72rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; padding: 5px 10px; border-radius: 99px; background: #F2EEE6; }
 .nav-rows { display: grid; gap: 10px; margin: 6px 0 14px; }

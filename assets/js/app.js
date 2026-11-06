@@ -427,15 +427,24 @@
         $view.innerHTML=body;
       }
       if (state.member?.isAdmin) {
+        const editHome = view === 'home' && $view.querySelector('.site-page[data-page="home"]')
+          ? '<button type="button" class="btn small" data-action="site-edit" data-page="home">Home bearbeiten</button>' : '';
         $view.insertAdjacentHTML('afterbegin', `<div class="tfb-admin-design">${TFB.designPreview.buttons()}
-          <div class="tfb-admin-links"><button type="button" class="btn small" data-action="splash-edit">Einstiegsseite bearbeiten</button><a class="btn small" href="#partner">Partner verwalten</a>
+          <div class="tfb-admin-links"><button type="button" class="btn small" data-action="splash-edit">Splash bearbeiten</button>${editHome}<a class="btn small" href="#partner">Partner verwalten</a>
             <button type="button" class="btn small" data-action="members-manage">Mitglieder verwalten</button>
             <button type="button" class="btn small" data-action="admin-backup">Sicherungen</button></div></div>`);
-        const edit = $view.querySelector('.view-close[data-action="site-edit"], .view-close[data-action="edit-start"], .view-close[data-action="feature-edit"], .view-close[data-action="album-edit"], .view-close[data-action="portrait-edit"], .view-close[data-action="chat-text-edit"]');
+        const homeEditShortcut = editHome && !$view.querySelector('.editing-page')
+          ? $view.querySelector('.tfb-admin-links [data-action="site-edit"]') : null;
+        const edit = homeEditShortcut || $view.querySelector('.view-close[data-action="site-edit"], .view-close[data-action="edit-start"], .view-close[data-action="feature-edit"], .view-close[data-action="album-edit"], .view-close[data-action="portrait-edit"], .view-close[data-action="chat-text-edit"]');
         if (edit) {
           const tools = document.createElement('div');
           tools.className = 'page-bottom-tools';
           const button = edit.cloneNode(true);
+          if (homeEditShortcut) {
+            button.className = 'view-close';
+            button.innerHTML = icon.pencil;
+            button.setAttribute('aria-label', 'Home bearbeiten');
+          }
           button.dataset.keepScroll = '1';
           button.title = button.getAttribute('aria-label') || 'Bearbeiten';
           tools.appendChild(button);
