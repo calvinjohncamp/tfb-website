@@ -2,7 +2,7 @@
 
 ## Wiederaufnahme – 06.11.2026
 
-- Live-Website v270 unter https://joern-kaemper.de. Veröffentlichung über GitHub
+- Live-Website v271 unter https://joern-kaemper.de. Veröffentlichung über GitHub
   Pages aus `calvinjohncamp/tfb-website`, Branch `main`, Workflow
   `publish-website.yml`. Der aktive Dropbox-Arbeitsordner ist `01 Software`.
   Dort liegen ältere lokale Änderungen neben dem Live-Stand. Bei Übernahmen
@@ -11,8 +11,9 @@
   (`slideshowLayers`) und die gewählte Fotoansicht (`photoView`). Ohne Auswahl
   gilt die bestehende Collage. `cleanVideoTiming` in
   `server/cloudflare/app-sync.mjs` prüft die Zeiten pro Video- und Diashow-Textzeile.
-  Kein Schemawechsel. Die Rahmengröße und das Einpassen der Fotos in v270
-  sind Änderungen im Frontend. Kein erneutes Worker-Deployment erforderlich.
+  v271 ergänzt `videoEdit` mit In-/Out-Punkt und zwei Bildüberblendungen pro
+  Video. Der Worker prüft die Schnittdaten. Die R2-Datei bleibt unverändert.
+  Kein Schemawechsel.
 - Video-Standbilder und Startlogik liegen in `assets/js/chat-media.js`,
   `assets/js/app.js` und `assets/js/partner-visibility.js`. Die Videoquelle
   bleibt im privaten R2-Bucket und wird in Sichtnähe pro Ansicht einmal über den

@@ -104,7 +104,7 @@ test('chat design and video are shared only with members who may see the post', 
     {text:'Titel',color:'#abcdef'},
     {text:'Unterzeile',color:'#ff5522',align:'right',spacing:12,bold:false,italic:true,underline:true,
       timing:{start:2.3,end:5.8,fade:'medium'}},
-  ], logo:'padel'};
+  ], logo:'padel', videoEdit:{start:1.4,end:8.6,fadeIn:'short',fadeOut:'medium'}};
   assert.equal((await f.commit([post('foreign-video',{designs:[slide]})],f.otherToken)).status,403);
   assert.equal((await f.commit([post('video-post',{text:'', designs:[slide], dots:'top'})])).status,200);
   const record = (await f.state(f.otherToken)).body.records.find(row => row.id === 'video-post');
@@ -118,6 +118,8 @@ test('chat design and video are shared only with members who may see the post', 
   const invalid = {...slide,layers:[{text:'Zu spät',timing:{start:6,end:5,fade:'short'}}]};
   assert.equal((await f.commit([post('invalid-video',{designs:[invalid]})])).status,400);
   assert.equal(record.value.designs[0].logo,'padel');
+  assert.deepEqual(record.value.designs[0].videoEdit,slide.videoEdit);
+  assert.equal((await f.commit([post('invalid-cut',{designs:[{...slide,videoEdit:{...slide.videoEdit,end:1}}]})])).status,400);
   assert.equal(record.value.dots,'top');
   const path = '/app/chat-video?' + new URLSearchParams({post:'video-post',ref:slide.ref});
   const {default:worker} = await import('./worker-test-loader.mjs');

@@ -46,7 +46,7 @@ function prepareVideoFrame(video) {
     };
     const capture = () => {
       try {
-        if (!video.videoWidth || !video.videoHeight) return;
+        if (!video.videoWidth || !video.videoHeight || video.dataset.inspect) return;
         const canvas = document.createElement('canvas');
         const scale = Math.min(1, 640 / Math.max(video.videoWidth, video.videoHeight));
         canvas.width = Math.max(1, Math.round(video.videoWidth * scale));
@@ -58,7 +58,8 @@ function prepareVideoFrame(video) {
     };
     const seek = () => {
       if (!Number.isFinite(video.duration) || video.duration <= 0) { stop(); return; }
-      video.currentTime = Math.min(.3, video.duration / 2);
+      const {start,end} = clipBounds(video);
+      video.currentTime = start + Math.min(.3, (end - start) / 2);
     };
     // WebKit can signal seeked before the paused frame is ready for canvas.
     const afterSeek = () => { captureTimer = setTimeout(capture, 150); };
@@ -132,6 +133,19 @@ const slideshowDuration = count => Number((count * SLIDE_SECONDS).toFixed(1));
 const fadeLabels = { none:'Ohne Überblenden', short:'Kurz · 0,25 s', medium:'Mittel · 0,6 s', long:'Lang · 1,2 s' };
 const seconds = value => /^\d+(?:[,.]\d{1,2})?$/.test(String(value).trim()) ? Number(String(value).replace(',', '.')) : NaN;
 const decimal = value => String(value).replace('.', ',');
+const hundredths = value => Number(value.toFixed(2));
+const hasVideoEdit = video => video.hasAttribute('data-clip-start');
+function clipBounds(video) {
+  const duration = Number.isFinite(video.duration) ? video.duration : Infinity;
+  const end = Math.min(duration, Number(video.dataset.clipEnd ?? duration));
+  return {start:Math.min(Number(video.dataset.clipStart || 0),end),end};
+}
+function syncClipButton(video) {
+  const button = video.closest('.cs-screen, .is-editing')?.querySelector('[data-cs-load-video], [data-cs-edit-video]');
+  if (!button || (!hasVideoEdit(video) && !button.hasAttribute('data-cs-edit-video'))) return;
+  button.textContent = video.paused || video.ended ? '▶' : 'Ⅱ';
+  button.setAttribute('aria-label', video.paused || video.ended ? 'Video abspielen' : 'Video pausieren');
+}
 function timingOf(layer) {
   if (!layer.timing) return null;
   const start = seconds(layer.timing.start), end = seconds(layer.timing.end);
@@ -153,14 +167,31 @@ function updateTimedText(video) {
   const stage = video.closest('.cs-stage');
   if (!stage) return;
   const started = Boolean(video.dataset.started);
-  const time = video.ended ? Infinity : started ? video.currentTime : 0;
-  showTimedText(stage, time, stage.classList.contains('is-editing') && !started);
+  const editing = stage.classList.contains('is-editing');
+  const inspect = editing && (!started || video.dataset.inspect);
+  const {start,end} = clipBounds(video);
+  const duration = end - start;
+  const atEnd = started && (video.ended || video.currentTime >= end - .015);
+  if (hasVideoEdit(video) && atEnd && !inspect && !video.paused) video.pause();
+  const time = atEnd ? duration : started ? clamp(video.currentTime - start,0,duration) : 0;
+  showTimedText(stage, atEnd && !inspect ? Infinity : time, Boolean(inspect), duration);
+  if (hasVideoEdit(video)) {
+    const fadeIn = Math.min(Number(video.dataset.clipIn),duration / 2);
+    const fadeOut = Math.min(Number(video.dataset.clipOut),duration / 2);
+    video.style.opacity = started && !inspect ? Math.min(1, fadeIn ? time / fadeIn : 1, fadeOut ? (duration - time) / fadeOut : 1) : 1;
+    const seek = stage.closest('.cs-screen')?.querySelector('[data-cs-clip-seek]');
+    if (seek && Number.isFinite(duration)) {
+      if (Number(seek.max) !== duration) seek.max = duration;
+      if (!seek.matches(':active')) seek.value = time;
+    }
+  }
 }
 const textFrames = new WeakMap();
 document.addEventListener('play', event => {
   const video = event.target;
   if (!video.matches?.('.cs-stage video')) return;
   video.dataset.started = '1';
+  syncClipButton(video);
   cancelAnimationFrame(textFrames.get(video));
   const tick = () => {
     if (!video.isConnected) return;
@@ -169,10 +200,23 @@ document.addEventListener('play', event => {
   };
   tick();
 }, true);
-for (const eventName of ['pause','seeked','ended']) {
+for (const eventName of ['pause','seeked','ended','timeupdate']) {
   document.addEventListener(eventName, event => {
-    if (event.target.matches?.('.cs-stage video')) updateTimedText(event.target);
+    if (!event.target.matches?.('.cs-stage video')) return;
+    updateTimedText(event.target);
+    if (eventName === 'pause' || eventName === 'ended') syncClipButton(event.target);
   }, true);
+}
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) document.querySelectorAll('.cs-stage video[data-clip-start]').forEach(video => video.pause());
+});
+function playClip(video, restart = false) {
+  const {start,end} = clipBounds(video);
+  if (restart || !video.dataset.started || video.ended || video.currentTime < start || video.currentTime >= end - .015) {
+    video.currentTime = start;
+  }
+  delete video.dataset.inspect;
+  return video.play();
 }
 function mediaStyle(slide) {
   if (slide.kind === 'slideshow') return '';
@@ -210,7 +254,8 @@ function textLayersMarkup(slide, editing = false) {
 function stage(slide, editing = false, fitPhoto = false) {
   const src = esc(sourceOf(slide.source));
   const media = slide.kind === 'video'
-    ? `<video ${src ? `src="${src}"` : ''} style="${mediaStyle(slide)}" playsinline preload="${editing ? 'auto' : 'none'}" ${editing ? 'muted' : ''}></video>`
+    ? `<video ${src ? `src="${src}"` : ''} style="${mediaStyle(slide)}" playsinline preload="${editing ? 'auto' : 'none'}" ${editing ? 'muted' : ''}
+      ${slide.videoEdit ? `data-clip-start="${slide.videoEdit.start}" data-clip-end="${slide.videoEdit.end}" data-clip-in="${fades[slide.videoEdit.fadeIn]}" data-clip-out="${fades[slide.videoEdit.fadeOut]}"` : ''}></video>`
     : `<img src="${src}" style="${fitPhoto ? '' : mediaStyle(slide)}" alt="${typeof slide.source === 'string' ? 'Foto zum Beitrag' : 'Eigenes Foto'}" draggable="false">`;
   const content = `<div class="cs-media">${media}</div><div class="cs-design">${design(slide, editing)}</div>`;
   return `<div class="cs-stage${editing ? ' is-editing' : ''}${slide.kind === 'slideshow' ? ' cs-shared-preview' : ''}" style="--cs-ratio:${slide.format}">
@@ -255,6 +300,7 @@ export function publishedGallery(post, imageOf) {
       const html = stage({...slide, source, kind:video ? 'video' : 'image'}, false, slideshow);
       return `<div class="cs-screen" data-cs-published-page="${index}"${index ? ' hidden' : ''}>${html}
         ${video ? `<button type="button" class="cs-play" data-cs-load-video="${esc(slide.ref)}" aria-label="Video abspielen">▶</button>` : ''}
+        ${video && slide.videoEdit ? '<div class="cs-clip-controls" hidden><input type="range" min="0" step="any" value="0" data-cs-clip-seek aria-label="Position im Video"><button type="button" data-cs-clip-mute aria-pressed="false">Ton aus</button></div>' : ''}
         <button type="button" class="cs-expand" data-cs-published-full aria-label="Vollbild">⛶</button>
         ${video ? '' : '<button type="button" class="cs-image-hit" data-cs-published-full aria-label="Bild groß ansehen"></button>'}
       </div>`;
@@ -415,7 +461,7 @@ function typographyMarkup(layer) {
 }
 
 function timingMarkup(layer) {
-  const duration = draft.duration;
+  const duration = textDuration();
   if (!duration) return '<p class="small muted">Videodauer wird ermittelt …</p>';
   const timed = Boolean(layer.timing);
   return `<fieldset class="cs-timing"><legend>${currentSlide().kind === 'slideshow' ? 'Text in der Diashow' : 'Text im Video'} · ${decimal(duration)} s</legend>
@@ -425,6 +471,67 @@ function timingMarkup(layer) {
       <label>Ausblenden bei (s)<input name="timingEnd" inputmode="decimal" value="${esc(decimal(layer.timing.end))}"></label>
     </div>${select('timingFade', 'Überblenden', layer.timing.fade, fadeLabels)}` : ''}
   </fieldset>`;
+}
+
+function editorClip() {
+  return currentSlide().videoEdit || {start:0,end:draft.duration,fadeIn:'none',fadeOut:'none'};
+}
+function textDuration() {
+  if (currentSlide().kind !== 'video' || !draft.duration) return draft.duration;
+  const {start,end} = editorClip();
+  return hundredths(end - start);
+}
+function clipEditorMarkup() {
+  if (!draft.duration) return '<p class="small muted">Filmleiste wird geladen …</p>';
+  const clip = editorClip();
+  const handle = (name, label, value) =>
+    `<input type="range" name="${name}" min="0" max="${draft.duration}" step="0.01" value="${value}" aria-label="${label}">`;
+  return `<div class="cs-trim-track">
+      <span class="cs-trim-selection" data-cs-trim-selection></span>
+      ${handle('clipStart','Filmanfang',clip.start)}
+      ${handle('clipEnd','Filmende',clip.end)}
+    </div>
+    <div class="cs-trim-times">
+      <span>Anfang <output data-cs-clip-start></output></span>
+      <strong><output data-cs-clip-length></output></strong>
+      <span>Ende <output data-cs-clip-end></output></span>
+    </div>
+    <div class="cs-type-row">
+      ${select('clipFadeIn','Bild einblenden',clip.fadeIn,fadeLabels)}
+      ${select('clipFadeOut','Bild ausblenden',clip.fadeOut,fadeLabels)}
+    </div>
+    <p class="small muted">Textzeiten zählen ab dem gewählten Filmanfang.</p>
+    <button type="button" class="btn small" data-cs-reset-clip>Auf volle Länge zurücksetzen</button>`;
+}
+function refreshClipEditor() {
+  const clip = editorClip();
+  const panel = studio.querySelector('[data-cs-clip-editor]');
+  const video = studio.querySelector('video');
+  if (!draft.duration || !panel) return;
+  panel.querySelector('[name="clipStart"]').value = clip.start;
+  panel.querySelector('[name="clipEnd"]').value = clip.end;
+  for (const [field,value] of Object.entries({start:clip.start,end:clip.end,length:textDuration()})) {
+    panel.querySelector(`[data-cs-clip-${field}]`).value = `${decimal(value)} s`;
+  }
+  const selection = panel.querySelector('[data-cs-trim-selection]');
+  selection.style.setProperty('--clip-start',`${clip.start / draft.duration * 100}%`);
+  selection.style.setProperty('--clip-end',`${clip.end / draft.duration * 100}%`);
+  const edit = currentSlide().videoEdit;
+  for (const [field,value] of Object.entries({clipStart:clip.start,clipEnd:clip.end,clipIn:fades[clip.fadeIn],clipOut:fades[clip.fadeOut]})) {
+    if (edit) video.dataset[field] = value;
+    else delete video.dataset[field];
+  }
+  const legend = studio.querySelector('[data-cs-timing] legend');
+  if (legend) legend.textContent = `Text im Video · ${decimal(textDuration())} s`;
+  updateTimedText(video);
+}
+function inspectClipAt(time) {
+  const video = studio.querySelector('video');
+  video.dataset.inspect = '1';
+  video.pause();
+  video.removeAttribute('poster');
+  video.currentTime = clamp(time,0,video.duration);
+  updateTimedText(video);
 }
 
 function editorMarkup() {
@@ -439,6 +546,8 @@ function editorMarkup() {
         </div>`}
       </div>
       <div class="cs-inspector">
+        ${slide.kind === 'video' ? `<details open><summary>Film schneiden und überblenden</summary>
+          <div data-cs-clip-editor>${clipEditorMarkup()}</div></details>` : ''}
         ${slideshow ? '' : `<details><summary>Beitrag und Format</summary>
           ${select('format', 'Rahmen für diese Seite', slide.format, Object.fromEntries(formats.map(value => [value, value.replace(' / ', ':')])))}
           ${select('dots', 'Wischpunkte', draft.dots, { bottom:'Unter dem Bild', top:'Über dem Bild' })}
@@ -475,13 +584,16 @@ function drawEditor() {
   studio.querySelector('.cs-inspector').scrollTop = inspectorScroll;
   const video = studio.querySelector('video[src]');
   if (video) {
+    refreshClipEditor();
     editorFrames.set(video, prepareVideoFrame(video));
     const setDuration = () => {
       if (!video.isConnected || !Number.isFinite(video.duration) || video.duration <= 0) return;
       const duration = Number(video.duration.toFixed(2));
       if (draft.duration === duration) return;
       draft.duration = duration;
+      studio.querySelector('[data-cs-clip-editor]').innerHTML = clipEditorMarkup();
       studio.querySelector('[data-cs-timing]').innerHTML = timingMarkup(currentSlide().layers[layerIndex]);
+      refreshClipEditor();
     };
     video.addEventListener('loadedmetadata', setDuration, {once:true});
     if (video.readyState >= 1) queueMicrotask(setDuration);
@@ -531,6 +643,18 @@ function updateField(input) {
   const { name, value } = input;
   const slide = currentSlide();
   const layer = slide.layers[layerIndex];
+  if (['clipStart','clipEnd','clipFadeIn','clipFadeOut'].includes(name)) {
+    const clip = {...editorClip()};
+    const minimum = Math.min(.1,draft.duration);
+    if (name === 'clipStart') clip.start = hundredths(clamp(Number(value),0,clip.end - minimum));
+    if (name === 'clipEnd') clip.end = hundredths(clamp(Number(value),clip.start + minimum,draft.duration));
+    if (name === 'clipFadeIn') clip.fadeIn = value;
+    if (name === 'clipFadeOut') clip.fadeOut = value;
+    slide.videoEdit = clip;
+    refreshClipEditor();
+    if (name === 'clipStart' || name === 'clipEnd') inspectClipAt(name === 'clipStart' ? clip.start : Math.max(clip.start,clip.end - .01));
+    return;
+  }
   if (input.dataset.csText !== undefined) slide.layers[Number(input.dataset.csText)].text = value;
   if (name === 'dots') { draft.dots = value; return; }
   if (['format','logo'].includes(name)) slide[name] = value;
@@ -541,7 +665,7 @@ function updateField(input) {
   }
   if (layer) {
     if (name === 'timingMode') {
-      if (value === 'timed') layer.timing = {start:0,end:draft.duration,fade:'none'};
+      if (value === 'timed') layer.timing = {start:0,end:textDuration(),fade:'none'};
       else delete layer.timing;
       const panel = studio.querySelector('[data-cs-timing]');
       panel.innerHTML = timingMarkup(layer);
@@ -564,6 +688,11 @@ function updateField(input) {
   repaintDesign();
 }
 document.addEventListener('input', event => {
+  if (event.target.matches('[data-cs-clip-seek]')) {
+    const video = event.target.closest('.cs-screen').querySelector('video');
+    video.currentTime = clipBounds(video).start + Number(event.target.value);
+    return;
+  }
   if (!event.target.closest('[data-cs-form]')) return;
   updateField(event.target);
   if (event.target.name === 'logo') drawEditor();
@@ -601,6 +730,16 @@ function openPublishedViewer(gallery, button, fromStart = false) {
     updateTimedText(video);
   });
   copy.querySelectorAll('[data-cs-load-video]').forEach(control => { control.hidden = false; control.disabled = false; });
+  copy.querySelectorAll('.cs-clip-controls').forEach(controls => {
+    controls.hidden = true;
+    const mute = controls.querySelector('[data-cs-clip-mute]');
+    mute.textContent = 'Ton aus';
+    mute.setAttribute('aria-pressed','false');
+  });
+  copy.querySelectorAll('[data-cs-load-video]').forEach(button => {
+    button.textContent = '▶';
+    button.setAttribute('aria-label','Video abspielen');
+  });
   dialog.innerHTML = `<div class="cs-viewer-tools">
     ${slideshow ? '' : '<button type="button" aria-pressed="false" data-cs-wide>16:9</button>'}
     <button type="button" aria-label="Vollbild schließen" data-cs-viewer-close>×</button></div>`;
@@ -645,6 +784,13 @@ document.addEventListener('click', async event => {
     return;
   }
   const gallery = button.closest('.cs-published');
+  if (gallery && 'csClipMute' in data) {
+    const video = button.closest('.cs-screen').querySelector('video');
+    video.muted = !video.muted;
+    button.textContent = video.muted ? 'Ton an' : 'Ton aus';
+    button.setAttribute('aria-pressed',String(video.muted));
+    return;
+  }
   if (gallery && 'csPublishedDot' in data) { pickGalleryPage(gallery, Number(data.csPublishedDot)); return; }
   if (gallery && 'csSlideshow' in data) {
     const state = slideshowState(gallery);
@@ -661,12 +807,16 @@ document.addEventListener('click', async event => {
     try {
       const video = await loadPublishedVideo(button);
       if (!video.isConnected) return;
-      video.currentTime = 0;
-      await video.play();
-      video.controls = true;
-      button.hidden = true;
+      if (!video.paused) video.pause();
+      else await playClip(video);
+      if (hasVideoEdit(video)) button.closest('.cs-screen').querySelector('.cs-clip-controls').hidden = false;
+      else {
+        video.controls = true;
+        button.hidden = true;
+      }
     } catch (error) {
       TFB.ui.toast(error.message);
+    } finally {
       button.disabled = false;
     }
     return;
@@ -675,16 +825,21 @@ document.addEventListener('click', async event => {
   if ('csCancel' in data) { studio.close(); return; }
   if ('csCrop' in data) { cropMode = !cropMode; drawEditor(); }
   if ('csLayer' in data) selectLayer(Number(data.csLayer));
+  if ('csResetClip' in data) {
+    delete currentSlide().videoEdit;
+    studio.querySelector('[data-cs-clip-editor]').innerHTML = clipEditorMarkup();
+    refreshClipEditor();
+    inspectClipAt(0);
+    studio.querySelector('[name="clipStart"]').focus();
+  }
   if ('csEditVideo' in data) {
     const video = studio.querySelector('video');
     if (video.paused) {
       await editorFrames.get(video);
       if (!video.isConnected) return;
-      if (!video.dataset.started || video.ended) video.currentTime = 0;
-      video.play().then(() => { button.textContent = 'Ⅱ'; }).catch(() => {});
+      playClip(video, Boolean(video.dataset.inspect)).catch(() => {});
     }
     else { video.pause(); button.textContent = '▶'; }
-    video.onended = () => { button.textContent = '▶'; };
   }
   if ('csPick' in data) {
     const control = studio.querySelector('[name="color"]');
@@ -770,6 +925,8 @@ document.addEventListener('submit', async event => {
     return;
   }
   design.layers = layers;
+  if (design.videoEdit && draft.duration && design.videoEdit.start === 0 && design.videoEdit.end === draft.duration &&
+      design.videoEdit.fadeIn === 'none' && design.videoEdit.fadeOut === 'none') delete design.videoEdit;
   liveEditor(design,draft.dots);
   studio.close();
 });

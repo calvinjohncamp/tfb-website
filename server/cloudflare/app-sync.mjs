@@ -46,6 +46,13 @@ function cleanVideoTiming(timing) {
       !['none','short','medium','long'].includes(fade)) fail(400, 'Ungültige Textzeiten im Video.');
   return {start,end,fade};
 }
+function cleanVideoEdit(edit) {
+  const {start,end,fadeIn,fadeOut} = edit;
+  const styles = ['none','short','medium','long'];
+  if (!Number.isFinite(start) || !Number.isFinite(end) || start < 0 || start >= end || end > 86400 ||
+      !styles.includes(fadeIn) || !styles.includes(fadeOut)) fail(400, 'Ungültiger Filmschnitt.');
+  return {start,end,fadeIn,fadeOut};
+}
 function cleanLayers(layers, limit, timed) {
   const percent = value => numberIn(value, 0, 100, 50);
   if (!Array.isArray(layers) || layers.length > limit ||
@@ -70,7 +77,8 @@ function cleanDesign(slide) {
     x:percent(slide.x), y:percent(slide.y), zoom:numberIn(slide.zoom,1,3,1),
     top:gradient(slide.top), bottom:gradient(slide.bottom), layers,
     logo:['rot','gelb','padel'].includes(slide.logo) ? slide.logo : '', logoX:percent(slide.logoX), logoY:percent(slide.logoY),
-    logoSize:numberIn(slide.logoSize,6,80,25)};
+    logoSize:numberIn(slide.logoSize,6,80,25),
+    ...(videoRef(slide.ref) && slide.videoEdit ? {videoEdit:cleanVideoEdit(slide.videoEdit)} : {})};
 }
 function timestamp(v) { if(typeof v!=='string'||!Number.isFinite(Date.parse(v))||Date.parse(v)>Date.now()+60000)fail(400,'Ungültiges Datum.');return v; }
 async function records(env, filter = () => true) {

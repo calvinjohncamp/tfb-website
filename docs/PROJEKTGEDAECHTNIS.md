@@ -2,7 +2,7 @@
 
 ## Clubgeflüster und Startverhalten – 06.11.2026
 
-- Website-Stand v270 auf https://joern-kaemper.de. Einstieg für die Fortsetzung
+- Website-Stand v271 auf https://joern-kaemper.de. Einstieg für die Fortsetzung
   ist die [aktuelle Übergabe](UEBERGABE.md). Der folgende Stand v233 dient als
   historischer Nachweis für Redaktion und Sicherungen.
 - Clubgeflüster bleibt eigenständig. „Schreib was“ ist der gemeinsame Einstieg für
@@ -28,6 +28,9 @@
 - Play unter der Collage öffnet die Diashow in der großen Betrachtungsansicht.
   Hoch- und Querformat werden dort vollständig eingepasst. Gemeinsamer Text
   bleibt auf einer festen Textfläche, individuelle Gestaltung folgt dem Foto.
+- Die Filmleiste speichert Anfang, Ende und weiches Ein- und Ausblenden des
+  Bildes pro Clip. Der Schnitt ist reversibel und ändert die gespeicherte
+  Videodatei nicht. Textzeiten zählen ab dem gewählten Filmanfang.
 - Veröffentlichte Clips erhalten in Sichtnähe aus dem geschützten Video ein
   Standbild etwa 0,3 Sekunden nach Beginn. Das gilt auch für vorhandene Beiträge
   ohne neue Veröffentlichung. Kein Autoplay. Die Wiedergabe beginnt beim Antippen
