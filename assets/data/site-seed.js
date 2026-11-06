@@ -156,7 +156,7 @@ TFB.siteSeed = {
         { id: 'v-mitglied', type: 'text', title: 'Mitglied werden', text: 'Wir hegen und pflegen unsere Tennisfreundschaften – im Club und darüber hinaus. Neue Mitglieder empfangen wir mit einem Kennenlern-Abend, zwei Vorstandsmitglieder führen euch durch den Club. Von Anfang an helfen wir euch, Anschluss zu finden.' },
         { id: 'v-mitglied-btn', type: 'button', label: 'Zum Anmeldeformular', url: '#aufnahme', note: 'TFB-Mitglieder erhalten 10 Prozent Rabatt auf alle Padel-Buchungen.' },
         { id: 'v-vorstand', type: 'people', title: 'Vorstand', people: TFB.boardSeed },
-        { id: 'v-chronik', type: 'text', title: 'Chronik', text: '2026 feiern die Tennisfreunde 50 Jahre Tennis in Bielstein. Wir sind stolz auf die Entwicklung unseres Clubs und schauen dankbar zurück – auf das Engagement aller früheren Vorstände und den Einsatz unserer Mitglieder.' },
+        { id: 'v-chronik', type: 'text', title: 'Clubarchiv', text: 'Hier findet ihr Beiträge und Artikel aus früheren Jahren. Stöbert in Ruhe und lasst Erinnerungen aus 50 Jahren Tennisfreunde Bielstein wieder aufleben. Viel Spaß beim Wiederentdecken!' },
         { id: 'v-anfahrt', type: 'text', title: 'Anfahrt', text: 'Tennisfreunde Bielstein e.V.\nJahnstraße, 51674 Wiehl-Bielstein' },
         { id: 'v-anfahrt-btn', type: 'button', label: 'Route planen', url: 'https://maps.google.com/?q=Jahnstra%C3%9Fe+51674+Wiehl+Tennis' },
         { id: 'v-koop', type: 'text', title: 'Kooperationen', text: 'Mit dem Sportpark am See bieten wir unseren Mitgliedern ein vergünstigtes Kraft- und Ausdauertraining als ideale Ergänzung zum Tennis.' },

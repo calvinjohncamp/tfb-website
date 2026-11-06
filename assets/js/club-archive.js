@@ -273,11 +273,7 @@
     },
     selectTab: tab => { archiveTab = tab; },
     photoEntry: id => id.startsWith('archive-') ? byId.get(id.slice('archive-'.length)) : undefined,
-    teaser: () => `<a class="club-archive-link" href="${root}">
-      <span class="club-archive-link-icon" aria-hidden="true">${TFB.ui.icon.news}</span>
-      <span class="club-archive-link-copy"><strong>Clubarchiv</strong><span>Geschichten, Fotos und Termine aus dem Vereinsleben</span></span>
-      <span class="club-archive-link-arrow" aria-hidden="true">${TFB.ui.icon.chevron}</span>
-    </a>`,
+    entryLink: () => `<a class="btn club-archive-link" href="${root}">Zum Archiv <span aria-hidden="true">→</span></a>`,
     async view(hash, toolkit) {
       const [path, query] = hash.split('?');
       const [, , mode, id] = path.split('/');
