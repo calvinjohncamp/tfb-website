@@ -2366,8 +2366,9 @@ h1, h2, h3, .event h3, .feature-body h2, .story-head h1, .post-body h3 { -webkit
 .field .rich-tools .rich-group { display: inline-flex; gap: 3px; padding: 3px; border-radius: 10px; background: #F2EEE6; }
 .rich-tools .rich-group button { border: 0; background: transparent; min-width: 30px; height: 30px; padding: 0 8px; border-radius: 7px; display: inline-grid; place-items: center; }
 .rich-tools .rich-group button:enabled:hover { background: #fff; color: var(--ink); box-shadow: 0 0 0 1px var(--line); }
-.rich-tools .rich-history button { font-size: 1.1rem; line-height: 1; }
-.rich-tools .rich-history button:disabled { opacity: .38; cursor: default; }
+.rich-tools .rich-history button { color: #171717; }
+.rich-tools .rich-history svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2.7; stroke-linecap: round; stroke-linejoin: round; }
+.rich-tools .rich-history button:disabled { opacity: .55; cursor: default; }
 .rich-tools .rich-group button[data-rich="link"] { display: inline-flex; align-items: center; gap: 5px; }
 .field .rich-tools .sw { display: block; width: 16px; height: 16px; border-radius: 50%; }
 .field .rich-tools .sw-red { background: var(--signal); }

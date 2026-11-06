@@ -1693,6 +1693,9 @@
 
   // ---------- Baustein-Editor ----------
   const wideScreen = () => window.matchMedia('(min-width: 1100px)').matches;
+  const historyArrow = (mirror = false) => `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+    <path ${mirror ? 'transform="translate(24 0) scale(-1 1)"' : ''} d="M3.5 8.5a8 8 0 1 1 4 10.5M8 4 3.5 8.5 8 13"/>
+  </svg>`;
   function field(label, name, value, opts = {}) {
     const v = esc(value == null ? '' : value);
     if (opts.area && opts.rich) return `<div class="field rich-field"><span>${label}</span>
@@ -1728,8 +1731,8 @@
           <button type="button" data-rich="link" title="Link"><svg class="link-arrow" viewBox="0 0 806 1000" aria-hidden="true" focusable="false"><path transform="translate(0 755) scale(1 -1)" d="M528 -14 448 66 546 164 587 189 581 206 533 198H50V312H533L581 304L587 321L546 346L448 444L528 524L756 296V214Z"/></svg> Link</button>
         </span>`}
         <span class="rich-group rich-history" role="group" aria-label="Textänderungen">
-          <button type="button" data-rich="undo" aria-label="Rückgängig" title="Rückgängig" disabled>↶</button>
-          <button type="button" data-rich="redo" aria-label="Wiederherstellen" title="Wiederherstellen" disabled>↷</button>
+          <button type="button" data-rich="undo" aria-label="Rückgängig" title="Rückgängig" disabled>${historyArrow()}</button>
+          <button type="button" data-rich="redo" aria-label="Wiederherstellen" title="Wiederherstellen" disabled>${historyArrow(true)}</button>
         </span>
       </div>
       <div class="rich-area" contenteditable="true" data-rich-for="${name}" data-placeholder="${esc(opts.placeholder || '')}">${paragraphs(value || '')}</div>
