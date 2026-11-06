@@ -29,6 +29,7 @@ async function open(admin=false){
 try{
  const guest=await open();assert.equal(await guest.page.locator('#tfb-splash button').count(),2);
  assert.deepEqual(await guest.page.locator('#tfb-splash [data-partner-id]').evaluateAll(nodes=>nodes.map(n=>n.dataset.partnerId)),['bmw-kaltenbach-gruppe']);
+ assert.equal(await guest.page.locator('#tfb-splash .pbsp-kicker').textContent(),'Präsentiert von unserem Premium-Partner');
  assert.equal(await guest.page.locator('[data-action="partner-report"]').count(),0);
  await guest.page.locator('.tfb-splash-partners').scrollIntoViewIfNeeded();await guest.page.waitForTimeout(1600);assert.equal(collectRequests,0);
  await guest.page.locator('[data-action="splash-enter"]').click();await guest.page.evaluate(()=>location.hash='#partner');await guest.page.waitForSelector('.partner-admin');assert.match(await guest.page.locator('.partner-admin').innerText(),/nur für angemeldete Admins/);
@@ -84,7 +85,11 @@ try{
  await row.waitFor({state:'detached'});
  await page.locator('[data-partner-search]').clear();
  await page.screenshot({path:'/tmp/tfb-new-partners/admin-preview.png'});
- await page.locator('[data-action="splash-edit"]').click();await page.locator('[name="headline"]').fill('Hier ist TFB');await page.locator('[name="eyebrowEnabled"]').uncheck();await page.locator('[name="footEnabled"]').uncheck();await page.locator('[name="eyebrowText"]').fill('Unser Verein');await page.locator('[data-editor="splash"] [type="submit"]').click();await page.waitForFunction(()=>!document.querySelector('#sheet-root.open'));
+ const secondPremium=(await f.call('/admin/partners',undefined,f.adminToken)).body.partners.find(p=>p.tier==='regional');
+ assert.equal((await f.call('/admin/partners/save',{id:secondPremium.id,revision:secondPremium.revision,partner:{...secondPremium,tier:'premium'}},f.adminToken)).status,200);
+ await page.locator('[data-action="splash-edit"]').click();
+ await page.locator('[name="premiumCount"]').selectOption('2');
+ await page.locator('[name="headline"]').fill('Hier ist TFB');await page.locator('[name="eyebrowEnabled"]').uncheck();await page.locator('[name="footEnabled"]').uncheck();await page.locator('[name="eyebrowText"]').fill('Unser Verein');await page.locator('[data-editor="splash"] [type="submit"]').click();await page.waitForFunction(()=>!document.querySelector('#sheet-root.open'));
  // Entry always returns Home, including a restored Kiosk route and admin re-entry.
  for(const [width,height] of [[320,740],[390,844],[834,1194],[1194,834],[1440,1100]]){
   await page.setViewportSize({width,height});
@@ -107,12 +112,15 @@ try{
  await page.waitForFunction(()=>location.hash==='#home'&&document.querySelector('#view').dataset.view==='home');
  await page.waitForSelector('#view .pbsp-duo');
  await page.evaluate(()=>TFB.partnerVisibility.show(true));
- const newGuest=await open();assert.match(await newGuest.page.locator('#tfb-splash h1').innerText(),/Hier ist TFB/,'splash text persists centrally across devices');
+ const newGuest=await open();
+ assert.deepEqual(await newGuest.page.locator('#tfb-splash [data-partner-id]').evaluateAll(nodes=>nodes.map(n=>n.dataset.partnerId)),['bmw-kaltenbach-gruppe',secondPremium.id]);
+ assert.equal(await newGuest.page.locator('#tfb-splash .pbsp-kicker').textContent(),'Präsentiert von unseren Premium-Partnern');
+ assert.match(await newGuest.page.locator('#tfb-splash h1').innerText(),/Hier ist TFB/,'splash text persists centrally across devices');
  assert.equal(await newGuest.page.locator('#tfb-splash .tfb-splash-message .tfb-splash-eyebrow').count(),0);assert.equal(await newGuest.page.locator('#tfb-splash .tfb-splash-foot').count(),0);
  await page.locator('[data-action="splash-enter"]').click();
  if(await adminToggle.getAttribute('aria-pressed')==='false')await adminToggle.click();
- await page.locator('[data-action="splash-edit"]').click();await page.locator('[name="eyebrowEnabled"]').check();await page.locator('[name="footEnabled"]').check();await page.locator('[data-editor="splash"] [type="submit"]').click();await page.waitForFunction(()=>!document.querySelector('#sheet-root.open'));
- const checkGuest=await open();assert.equal(await checkGuest.page.locator('#tfb-splash .tfb-splash-message .tfb-splash-eyebrow').textContent(),'Unser Verein');assert.equal(await checkGuest.page.locator('#tfb-splash .tfb-splash-foot').count(),1);await checkGuest.context.close();
+ await page.locator('[data-action="splash-edit"]').click();await page.locator('[name="premiumCount"]').selectOption('1');await page.locator('[name="eyebrowEnabled"]').check();await page.locator('[name="footEnabled"]').check();await page.locator('[data-editor="splash"] [type="submit"]').click();await page.waitForFunction(()=>!document.querySelector('#sheet-root.open'));
+ const checkGuest=await open();assert.equal(await checkGuest.page.locator('#tfb-splash [data-partner-id]').count(),1);assert.equal(await checkGuest.page.locator('#tfb-splash .tfb-splash-message .tfb-splash-eyebrow').textContent(),'Unser Verein');assert.equal(await checkGuest.page.locator('#tfb-splash .tfb-splash-foot').count(),1);await checkGuest.context.close();
  for(const [width,height] of [[320,740],[390,844],[834,1194],[1194,834],[1440,1100]]){await newGuest.page.setViewportSize({width,height});assert.equal(await newGuest.page.locator('#tfb-splash').evaluate(e=>e.scrollWidth>e.clientWidth),false,`Splash ${width}`);await newGuest.page.locator('[data-action="splash-enter"]').click();const duo=newGuest.page.locator('#view .pbsp-duo').first();await duo.waitFor();assert.ok(await duo.evaluate(e=>e.getBoundingClientRect().width)<=560);await newGuest.page.evaluate(()=>TFB.partnerVisibility.show(true));}
  await newGuest.page.waitForTimeout(1300);assert.equal(collectRequests,0,'no traffic collection, including after public navigation');
  // Isolated Step-2 check only: two logos must not double-count page-level visibility.

@@ -63,10 +63,13 @@ export async function savePartner(env,data){
  if(!row)fail(409,'Der Partner wurde inzwischen geändert. Bitte neu laden.');return {ok:true,id:data.id,revision:row.revision};
 }
 export async function savePartnerSettings(env,data){
- const fields={headline:60,accent:60,description:350,entry:60,foot:120,partnerLabel:120},s=data.splash||{},clean={enabled:s.enabled};
+ const fields={headline:60,accent:60,description:350,entry:60,foot:120},s=data.splash||{},clean={enabled:s.enabled};
  if(typeof s.enabled!=='boolean'||!Number.isSafeInteger(data.revision))fail(400,'Ungültige Einstiegsseite.');
  const previous=await env.DB.prepare('SELECT payload FROM tfb_partner_settings WHERE id=1').first();
  const old=previous?JSON.parse(previous.payload):{};
+ clean.premiumCount=s.premiumCount===undefined?(old.premiumCount===2?2:1):s.premiumCount;
+ if(clean.premiumCount!==1&&clean.premiumCount!==2)fail(400,'Bitte einen oder zwei Premium-Partner auswählen.');
+ clean.partnerLabel=txt(s.partnerLabel??old.partnerLabel??'Präsentiert von unserem Premium-Partner',120);
  clean.eyebrowEnabled=s.eyebrowEnabled===undefined?old.eyebrowEnabled!==false:s.eyebrowEnabled;
  if(typeof clean.eyebrowEnabled!=='boolean')fail(400,'Bitte die Anzeige der kleinen Zeile prüfen.');
  clean.footEnabled=s.footEnabled===undefined?old.footEnabled!==false:s.footEnabled;
