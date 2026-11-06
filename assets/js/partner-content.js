@@ -2,8 +2,8 @@
  const cfg=TFB.config.memberDirectory;
  const isRemote=Boolean(cfg?.enabled&&location.protocol==='https:'&&cfg.hosts.includes(location.hostname));
  const fallback=TFB.partners.slice();let splash=null,revision=0;
- const cache='tfb_partner_public_v1';
- function apply(data){if(!data||!Array.isArray(data.partners)||!data.splash)return false;TFB.partners=data.partners;splash=data.splash;revision=data.revision;TFB.resetPartnerRotation?.();return true;}
+ const cache='tfb_partner_public_v2';
+ function apply(data){if(!data||!Array.isArray(data.partners)||!data.splash)return false;const changed=JSON.stringify(TFB.partners)!==JSON.stringify(data.partners);TFB.partners=data.partners;splash=data.splash;revision=data.revision;if(changed)TFB.resetPartnerRotation?.();return true;}
  if(isRemote){try{apply(JSON.parse(localStorage.getItem(cache)||'null'));}catch(_){}}
  async function refresh(){
   if(!isRemote)return;

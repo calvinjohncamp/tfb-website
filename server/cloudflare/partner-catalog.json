@@ -5,13 +5,8 @@
     "tier": "premium"
   },
   {
-    "id": "intersport",
-    "name": "Intersport",
-    "tier": "premium"
-  },
-  {
-    "id": "a-s-creation",
-    "name": "A.S. Création",
+    "id": "safenetworx",
+    "name": "SafeNetworX",
     "tier": "partner"
   },
   {
@@ -20,13 +15,13 @@
     "tier": "partner"
   },
   {
-    "id": "schwalbe",
-    "name": "Schwalbe",
+    "id": "steffen-werkshage",
+    "name": "Steffen Werkshage",
     "tier": "partner"
   },
   {
-    "id": "kanzlei-sattler",
-    "name": "Kanzlei Sattler",
+    "id": "stubs-dienstleistungen",
+    "name": "STUBS Dienstleistungen",
     "tier": "partner"
   },
   {
@@ -35,158 +30,143 @@
     "tier": "partner"
   },
   {
-    "id": "die-finanzmaschine-r-kamper",
-    "name": "Die Finanzmaschine - R. Kämper",
-    "tier": "partner"
-  },
-  {
-    "id": "muller-textil-group",
-    "name": "Müller Textil Group",
-    "tier": "partner"
-  },
-  {
-    "id": "aok",
-    "name": "AOK",
-    "tier": "partner"
-  },
-  {
     "id": "aggerenergie",
     "name": "AggerEnergie",
     "tier": "partner"
   },
   {
-    "id": "faulenbach-schmiedetechnik",
-    "name": "Faulenbach Schmiedetechnik",
+    "id": "oberberg-partyservice",
+    "name": "Oberberg Partyservice",
     "tier": "partner"
   },
   {
-    "id": "bpw",
-    "name": "BPW",
+    "id": "torsten-dehler",
+    "name": "Württembergische · Torsten Dehler",
     "tier": "partner"
   },
   {
-    "id": "sarstedt",
-    "name": "Sarstedt",
+    "id": "atelier-althoefer",
+    "name": "Atelier Althöfer · Uhren + Schmuck",
     "tier": "partner"
   },
   {
-    "id": "wiehl-apotheke",
-    "name": "Wiehl Apotheke",
-    "tier": "regional"
+    "id": "autohaus-halstenbach",
+    "name": "Autohaus Halstenbach",
+    "tier": "partner"
   },
   {
-    "id": "oberberg-apotheke",
-    "name": "Oberberg Apotheke",
-    "tier": "regional"
+    "id": "schuhmann",
+    "name": "Schuh Mann",
+    "tier": "partner"
   },
   {
-    "id": "stubs-dienstleistungen",
-    "name": "STUBS Dienstleistungen",
-    "tier": "regional"
+    "id": "sport-hennecken",
+    "name": "Sport Hennecken",
+    "tier": "partner"
   },
   {
-    "id": "fahrzeugpflege-wiehl",
-    "name": "Fahrzeugpflege Wiehl",
-    "tier": "regional"
+    "id": "mueller-klein",
+    "name": "Müller & Klein",
+    "tier": "partner"
   },
   {
-    "id": "penz",
-    "name": "Penz",
-    "tier": "regional"
-  },
-  {
-    "id": "pollmann-steuerberater",
-    "name": "Pollmann Steuerberater",
-    "tier": "regional"
-  },
-  {
-    "id": "gro-bestattungen",
-    "name": "Groß Bestattungen",
-    "tier": "regional"
-  },
-  {
-    "id": "erzquell-brauerei-bielstein-haas-gmbh-co-kg",
-    "name": "Erzquell Brauerei Bielstein Haas GmbH & Co. KG",
-    "tier": "regional"
-  },
-  {
-    "id": "auge-ohr-althofer",
-    "name": "Auge + Ohr Althöfer",
-    "tier": "regional"
-  },
-  {
-    "id": "asbach-und-winkler-zurich",
-    "name": "Asbach und Winkler - Zurich",
-    "tier": "regional"
+    "id": "lta",
+    "name": "LTA",
+    "tier": "partner"
   },
   {
     "id": "metzgerei-muller",
     "name": "Metzgerei Müller",
-    "tier": "regional"
+    "tier": "partner"
   },
   {
-    "id": "bsv-bielstein",
-    "name": "BSV Bielstein",
-    "tier": "regional"
+    "id": "werner-dieball",
+    "name": "Dr. Werner Dieball",
+    "tier": "partner"
   },
   {
-    "id": "zappo-apotheke",
-    "name": "zappo Apotheke",
-    "tier": "regional"
+    "id": "blumen-schmidt",
+    "name": "Blumen Schmidt",
+    "tier": "partner"
   },
   {
     "id": "sapv-oberberg",
     "name": "SAPV Oberberg",
-    "tier": "regional"
+    "tier": "partner"
   },
   {
-    "id": "jagenberg",
-    "name": "Jagenberg",
-    "tier": "regional"
+    "id": "tanzart-broichhagen",
+    "name": "TanzART Broichhagen",
+    "tier": "partner"
   },
   {
-    "id": "sportpark-am-see",
-    "name": "Sportpark am See",
-    "tier": "regional"
+    "id": "pollmann-steuerberater",
+    "name": "Pollmann Steuerberater",
+    "tier": "partner"
   },
   {
-    "id": "bubenzer-baufachzentrum",
-    "name": "Bubenzer Baufachzentrum",
-    "tier": "regional"
-  },
-  {
-    "id": "5-elemente",
-    "name": "5 Elemente",
-    "tier": "regional"
-  },
-  {
-    "id": "aldi-sud",
-    "name": "ALDI SÜD",
-    "tier": "regional"
-  },
-  {
-    "id": "seitz",
-    "name": "Seitz",
-    "tier": "regional"
-  },
-  {
-    "id": "piccola-italia",
-    "name": "Piccola Italia",
-    "tier": "regional"
-  },
-  {
-    "id": "lang-raum-idee",
-    "name": "LANG Raum+Idee",
-    "tier": "regional"
+    "id": "oberbantenberger-hof",
+    "name": "Oberbantenberger Hof · Alt Athen",
+    "tier": "partner"
   },
   {
     "id": "gsg-grosshandel",
-    "name": "GSG Grosshandel",
-    "tier": "regional"
+    "name": "GSG Farben",
+    "tier": "partner"
   },
   {
-    "id": "coca-cola",
-    "name": "Coca-Cola",
-    "tier": "regional"
+    "id": "town-country-haus",
+    "name": "Town & Country Haus",
+    "tier": "partner"
+  },
+  {
+    "id": "hans-installationen",
+    "name": "Hans · Installationen und Heizungsbau",
+    "tier": "partner"
+  },
+  {
+    "id": "kanzlei-sattler",
+    "name": "Kanzlei Sattler",
+    "tier": "partner"
+  },
+  {
+    "id": "autohaus-schumacher",
+    "name": "Autohaus Schumacher",
+    "tier": "partner"
+  },
+  {
+    "id": "dornseifer",
+    "name": "Dornseifers Frischemarkt",
+    "tier": "partner"
+  },
+  {
+    "id": "auge-ohr-althofer",
+    "name": "Auge + Ohr Althöfer",
+    "tier": "partner"
+  },
+  {
+    "id": "erzquell-brauerei-bielstein-haas-gmbh-co-kg",
+    "name": "Zunft Kölsch",
+    "tier": "partner"
+  },
+  {
+    "id": "medica-agger-apotheken",
+    "name": "Medica Apotheke und Agger Apotheke",
+    "tier": "partner"
+  },
+  {
+    "id": "berster-koch",
+    "name": "Berster Koch",
+    "tier": "partner"
+  },
+  {
+    "id": "welp-media-service",
+    "name": "welp media service",
+    "tier": "partner"
+  },
+  {
+    "id": "asbach-und-winkler-zurich",
+    "name": "Zurich · Asbach und Winkler",
+    "tier": "partner"
   }
 ]

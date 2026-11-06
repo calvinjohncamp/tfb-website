@@ -1,47 +1,156 @@
-(function(){
- const ui=()=>TFB.ui,admin=()=>Boolean(ui()?.isAdmin()),esc=s=>ui().esc(s);
- const euro=n=>new Intl.NumberFormat('de-DE',{style:'currency',currency:'EUR'}).format((n||0)/100);
- let selectedYear=2027,search='',data=null;
- const labels={draft:'Noch offen',verbal:'Mündlich zugesagt',contract:'Vertrag liegt vor'};
- const sumPaid=id=>(data?.payments||[]).filter(p=>!id||p.partnerId===id).reduce((s,p)=>s+p.amountCents,0);
- function localData(){return {year:selectedYear,partners:(TFB.partners||[]).map(p=>({...p,company:p.name,logoPreview:p.logo,revision:0,active:true,sample:true,status:'draft',annualCents:30000})),payments:[]};}
- async function load(){return TFB.partnerContent?.isRemote?TFB.directoryCall('/admin/partners?year='+selectedYear):localData();}
- function matchingPartners(){const q=search.toLocaleLowerCase('de');return data.partners.filter(p=>[p.name,p.company,p.contactName].some(s=>(s||'').toLocaleLowerCase('de').includes(q)));}
- function rows(){return matchingPartners().map(p=>`<article class="partner-admin-row" data-partner-row="${esc(p.id)}"><div class="partner-admin-logo">${p.logoPreview?`<img src="${esc(p.logoPreview)}" alt="${esc(p.name)}">`:'<span>Logo</span>'}</div><div class="partner-admin-name"><h3>${esc(p.name)}</h3><p>${p.tier==='premium'?'Premium-Partner · zusätzlich auf der Splash':'Partnerbandenwerbung'}${p.sample?' <span class="partner-admin-tag">Testbestand</span>':''}${!p.active?' <span class="partner-admin-tag">ausgeblendet</span>':''}</p><small>${esc(labels[p.status])}</small></div><div class="partner-admin-money"><small>Jahresbeitrag</small><strong>${euro(p.annualCents)}</strong></div><div class="partner-admin-money"><small>${selectedYear} eingegangen</small><strong>${euro(sumPaid(p.id))}</strong></div><div class="partner-admin-actions"><button type="button" class="btn small" data-action="partner-edit" data-id="${esc(p.id)}">Bearbeiten</button><button type="button" class="link" data-action="partner-payment" data-id="${esc(p.id)}" ${p.sample?'disabled title="Testpartner zuerst als echten TFB-Partner übernehmen"':''}>Zahlung erfassen</button></div></article>`).join('')||'<p class="partner-admin-empty">Keine passenden Partner gefunden.</p>';}
- function visibilitySection(){return `<section class="partner-admin-visibility"><div class="partner-admin-heading"><h2>Seitenaufrufe &amp; Markensichtbarkeit</h2><span class="partner-admin-tag">Vorbereitet · ausgeschaltet</span></div><p>Geplanter gemeinsamer Betriebsstart: <strong>1. Januar 2027</strong>. Die Zählung wird erst in Schritt 2 nach Freigabe aktiviert. Bis dahin werden keine Aufrufe oder Logokontakte erfasst.</p><h3 class="partner-admin-section-title">1. Seitenaufrufe</h3><p>Wie oft wurden Home und die Unterseiten im ausgewählten Jahr aufgerufen?</p><div class="partner-report-table"><table><thead><tr><th>Seite</th><th>Aufrufe im Jahr</th></tr></thead><tbody><tr><td colspan="2">Die Messung ist noch nicht eingeschaltet.</td></tr></tbody></table></div><h3 class="partner-admin-section-title">2. Davon mit Partner-Sichtbarkeit</h3><p>Bei wie vielen dieser Aufrufe war mindestens ein Partnerlogo im sichtbaren Bereich? Ein Seitenaufruf zählt hier auch bei zwei Logos nur einmal.</p><div class="partner-report-table"><table><thead><tr><th>Seite</th><th>Aufrufe</th><th>davon mit sichtbarem Partner</th><th>Anteil</th></tr></thead><tbody><tr><td colspan="4">Noch keine Messwerte oder Sichtbarkeitsquoten vorhanden.</td></tr></tbody></table></div><details class="partner-report-method"><summary>Partnerkontakte und Messlogik im Detail</summary><p>Je Partner unterscheiden wir rechnerische Einblendungen aus der Rotation, tatsächlich ausgespielte Logos und gemessene sichtbare Logokontakte. Hochrechnungen werden als solche bezeichnet. Einblendung bedeutet nicht, dass der Besucher das Logo bewusst angesehen hat.</p><p>Sichtkontakt: mindestens 50 % der geladenen Partnerzeile eine halbe Sekunde im aktiven Browser-Tab; beide Logos werden gemeinsam gewertet. Die verdeckte Home-Seite, Admins und Vorschauen werden ausgeschlossen. Reine Datenaktualisierungen zählen nicht als neuer Seitenaufruf. Zwei sichtbare Logos ergeben zwei Logokontakte, aber nur einen Seitenaufruf mit Partner-Sichtbarkeit.</p><p>Alle Partner haben auf den Inhaltsseiten dieselbe Rotation. Premium-Partner erhalten ausschließlich die zusätzlichen Splash-Plätze. Tatsächliche Kontaktzahlen können durch unterschiedliche Seitenbesuche voneinander abweichen. Splash und Inhaltsseiten werden getrennt ausgewertet.</p><p>Für die dauerhafte Speicherung sind kompakte Tageszähler vorgesehen. Einzelereignisse dienen nur kurz zur Entdoppelung; keine Scrollverläufe oder Besucherprofile. Eine Sichtbarkeitsquote von 30 bis 50 Prozent ist eine unbestätigte Arbeitshypothese, kein vorgegebener Messwert.</p></details></section>`;}
- async function view(){
-  if(!admin())return '<section class="partner-admin"><h1>Unsere Partner</h1><p>Diese Seite ist nur für angemeldete Admins zugänglich.</p></section>';
-  const head=`<section class="partner-admin"><header class="partner-admin-heading"><div><p class="tfb-splash-eyebrow">Tennisfreunde Bielstein</p><h1>Unsere Partner</h1><p class="partner-admin-subtitle">Partner pflegen. Beiträge im Blick. Sichtbarkeit belegen.</p></div><button type="button" class="btn small" data-action="splash-open">Zur Einstiegsseite</button></header>`;
-  try{data=await load();}catch(e){data=null;return head+`<p class="partner-admin-empty" role="alert">${esc(e.message)}</p><button type="button" class="btn" data-action="partner-admin-refresh">Erneut laden</button></section>`;}
-  if(!admin())return '';
-  const real=data.partners.filter(p=>!p.sample),committed=real.filter(p=>p.status!=='draft'&&p.active),samples=data.partners.filter(p=>p.sample).length;
-  return head+`${!TFB.partnerContent?.isRemote?'<p class="partner-admin-notice">Lokale Vorschau. Die Partnerpflege und Zahlungen werden auf der veröffentlichten Website zentral gespeichert.</p>':''}<div class="partner-admin-toolbar"><label>Jahr <select data-partner-admin-year aria-label="Partnerjahr">${Array.from({length:6},(_,i)=>2026+i).map(y=>`<option value="${y}" ${y===selectedYear?'selected':''}>${y}</option>`).join('')}</select></label><button type="button" class="btn small" data-action="partner-admin-refresh">Aktualisieren</button><button type="button" class="btn small" data-action="partner-admin-export">CSV speichern</button></div><div class="partner-report-metrics"><div><span>Echte TFB-Partner</span><strong>${real.filter(p=>p.active).length}</strong><small>${samples} Partner aus dem Testbestand</small></div><div><span>Aktuell vereinbart / Jahr</span><strong>${euro(committed.reduce((s,p)=>s+p.annualCents,0))}</strong><small>Zusagen und Verträge · ohne Testbestand</small></div><div><span>${selectedYear} eingegangen</span><strong>${euro(sumPaid())}</strong><small>nur erfasste Zahlungen</small></div></div>${samples?'<p class="partner-admin-notice">Die übernommenen Padel-Partner dienen als Testbestand. Namen, Logos und Websites kannst du nach und nach durch die echten TFB-Partner ersetzen. Vertragszusagen und Zahlungen wurden nicht aus Padel übernommen.</p>':''}<section class="partner-admin-list"><div class="partner-admin-heading"><h2>Partner &amp; Jahresbeiträge</h2><button type="button" class="btn primary small" data-action="partner-new">Partner hinzufügen</button></div><label class="partner-admin-search">Partner suchen<input type="search" data-partner-search value="${esc(search)}" placeholder="Name oder Firma"></label><div id="partner-admin-rows">${rows()}</div></section><section><h2 class="partner-admin-section-title">Zahlungseingänge ${selectedYear}</h2><div class="partner-admin-payments">${data.payments.map(p=>{const partner=data.partners.find(r=>r.id===p.partnerId);return `<div><span><strong>${esc(partner?.name||p.partnerId)}</strong><small>${esc(new Date(p.paidOn+'T12:00:00Z').toLocaleDateString('de-DE'))}${p.note?' · '+esc(p.note):''}</small></span><strong>${euro(p.amountCents)}</strong><button type="button" class="link" data-action="partner-payment-void" data-id="${esc(p.id)}">Stornieren</button></div>`;}).join('')||'<p class="partner-admin-empty">Für dieses Jahr sind noch keine Zahlungen erfasst.</p>'}</div></section>${visibilitySection()}<details class="partner-report-method"><summary>Planung für die nächsten Schritte</summary><p><strong>Schritt 1:</strong> Website und Partnerpflege zum Feinschliff veröffentlichen. Der bisherige TFB-Bestand ist Bandenwerbung; App-Werbung kommt mit der neuen Website hinzu.</p><p><strong>Schritt 2:</strong> Geplanter gemeinsamer Betriebsstart von TFB und Padel am 01.01.2027 nach Vorstandsbeschluss und Betriebsfreigabe. Messung für ein vollständiges Kalenderjahr einschalten und später die Padel-Daten ergänzen.</p><p><strong>Schritt 3:</strong> Nach den ersten drei Jahren Padel-Betrieb ein Folgekonzept prüfen: nur Padel oder Padel und TFB. Ob TFB-Bandenwerbung separat bleibt oder Teil eines Gesamtpakets wird, ist noch offen.</p></details></section>`;
- }
- const parseAmount=value=>{let s=String(value).trim().replace(/\s/g,'');s=s.includes(',')?s.replace(/\./g,'').replace(',','.'):s;if(!/^\d+(?:\.\d{1,2})?$/.test(s))throw Error('Bitte einen gültigen Eurobetrag eingeben.');const n=Math.round(Number(s)*100);if(!Number.isSafeInteger(n)||n<0)throw Error('Bitte den Betrag prüfen.');return n;};
- function field(name,label,value='',options=''){return `<label class="field"><span>${label}</span><input name="${name}" value="${esc(value)}" ${options}></label>`;}
- function error(form,e){form.querySelector('.form-error').textContent=e.message;form.querySelector('[type="submit"]').disabled=false;}
- async function call(path,body){if(!admin())throw Error('Nur Admins dürfen Partner ändern.');if(!TFB.partnerContent?.isRemote)throw Error('Bitte die veröffentlichte Website zur zentralen Partnerpflege öffnen.');return TFB.directoryCall(path,body);}
- async function completed(message){ui().closeSheet();await TFB.partnerContent.refresh();await ui().renderView('partner');ui().toast(message,true);}
+(function () {
+  const ui = () => TFB.ui;
+  const admin = () => Boolean(ui()?.isAdmin());
+  const esc = value => ui().esc(value ?? '');
+  let partners = [];
+  let search = '';
+
+  function rows() {
+    const query = search.trim().toLocaleLowerCase('de');
+    return partners.filter(p => [p.name, p.company].some(value =>
+      (value || '').toLocaleLowerCase('de').includes(query)
+    )).map(p => `
+      <article class="partner-admin-row" data-partner-row="${esc(p.id)}">
+        <div class="partner-admin-logo">${p.logoPreview ? `<img src="${esc(p.logoPreview)}" alt="${esc(p.name)}">` : 'Logo'}</div>
+        <div class="partner-admin-name">
+          <h3>${esc(p.name)}</h3>
+          ${p.company && p.company !== p.name ? `<p>${esc(p.company)}</p>` : ''}
+          <small>${p.tier === 'premium' ? 'Premium-Partner' : 'Regulärer Partner · 300 € pro Jahr'}</small>
+        </div>
+        <div class="partner-admin-actions">
+          <button type="button" class="btn small" data-action="partner-edit" data-id="${esc(p.id)}">Bearbeiten</button>
+          <button type="button" class="link" data-action="partner-remove" data-id="${esc(p.id)}">Entfernen</button>
+        </div>
+      </article>`).join('') || '<p class="partner-admin-empty">Keine passenden Partner gefunden.</p>';
+  }
+
+  async function view() {
+    if (!admin()) return '<section class="partner-admin"><h1>Unsere Partner</h1><p>Diese Seite ist nur für angemeldete Admins zugänglich.</p></section>';
+    const header = `<section class="partner-admin"><header class="partner-admin-heading">
+      <div><h1>Unsere Partner</h1></div>
+      <button type="button" class="btn primary small" data-action="partner-new">Partner hinzufügen</button>
+    </header>`;
+    try {
+      partners = TFB.partnerContent?.isRemote
+        ? (await TFB.directoryCall('/admin/partners')).partners
+        : (TFB.partners || []).map(p => ({ ...p, logoPreview: p.logo }));
+    } catch (error) {
+      partners = [];
+      return header + `<p class="partner-admin-empty" role="alert">${esc(error.message)}</p>
+        <button type="button" class="btn" data-action="partner-admin-refresh">Erneut laden</button></section>`;
+    }
+    if (!admin()) return '';
+    return header + `
+      <label class="partner-admin-search">Partner suchen
+        <input type="search" data-partner-search value="${esc(search)}" placeholder="Name oder Firma">
+      </label>
+      <div id="partner-admin-rows">${rows()}</div>
+    </section>`;
+  }
+
+  function field(name, label, value, options = '') {
+    return `<label class="field"><span>${label}</span><input name="${name}" value="${esc(value)}" ${options}></label>`;
+  }
+
+  function submit(form, save) {
+    form.onsubmit = async event => {
+      event.preventDefault();
+      const button = form.querySelector('[type="submit"]');
+      button.disabled = true;
+      try {
+        if (!admin()) throw Error('Nur Admins dürfen Partner ändern.');
+        if (!TFB.partnerContent?.isRemote) throw Error('Bitte die veröffentlichte Website zur Partnerpflege öffnen.');
+        const message = await save();
+        ui().closeSheet();
+        await TFB.partnerContent.refresh();
+        await ui().renderView('partner');
+        ui().toast(message, true);
+      } catch (error) {
+        form.querySelector('.form-error').textContent = error.message;
+        button.disabled = false;
+      }
+    };
+  }
+
  async function imageData(file){
   if(!['image/png','image/jpeg','image/webp'].includes(file.type)||file.size>8*1024*1024)throw Error('Bitte PNG, JPEG oder WebP bis 8 MB wählen.');
   const url=URL.createObjectURL(file);try{const img=new Image();img.src=url;await img.decode();if(img.naturalWidth*img.naturalHeight>50000000)throw Error('Das Bild ist zu groß.');let side=1200;
    for(let attempt=0;attempt<5;attempt++){const ratio=Math.min(1,side/Math.max(img.naturalWidth,img.naturalHeight)),canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(img.naturalWidth*ratio));canvas.height=Math.max(1,Math.round(img.naturalHeight*ratio));canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);const result=canvas.toDataURL(attempt?'image/webp':'image/png',.92);if(result.length<=400000)return result;side=Math.round(side*.7);}throw Error('Das Logo lässt sich nicht ausreichend verkleinern.');
   }finally{URL.revokeObjectURL(url);}
  }
- function edit(id){
-  if(!admin()||!data)return;const old=data.partners.find(p=>p.id===id),p=old||{id:crypto.randomUUID(),name:'',company:'',tier:'partner',active:true,sample:false,status:'draft',annualCents:30000,sort:data.partners.length*1000,logo:'',revision:0};
-  ui().openSheet(`<form class="editor partner-editor" data-editor="partner"><h2>${old?'Partner bearbeiten':'Partner hinzufügen'}</h2><p class="ed-hint">Regulär 300 Euro im Jahr. Gleiche Rotation für alle; Premium erscheint zusätzlich auf der Splash.</p>${field('name','Partnername / Marke',p.name,'maxlength="160" required')}${field('company','Firma / Vertragspartner',p.company,'maxlength="200"')}<label class="field"><span>Partnerart</span><select name="tier"><option value="partner" ${p.tier==='partner'?'selected':''}>Partnerbandenwerbung</option><option value="premium" ${p.tier==='premium'?'selected':''}>Premium-Partner · zusätzlich auf der Splash</option></select></label><div class="partner-editor-logo">${p.logoPreview?`<img src="${esc(p.logoPreview)}" alt="Aktuelles Partnerlogo">`:''}<label class="btn small">Logo auswählen<input name="logoFile" type="file" accept="image/png,image/jpeg,image/webp" hidden></label><small data-logo-name>PNG, JPEG oder WebP · unverzerrt eingepasst</small></div>${field('url','Website',p.url,'type="url" maxlength="1000" placeholder="https://…"')}${field('annual','Jahresbeitrag in Euro',(p.annualCents/100).toFixed(2).replace('.',','),'inputmode="decimal" required')}<label class="field"><span>Vertragsstand</span><select name="status">${Object.entries(labels).map(([v,l])=>`<option value="${v}" ${p.status===v?'selected':''}>${l}</option>`).join('')}</select></label><label class="partner-editor-check"><input type="checkbox" name="active" ${p.active?'checked':''}> Logo auf der Website anzeigen</label><label class="partner-editor-check"><input type="checkbox" name="sample" ${p.sample?'checked':''}> Testbestand · noch kein bestätigter TFB-Partner</label><details><summary>Kontakt &amp; weitere Angaben</summary>${field('contactName','Ansprechpartner',p.contactName,'maxlength="160"')}${field('contactEmail','Kontakt-E-Mail',p.contactEmail,'type="email" maxlength="160"')}${field('contactPhone','Telefon',p.contactPhone,'maxlength="80"')}${field('street','Straße / Hausnummer',p.street,'maxlength="200"')}${field('postalCode','Postleitzahl',p.postalCode,'maxlength="24"')}${field('city','Ort',p.city,'maxlength="100"')}${field('sort','Position in der Pflegeliste',p.sort,'type="number" min="-1000000" max="1000000"')}<label class="field"><span>Interne Notiz</span><textarea name="note" rows="3" maxlength="2000">${esc(p.note||'')}</textarea></label><p class="ed-hint">Kontakte, Vertragsstand und Beträge sind nur für Admins sichtbar. Die Listenposition ändert nicht die gleiche Rotation.</p></details><p class="form-error" role="alert"></p><button type="submit" class="btn primary block">Speichern</button><button type="button" class="link center" data-action="close-sheet">Abbrechen</button></form>`);
-  const form=document.querySelector('[data-editor="partner"]');form.elements.logoFile.onchange=()=>{form.querySelector('[data-logo-name]').textContent=form.elements.logoFile.files[0]?.name||'Kein neues Logo ausgewählt';};
-  form.onsubmit=async e=>{e.preventDefault();form.querySelector('[type="submit"]').disabled=true;try{const partner={};for(const key of ['name','company','tier','url','status','contactName','contactEmail','contactPhone','street','postalCode','city','note'])partner[key]=form.elements[key].value.trim();Object.assign(partner,{active:form.elements.active.checked,sample:form.elements.sample.checked,annualCents:parseAmount(form.elements.annual.value),sort:Number(form.elements.sort.value),logo:p.logo||''});const body={id:p.id,revision:p.revision,partner};const file=form.elements.logoFile.files[0];if(file)body.logoData=await imageData(file);await call('/admin/partners/save',body);await completed('Partner gespeichert');}catch(e){error(form,e);}};
- }
- function payment(id){
-  if(!admin()||!data)return;const p=data.partners.find(r=>r.id===id);if(!p||p.sample)return;
-  const command=crypto.randomUUID();ui().openSheet(`<form class="editor" data-editor="partner-payment"><h2>Zahlung erfassen</h2><p>${esc(p.name)} · Beitragsjahr ${selectedYear}</p>${field('amount','Eingegangener Betrag in Euro',(p.annualCents/100).toFixed(2).replace('.',','),'inputmode="decimal" required')}${field('paidOn','Zahlung am',new Date().toLocaleDateString('sv-SE',{timeZone:'Europe/Berlin'}),'type="date" required')}${field('note','Notiz / Belegverweis','','maxlength="500"')}<p class="ed-hint">Nur einen tatsächlich eingegangenen Betrag erfassen. Es wird keine Zahlung ausgelöst und keine Rechnung versendet.</p><p class="form-error" role="alert"></p><button type="submit" class="btn primary block">Zahlung speichern</button></form>`);
-  const form=document.querySelector('[data-editor="partner-payment"]');form.onsubmit=async e=>{e.preventDefault();form.querySelector('[type="submit"]').disabled=true;try{await call('/admin/partner-payments/add',{id:command,partnerId:id,year:selectedYear,amountCents:parseAmount(form.elements.amount.value),paidOn:form.elements.paidOn.value,note:form.elements.note.value.trim()});await completed('Zahlung erfasst');}catch(e){error(form,e);}};
- }
- function csv(){if(!admin()||!data)return;const cell=v=>'"'+String(v??'').replace(/^[=+@-]/,"'$&").replace(/"/g,'""')+'"';const rows=[['Jahr','Partner','Firma','Partnerart','Testbestand','Sichtbar','Vertragsstand','Jahresbeitrag EUR','Eingegangen EUR'],...data.partners.map(p=>[selectedYear,p.name,p.company,p.tier==='premium'?'Premium-Partner':'Partnerbandenwerbung',p.sample?'ja':'nein',p.active?'ja':'nein',labels[p.status],(p.annualCents/100).toFixed(2),(sumPaid(p.id)/100).toFixed(2)])];const blob=new Blob(['\uFEFF'+rows.map(r=>r.map(cell).join(';')).join('\r\n')],{type:'text/csv;charset=utf-8'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`TFB-Partner-${selectedYear}.csv`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);}
- Object.assign(TFB.actions,{'partner-new':()=>edit(null),'partner-edit':el=>edit(el.dataset.id),'partner-payment':el=>payment(el.dataset.id),'partner-admin-refresh':()=>ui().renderView('partner'),'partner-admin-export':csv,'partner-payment-void':async el=>{if(!admin()||!confirm('Diese erfasste Zahlung stornieren? Der Eintrag bleibt zur Nachvollziehbarkeit gespeichert.'))return;try{await call('/admin/partner-payments/void',{id:el.dataset.id});await completed('Zahlung storniert');}catch(e){ui().toast(e.message);}}});
- document.addEventListener('input',e=>{if(!e.target.matches('[data-partner-search]')||!admin()||!data)return;search=e.target.value;document.getElementById('partner-admin-rows').innerHTML=rows();});
- document.addEventListener('change',e=>{if(e.target.matches('[data-partner-admin-year]')&&admin()){selectedYear=Number(e.target.value);ui().renderView('partner');}});
- TFB.views.partner=view;TFB.views.partnerzahlen=view;
+
+  const details = [
+    ['contactName', 'Ansprechpartner', 'maxlength="160"'],
+    ['contactEmail', 'Kontakt-E-Mail', 'type="email" maxlength="160"'],
+    ['contactPhone', 'Telefon', 'maxlength="80"'],
+    ['street', 'Straße / Hausnummer', 'maxlength="200"'],
+    ['postalCode', 'Postleitzahl', 'maxlength="24"'],
+    ['city', 'Ort', 'maxlength="100"']
+  ];
+  function edit(id) {
+    if (!admin()) return;
+    const current = partners.find(p => p.id === id);
+    if (id && !current) return;
+    const p = current || {id: crypto.randomUUID(), revision: 0};
+    ui().openSheet(`<form class="editor partner-editor" data-editor="partner">
+      <h2>${current ? 'Partner bearbeiten' : 'Partner hinzufügen'}</h2>
+      ${field('name', 'Partnername / Marke', p.name, 'maxlength="160" required')}
+      ${field('company', 'Firmenname', p.company, 'maxlength="200"')}
+      ${field('url', 'Website', p.url, 'type="url" maxlength="1000" placeholder="https://…"')}
+      <div class="partner-editor-logo">
+        ${p.logoPreview ? `<img src="${esc(p.logoPreview)}" alt="Aktuelles Partnerlogo">` : ''}
+        <label class="btn small">Logo auswählen<input name="logoFile" type="file" accept="image/png,image/jpeg,image/webp" ${current ? '' : 'required'}></label>
+        <small data-logo-name>PNG, JPEG oder WebP</small>
+      </div>
+      <details><summary>Kontakt &amp; Anschrift</summary>
+        ${details.map(([name, label, options]) => field(name, label, p[name], options)).join('')}
+      </details>
+      <p class="form-error" role="alert"></p>
+      <button type="submit" class="btn primary block">Speichern</button>
+      <button type="button" class="link center" data-action="close-sheet">Abbrechen</button>
+    </form>`);
+    const form = document.querySelector('[data-editor="partner"]');
+    form.elements.logoFile.onchange = () => {
+      form.querySelector('[data-logo-name]').textContent = form.elements.logoFile.files[0]?.name || 'PNG, JPEG oder WebP';
+    };
+    submit(form, async () => {
+      const partner = Object.fromEntries(['name', 'company', 'url', ...details.map(([name]) => name)]
+        .map(name => [name, form.elements[name].value.trim()]));
+      const body = {id: p.id, revision: p.revision, partner};
+      const file = form.elements.logoFile.files[0];
+      if (file) body.logoData = await imageData(file);
+      await TFB.directoryCall('/admin/partners/save', body);
+      return 'Partner gespeichert';
+    });
+  }
+
+  function remove(id) {
+    const partner = partners.find(p => p.id === id);
+    if (!admin() || !partner) return;
+    ui().openSheet(`<form class="editor" data-editor="partner-remove">
+      <h2>Partner entfernen</h2>
+      <p>${esc(partner.name)} aus der Partnerliste und von der Website entfernen?</p>
+      <p class="form-error" role="alert"></p>
+      <button type="submit" class="btn primary block">Entfernen</button>
+      <button type="button" class="link center" data-action="close-sheet">Abbrechen</button>
+    </form>`);
+    submit(document.querySelector('[data-editor="partner-remove"]'), async () => {
+      await TFB.directoryCall('/admin/partners/remove', {id, revision: partner.revision});
+      return 'Partner entfernt';
+    });
+  }
+
+  Object.assign(TFB.actions, {
+    'partner-new': () => edit(),
+    'partner-edit': el => edit(el.dataset.id),
+    'partner-remove': el => remove(el.dataset.id),
+    'partner-admin-refresh': () => ui().renderView('partner')
+  });
+  document.addEventListener('input', event => {
+    if (!event.target.matches('[data-partner-search]') || !admin()) return;
+    search = event.target.value;
+    document.getElementById('partner-admin-rows').innerHTML = rows();
+  });
+  TFB.views.partner = view;
+  TFB.views.partnerzahlen = view;
 })();

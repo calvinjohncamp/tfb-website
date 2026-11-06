@@ -75,9 +75,9 @@
   }
   async function refreshSettings(){if(TFB.partnerContent?.isRemote){await TFB.partnerContent.refresh();settings={...defaults,...TFB.partnerContent.splash};}else{const site=await ui().api.site();settings={...defaults,...site.splash};}}
   function premiumMarkup(){
-    const partners=(TFB.partners||[]).filter(p=>p.tier==='premium'&&p.logo).sort((a,b)=>(a.sort||0)-(b.sort||0)).slice(0,2);
-    if(!partners.length)return '';
-    return `<section class="tfb-splash-partners pbsp-slot" aria-label="Premium-Partner"><p class="pbsp-kicker">${esc(settings.partnerLabel)}</p><div class="pbsp-duo">${partners.map((p,i)=>TFB.partnerTile(p,i)).join('')}</div></section>`;
+    const partner = (TFB.partners || []).find(p => p.id === 'bmw-kaltenbach-gruppe' && p.logo && p.active !== false);
+    if (!partner) return '';
+    return `<section class="tfb-splash-partners pbsp-slot" aria-label="Premium-Partner"><p class="pbsp-kicker">${esc(settings.partnerLabel)}</p><div class="pbsp-duo">${TFB.partnerTile(partner, 0)}</div></section>`;
   }
   function splashMarkup(){return `<div class="tfb-splash-inner"><div class="tfb-splash-top"><div class="tfb-splash-wordmark" role="group" aria-label="Tennisfreunde Bielstein"><span class="tfb-logo-noball" aria-hidden="true"></span>${TFB.designPreview.brandButton('tfb-splash-ball', '<span class="tfb-logo-ball" aria-hidden="true"></span>')}</div></div><div class="tfb-splash-message">${settings.eyebrowEnabled&&settings.eyebrowText?`<p class="tfb-splash-eyebrow">${esc(settings.eyebrowText)}</p>`:''}<h1><span>${esc(settings.headline)}</span><br><em>${esc(settings.accent)}</em></h1><p class="tfb-splash-description">${esc(settings.description)}</p></div><div><button type="button" class="tfb-splash-enter" data-action="splash-enter"><span>${esc(settings.entry)}</span><span aria-hidden="true"><svg class="link-arrow" viewBox="0 0 806 1000" aria-hidden="true" focusable="false"><path transform="translate(0 755) scale(1 -1)" d="M528 -14 448 66 546 164 587 189 581 206 533 198H50V312H533L581 304L587 321L546 346L448 444L528 524L756 296V214Z"/></svg></span></button>${settings.footEnabled&&settings.foot?`<p class="tfb-splash-foot">${esc(settings.foot)}</p>`:''}${premiumMarkup()}</div></div>`;}
   async function show(force=false, draft=null) {

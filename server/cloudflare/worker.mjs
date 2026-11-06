@@ -3,7 +3,7 @@ import schema from './schema.sql';
 import {syncState, syncCommit, syncRevision, syncFaces, syncPhoto} from './app-sync.mjs';
 import { managementPage } from './management.mjs';
 import {collectVisibility, visibilityReport} from './partner-visibility.mjs';
-import {publicPartnerContent,adminPartnerContent,savePartner,savePartnerSettings,addPartnerPayment,voidPartnerPayment,partnerLogo} from './partner-management.mjs';
+import {publicPartnerContent,adminPartnerContent,savePartner,savePartnerSettings,removePartner,partnerLogo} from './partner-management.mjs';
 import {editorialState,uploadEditorialMedia,editorialMedia,editorialCommit,editorialCheckpoint,editorialHistory,editorialPreview,editorialRestore,editorialExport,editorialScheduled} from './editorial.mjs';
 import {backupEditorialSystem} from './editorial-backup.mjs';
 
@@ -226,11 +226,10 @@ async function route(request, env, url) {
     const object=await env.CMS_BUCKET.get(release.object_key);if(!object)fail(503,'Programmdatei nicht verfügbar.');
     return new Response(object.body,{headers:{'Content-Type':'application/zip','Content-Disposition':'attachment; filename="programm.zip"'}});
   }
-  if (request.method === 'GET' && path === '/admin/partners') return adminPartnerContent(env,url.origin,url.searchParams.get('year'));
+  if (request.method === 'GET' && path === '/admin/partners') return adminPartnerContent(env,url.origin);
   if (request.method === 'POST' && path === '/admin/partners/save') return savePartner(env,await body(request,450000));
+  if (request.method === 'POST' && path === '/admin/partners/remove') return removePartner(env,await body(request,1024));
   if (request.method === 'POST' && path === '/admin/partner-settings') return savePartnerSettings(env,await body(request,4096));
-  if (request.method === 'POST' && path === '/admin/partner-payments/add') return addPartnerPayment(env,await body(request,4096));
-  if (request.method === 'POST' && path === '/admin/partner-payments/void') return voidPartnerPayment(env,await body(request,1024));
   if (request.method === 'GET' && path === '/admin/partner-visibility' && env.PARTNER_MEASUREMENT_ENABLED !== '1') return {enabled:false,plannedStart:'2027-01-01'};
   if (request.method === 'GET' && path === '/admin/partner-visibility') return visibilityReport(env,url.searchParams.get('year'));
   if (request.method === 'GET' && path === '/app/revision') return {revision:await syncRevision(env,member)};

@@ -33,7 +33,7 @@ test('only server-verified active admins can read statistics; hidden URL and for
 });
 test('invalid/private fields and unregistered partners reject the complete batch',async()=>{
  const f=await fixture();f.env.PARTNER_MEASUREMENT_ENABLED='1';
- for(const invalid of [e('visible','home',{partner:'unregistered'}),e('pageview','team/private-person'),e('visible','impressum'),e('pageview','home',{memberId:'private'}),e('pageview','home',{id:'not-a-uuid'}),e('visible','splash',{partner:partners.find(p=>p.tier==='regional').id})]){
+ for(const invalid of [e('visible','home',{partner:'unregistered'}),e('pageview','team/private-person'),e('visible','impressum'),e('pageview','home',{memberId:'private'}),e('pageview','home',{id:'not-a-uuid'}),e('visible','splash',{partner:partners.find(p=>p.tier==='partner').id})]){
   assert.equal((await f.call('/public/partner-events',{events:[e(),invalid]})).status,400);
  }
  assert.equal(f.env.DB.sqlite.prepare('SELECT COUNT(*) AS n FROM partner_daily').get().n,0);

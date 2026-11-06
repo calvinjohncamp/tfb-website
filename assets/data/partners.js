@@ -1,4 +1,4 @@
-// TFB-Testbestand aus Padel. Eigene Pflege über den roten Ball auf der Splash.
+// Öffentlicher TFB-Partnerbestand für Vorschau und Erstaufruf.
 window.TFB=window.TFB||{};
 TFB.partners=[
   {
@@ -10,299 +10,267 @@ TFB.partners=[
     "url": "https://kaltenbach-gruppe.de/fahrzeuge/bmw-fahrzeuge/"
   },
   {
-    "id": "intersport",
-    "name": "Intersport",
-    "tier": "premium",
-    "sort": 2000,
-    "logo": "assets/partners/premium-intersport.jpg",
-    "url": "https://www.intersport.de/"
-  },
-  {
-    "id": "a-s-creation",
-    "name": "A.S. Création",
+    "id": "safenetworx",
+    "name": "SafeNetworX",
     "tier": "partner",
-    "sort": 0,
-    "logo": "assets/partners/partner-a-s-creation.png",
-    "url": "https://www.tapetenshop.de/"
+    "sort": 2000,
+    "logo": "assets/partners/tfb-safenetworx.png",
+    "url": "https://www.safenetworx.de"
   },
   {
     "id": "sparkasse-gummersbach",
     "name": "Sparkasse Gummersbach",
     "tier": "partner",
-    "sort": 1000,
-    "logo": "assets/partners/partner-sparkasse-gummersbach.jpg",
-    "url": "https://www.sparkasse-gm.de/de/home.html"
-  },
-  {
-    "id": "schwalbe",
-    "name": "Schwalbe",
-    "tier": "partner",
     "sort": 3000,
-    "logo": "assets/partners/partner-schwalbe.png",
-    "url": "https://www.schwalbe.com/"
+    "logo": "assets/partners/tfb-sparkasse-gummersbach.jpg",
+    "url": "https://www.sparkasse-gm.de"
   },
   {
-    "id": "kanzlei-sattler",
-    "name": "Kanzlei Sattler",
+    "id": "steffen-werkshage",
+    "name": "Steffen Werkshage",
     "tier": "partner",
     "sort": 4000,
-    "logo": "assets/partners/partner-kanzlei-sattler.png",
-    "url": "https://www.kanzlei-sattler.de/"
-  },
-  {
-    "id": "volksbank-oberberg-eg",
-    "name": "Volksbank Oberberg eG",
-    "tier": "partner",
-    "sort": 5000,
-    "logo": "assets/partners/partner-volksbank-oberberg-eg.png",
-    "url": "https://www.vb-oberberg.de/startseite.html"
-  },
-  {
-    "id": "die-finanzmaschine-r-kamper",
-    "name": "Die Finanzmaschine - R. Kämper",
-    "tier": "partner",
-    "sort": 6000,
-    "logo": "assets/partners/partner-die-finanzmaschine-r-kamper.png",
-    "url": "https://diefinanzmaschine.netlify.app/"
-  },
-  {
-    "id": "muller-textil-group",
-    "name": "Müller Textil Group",
-    "tier": "partner",
-    "sort": 8000,
-    "logo": "assets/partners/partner-muller-textil-group.png",
-    "url": "https://www.mullertextiles.com/"
-  },
-  {
-    "id": "aok",
-    "name": "AOK",
-    "tier": "partner",
-    "sort": 9000,
-    "logo": "assets/partners/partner-aok.png",
-    "url": "https://www.aok.de/pk/rh/region/oberbergischer-kreis-krankenkasse/"
-  },
-  {
-    "id": "aggerenergie",
-    "name": "AggerEnergie",
-    "tier": "partner",
-    "sort": 10000,
-    "logo": "assets/partners/partner-aggerenergie.png",
-    "url": "https://www.aggerenergie.de/"
-  },
-  {
-    "id": "faulenbach-schmiedetechnik",
-    "name": "Faulenbach Schmiedetechnik",
-    "tier": "partner",
-    "sort": 11000,
-    "logo": "assets/partners/partner-faulenbach-schmiedetechnik.png",
-    "url": "https://www.faulenbach-gmbh.de/"
-  },
-  {
-    "id": "bpw",
-    "name": "BPW",
-    "tier": "partner",
-    "sort": 12000,
-    "logo": "assets/partners/partner-bpw.png",
-    "url": ""
-  },
-  {
-    "id": "sarstedt",
-    "name": "Sarstedt",
-    "tier": "partner",
-    "sort": 14000,
-    "logo": "assets/partners/partner-sarstedt.png",
-    "url": ""
-  },
-  {
-    "id": "wiehl-apotheke",
-    "name": "Wiehl Apotheke",
-    "tier": "partner",
-    "sort": 1000,
-    "logo": "assets/partners/regional-wiehl-apotheke.png",
-    "url": "https://www.wiehl-apotheke.de/"
-  },
-  {
-    "id": "oberberg-apotheke",
-    "name": "Oberberg Apotheke",
-    "tier": "partner",
-    "sort": 2000,
-    "logo": "assets/partners/regional-oberberg-apotheke.png",
-    "url": "https://www.oberberg-apotheke.de/"
+    "logo": "assets/partners/tfb-steffen-werkshage.png",
+    "url": "https://www.werkshage.de/"
   },
   {
     "id": "stubs-dienstleistungen",
     "name": "STUBS Dienstleistungen",
     "tier": "partner",
-    "sort": 3000,
-    "logo": "assets/partners/regional-stubs-dienstleistungen.png",
+    "sort": 5000,
+    "logo": "assets/partners/tfb-stubs-dienstleistungen.jpg",
     "url": "https://www.stubsgmbh.de/"
   },
   {
-    "id": "fahrzeugpflege-wiehl",
-    "name": "Fahrzeugpflege Wiehl",
-    "tier": "partner",
-    "sort": 4000,
-    "logo": "assets/partners/regional-fahrzeugpflege-wiehl.jpg",
-    "url": "https://www.fahrzeugpflege-wiehl.de/"
-  },
-  {
-    "id": "penz",
-    "name": "Penz",
-    "tier": "partner",
-    "sort": 5000,
-    "logo": "assets/partners/regional-penz.png",
-    "url": "https://www.penz.de/"
-  },
-  {
-    "id": "pollmann-steuerberater",
-    "name": "Pollmann Steuerberater",
+    "id": "volksbank-oberberg-eg",
+    "name": "Volksbank Oberberg eG",
     "tier": "partner",
     "sort": 6000,
-    "logo": "assets/partners/regional-pollmann-steuerberater.png",
-    "url": "https://www.stb-pollmann.de/"
+    "logo": "assets/partners/tfb-volksbank-oberberg-eg.png",
+    "url": "https://www.vb-oberberg.de"
   },
   {
-    "id": "gro-bestattungen",
-    "name": "Groß Bestattungen",
+    "id": "aggerenergie",
+    "name": "AggerEnergie",
     "tier": "partner",
     "sort": 7000,
-    "logo": "assets/partners/regional-gro-bestattungen.png",
-    "url": "https://gross-bestattungen.de"
+    "logo": "assets/partners/tfb-aggerenergie.jpg",
+    "url": "https://www.aggerenergie.de/"
   },
   {
-    "id": "erzquell-brauerei-bielstein-haas-gmbh-co-kg",
-    "name": "Erzquell Brauerei Bielstein Haas GmbH & Co. KG",
+    "id": "oberberg-partyservice",
+    "name": "Oberberg Partyservice",
     "tier": "partner",
     "sort": 8000,
-    "logo": "assets/partners/regional-erzquell-brauerei-bielstein-haas-gmbh-co.png",
-    "url": "https://www.erzquell.de/"
+    "logo": "assets/partners/tfb-oberberg-partyservice.png",
+    "url": "https://partyservice-oberberg.de/"
   },
   {
-    "id": "auge-ohr-althofer",
-    "name": "Auge + Ohr Althöfer",
+    "id": "torsten-dehler",
+    "name": "Württembergische · Torsten Dehler",
     "tier": "partner",
     "sort": 9000,
-    "logo": "assets/partners/regional-auge-ohr-althofer.png",
-    "url": "https://www.althoefer.de/"
+    "logo": "assets/partners/tfb-torsten-dehler.jpg",
+    "url": "https://www.wuerttembergische.de/versicherungen/agentur.dehler"
   },
   {
-    "id": "asbach-und-winkler-zurich",
-    "name": "Asbach und Winkler - Zurich",
+    "id": "atelier-althoefer",
+    "name": "Atelier Althöfer · Uhren + Schmuck",
     "tier": "partner",
     "sort": 10000,
-    "logo": "assets/partners/regional-asbach-und-winkler-zurich.png",
-    "url": "https://www.zurich.de/de-de/vor-ort/asbach-winkler"
+    "logo": "assets/partners/tfb-atelier-althoefer.jpg",
+    "url": "https://www.atelier-althoefer.de/"
+  },
+  {
+    "id": "autohaus-halstenbach",
+    "name": "Autohaus Halstenbach",
+    "tier": "partner",
+    "sort": 11000,
+    "logo": "assets/partners/tfb-autohaus-halstenbach.jpg",
+    "url": "https://www.autohaus-halstenbach.de/"
+  },
+  {
+    "id": "schuhmann",
+    "name": "Schuh Mann",
+    "tier": "partner",
+    "sort": 12000,
+    "logo": "assets/partners/tfb-schuhmann.png",
+    "url": ""
+  },
+  {
+    "id": "sport-hennecken",
+    "name": "Sport Hennecken",
+    "tier": "partner",
+    "sort": 13000,
+    "logo": "assets/partners/tfb-sport-hennecken.png",
+    "url": "https://www.sport-hennecken.de/"
+  },
+  {
+    "id": "mueller-klein",
+    "name": "Müller & Klein",
+    "tier": "partner",
+    "sort": 14000,
+    "logo": "assets/partners/tfb-mueller-klein.jpg",
+    "url": "https://www.mueller-klein.de/"
+  },
+  {
+    "id": "lta",
+    "name": "LTA",
+    "tier": "partner",
+    "sort": 15000,
+    "logo": "assets/partners/tfb-lta.png",
+    "url": "https://www.lta-gmbh.de"
   },
   {
     "id": "metzgerei-muller",
     "name": "Metzgerei Müller",
     "tier": "partner",
-    "sort": 11000,
-    "logo": "assets/partners/regional-metzgerei-muller.png",
-    "url": ""
+    "sort": 16000,
+    "logo": "assets/partners/tfb-metzgerei-muller.jpg",
+    "url": "http://www.metzger-mueller.com/"
   },
   {
-    "id": "bsv-bielstein",
-    "name": "BSV Bielstein",
+    "id": "werner-dieball",
+    "name": "Dr. Werner Dieball",
     "tier": "partner",
-    "sort": 12000,
-    "logo": "assets/partners/regional-bsv-bielstein.jpg",
-    "url": "https://www.bsv-bielstein.de/"
+    "sort": 17000,
+    "logo": "assets/partners/tfb-werner-dieball.png",
+    "url": "https://wernerdieball.de"
   },
   {
-    "id": "zappo-apotheke",
-    "name": "zappo Apotheke",
+    "id": "blumen-schmidt",
+    "name": "Blumen Schmidt",
     "tier": "partner",
-    "sort": 13000,
-    "logo": "assets/partners/regional-zappo-apotheke.png",
-    "url": ""
+    "sort": 18000,
+    "logo": "assets/partners/tfb-blumen-schmidt.png",
+    "url": "https://www.fleurop.de/partnerfloristen/fleurop-filialen/51674-wiehl/blumen-schmidt-bielsteiner-str-107"
   },
   {
     "id": "sapv-oberberg",
     "name": "SAPV Oberberg",
     "tier": "partner",
-    "sort": 14000,
-    "logo": "assets/partners/regional-sapv-oberberg.png",
+    "sort": 19000,
+    "logo": "assets/partners/tfb-sapv-oberberg.jpg",
     "url": "https://sapv-oberberg.de/"
   },
   {
-    "id": "jagenberg",
-    "name": "Jagenberg",
-    "tier": "partner",
-    "sort": 15000,
-    "logo": "assets/partners/regional-jagenberg.png",
-    "url": ""
-  },
-  {
-    "id": "sportpark-am-see",
-    "name": "Sportpark am See",
-    "tier": "partner",
-    "sort": 16000,
-    "logo": "assets/partners/regional-sportpark-am-see.png",
-    "url": "https://sportparkamsee.de"
-  },
-  {
-    "id": "bubenzer-baufachzentrum",
-    "name": "Bubenzer Baufachzentrum",
-    "tier": "partner",
-    "sort": 17000,
-    "logo": "assets/partners/regional-bubenzer-baufachzentrum.png",
-    "url": ""
-  },
-  {
-    "id": "5-elemente",
-    "name": "5 Elemente",
-    "tier": "partner",
-    "sort": 18000,
-    "logo": "assets/partners/regional-5-elemente.png",
-    "url": ""
-  },
-  {
-    "id": "aldi-sud",
-    "name": "ALDI SÜD",
-    "tier": "partner",
-    "sort": 19000,
-    "logo": "assets/partners/regional-aldi-sud.png",
-    "url": ""
-  },
-  {
-    "id": "seitz",
-    "name": "Seitz",
+    "id": "tanzart-broichhagen",
+    "name": "TanzART Broichhagen",
     "tier": "partner",
     "sort": 20000,
-    "logo": "assets/partners/regional-seitz.jpg",
-    "url": ""
+    "logo": "assets/partners/tfb-tanzart-broichhagen.png",
+    "url": "https://tanzschule-bielstein.de/"
   },
   {
-    "id": "piccola-italia",
-    "name": "Piccola Italia",
+    "id": "pollmann-steuerberater",
+    "name": "Pollmann Steuerberater",
     "tier": "partner",
     "sort": 21000,
-    "logo": "assets/partners/regional-piccola-italia.png",
-    "url": ""
+    "logo": "assets/partners/tfb-pollmann-steuerberater.jpg",
+    "url": "https://www.stb-pollmann.de/"
   },
   {
-    "id": "lang-raum-idee",
-    "name": "LANG Raum+Idee",
+    "id": "oberbantenberger-hof",
+    "name": "Oberbantenberger Hof · Alt Athen",
     "tier": "partner",
     "sort": 22000,
-    "logo": "assets/partners/regional-lang-raum-idee.png",
-    "url": ""
+    "logo": "assets/partners/tfb-oberbantenberger-hof.png",
+    "url": "http://oberbantenberger-hof.de/"
   },
   {
     "id": "gsg-grosshandel",
-    "name": "GSG Grosshandel",
+    "name": "GSG Farben",
     "tier": "partner",
     "sort": 23000,
-    "logo": "assets/partners/regional-gsg-grosshandel.png",
-    "url": ""
+    "logo": "assets/partners/tfb-gsg-grosshandel.png",
+    "url": "https://www.gsg-farben.de/"
   },
   {
-    "id": "coca-cola",
-    "name": "Coca-Cola",
+    "id": "town-country-haus",
+    "name": "Town & Country Haus",
     "tier": "partner",
     "sort": 24000,
-    "logo": "assets/partners/regional-coca-cola.jpg",
-    "url": ""
+    "logo": "assets/partners/tfb-town-country-haus.jpg",
+    "url": "https://www.tc.de/"
+  },
+  {
+    "id": "hans-installationen",
+    "name": "Hans · Installationen und Heizungsbau",
+    "tier": "partner",
+    "sort": 25000,
+    "logo": "assets/partners/tfb-hans-installationen.jpg",
+    "url": "https://www.hans-gmbh.com/"
+  },
+  {
+    "id": "kanzlei-sattler",
+    "name": "Kanzlei Sattler",
+    "tier": "partner",
+    "sort": 26000,
+    "logo": "assets/partners/tfb-kanzlei-sattler.jpg",
+    "url": "https://www.kanzlei-sattler.de/"
+  },
+  {
+    "id": "autohaus-schumacher",
+    "name": "Autohaus Schumacher",
+    "tier": "partner",
+    "sort": 27000,
+    "logo": "assets/partners/tfb-autohaus-schumacher.jpg",
+    "url": "https://www.renault-schumacher.de/"
+  },
+  {
+    "id": "dornseifer",
+    "name": "Dornseifers Frischemarkt",
+    "tier": "partner",
+    "sort": 28000,
+    "logo": "assets/partners/tfb-dornseifer.jpg",
+    "url": "https://www.dornseifer.de/"
+  },
+  {
+    "id": "auge-ohr-althofer",
+    "name": "Auge + Ohr Althöfer",
+    "tier": "partner",
+    "sort": 29000,
+    "logo": "assets/partners/tfb-auge-ohr-althofer.png",
+    "url": "https://www.althoefer.de/"
+  },
+  {
+    "id": "erzquell-brauerei-bielstein-haas-gmbh-co-kg",
+    "name": "Zunft Kölsch",
+    "tier": "partner",
+    "sort": 30000,
+    "logo": "assets/partners/tfb-erzquell-brauerei-bielstein-haas-gmbh-co-kg.jpg",
+    "url": "https://www.zunft-koelsch.de"
+  },
+  {
+    "id": "medica-agger-apotheken",
+    "name": "Medica Apotheke und Agger Apotheke",
+    "tier": "partner",
+    "sort": 31000,
+    "logo": "assets/partners/tfb-medica-agger-apotheken.jpg",
+    "url": "https://www.medica-apotheke-gm.de/"
+  },
+  {
+    "id": "berster-koch",
+    "name": "Berster Koch",
+    "tier": "partner",
+    "sort": 32000,
+    "logo": "assets/partners/tfb-berster-koch.png",
+    "url": "https://www.bersterkoch.de/"
+  },
+  {
+    "id": "welp-media-service",
+    "name": "welp media service",
+    "tier": "partner",
+    "sort": 33000,
+    "logo": "assets/partners/tfb-welp-media-service.jpg",
+    "url": "https://welp-media-service.de"
+  },
+  {
+    "id": "asbach-und-winkler-zurich",
+    "name": "Zurich · Asbach und Winkler",
+    "tier": "partner",
+    "sort": 34000,
+    "logo": "assets/partners/tfb-asbach-und-winkler-zurich.jpg",
+    "url": "https://www.zurich.de/de-de/vor-ort/asbach-winkler"
   }
 ];
