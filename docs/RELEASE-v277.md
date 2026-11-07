@@ -22,3 +22,13 @@ ist auf unverändertem 39cc124 reproduziert. Nicht Teil dieses Releases.
 Vor Veröffentlichung private D1-Sicherung und Worker-Versionsstand festgehalten.
 Passendes Git-Quellarchiv für die redaktionelle Gesamtsicherung registrieren.
 Keine echten Testbeiträge oder Mitgliedsdaten für die Funktionsprüfung anlegen.
+
+## Veraltete Galerieprüfung bereinigt
+
+Auf Folgeauftrag wurde die oben genannte alte Testerwartung korrigiert.
+Der Test prüft jetzt den direkten Einstieg beim angeklickten Foto, die Rückkehr
+über „Alle Fotos“, die Auswahl aus der Übersicht, Tastatur, Bildnavigation,
+Wischgesten und das Verhindern eines zusätzlichen Klicks nach dem Wischen.
+Sechs unterschiedliche Bildquellen prüfen zusätzlich die richtige Fotoauswahl.
+Alle 91 Fachtests bestehen. Ausschließlich Testkorrektur; keine neue Website-
+oder Worker-Veröffentlichung und keine Änderung an der Galeriebedienung nötig.

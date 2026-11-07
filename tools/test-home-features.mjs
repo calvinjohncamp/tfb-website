@@ -503,21 +503,36 @@ test('gallery accepts 100 photos, rejects 101 and opens each original', async ()
   assert.match(box.innerHTML, /thomas-heine\.jpg/);
 });
 
-test('chat gallery opens the whole collage, then supports clicks, arrows and swipes without double advancing', async () => {
+test('chat gallery opens the clicked photo, offers the whole collage, and supports navigation without double advancing', async () => {
   const { context, api } = await setup();
   await api.acceptFeedRules();
-  const post = await api.addPost({scope:'club', text:'Galerie', images:Array(6).fill('assets/images/board/kai-eichmann.jpg')});
+  const refs = ['kai-eichmann','thomas-heine','katja-kuepper','katharina-pollmann','daniel-pollmann','marco-hennes']
+    .map(name => `assets/images/board/${name}.jpg`);
+  const post = await api.addPost({scope:'club', text:'Galerie', images:refs});
   await context.TFB.views.gefluester();
   const handlers = {};
   const box = {innerHTML:'', classList:{add(){},remove(){}}, addEventListener:(name, handler)=>{handlers[name]=handler;}, remove(){}};
   context.document.createElement = () => box;
   context.document.body = {appendChild(){}, classList:{add(){},remove(){}}};
   context.document.removeEventListener = () => {};
+  const documentHandlers = {};
+  context.document.addEventListener = (name, handler) => { documentHandlers[name] = handler; };
   context.requestAnimationFrame = fn => fn();
   context.TFB.actions['post-gallery']({dataset:{id:post.id,index:'5'}});
+  const target = selectors => ({closest: selector => selectors[selector] || null});
+  assert.match(box.innerHTML, /6 \/ 6/);
+  assert.match(box.innerHTML, /marco-hennes\.jpg/);
+  assert.match(box.innerHTML, /data-gback/);
+  assert.match(box.innerHTML, /data-gstep/);
+  assert.doesNotMatch(box.innerHTML, /gal-collage message-collage n6/);
+  documentHandlers.keydown({key:'ArrowRight'});
+  assert.match(box.innerHTML, /1 \/ 6/);
+  assert.match(box.innerHTML, /kai-eichmann\.jpg/);
+  documentHandlers.keydown({key:'ArrowLeft'});
+  assert.match(box.innerHTML, /6 \/ 6/);
+  handlers.click({target:target({'[data-gback]':{}})});
   assert.match(box.innerHTML, /gal-collage message-collage n6/);
   assert.doesNotMatch(box.innerHTML, /data-gstep/);
-  const target = selectors => ({closest: selector => selectors[selector] || null});
   handlers.click({target:target({'[data-gi]':{dataset:{gi:'0'}}})});
   assert.match(box.innerHTML, /1 \/ 6/);
   assert.match(box.innerHTML, /data-gstep/);
