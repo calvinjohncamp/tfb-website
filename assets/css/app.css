@@ -2298,7 +2298,8 @@ h1, h2, h3, .event h3, .feature-body h2, .story-head h1, .post-body h3 { -webkit
 .site-page[class*="home-look-"]:not(.home-look-1) .feature-media { aspect-ratio: var(--look-ratio, 3 / 2); }
 .site-page[class*="home-look-"]:not(.home-look-1) .feature-media:has(> .photo-frame.active) { aspect-ratio: var(--look-ratio, 3 / 2) !important; }
 .site-page[class*="home-look-"]:not(.home-look-1) .feature-media > .photo-frame.active { height: 100%; aspect-ratio: auto; }
-.site-page[class*="home-look-"]:not(.home-look-1) .feature.img-right > :first-child { order: 0; }
+/* Keep the reset weaker than Look 6’s position-based alternation. */
+.site-page:where([class*="home-look-"]:not(.home-look-1)) .feature.img-right > :first-child { order: 0; }
 
 /* ---------- Look 3 · Magazin: zentrierte Überschriften, gerahmte Fotos, rote Trenner ---------- */
 .home-look-3 .home-masthead { display: flex; justify-content: center; gap: 18px; margin: 0 0 8px; font-size: .68rem; font-weight: 800; letter-spacing: .32em; text-transform: uppercase; color: var(--signal); }
