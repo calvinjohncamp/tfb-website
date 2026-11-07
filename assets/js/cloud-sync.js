@@ -5,10 +5,19 @@
   const photoOwners=new Map(), localOriginal=api.avatarOriginal.bind(api);
   const nameLookup=api.memberNames.bind(api), knownFaces=new Map();
   let member=null, state=null, publicMember=null, queue=Promise.resolve(), last=0, pending=null, generation=0;
+  const publicBase=TFB.config.memberDirectory.url.replace(/\/$/,'');
+  let guest=null,guestAt=0,guestPending=null;
+  async function guestState(){
+    if(guest&&Date.now()-guestAt<10000)return guest;
+    if(!guestPending)guestPending=fetch(publicBase+'/public/community',{cache:'no-store'}).then(async response=>{if(!response.ok)throw Error('Die öffentlichen Beiträge konnten nicht geladen werden.');guest=await response.json();guestAt=Date.now();return guest;}).finally(()=>guestPending=null);
+    return guestPending;
+  }
+  api.publicCatalog=async()=> (await guestState()).catalog;
   const id=()=>crypto.randomUUID(), key=r=>r.kind+':'+r.id;
   const writeNames=['saveCatalog','setAvatar','setPhotoPermissions','updateProfile','acceptConsent','acceptFeedRules','setParentConsent','addToTab','undo','addPost','editPost','deletePost','removePostFromTeam','hidePost','addComment','editComment','deleteComment','readChatPosts','readCommentPosts'];
   const readNames=['posts','comments','teamPostCounts','myOpenMonth','myStatements','tally'];
   for(const name of [...writeNames,...readNames,'images','putMemberImage'])local[name]=api[name].bind(api);
+  api.images=async options=>({...await local.images(options),...(!member?Object.fromEntries((await guestState()).images.map(ref=>[ref,publicBase+'/public/chat-media?'+new URLSearchParams({ref})])):{})});
   function serial(fn) { const task=queue.then(fn,fn);queue=task.catch(()=>{});return task; }
   const storage=(mode,run)=>new Promise((resolve,reject)=>{
     const req=indexedDB.open('tfb_sync_recovery_v1',1);
@@ -110,7 +119,13 @@
   // Navigation reads the last confirmed cache immediately. Polling and writes
   // update it independently, so a slow mobile request cannot block a tap.
   for(const name of readNames)api[name]=async(...args)=>{
-    if(!member)return name==='teamPostCounts'?{}:[];
+    if(!member){
+      if(!['posts','comments','teamPostCounts'].includes(name))return [];
+      const view=await guestState();
+      if(name==='comments')return view.comments.filter(c=>c.postId===args[0]);
+      if(name==='teamPostCounts'){const counts={};for(const p of view.posts)for(const team of [p.team,...(p.alsoTeams||[])].filter(Boolean))counts[team]=(counts[team]||0)+1;return counts;}
+      return view.posts.filter(p=>p.scope===args[0]||(args[0]?.startsWith('team:')&&p.alsoTeams?.includes(args[0].slice(5)))||(args[0]==='club'&&args[1]?.withTeams)).map(p=>({...p,...(p.scope==='club'&&args[0]?.startsWith('team:')?{fromClub:true,shownIn:args[0].slice(5)}:{})})).sort((a,b)=>b.createdAt.localeCompare(a.createdAt));
+    }
     const result=await local[name](...args);
     if(name!=='tally'||!state?.demoTally)return result;
     const own=result.find(r=>r.isMe)||{firstName:publicMember.firstName,lastName:publicMember.lastName,isMe:true,counts:{},cats:{},total:0};
@@ -147,7 +162,7 @@
   });
   api.getMemberVideo = async (post, ref) => {
     const query = new URLSearchParams({post, ref});
-    return (await TFB.directoryFetch('/app/chat-video?' + query)).blob();
+    return (await (member?TFB.directoryFetch('/app/chat-video?' + query):fetch(publicBase+'/public/chat-media?'+query,{cache:'no-store'}))).blob();
   };
   api.putMemberImage=data=>serial(async()=>{
     if(!member)throw Error('Bitte zuerst anmelden.');

@@ -295,10 +295,12 @@
   async function view() {
     const { state, icon } = ui();
     if (!state.member) {
-      return `
-        ${ui().viewHead('Verabreden', 'Einzel, Doppel, Training – wer ist dabei?', false)}
-        <section class="card meet-login"><p>Zum Verabreden bitte einmal anmelden – danach bleibt dein Handy angemeldet.</p>
-        <button type="button" class="btn primary" data-action="login">Anmelden</button></section>
+      return `${ui().viewHead('Verabreden', 'Einzel, Doppel, Training – wer ist dabei?', false)}
+        <section class="meet-new-row">${Object.entries(KINDS).map(([k,v])=>`<button type="button" class="meet-kind-tile" data-action="login"><span class="meet-kind-icon">${kindIcon(k)}</span><strong>${v.label}</strong><small>${v.hint}</small></button>`).join('')}</section>
+        <h2 class="block-heading">Gemeinsam auf den Platz</h2><p>Verabrede Dich zum Match, lade Mitspieler ein und organisiere regelmäßige Trainingsrunden.</p>
+        <h2 class="block-heading">Meine kommenden Matches</h2><p class="muted">Nach der Anmeldung findest Du hier Deine Termine und Einladungen.</p>
+        <h2 class="block-heading">Regelmäßige Trainingsgruppen</h2><p class="small muted meet-section-intro">Wiederkehrende Einladungen mit festem Tag und fester Uhrzeit.</p><button type="button" class="btn meet-gap" data-action="login">Trainingsserie anlegen</button>
+        <h2 class="block-heading">Meine Gruppen</h2><div class="meet-groups"><button type="button" class="meet-group add" data-action="login">${icon.plus}<strong>Gruppe anlegen</strong></button></div>
         ${ui().partnerSlot('treffen', 'Verabreden wird dir präsentiert von')}`;
     }
     const fresh = materialize();

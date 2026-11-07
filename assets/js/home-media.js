@@ -8,9 +8,9 @@
   const magnifier='<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="m15.5 15.5 5 5"></path></svg>';
   let zoom=null;
   function cover(block, href, imageOf) {
-    const entry = entries(block)[0], refs = entry?.images || [];
+    const entry = entries(block)[0], refs = entry?.images || [], manual=block.animationStart==='manual';
     if (!refs.length) return `<div class="feature-media hm-empty">Noch keine Bilder veröffentlicht.</div>`;
-    return `<div class="feature-media hm-orbit" data-hm-orbit aria-label="Einblicke in ${esc(block.title)}"><div class="hm-stage">${refs.map((ref,i) => `<a class="hm-card" href="${esc(href)}" aria-label="Bild ${i+1}: Alle Einblicke ansehen">${image(ref,imageOf,entry.title)}</a>`).join('')}</div><div class="hm-footer"><a class="hm-caption" href="${esc(href)}"><span>${esc(entry.title)}</span></a><button type="button" class="hm-zoom-button" aria-label="Karussell vergrößern" title="Karussell vergrößern">${magnifier}</button><button type="button" class="hm-pause" aria-label="Bildbewegung pausieren" aria-pressed="false"${refs.length<2?' hidden':''}><span aria-hidden="true">Ⅱ</span></button></div></div>`;
+    return `<div class="feature-media hm-orbit" data-hm-orbit data-hm-start="${block.animationStart==='manual'?'manual':'auto'}" aria-label="Einblicke in ${esc(block.title)}"><div class="hm-stage">${refs.map((ref,i) => `<a class="hm-card" href="${esc(href)}" aria-label="Bild ${i+1}: Alle Einblicke ansehen">${image(ref,imageOf,entry.title)}</a>`).join('')}</div><div class="hm-footer"><a class="hm-caption" href="${esc(href)}"><span>${esc(entry.title)}</span></a><button type="button" class="hm-zoom-button" aria-label="Karussell vergrößern" title="Karussell vergrößern">${magnifier}</button><button type="button" class="hm-pause" aria-label="${manual?'Bildbewegung starten':'Bildbewegung pausieren'}" aria-pressed="${manual}"${refs.length<2?' hidden':''}><span aria-hidden="true">${manual?'▷':'Ⅱ'}</span></button></div></div>`;
   }
   async function detail(block, { imageOf, paragraphs, admin, page='home', backHref }) {
     const studio = await import('./chat-media.js');
@@ -28,7 +28,7 @@
   const mounted = new WeakSet(), controllers = new Set();
   function mountOrbit(node,initial={}) {
     const cards = [...node.querySelectorAll('.hm-card')], n = cards.length, button = node.querySelector('.hm-pause'), reduced = matchMedia('(prefers-reduced-motion: reduce)');
-    let phase=Number(initial.phase)||0,timer=0,frame=0,visible=false,hover=false,focused=false,paused=Boolean(initial.paused);
+    let phase=Number(initial.phase)||0,timer=0,frame=0,visible=false,hover=false,focused=false,paused=initial.paused===undefined?node.dataset.hmStart==='manual':Boolean(initial.paused);
     const enlarged=node.classList.contains('hm-zoom-orbit');
     const stage=node.querySelector('.hm-stage');
     let orderKey='',ghost=null,ghostCards=[],blend=null;
@@ -114,10 +114,12 @@
     function collect(){
       const form=document.querySelector('[data-hm-editor]');if(!form)return;
       for(const key of ['title','kicker','subtitle','text','mediaButtonLabel','date'])if(form.elements[key])draft[key]=form.elements[key].value.trim();
+      if(form.elements.animationStart)draft.animationStart=form.elements.animationStart.value;
       draft.mediaCollection.entries.forEach((entry,i)=>{for(const key of ['kicker','title','subtitle','date','text','format','instagramUrl'])if(form.elements[`entry_${i}_${key}`])entry[key]=form.elements[`entry_${i}_${key}`].value.trim();});
       if(single)for(const key of ['title','kicker','subtitle','text','date'])draft.mediaCollection.entries[0][key]=draft[key]||'';
     }
-    const summaryFields=()=>field('Obere Themenzeile','kicker',draft.kicker)+field('Hauptüberschrift','title',draft.title)+field('Unterüberschrift','subtitle',draft.subtitle)+field(page==='home'?'Hinweistext':'Begleittext','text',draft.text,true)+field('Button-Beschriftung','mediaButtonLabel',draft.mediaButtonLabel||'Beitrag ansehen');
+    const animationField=()=>`<fieldset class="hm-animation-choice"><legend>Animation in der Übersicht</legend>${[['auto','Animation startet sofort'],['manual','Animation erst per Play starten']].map(([value,label])=>`<label><input type="radio" name="animationStart" value="${value}"${(draft.animationStart||'auto')===value?' checked':''}> ${label}</label>`).join('')}</fieldset>`;
+    const summaryFields=()=>animationField()+field('Obere Themenzeile','kicker',draft.kicker)+field('Hauptüberschrift','title',draft.title)+field('Unterüberschrift','subtitle',draft.subtitle)+field(page==='home'?'Hinweistext':'Begleittext','text',draft.text,true)+field('Button-Beschriftung','mediaButtonLabel',draft.mediaButtonLabel||'Beitrag ansehen');
     function render(){
       const dateField=page==='aktuell'?`<label class="field"><span>Veröffentlichungsdatum</span><input type="date" name="date" value="${esc(draft.date||draft.mediaCollection.entries[0]?.date)}"></label>`:'';
       const posts=()=>draft.mediaCollection.entries.map((entry,i)=>`<section class="hm-edit-entry"><h3>Beitrag ${i+1}</h3>${field('Obere Themenzeile',`entry_${i}_kicker`,entry.kicker ?? draft.kicker)}${field('Überschrift',`entry_${i}_title`,entry.title)}${field('Unterüberschrift (freiwillig)',`entry_${i}_subtitle`,entry.subtitle)}<label class="field"><span>Datum</span><input type="date" name="entry_${i}_date" value="${esc(entry.date)}"></label>${field('Begleittext',`entry_${i}_text`,entry.text,true)}${formats(entry,i)}${field('Instagram-Link (freiwillig)',`entry_${i}_instagramUrl`,entry.instagramUrl)}${pictures(entry,i)}<div class="hm-entry-actions"><button type="button" class="btn small" data-hm-entry-move="${i}:-1"${i===0?' disabled':''}>Beitrag nach oben</button><button type="button" class="btn small" data-hm-entry-move="${i}:1"${i===draft.mediaCollection.entries.length-1?' disabled':''}>Nach unten</button><button type="button" class="link" data-hm-entry-remove="${i}">Beitrag entfernen</button></div></section>`).join('')+'<button type="button" class="btn block" data-hm-add>Beitrag hinzufügen</button>';

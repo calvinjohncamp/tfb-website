@@ -91,6 +91,37 @@ async function records(env, filter = () => true) {
   const payload=new Map(); for(const c of chunks)payload.set(c.payload_id,(payload.get(c.payload_id)||'')+c.data);
   return meta.map(r=>({...r,value:JSON.parse(payload.get(r.payload_id)||'null')}));
 }
+// Guest projection contains published posts only, never accounts or invitation records.
+const guestFields=['id','authorId','scope','title','text','images','createdAt','editedAt','alsoTeams','designs','dots','slideshowLayers','photoView','postId'];
+async function publicRows(env) {
+  const rows=await records(env,r=>!r.deleted&&['post','comment','catalog'].includes(r.kind));
+  const posts=rows.filter(r=>r.kind==='post'&&!r.value.hidden);
+  const ids=new Set(posts.map(r=>r.id));
+  return {rows,posts,comments:rows.filter(r=>r.kind==='comment'&&ids.has(r.value.postId))};
+}
+function guestRefs(rows) {
+  return new Set(rows.flatMap(r=>[...(r.value.images||[]),...(r.value.designs||[]).flatMap(d=>[d.ref,d.logoRef])]).filter(Boolean));
+}
+export async function publicCommunity(env) {
+  const {rows,posts,comments}=await publicRows(env);
+  const names=new Map((await env.DB.prepare('SELECT id,first_name,last_name FROM members WHERE active=1').all()).results.map(m=>[m.id,`${m.first_name} ${m.last_name}`.trim()]));
+  const present=r=>({...Object.fromEntries(guestFields.filter(k=>r.value[k]!==undefined).map(k=>[k,r.value[k]])),author:names.get(r.owner_id)||'Mitglied',avatar:null,mine:false,canModerate:false,team:r.scope.startsWith('team:')?r.scope.slice(5):null});
+  return {posts:posts.map(r=>({...present(r),commentCount:comments.filter(c=>c.value.postId===r.id).length})),comments:comments.map(present),images:[...guestRefs([...posts,...comments])].filter(r=>r.startsWith('img:')),catalog:rows.find(r=>r.kind==='catalog'&&r.id==='club')?.value||catalog};
+}
+export async function publicChatMedia(env,ref,postId) {
+  const {posts,comments}=await publicRows(env);
+  const visible=postId?posts.filter(r=>r.id===postId):posts;
+  const ids=new Set(visible.map(r=>r.id));
+  if(!guestRefs([...visible,...comments.filter(r=>ids.has(r.value.postId))]).has(ref))fail(404,'Medium nicht gefunden.');
+  if(videoRef(ref)){
+    const object=await env.CMS_BUCKET?.get(videoKey(ref));if(!object)fail(404,'Medium nicht gefunden.');
+    return new Response(object.body,{headers:{'Content-Type':object.httpMetadata.contentType,'Cache-Control':'no-store','X-Content-Type-Options':'nosniff'}});
+  }
+  const media=(await records(env,r=>r.kind==='media'&&r.id===ref&&!r.deleted))[0];
+  const match=/^data:(image\/(?:jpeg|png|webp));base64,([A-Za-z0-9+/=]+)$/.exec(media?.value?.data||'');
+  if(!match)fail(404,'Medium nicht gefunden.');
+  return new Response(Uint8Array.from(atob(match[2]),c=>c.charCodeAt(0)),{headers:{'Content-Type':match[1],'Cache-Control':'no-store','X-Content-Type-Options':'nosniff'}});
+}
 async function context(env, member) {
   const rows=await records(env), map=new Map(rows.map(r=>[key(r),r]));
   const teams=new Set((await env.DB.prepare('SELECT team_key FROM member_teams WHERE member_id=?').bind(member.id).all()).results.map(r=>r.team_key));

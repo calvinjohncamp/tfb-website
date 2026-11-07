@@ -7,7 +7,11 @@ import assert from 'node:assert/strict';
 import {chromium} from 'playwright';
 import {fixture} from './app-sync-fixture.mjs';
 import worker from './worker-test-loader.mjs';
+import {Bucket} from './editorial-fixture.mjs';
 const f=await fixture(), root=fileURLToPath(new URL('../',import.meta.url));
+// The current client also loads the central editorial CMS (introduced after this test).
+f.env.CMS_BUCKET=new Bucket();
+assert.equal((await f.call('/admin/site/commit',{id:crypto.randomUUID(),changes:[{key:'page:home',expected:0,value:{blocks:[]}},{key:'page:aktuell',expected:0,value:{blocks:[]}}]},f.adminToken)).status,200);
 const browser=await chromium.launch({headless:true,...(process.env.TFB_CHROME_PATH?{executablePath:process.env.TFB_CHROME_PATH}:{})});
 let interrupted=false;
 const errors=[];
@@ -70,7 +74,9 @@ try {
   interrupted=false;await a.page.reload();await a.page.waitForFunction(()=>TFB.ui?.state.member?.avatar);
   assert.equal(await a.page.evaluate(async()=>(await TFB.api.myOpenMonth()).totalCents),720);
   await b.page.evaluate(()=>TFB.api.signOut());
-  assert.deepEqual(await b.page.evaluate(()=>TFB.api.posts('club')),[]);
+  const guestPosts=await b.page.evaluate(()=>TFB.api.posts('club'));
+  assert(guestPosts.some(p=>p.text==='Neuer Chat vom Desktop'));assert(guestPosts.every(p=>!p.mine&&!p.canModerate));
+  assert.deepEqual(await b.page.evaluate(()=>TFB.api.myOpenMonth()),[]);
   assert.deepEqual(errors,[]);
   console.log('Zwei Geräte: Übernahme ohne Duplikate, automatisches Profilfoto, Bierdeckel, Chats/Kommentare, Aktualisierung, Neustart, unterbrochene Speicherung und Abmeldung geprüft.');
 } finally {await browser.close();}

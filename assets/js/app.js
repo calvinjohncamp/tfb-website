@@ -207,7 +207,7 @@
       <section class="auth inline">
         <header class="auth-intro">
           ${logo('ball', 'auth-ball')}
-          <div><h1>Der TFB-Kiosk</h1><p class="muted">Für Mitglieder: Getränke anschreiben, Strichliste, Abrechnungen.</p></div>
+          <div><h1>Willkommen beim TFB</h1><p class="muted">Melde Dich an, um Beiträge zu schreiben, Mitspieler einzuladen und den Kiosk zu nutzen.</p></div>
         </header>
         <form class="card auth-card" data-form="auth" novalidate>
           ${body}
@@ -359,7 +359,9 @@
     { id: 'padel', label: 'Padel', target: cfg.padelUrl },
   ];
   function navLinks(area) {
-    const items = (TFB.navItems && TFB.navItems()) || defaultNav();
+    const configured = (TFB.navItems && TFB.navItems()) || defaultNav();
+    const items = [...configured];
+    for(const item of defaultNav().filter(x=>['kiosk','chat','treffen'].includes(x.id)))if(!items.some(x=>x.target===item.target))items.splice(Math.min(defaultNav().findIndex(x=>x.id===item.id),items.length),0,item);
     return items.map((it) => {
       const t = String(it.target || '');
       if (/^https?:\/\//i.test(t)) return `<a href="${esc(t)}" class="tab external" target="_blank" rel="noopener" aria-label="${esc(it.label)} (öffnet in neuem Fenster)">${esc(it.label)}</a>`;
@@ -413,11 +415,8 @@
     if (!$view) return;
     try {
       if (KIOSK_AREA.includes(view)) {
-        if (!state.member) {
-          if (!document.body.classList.contains('tfb-splash-open')) showAuth();
-          return;
-        }
-        if (!state.member.hasConsent) { $view.innerHTML = consentMarkup(); return; }
+        if (!state.member && view !== 'kiosk') { $view.innerHTML = viewHead(view==='strichliste'?'Strichliste':'Abrechnungen','Deine persönlichen Kioskdaten findest du nach der Anmeldung.',false)+'<button class="btn primary" data-action="login">Anmelden</button>'; return; }
+        if (state.member && !state.member.hasConsent) { $view.innerHTML = consentMarkup(); return; }
         const body = view === 'kiosk' ? await kioskView() : view === 'strichliste' ? await tallyView() : await statementsView();
         if(request!==viewRender)return;
         $view.innerHTML = body;
@@ -494,11 +493,12 @@
       </div>`;
   }
 
-  const isEditing = () => state.editMode && state.member.isAdmin;
+  const isEditing = () => state.editMode && state.member?.isAdmin;
 
   async function kioskView() {
     const open = await api.myOpenMonth();
-    const cat = state.catalog;
+    const cat = !state.member && api.publicCatalog ? await api.publicCatalog() : state.catalog;
+    state.catalog = cat;
     const edit = isEditing();
     // Zwei Bereiche: Deckel (auf großen Bildschirmen links feststehend) und Sortiment.
     return `
@@ -511,15 +511,15 @@
               <button type="button" class="btn primary" data-action="edit-done">Fertig</button>
             </div>` : `
             <div class="kiosk-hero">
-              ${coasterMarkup(open)}
-              <div class="kiosk-links">
+              ${state.member ? coasterMarkup(open) : `<div class="card"><h2>Unser Club-Kiosk</h2><p>Entdecke unser Sortiment. Zum Anschreiben auf deinen Deckel bitte anmelden.</p><button type="button" class="btn primary" data-action="login">Anmelden</button></div>`}
+              <div class="kiosk-links"${state.member?'':' hidden'}>
                 <a class="kiosk-link" href="#strichliste">${icon.tally}<span>Strichliste</span></a>
                 <a class="kiosk-link" href="#abrechnungen">${icon.receipt}<span>Abrechnungen</span></a>
               </div>
             </div>`}
         </aside>
         <div class="kiosk-main">
-          ${!edit && state.member.isAdmin ? `<div class="kiosk-tools"><button type="button" class="view-close" data-action="edit-start" aria-label="Kiosk bearbeiten" title="Kiosk bearbeiten">${icon.pencil}</button></div>` : ''}
+          ${!edit && state.member?.isAdmin ? `<div class="kiosk-tools"><button type="button" class="view-close" data-action="edit-start" aria-label="Kiosk bearbeiten" title="Kiosk bearbeiten">${icon.pencil}</button></div>` : ''}
           ${cat.sections.map((section, index) => sectionMarkup(section, index, cat, edit)).join('')}
           ${edit ? `<button type="button" class="btn block add-section" data-action="section-new">${icon.plus} Neuer Bereich</button>` : ''}
         </div>
@@ -588,6 +588,7 @@
   }
 
   function openPick(productId) {
+    if(!state.member){showAuth();return;}
     const p = state.catalog.products.find((x) => x.id === productId);
     if (!p) return;
     let qty = 1;

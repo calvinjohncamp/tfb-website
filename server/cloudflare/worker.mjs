@@ -1,6 +1,6 @@
 // TFB: protected member directory. Invitations/Kiosk remain a local simulation.
 import schema from './schema.sql';
-import {syncState, syncCommit, syncRevision, syncFaces, syncPhoto, syncUploadVideo, syncChatVideo} from './app-sync.mjs';
+import {publicCommunity, publicChatMedia, syncState, syncCommit, syncRevision, syncFaces, syncPhoto, syncUploadVideo, syncChatVideo} from './app-sync.mjs';
 import { managementPage } from './management.mjs';
 import {collectVisibility, visibilityReport} from './partner-visibility.mjs';
 import {publicPartnerContent,adminPartnerContent,savePartner,savePartnerSettings,savePartnerRotation,removePartner,partnerLogo} from './partner-management.mjs';
@@ -197,6 +197,8 @@ async function route(request, env, url) {
     return createSession(env, result);
   }
   if (request.method === 'GET' && path === '/public/partner-content') return publicPartnerContent(env,url.origin);
+  if (request.method === 'GET' && path === '/public/community') return publicCommunity(env);
+  if (request.method === 'GET' && path === '/public/chat-media') return publicChatMedia(env,url.searchParams.get('ref'),url.searchParams.get('post'));
   if (request.method === 'GET' && path === '/public/site') return editorialState(env);
   if (request.method === 'GET' && path === '/public/site-revision') return {revision:(await env.DB.prepare('SELECT revision FROM cms_head WHERE id=1').first())?.revision||0};
   if (request.method === 'GET' && path.startsWith('/public/site-media/')) return editorialMedia(env,decodeURIComponent(path.split('/').at(-1)));
@@ -211,6 +213,24 @@ async function route(request, env, url) {
   }
   const { member, tokenHash } = await authenticated(request, env, path.startsWith('/admin/'));
   await rate(env, request, 'directory', member.is_admin ? 3000 : 1800);
+  if (request.method === 'POST' && path === '/app/team-media') {
+    const assigned=await env.DB.prepare('SELECT team_key FROM member_teams WHERE member_id=? LIMIT 1').bind(member.id).first();
+    if(!member.is_admin&&!assigned)fail(403,'Keine Mannschaft zugeordnet.');
+    return uploadEditorialMedia(env,await body(request,15*1024*1024));
+  }
+  if (request.method === 'POST' && path === '/app/team-content') {
+    const data=await body(request,900000),team=data.team,field=data.field;
+    if(typeof team!=='string'||['__proto__','constructor','prototype'].includes(team)||!['photo','portrait','posts'].includes(field))fail(400,'Ungültige Mannschaftsänderung.');
+    const assigned=await env.DB.prepare('SELECT team_key FROM member_teams WHERE member_id=? AND team_key=?').bind(member.id,team).first();
+    if(!member.is_admin&&!assigned)fail(403,'Du kannst nur Deine eigene Mannschaft bearbeiten.');
+    const state=await editorialState(env,true),doc=state.documents['global:teams'];
+    if(!Number.isSafeInteger(data.expected)||(doc?.revision||0)!==data.expected)fail(409,'Die Mannschaftsinhalte wurden inzwischen geändert. Bitte neu laden.');
+    if(field==='photo'&&data.value!==null&&(typeof data.value!=='string'||!(/^img:cms-[a-f0-9]{64}$/.test(data.value)||/^assets\//.test(data.value))))fail(400,'Ungültiges Teamfoto.');
+    if(field==='portrait'&&(!data.value||typeof data.value!=='object'||Array.isArray(data.value)))fail(400,'Ungültiges Porträt.');
+    if(field==='posts'&&(!Array.isArray(data.value)||data.value.length>40))fail(400,'Ungültige Mannschaftsbeiträge.');
+    const teams={...(doc?.value||{})};teams[team]={...(teams[team]||{posts:[]}),[field]:data.value};
+    return editorialCommit(env,member,{id:data.id,label:'Mannschaft aktualisiert',changes:[{key:'global:teams',expected:data.expected,value:teams}]});
+  }
   if (request.method === 'GET' && path === '/admin/site') return editorialState(env,true);
   if (request.method === 'GET' && path === '/admin/site/history') return editorialHistory(env);
   if (request.method === 'GET' && path === '/admin/site/export') return editorialExport(env,url.searchParams.get('id'));

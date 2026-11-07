@@ -2737,8 +2737,8 @@
     }
     return null;
   }
-  // Wer darf schreiben? Admins – und später der Mannschaftsführer seines Teams (mit echter Mitgliederliste).
-  const canEditTeam = () => Boolean(ui().state.member && ui().state.member.isAdmin);
+  // Mannschaftspflege: Admins und die über die Mitgliederliste zugeordneten Spieler.
+  const canEditTeam = key => Boolean(ui().state.member && (ui().state.member.isAdmin || ui().state.member.teams?.includes(key)));
 
   // ---------- Mannschaftsporträt: Magazin-Seite wie die Unterseiten der Startseite ----------
   let portraitDraft = null;   // Live-Vorschau beim Bearbeiten: { key, data }
@@ -2935,7 +2935,7 @@
             if (which === 'more' && (draft.images || []).length >= 100) { toast('Höchstens 100 Fotos in der Galerie.'); break; }
             const img = await ui().loadImage(file);
             const url = ui().largeImage(img, 1800);
-            const ref = await api.putMemberImage(url);
+            const ref = await api.putImage(url);
             images[ref] = url;
             const l = list(which);
             draft[l] = [...(draft[l] || []), ref];
@@ -2978,7 +2978,7 @@
     if (!found) return `${ui().viewHead('Mannschaft', 'Diese Mannschaft gibt es nicht (mehr).', false)}<p><a class="btn" href="#sport">Zu den Mannschaften</a></p>`;
     const { team, season } = found;
     const extra = teamContent(key);
-    const can = canEditTeam();
+    const can = canEditTeam(key);
     const me = ui().state.member;
     const canPhoto = Boolean(me && (me.isAdmin || (me.teams || []).includes(key)));
     const posts = extra.posts.slice().sort((a, b) => String(b.date).localeCompare(String(a.date)));
@@ -3022,6 +3022,7 @@
   TFB.views.team = teamView;
 
   async function saveTeam(key, content, message) {
+    if(ui().api.saveTeamPosts){try{site=await ui().api.saveTeamPosts(key,content.posts,site);await ui().renderView();ui().toast(message,true);}catch(error){ui().toast(error.message);}return;}
     site.teams = { ...(site.teams || {}), [key]: content };
     await commit(message);
   }
@@ -3043,7 +3044,7 @@
         try {
           const img = await ui().loadImage(e.target.files[0]);
           const url = ui().largeImage(img, 1800);
-          const id = await ui().api.putMemberImage(url);
+          const id = await ui().api.putImage(url);
           images[id] = url;
           content.photo = id;
           render();

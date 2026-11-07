@@ -29,8 +29,16 @@
    if(!changes.length)return clone(site);try{localStorage.setItem(draftKey(),JSON.stringify({at:new Date().toISOString(),site}));}catch{throw Error('Der Entwurf konnte nicht gesichert werden. Bitte eine Sicherung herunterladen, bevor du weiterbearbeitest.');}busy++;try{await call('/admin/site/commit',{id:crypto.randomUUID(),changes});privateState=null;localStorage.removeItem(draftKey());await refresh();return await api.site();}catch(e){lastError=e.status===409?e.message:'Nicht veröffentlicht: '+e.message;throw Error(lastError);}finally{busy--;}};
   const next=saves.then(run,run);saves=next.catch(()=>{});return next;};
  api.images=async options=>{await ready;return {...await local.images(options),...images};};
- async function upload(data){if(!admin())throw Error('Nur Admins dürfen Bilder hochladen.');const result=await call('/admin/site/media',{data});images[result.ref]=data;TFB.imageRevision=(TFB.imageRevision||0)+1;return result.ref;}
+ async function upload(data){if(!admin()&&!ui()?.state.member?.teams?.length)throw Error('Bitte mit einem zugeordneten Mannschaftskonto anmelden.');const result=await call(admin()?'/admin/site/media':'/app/team-media',{data});images[result.ref]=data;TFB.imageRevision=(TFB.imageRevision||0)+1;return result.ref;}
  api.putImage=upload;api.putFile=upload;
+ async function saveTeamField(team,field,value,expectedSite){
+  const site=expectedSite||await api.site();
+  await call('/app/team-content',{id:crypto.randomUUID(),team,field,value,expected:site._cms.versions['global:teams']||0});
+  privateState=null;await refresh();return api.site();
+ }
+ api.setTeamPhoto=(team,ref)=>saveTeamField(team,'photo',ref||null);
+ api.setTeamPortrait=(team,portrait)=>saveTeamField(team,'portrait',portrait||{});
+ api.saveTeamPosts=(team,posts,site)=>saveTeamField(team,'posts',posts,site);
  api.setPhotoFrame=async(ref,frame)=>{const site=await api.site();site.photoFrames={...site.photoFrames};if(frame===null)delete site.photoFrames[ref];else site.photoFrames[ref]=TFB.photoFrame.normalize(frame);return (await api.saveSite(site)).photoFrames;};
  api.boardPeople=async()=>{await ready;const source=ref=>images[ref]||ref;return clone((privateState&&admin()?privateState:state)?.boardPeople||[]).map(p=>({...p,avatar:source(p.avatar),avatarLarge:source(p.avatarLarge)}));};
  async function poll(){if(Date.now()-lastCheck<10000||busy||document.hidden||document.querySelector('#sheet-root.open,.editing-page,.editing-team'))return;lastCheck=Date.now();try{const r=await fetch(base+'/public/site-revision',{cache:'no-store'});if(r.ok&&(await r.json()).revision!==state?.revision){await refresh();await TFB.refreshSite?.(true);}}catch{/* Last confirmed content remains visible. */}}
