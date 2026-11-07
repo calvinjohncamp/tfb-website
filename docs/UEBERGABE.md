@@ -1,5 +1,26 @@
 # TFB – Übergabe für die nächste Sitzung
 
+## Deckender iOS-Statusbereich v309 – 07.11.2026
+
+Die Systemzeile für Uhrzeit/WLAN/Batterie soll beim Scrollen keine Seiteninhalte
+durchscheinen lassen. `assets/css/app.css` hinterlegt den oberen Safe-Area-Inset
+mit einer festen, deckenden `body::before`-Fläche in der aktuellen Seitenfarbe.
+Höhe `--safe-top: env(safe-area-inset-top, 0px)`, hoher Stapelwert, keine
+Touch-Ereignisse, kein zusätzlicher Layoutabstand. Auf Desktop ohne Inset Höhe 0.
+Root-Hintergrund, theme-color-Meta und Manifest theme_color sind #EFEFEF;
+Apple-Statusstil bleibt `default`, nicht `black-translucent`. Manifest-URL v309,
+Service-Worker-Cache v309. Symbole und restliche Gestaltung bleiben erhalten.
+
+Grundlage: [WebKit Safe-Area-Dokumentation](https://webkit.org/blog/7929/designing-websites-for-iphone-x/).
+`node tools/test-browser-status-area.mjs` bestanden: beide Themen, iPad hoch/quer,
+iPhone und Desktop, berechnete Deckkraft/Position, Pixelvergleich mit sichtbarem
+bzw. verborgenem grellem Inhalt unter der Fläche. Die Inset-Höhen sind im lokalen
+WebKit explizit simuliert; eine echte iOS-Systemleiste lässt sich damit nicht
+prüfen. Abschließende Sichtprüfung auf dem iPad durch den Nutzer bleibt sinnvoll.
+Veröffentlichungsnachweis folgt nach erfolgreichem Pages-Lauf.
+
+---
+
 ## Aktuell-Karussells im regulären Artikellook v308 – 07.11.2026
 
 Aktuell-Karussells zeigen unter dem unveränderten Karussell nur das ausgeschriebene
