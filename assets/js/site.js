@@ -232,6 +232,7 @@
     });
     return blocks.map((x) => x.trim()).filter(Boolean).join('\n\n');
   }
+  const signatureText = text => `<span class="signature-highlight">${esc(text)}</span>`;
   const paragraphs = (text) => String(text || '').split(/\n{2,}/).map((p) => {
     const h = p.match(/^##\s+(.+)/);
     return h ? `<h3 class="text-sub">${inline(h[1])}</h3>` : `<p>${inline(p)}</p>`;
@@ -275,7 +276,7 @@
         <div class="sec-bar"><span>${SECTION_LABELS[x.type]}</span>
           ${x.type === 'h' || x.type === 'quote' ? `<select class="sec-color" name="sec_${i}_color" aria-label="Hervorhebung für ${SECTION_LABELS[x.type]}">
             <option value="black">Schwarz</option>
-            <option value="signature" ${x.color === 'signature' ? 'selected' : ''}>${document.documentElement?.classList.contains('tfb-logo-midnight-amber') ? 'Gelb unterstreichen' : 'Signaturfarbe'}</option>
+            <option value="signature" ${x.color === 'signature' ? 'selected' : ''}>${document.documentElement?.classList.contains('tfb-logo-midnight-amber') ? 'Freihand-Markierung' : 'Signaturfarbe'}</option>
           </select>` : ''}
           <button type="button" data-secmove="-1" data-sec-i="${i}" ${i === 0 ? 'disabled' : ''} aria-label="Nach oben">${icon.up}</button>
           <button type="button" data-secmove="1" data-sec-i="${i}" ${i === list.length - 1 ? 'disabled' : ''} aria-label="Nach unten">${icon.down}</button>
@@ -500,7 +501,7 @@
                   ${page === 'home' && n === '01' && !isEdit && !preview ? contentOverviewLink('home') : ''}
                 </div>
                 ${wrap(`<h2>${titleWords(b.title)}</h2>`)}
-                ${b.subtitle ? `<p class="feature-sub">${esc(b.subtitle)}</p>` : ''}
+                ${b.subtitle ? `<p class="feature-sub">${signatureText(b.subtitle)}</p>` : ''}
                 ${slot('left', 'Link hierher')}
               </div>
               <div class="feature-right">
@@ -523,7 +524,7 @@
           </section>`;
         }
         if (b.id === 's-training') return `<section class="training-coach">
-          <div class="training-coach-copy">${b.subtitle ? `<p class="feature-sub">${esc(b.subtitle)}</p>` : ''}
+          <div class="training-coach-copy">${b.subtitle ? `<p class="feature-sub">${signatureText(b.subtitle)}</p>` : ''}
           ${b.title ? `<h2>${esc(b.title)}</h2>` : ''}${paragraphs(b.text)}
           <div class="training-contact">${b.phone ? `<a href="tel:${esc(b.phone.replace(/[^+0-9]/g, ''))}">${esc(b.phone)}</a>` : ''}
           ${b.email ? `<a href="mailto:${esc(b.email)}">${esc(b.email)}</a>` : ''}</div></div>
@@ -553,7 +554,7 @@
             ${list.length
               ? `<div class="gallery-media"><div class="${mosaic ? `collage module-collage collage-${Math.min(list.length, 5)}` : 'gallery-grid'}">${list.map((ref, i) => `<button type="button" class="${mosaic ? 'collage-item' : 'gallery-item'}" data-action="gallery-open" data-block="${esc(b.id)}" data-index="${i}" aria-label="Foto ${i + 1} von ${list.length} groß ansehen">${picture(ref, ref)}</button>`).join('')}</div>${b.date ? dateBadge(b.date, accentDate) : ''}</div>`
               : '<p class="muted small empty-hint">Noch keine Fotos – über den Stift Fotos hinzufügen.</p>'}
-            ${b.date ? `<p class="post-date"><time datetime="${esc(b.date)}">${esc(fmt(b.date, { day: 'numeric', month: 'long', year: 'numeric' }))}</time></p>` : ''}
+            ${b.date ? `<p class="post-date"><time datetime="${esc(b.date)}">${signatureText(fmt(b.date, { day: 'numeric', month: 'long', year: 'numeric' }))}</time></p>` : ''}
             ${b.textPosition !== 'above' ? text : ''}
           </section>`;
       }
@@ -717,7 +718,7 @@
 
   function mediaNewsPost(b, {page='aktuell'} = {}) {
     const href=`#${page}/${encodeURIComponent(b.id)}`;
-    return `<article class="post card media-news" data-site-content="${esc(b.id)}">${TFB.homeMedia.cover(b,href,ref=>images[ref]||ref)}<div class="post-body">${b.date?`<p class="post-date">${esc(fmt(b.date,{day:'numeric',month:'long',year:'numeric'}))}</p>`:''}${b.kicker?`<p class="media-news-kicker">${esc(b.kicker)}</p>`:''}<h3><a class="post-title-link" href="${href}">${esc(b.title)}</a></h3>${b.subtitle?`<p class="media-news-subtitle">${esc(b.subtitle)}</p>`:''}${paragraphs(b.text)}<p><a class="media-news-link" href="${href}">${esc(b.mediaButtonLabel||'Beitrag ansehen')}</a></p></div></article>`;
+    return `<article class="post card media-news" data-site-content="${esc(b.id)}">${TFB.homeMedia.cover(b,href,ref=>images[ref]||ref)}<div class="post-body">${b.date?`<p class="post-date">${signatureText(fmt(b.date,{day:'numeric',month:'long',year:'numeric'}))}</p>`:''}${b.kicker?`<p class="media-news-kicker">${signatureText(b.kicker)}</p>`:''}<h3><a class="post-title-link" href="${href}">${esc(b.title)}</a></h3>${b.subtitle?`<p class="media-news-subtitle">${signatureText(b.subtitle)}</p>`:''}${paragraphs(b.text)}<p><a class="media-news-link" href="${href}">${esc(b.mediaButtonLabel||'Beitrag ansehen')}</a></p></div></article>`;
   }
   const mediaDetail = (block,page='aktuell',backHref) => TFB.homeMedia.detail(block,{imageOf:ref=>images[ref]||ref,paragraphs,admin:ui().state.member?.isAdmin,page,backHref});
 
@@ -729,7 +730,7 @@
         ${photos}
         <div class="post-body">
           ${archive && !photos && b.date ? `<div class="archive-date-standalone">${dateBadge(b.date)}</div>` : ''}
-          ${!archive || fullDate ? `<p class="post-date">${esc(fullDate)}</p>` : ''}
+          ${!archive || fullDate ? `<p class="post-date">${signatureText(fullDate)}</p>` : ''}
           <h3>${archive?.href ? `<a class="post-title-link" href="${esc(archive.href)}">${esc(b.title)}</a>` : esc(b.title)}</h3>
           ${archive ? archive.body : paragraphs(b.text)}
         </div>
@@ -814,7 +815,7 @@
             ${sideImage ? `<div class="story-side-img ${esc(String(b.layout).replace('-right', ''))}">${picture(b.image, b.id, b.title)}</div>` : ''}
             <p class="feature-kicker">${n ? `<span>${esc(n)}</span>` : ''}${esc(b.kicker || '')}</p>
             <h1>${esc(b.title)}</h1>
-            ${b.subtitle ? `<p class="feature-sub">${esc(b.subtitle)}</p>` : ''}
+            ${b.subtitle ? `<p class="feature-sub">${signatureText(b.subtitle)}</p>` : ''}
             ${b.link && b.link.url ? `<div class="story-link">${linkMarkup(b.link)}</div>` : ''}
           </header>
           <div class="story-body">
@@ -825,10 +826,10 @@
               let first = true;
               return secs.map((x) => {
                 const color = x.color === 'signature' ? ' is-signature' : '';
-                if (x.type === 'h') return `<h2 class="story-h${color}">${esc(x.text)}</h2>`;
+                if (x.type === 'h') return `<h2 class="story-h${color}">${color ? signatureText(x.text) : esc(x.text)}</h2>`;
                 if (x.type === 'quote') {
                   const by = (x.by || '').trim();
-                  return `<blockquote class="story-quote${color}"><p>${esc(x.text)}</p>${by ? `<div class="story-quote-source"><span aria-hidden="true">→</span> ${esc(by)}</div>` : ''}</blockquote>`;
+                  return `<blockquote class="story-quote${color}"><p>${color ? signatureText(x.text) : esc(x.text)}</p>${by ? `<div class="story-quote-source"><span aria-hidden="true">→</span> ${esc(by)}</div>` : ''}</blockquote>`;
                 }
                 const html = first ? leadLetters(paragraphs(x.text), drop) : paragraphs(x.text);
                 first = false;
@@ -2075,7 +2076,7 @@
         <span class="rich-group" role="group" aria-label="Schrift">
           <button type="button" data-rich="bold" title="Fett"><b>F</b></button>
           <button type="button" data-rich="italic" title="Kursiv"><i>K</i></button>
-          <button type="button" data-rich="hervorheben" aria-label="Unterstreichen / hervorheben" title="Unterstreichen / hervorheben"><span class="highlight-sample">U</span></button>
+          <button type="button" data-rich="hervorheben" aria-label="Freihand hervorheben" title="Freihand hervorheben"><span class="highlight-sample">M</span></button>
           <button type="button" data-rich="rot" title="Rot"><span class="sw sw-red"></span></button>
         </span>
         <span class="rich-group" role="group" aria-label="Verlinkung">
@@ -2084,7 +2085,7 @@
         <span class="rich-group" role="group" aria-label="Schrift">
           <button type="button" data-rich="bold" title="Fett"><b>F</b></button>
           <button type="button" data-rich="italic" title="Kursiv"><i>K</i></button>
-          <button type="button" data-rich="hervorheben" aria-label="Unterstreichen / hervorheben" title="Unterstreichen / hervorheben"><span class="highlight-sample">U</span></button>
+          <button type="button" data-rich="hervorheben" aria-label="Freihand hervorheben" title="Freihand hervorheben"><span class="highlight-sample">M</span></button>
           <button type="button" data-rich="underline" title="Unterstrichen"><u>U</u></button>
         </span>
         <span class="rich-group" role="group" aria-label="Farbe">

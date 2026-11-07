@@ -91,7 +91,7 @@ test('Home and Aktuell share galleries with optional article date and preserved 
     const html = await context.TFB.views[key]();
     assert.match(html, /block-gallery has-date/);
     assert.match(html, /class="date-badge"/);
-    assert.match(html, /<time datetime="2026-10-13">13. Oktober 2026<\/time>/);
+    assert.match(html, /<time datetime="2026-10-13"><span class="signature-highlight">13. Oktober 2026<\/span><\/time>/);
     assert.doesNotMatch(html, /Unser eigener Galerietext/);
     assert.equal((html.match(/data-action="gallery-open"/g) || []).length, 2);
   }

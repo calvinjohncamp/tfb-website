@@ -1,4 +1,4 @@
-/* Gelbe Farbwelt: bestehende Magazin-Typografie, Akzente als Unterstreichung.
+/* Gelbe Farbwelt: bestehende Magazin-Typografie, Akzente als Freihand-Markierung.
    Chat und Verabreden verwenden weiterhin ihre bisherigen Regeln. */
 .tx-highlight {
   text-decoration-line: underline;
@@ -14,11 +14,7 @@
 :root.tfb-logo-midnight-amber .site-page .link-card-body em {
   color: inherit;
   font-weight: inherit;
-  text-decoration-line: underline;
-  text-decoration-color: var(--tfb-signature-yellow);
-  text-decoration-thickness: 2px;
-  text-underline-offset: .18em;
-  text-decoration-skip-ink: auto;
+  text-decoration: none;
 }
 /* Ältere Inhalte speichern Fett und Signaturfarbe in beiden Verschachtelungen. */
 :root.tfb-logo-midnight-amber :is(.site-page, .story, .post, .event, .rich-area) :is(.tx-red, .tx-highlight) :is(strong, b),
@@ -57,10 +53,12 @@
 :root.tfb-logo-midnight-amber .club-archive-link > span { display: none; }
 /* Derselbe Akzent ist im Editor direkt sichtbar. */
 :root.tfb-logo-midnight-amber .sec:has(.sec-color option[value="signature"]:checked) :is(.sec-h-input, .sec-q-input) {
-  color: var(--ink); text-decoration: underline var(--tfb-signature-yellow) 2px; text-underline-offset: .18em;
+  color: var(--ink); text-decoration: none;
+  background-image: url("../brand/tfb-highlight-freihand.svg");
+  background-size: 100% 1.1em; background-position: left center; background-repeat: no-repeat;
 }
 .rich-tools [data-rich="hervorheben"] .highlight-sample {
-  text-decoration: underline var(--signal) 2px; text-underline-offset: 3px;
+  text-decoration: none;
 }
 /* Auch Datumsmarken und Medien-Unterseiten auf Home bleiben ohne gelbe Schrift. */
 :root.tfb-logo-midnight-amber body .view[data-view="home"] .date-badge {
@@ -73,7 +71,39 @@
 :root.tfb-logo-midnight-amber .site-page[data-page="verein"] .more-link,
 :root.tfb-logo-midnight-amber .view[data-view="home"] :is(.hm-entry-intro, .hm-entry-kicker),
 :root.tfb-logo-midnight-amber .view[data-view="aktuell"] :is(.media-news-kicker, .media-news-subtitle, .hm-entry-intro, .hm-entry-kicker) {
-  color: inherit; font-weight: inherit;
-  text-decoration: underline var(--tfb-signature-yellow) 2px;
-  text-underline-offset: .18em; text-decoration-skip-ink: auto;
+  color: inherit; font-weight: inherit; text-decoration: none;
+}
+
+/* Native Inline-Hintergründe folgen jeder Textzeile, auch beim iPad-Umbruch.
+   Keine absolut positionierten Flächen oder nachträglich gemessenen Koordinaten. */
+:root.tfb-logo-midnight-amber :is(.site-page, .story, .post, .event, .rich-area) :is(.tx-red, .tx-highlight, u),
+:root.tfb-logo-midnight-amber .story-head .feature-sub .signature-highlight,
+:root.tfb-logo-midnight-amber :is(.story-h.is-signature, .story-quote.is-signature p) .signature-highlight,
+:root.tfb-logo-midnight-amber .site-page .post-date .signature-highlight,
+:root.tfb-logo-midnight-amber .view[data-view="home"] :is(.hm-entry-intro, .hm-entry-kicker) .signature-highlight,
+:root.tfb-logo-midnight-amber .view[data-view="aktuell"] :is(.media-news-kicker, .media-news-subtitle, .hm-entry-intro, .hm-entry-kicker) .signature-highlight,
+:root.tfb-logo-midnight-amber .story-lead,
+:root.tfb-logo-midnight-amber .story .more-link:not(.back),
+:root.tfb-logo-midnight-amber .site-page .link-card-body em,
+:root.tfb-logo-midnight-amber .site-page[data-page="verein"] .more-link,
+:root.tfb-logo-midnight-amber .rich-tools [data-rich="hervorheben"] .highlight-sample {
+  text-decoration: none;
+  background-image: url("../brand/tfb-highlight-freihand.svg");
+  background-size: 100% 100%; background-repeat: no-repeat;
+  -webkit-box-decoration-break: clone; box-decoration-break: clone;
+  padding-inline: .06em; margin-inline: -.06em;
+}
+/* Gelbe Rahmen tragen durchgängig die Logo-Farbe als Beschriftung. */
+:root.tfb-logo-midnight-amber body .site-page[data-page="home"] .feature :is(.link-chip, .feature-link>.btn.signal, .feature-more>.more-link, .content-overview-tools>.btn),
+:root.tfb-logo-midnight-amber .story-link .link-chip,
+:root.tfb-logo-midnight-amber body .team-news-btn:is(.has, .has-portrait),
+:root.tfb-logo-midnight-amber body .team-news-btn:is(.has, .has-portrait) :is(em, span),
+:root.tfb-logo-midnight-amber .media-news-link {
+  color: var(--tfb-midnight-blue);
+}
+:root.tfb-logo-midnight-amber .story-link .link-chip { border-color: var(--tfb-signature-yellow); }
+
+/* Verschachtelte alte/neue Auszeichnungen erzeugen keinen doppelten Farbauftrag. */
+:root.tfb-logo-midnight-amber :is(.site-page, .story, .post, .event, .rich-area) :is(.tx-red, .tx-highlight, u) :is(.tx-red, .tx-highlight, u) {
+  background-image: none; padding-inline: 0; margin-inline: 0;
 }

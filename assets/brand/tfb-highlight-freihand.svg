@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="36" viewBox="0 0 240 36" preserveAspectRatio="none">
+  <path fill="#FFC300" fill-opacity=".31" d="M2 7 Q12 4 27 6 T60 5 Q82 3 105 6 T149 5 Q169 3 193 5 T238 6 L237 29 Q216 31 195 28 T151 30 Q129 32 106 29 T62 30 Q39 32 21 29 L1 30Z"/>
+  <path fill="#FFC300" fill-opacity=".1" d="M1 11 Q28 8 53 10 T103 9 Q134 7 159 10 T208 9 L239 10 238 25 Q208 27 180 25 T126 26 Q98 28 71 25 T22 27 L2 26Z"/>
+  <path fill="#FFC300" fill-opacity=".07" d="M4 6 Q37 3 68 5 T133 4 Q174 2 210 5 L237 4 237 8 Q209 6 179 8 T117 7 Q81 5 49 8 L3 9Z"/>
+</svg>
