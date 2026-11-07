@@ -26,6 +26,55 @@
     };
     return `<section class="hm-collection"><div class="story-tools">${admin?`<button type="button" class="view-close" data-action="feature-edit" data-page="${esc(page)}" data-id="${esc(block.id)}" aria-label="Sammlung bearbeiten">${TFB.ui.icon.pencil}</button>`:''}<a class="view-close" href="${esc(backHref||'#'+page)}" aria-label="${backHref?'Zurück zum Clubarchiv':page==='home'?'Zurück zur Startseite':'Zurück zu Aktuell'}">${TFB.ui.icon.close}</a></div>${list.map(markup).join('')}${list.length>count?`<p class="hm-all"><button type="button" class="btn" data-hm-all>Alle ${list.length} Beiträge anzeigen</button></p>`:''}</section>`;
   }
+  // Blend complete paint orders on one stable drawing surface. Every picture is
+  // opaque in both orders: exposed edges remain visible while overlap changes.
+  function createOrbitPainter(node,cards) {
+    const canvas=document.createElement('canvas'),a=document.createElement('canvas'),b=document.createElement('canvas');
+    const out=canvas.getContext('2d'),left=a.getContext('2d'),right=b.getContext('2d');
+    if(!out||!left||!right)return null;
+    canvas.className='hm-paint';canvas.setAttribute('aria-hidden','true');
+    node.querySelector('.hm-stage').prepend(canvas);
+    let width=0,height=0,ratio=1,top=0;
+    const rounded=(ctx,x,y,w,h,r)=>{
+      ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();
+    };
+    function draw(ctx,order,poses,w,h){
+      ctx.setTransform(ratio,0,0,ratio,0,0);ctx.clearRect(0,0,w,h);
+      for(const i of order){
+        const img=cards[i].querySelector('img');if(cards[i].dataset.hmLoaded!=='true'||!img.naturalWidth)continue;
+        const pose=poses[i],cw=pose.width,ch=cw*5/4;
+        ctx.save();ctx.translate(w/2+pose.x,top+pose.y);ctx.rotate(pose.angle*Math.PI/180);ctx.scale(pose.scale,pose.scale);
+        ctx.shadowColor='#0006';ctx.shadowBlur=26*ratio;ctx.shadowOffsetY=12*ratio;
+        rounded(ctx,-cw/2,-ch/2,cw,ch,5);ctx.fillStyle='#302d2a';ctx.fill();
+        ctx.shadowColor='transparent';ctx.shadowBlur=0;ctx.shadowOffsetY=0;
+        rounded(ctx,-cw/2,-ch/2,cw,ch,5);ctx.clip();
+        const fit=Math.min(cw/img.naturalWidth,ch/img.naturalHeight),iw=img.naturalWidth*fit,ih=img.naturalHeight*fit;
+        ctx.drawImage(img,-iw/2,-ih/2,iw,ih);ctx.restore();
+      }
+    }
+    return {
+      render(poses,before,after,weight,w,h){
+        if(w!==width||h!==height){
+          width=w;height=h;ratio=Math.min(devicePixelRatio||1,2,Math.sqrt(3000000/Math.max(1,w*h)));
+          for(const surface of [canvas,a,b]){surface.width=Math.max(1,Math.round(w*ratio));surface.height=Math.max(1,Math.round(h*ratio));}
+          top=parseFloat(getComputedStyle(cards[0]).top)||h*.48;
+        }
+        draw(left,before,poses,w,h);
+        out.setTransform(1,0,0,1,0,0);out.clearRect(0,0,canvas.width,canvas.height);
+        out.globalCompositeOperation='source-over';out.globalAlpha=1;out.drawImage(a,0,0);
+        if(weight>0){
+          draw(right,after,poses,w,h);
+          // Premultiplied addition keeps shared opaque picture coverage opaque;
+          // source-over fades would expose the backdrop at the halfway point.
+          out.clearRect(0,0,canvas.width,canvas.height);out.globalAlpha=1-weight;out.drawImage(a,0,0);
+          out.globalCompositeOperation='lighter';out.globalAlpha=weight;out.drawImage(b,0,0);
+          out.globalCompositeOperation='source-over';out.globalAlpha=1;
+        }
+        node.classList.add('hm-painted');
+      },
+      destroy(){canvas.remove();a.width=a.height=b.width=b.height=1;node.classList.remove('hm-painted');}
+    };
+  }
   const mounted = new WeakSet(), controllers = new Set();
   function mountOrbit(node,initial={}) {
     const cards = [...node.querySelectorAll('.hm-card')], n = cards.length, button = node.querySelector('.hm-pause'), reduced = matchMedia('(prefers-reduced-motion: reduce)');
@@ -33,24 +82,23 @@
     const enlarged=node.classList.contains('hm-zoom-orbit'), hoverable=matchMedia('(hover: hover) and (pointer: fine)');
     let keyboard=false,allowMotion=Boolean(initial.allowMotion);
     const motionBlocked=()=>reduced.matches&&!allowMotion;
-    const loaded=cards.map(()=>false);
+    const loaded=cards.map(()=>false),painter=createOrbitPainter(node,cards);
     const nextImagesReady=()=>loaded[Math.floor(phase)%n]&&loaded[(Math.floor(phase)+1)%n];
     const depthOrder = at => cards.map((_,i)=>({i,depth:Math.cos(2*Math.PI*(i-at-.00001)/n)})).sort((a,b)=>a.depth-b.depth||a.i-b.i).map(x=>x.i);
     const layout = () => {
       const w=node.clientWidth,h=node.clientHeight,percent=n===1?64:n===2?54:n===3?50:48;
       const cardWidth=enlarged?Math.min(w*(w<h?.82:percent/100),h*(n===1?.84:.66)*4/5)+'px':node.closest('.media-news')?Math.min(w*percent/100,h*(n===1?.88:.72)*4/5)+'px':percent+'%';
       const step=Math.floor(phase),progress=phase-step,before=depthOrder(step),after=depthOrder(step+1),order=progress<.5?before:after;
-      // Change paint order only while receding cards are fully transparent.
-      // Reuse the real cards: creating/removing composited image copies caused
-      // flashes in the clipped inline view on iPad, even when zoom looked fine.
-      const distance=Math.min(1,Math.abs(progress-.5)*2),fade=distance*distance*(3-2*distance);
-      cards.forEach((card,i)=>{
+      const poses=cards.map((card,i)=>{
         const angle=2*Math.PI*(i-phase)/n,c=Math.cos(angle),sin=Math.sin(angle);
+        const pose={x:sin*w*.285,y:-(1-c)*h*.13,angle:-sin*10,scale:.58+.42*(c+1)/2,width:cardWidth.endsWith('%')?w*parseFloat(cardWidth)/100:parseFloat(cardWidth)};
         card.style.width=cardWidth;
-        card.style.transform=`translate(-50%,-50%) translate(${sin*w*.285}px,${-(1-c)*h*.13}px) rotate(${-sin*10}deg) scale(${.58+.42*(c+1)/2})`;
-        card.style.zIndex=String(order.indexOf(i)+1);
-        card.style.opacity=String(!reduced.matches&&after.indexOf(i)<before.indexOf(i)?fade:1);
+        card.style.transform=`translate(-50%,-50%) translate(${pose.x}px,${pose.y}px) rotate(${pose.angle}deg) scale(${pose.scale})`;
+        card.style.zIndex=String(order.indexOf(i)+1);card.style.opacity='1';
+        return pose;
       });
+      const mix=progress*progress*(3-2*progress);
+      painter?.render(poses,before,after,reduced.matches?0:mix,w,h);
       node.dataset.hmOrder=order.join(',');node.dataset.hmPhase=String(phase);node.dataset.hmReady='true';
     };
     const stop = () => {clearTimeout(timer);cancelAnimationFrame(frame);node.dataset.hmRunning='false';};
@@ -74,14 +122,14 @@
         if(loaded[i]||!img.naturalWidth)return;
         try{await img.decode();}catch{return;}
         if(!node.isConnected)return;
-        loaded[i]=true;card.dataset.hmLoaded='true';
+        loaded[i]=true;card.dataset.hmLoaded='true';layout();
         // Keep the current picture until its successor can actually be drawn.
         if(node.dataset.hmRunning!=='true')sync();
       };
       img.addEventListener('load',reveal);
       if(img.complete)queueMicrotask(reveal);
     });
-    layout();sync();return {node,getState:()=>({phase,paused,allowMotion}),setState(state){phase=state.phase;paused=state.paused;allowMotion=Boolean(state.allowMotion);layout();sync();},refresh:sync,destroy(){stop();document.removeEventListener('keydown',keyInput);document.removeEventListener('pointerdown',pointerInput);intersection.disconnect();resize.disconnect();reduced.removeEventListener('change',changed);document.removeEventListener('visibilitychange',visibility);}};
+    layout();sync();return {node,getState:()=>({phase,paused,allowMotion}),setState(state){phase=state.phase;paused=state.paused;allowMotion=Boolean(state.allowMotion);layout();sync();},refresh:sync,destroy(){stop();painter?.destroy();document.removeEventListener('keydown',keyInput);document.removeEventListener('pointerdown',pointerInput);intersection.disconnect();resize.disconnect();reduced.removeEventListener('change',changed);document.removeEventListener('visibilitychange',visibility);}};
   }
   function closeZoom(restoreFocus=true) {
     if(!zoom)return;
@@ -97,7 +145,7 @@
     hydrate();const node=trigger.closest('[data-hm-orbit]'),source=[...controllers].find(c=>c.node===node);
     if(!source)return;
     const dialog=document.createElement('dialog');dialog.className='hm-zoom-dialog';dialog.setAttribute('aria-label','Karussell in großer Ansicht');
-    const enlarged=node.cloneNode(true);enlarged.className='hm-orbit hm-zoom-orbit';enlarged.querySelectorAll('.hm-transition-card,.hm-zoom-button').forEach(el=>el.remove());
+    const enlarged=node.cloneNode(true);enlarged.className='hm-orbit hm-zoom-orbit';enlarged.querySelectorAll('.hm-paint,.hm-transition-card,.hm-zoom-button').forEach(el=>el.remove());
     enlarged.querySelectorAll('img').forEach(img=>img.loading='eager');
     const close=document.createElement('button');close.type='button';close.className='hm-zoom-close';close.setAttribute('aria-label','Große Ansicht schließen');close.textContent='×';
     dialog.append(enlarged,close);document.body.append(dialog);document.body.classList.add('hm-zoom-open');dialog.showModal();

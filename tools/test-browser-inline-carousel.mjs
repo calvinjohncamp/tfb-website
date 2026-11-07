@@ -29,8 +29,16 @@ for(const engine of [chromium,webkit]){
      return (await page.locator('.hm-orbit').screenshot()).toString('base64');
     };
     await page.evaluate(phase=>controller.setState({phase,paused:true}),step+.25);
-    assert(await page.locator('.hm-card').evaluateAll(cards=>cards.some(card=>Math.abs(Number(card.style.opacity)-.5)<.001)),'Outgoing picture fades across the whole half-step, not in a short burst');
+    assert(await page.locator('.hm-card').evaluateAll(cards=>cards.every(card=>card.style.opacity==='1')),'Real cards stay opaque; only overlapping paint order blends');
     const before=await snapshot(step+.49999),after=await snapshot(step+.50001);
+    const midpoint=await snapshot(step+.5);
+    const exposed=await page.evaluate(async({data,index})=>{
+     const rect=document.querySelectorAll('.hm-card')[index].getBoundingClientRect(),orbit=document.querySelector('.hm-orbit').getBoundingClientRect();
+     const img=new Image();img.src='data:image/png;base64,'+data;await img.decode();const c=document.createElement('canvas');c.width=img.width;c.height=img.height;const ctx=c.getContext('2d');ctx.drawImage(img,0,0);
+     return [...ctx.getImageData(Math.round((rect.x-orbit.x+rect.width*.2)*devicePixelRatio),Math.round((rect.y-orbit.y+rect.height*.5)*devicePixelRatio),1,1).data].slice(0,3);
+    },{data:midpoint,index:step});
+    const expected=[[182,50,40],[23,107,120],[70,113,46],[130,70,124],[189,107,19]][step];
+    assert(exposed.every((channel,i)=>Math.abs(channel-expected[i])<=2),`${engine.name()} ${kind}: outgoing exposed edge must retain its full image color: ${exposed}`);
     const difference=await page.evaluate(async({before,after})=>{
      const pixels=async data=>{const img=new Image();img.src='data:image/png;base64,'+data;await img.decode();const c=document.createElement('canvas');c.width=img.width;c.height=img.height;const ctx=c.getContext('2d');ctx.drawImage(img,0,0);return ctx.getImageData(0,0,c.width,c.height).data;};
      const a=await pixels(before),b=await pixels(after);let changed=0,total=0;
@@ -41,9 +49,10 @@ for(const engine of [chromium,webkit]){
     await page.evaluate(phase=>controller.setState({phase,paused:true}),step+1);
     assert.deepEqual(await page.locator('.hm-card').evaluateAll(cards=>cards.map(card=>card.style.opacity)),Array(5).fill('1'));
     assert.equal(await page.locator('.hm-stage').count(),1);
-    assert.equal(await page.locator('.hm-stage > *').count(),5,'No temporary image layers');
+    assert.equal(await page.locator('.hm-stage > .hm-card').count(),5,'Five original linked cards');
+    assert.equal(await page.locator('.hm-stage > canvas').count(),1,'One persistent paint surface, never temporary image layers');
    }
-   await page.locator('.hm-orbit').screenshot({path:`/tmp/tfb298-${engine.name()}-${kind}.png`});
+   await page.locator('.hm-orbit').screenshot({path:`/tmp/tfb300-${engine.name()}-${kind}.png`});
   }
   assert.deepEqual(errors,[]);
   console.log(`PASS ${engine.name()}: all five depth switches visually continuous in inline Home, inline News and zoom; no temporary layers; all cards opaque at rest.`);
