@@ -48,13 +48,28 @@ try {
   await page.locator('[data-cphoto]').setInputFiles(files.map((data,index) => ({name:`slide-${index+1}.png`,mimeType:'image/png',buffer:Buffer.from(data,'base64')})));
   await page.waitForFunction(() => document.querySelectorAll('[data-compose] .compose-medium').length === 4 && !document.querySelector('[data-compose] [type="submit"]').disabled);
   assert.equal(await page.locator('[data-cdesign], [data-cslideshow]').count(),0,'No media editor in the simplified composer');
-  await page.locator('[name="photoPeople"]').selectOption('no');
+  await page.locator('[name="photoPeople"][value="no"]').check();
   assert.equal(await page.locator('[name="photoOk"]').count(),0,'No consent checkbox for no people');
-  await page.locator('[name="photoView"]').selectOption('carousel');
-  assert.equal(await page.locator('[name="photoPeople"]').inputValue(),'no','Answer survives composer redraw');
+  await page.locator('[name="photoView"][value="carousel"]').check();
+  assert.equal(await page.locator('[name="photoPeople"]:checked').inputValue(),'no','Answer survives composer redraw');
+  assert.equal(await page.getByRole('group',{name:'Bilder anzeigen als',exact:true}).getByRole('radio').count(),3);
+  assert.equal(await page.locator('select[name="photoView"],select[name="photoPeople"]').count(),0);
+  await page.locator('[name="photoView"]:checked').focus();
+  await page.locator('[name="photoView"]:checked').press('ArrowRight');
+  assert.equal(await page.locator('[name="photoView"]:checked').inputValue(),'slideshow','Arrow keys select the next display mode');
+  assert.equal(await page.locator('[name="photoView"]:checked').evaluate(el=>el===document.activeElement),true,'Keyboard focus survives redraw');
+  await page.locator('[name="photoView"][value="carousel"]').check();
+
   assert.equal(await page.locator('[data-cslideshow]').count(),0);
-  await page.locator('[name="photoPeople"]').selectOption('yes');
+  await page.locator('[name="photoPeople"][value="yes"]').check();
   await page.locator('[name="photoOk"]').check();
+  assert.equal(await page.locator('[name="photoPeople"]:checked').count(),1);
+  await page.screenshot({path:'/tmp/tfb-chat-options-desktop.png'});
+  await page.setViewportSize({width:390,height:844});
+  assert.equal(await page.locator('[data-compose]').evaluate(el=>el.scrollWidth<=el.clientWidth),true,'Choice groups fit mobile width');
+  await page.screenshot({path:'/tmp/tfb-chat-options-mobile.png'});
+  await page.setViewportSize({width:1280,height:1000});
+
   await page.locator('[data-compose] [type="submit"]').click();
   await page.locator('.cs-carousel').waitFor();
   const id = await page.locator('.cs-carousel').getAttribute('data-cs-post');
@@ -118,14 +133,14 @@ try {
   await page.screenshot({path:'/tmp/tfb-chat-carousel-mobile.png'});
   // Editing retains the selected mode; existing collage and slideshow still work.
   await page.locator(`.chat-post-row:has([data-cs-post="${id}"]) [data-action="post-edit"]`).click();
-  assert.equal(await page.locator('[name="photoView"]').inputValue(),'carousel');
-  await page.locator('[name="photoView"]').selectOption('collage');
-  await page.locator('[name="photoPeople"]').selectOption('yes');
+  assert.equal(await page.locator('[name="photoView"]:checked').inputValue(),'carousel');
+  await page.locator('[name="photoView"][value="collage"]').check();
+  await page.locator('[name="photoPeople"][value="yes"]').check();
   await page.locator('[name="photoOk"]').check();await page.locator('[data-compose] [type="submit"]').click();
   await page.locator(`[data-cs-photo-view] [data-cs-collage]:not([hidden])`).first().waitFor();
   await page.locator(`[data-action="post-edit"][data-id="${id}"]`).click();
-  await page.locator('[name="photoView"]').selectOption('slideshow');
-  await page.locator('[name="photoPeople"]').selectOption('yes');
+  await page.locator('[name="photoView"][value="slideshow"]').check();
+  await page.locator('[name="photoPeople"][value="yes"]').check();
   await page.locator('[name="photoOk"]').check();await page.locator('[data-compose] [type="submit"]').click();
   await page.locator('[data-cs-carousel]:not([hidden]) [data-cs-auto]').first().waitFor();
   await page.waitForFunction(() => document.querySelector('[data-cs-auto] [data-cs-published-page]:not([hidden]):not([data-cs-outgoing])')?.dataset.csPublishedPage !== '0');

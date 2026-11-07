@@ -134,7 +134,7 @@ try {
   await replyForm.locator('[data-comment-upload]').setInputFiles(files.slice(0, 3));
   await page.waitForFunction(() => document.querySelectorAll('[data-comment-form] .gallery-thumb').length === 3);
   assert.equal(await replyForm.locator('[name="commentPhotoOk"]').count(), 0);
-  await replyForm.locator('[name="commentPhotoPeople"]').selectOption('yes');
+  await replyForm.locator('[name="commentPhotoPeople"][value="yes"]').check();
   await replyForm.locator('[type="submit"]').click();
   await replyForm.locator('.form-error').getByText('Bitte bestätigen, dass die abgebildeten Personen einverstanden sind.').waitFor();
   await replyForm.locator('[name="commentPhotoOk"]').check();
@@ -150,7 +150,7 @@ try {
   const editPhotos = page.locator('[data-comment-edit]');
   assert.equal(await editPhotos.locator('.gallery-thumb').count(), 3);
   await editPhotos.locator('[data-comment-remove]').first().click();
-  await editPhotos.locator('[name="commentPhotoPeople"]').selectOption('no');
+  await editPhotos.locator('[name="commentPhotoPeople"][value="no"]').check();
   assert.equal(await editPhotos.locator('[name="commentPhotoOk"]').count(), 0);
   await editPhotos.locator('[type="submit"]').click();
   await page.locator('.comment .message-collage.n2').waitFor();
@@ -187,11 +187,11 @@ try {
   assert.equal(await compose.locator('[name="photoOk"]').count(), 0);
   await compose.locator('[type="submit"]').click();
   await compose.locator('.form-error').getByText('Bitte angeben, ob Personen erkennbar abgebildet sind.').waitFor();
-  await compose.locator('[name="photoPeople"]').selectOption('yes');
+  await compose.locator('[name="photoPeople"][value="yes"]').check();
   await compose.locator('[type="submit"]').click();
   await compose.locator('.form-error').getByText('Bitte bestätigen, dass die abgebildeten Personen einverstanden sind.').waitFor();
   await compose.locator('[name="photoOk"]').check();
-  await compose.locator('[name="photoPeople"]').selectOption('no');
+  await compose.locator('[name="photoPeople"][value="no"]').check();
   assert.equal(await compose.locator('[name="photoOk"]').count(), 0);
   await compose.locator('[type="submit"]').click();
   const plain = page.locator('.chat-post-row').filter({hasText:'Einfaches Hochformat'});
@@ -214,7 +214,7 @@ try {
   await designed.locator('[data-action="post-edit"]').click();
   assert.equal(await compose.locator('[data-cdesign], [data-cslideshow]').count(),0);
   await compose.locator('[name="text"]').fill('Bestehenden Beitrag ergänzt');
-  await compose.locator('[name="photoPeople"]').selectOption('no');
+  await compose.locator('[name="photoPeople"][value="no"]').check();
   assert.equal(await compose.locator('[name="photoOk"]').count(), 0);
   await compose.locator('[type="submit"]').click();
   await designed.getByText('Text auf dem Foto',{exact:true}).waitFor();

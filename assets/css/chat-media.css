@@ -188,3 +188,10 @@ body:has(.cs-mobile-video[open]) { overflow: hidden; }
   .fpost-tools .chat-mobile-comment { display: block; margin-right: auto; color: var(--ink); }
   .chat-replies { padding: 0 12px 6px; border-top: 1px solid #0002; }
 }
+
+/* Direct choices in the post and comment composers. */
+.chat-options { border: 0; padding: 0; margin: 0 0 12px; min-width: 0; }
+.chat-options legend { padding: 0; margin-bottom: 6px; font-size: .85rem; font-weight: 700; }
+.chat-option-list { display: flex; flex-wrap: wrap; gap: 6px 22px; }
+.chat-option-list .meet-check { margin: 0; min-height: 36px; cursor: pointer; }
+.chat-option-list input { flex: 0 0 20px; padding: 0; margin: 0; }

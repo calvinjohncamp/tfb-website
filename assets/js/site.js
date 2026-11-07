@@ -1406,13 +1406,10 @@
   });
   function photoConsent(name, people = '', agreed = false) {
     return `<div data-photo-consent>
-      <label class="field"><span>Sind Personen erkennbar abgebildet?</span>
-        <select name="${name}People" data-photo-people="${name}" required>
-          <option value=""${!people ? ' selected' : ''}>Bitte auswählen</option>
-          <option value="no"${people === 'no' ? ' selected' : ''}>Nein</option>
-          <option value="yes"${people === 'yes' ? ' selected' : ''}>Ja</option>
-        </select>
-      </label>
+      <fieldset class="chat-options"><legend>Sind Personen erkennbar abgebildet?</legend>
+        <div class="chat-option-list">${[['yes','Ja'],['no','Nein']].map(([value,label]) =>
+          `<label class="meet-check"><input type="radio" name="${name}People" value="${value}" data-photo-people="${name}" required${people === value ? ' checked' : ''}><span>${label}</span></label>`).join('')}</div>
+      </fieldset>
       <div data-photo-agreement>${people === 'yes' ? photoAgreement(name, agreed) : ''}</div>
     </div>`;
   }
@@ -1654,8 +1651,9 @@
               </div>`).join('')}
             ${draft.media.length < 6 ? `<label class="gallery-add">${ui().icon.camera}<span>${scope === 'club' ? 'Medien hinzufügen' : 'Fotos'}</span><input type="file" accept="${scope === 'club' ? 'image/*,video/*,.mov,.mp4,.m4v,.webm' : 'image/*'}" multiple data-cphoto hidden></label>` : ''}
           </div>
-          ${hasSlideshow() ? `<div class="compose-photo-view"><label class="field"><span>Bilder anzeigen als</span>
-            <select name="photoView"><option value="collage"${draft.photoView === 'collage' ? ' selected' : ''}>Collage</option><option value="slideshow"${draft.photoView === 'slideshow' ? ' selected' : ''}>Diashow</option><option value="carousel"${draft.photoView === 'carousel' ? ' selected' : ''}>Karussell</option></select></label>
+          ${hasSlideshow() ? `<div class="compose-photo-view"><fieldset class="chat-options"><legend>Bilder anzeigen als</legend>
+            <div class="chat-option-list">${[['carousel','Karussell'],['slideshow','Diashow'],['collage','Collage']].map(([value,label]) =>
+              `<label class="meet-check"><input type="radio" name="photoView" value="${value}"${draft.photoView === value ? ' checked' : ''}><span>${label}</span></label>`).join('')}</div></fieldset>
             ${draft.photoView === 'carousel' ? '<p class="small muted">Bilder vollständig anzeigen und selbst durchblättern.</p>' : ''}</div>` : ''}
           <p class="small muted">${scope === 'club' ? 'Bis zu 6 Fotos oder Videos. Clips bis 30 Sekunden werden bei Bedarf automatisch verkleinert.' : 'Bis zu 6 Fotos.'}</p>
           ${draft.media.length ? photoConsent('photo', draft.photoPeople, draft.photoAgreed) : ''}
@@ -1699,7 +1697,11 @@
         }
       });
       form.addEventListener('change', async e => {
-        if (e.target.name === 'photoView') { keep(); render(); return; }
+        if (e.target.name === 'photoView') {
+          keep(); render();
+          document.querySelector('[data-compose] [name=photoView]:checked')?.focus();
+          return;
+        }
         if (!e.target.matches('[data-cphoto]') || !e.target.files.length || busy) return;
         keep();
         const files = [...e.target.files];
