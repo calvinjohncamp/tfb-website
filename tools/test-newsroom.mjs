@@ -40,3 +40,13 @@ test('Full Home rejects both copy and move without altering either page',()=>{
  const input={pages:{home:{blocks:Array.from({length:10},(_,i)=>({id:'h'+i,type:'feature'}))},aktuell:{blocks:[{id:'news',mediaCollection:{entries:[]}}]}}},before=structuredClone(input);
  for(const mode of ['move','copy'])assert.throws(()=>transfer(input,'news',undefined,{from:'aktuell',mode}),/höchstens 10/);assert.deepEqual(input,before);
 });
+
+test('Home reordering preserves current content and all other pages without mutating its input',()=>{
+ const input={_cms:{versions:{'page:home':7}},pages:{home:{title:'Home',blocks:[{id:'a',type:'feature',title:'Parallel aktualisiert',mediaCollection:{entries:[{images:['cms:original']}]}},{id:'b',type:'gallery',images:['cms:other']},{id:'c',type:'text',text:'Unverändert'}]},aktuell:{blocks:[{id:'news'}]}}},before=structuredClone(input);
+ const next=plain(c.TFB.newsroom.reorder(input,'home',['a','b','c'],['c','a','b']));assert.deepEqual(next.pages.home.blocks.map(b=>b.id),['c','a','b']);assert.equal(next.pages.home.blocks[1].title,'Parallel aktualisiert');assert.deepEqual(next.pages.home.blocks[1].mediaCollection.entries[0].images,['cms:original']);assert.deepEqual(next.pages.aktuell,input.pages.aktuell);assert.deepEqual(input,before);
+});
+test('Home reordering rejects changed lists and incomplete permutations instead of dropping content',()=>{
+ const input={pages:{home:{blocks:[{id:'a'},{id:'b'},{id:'new'}]}}};assert.throws(()=>c.TFB.newsroom.reorder(input,'home',['a','b'],['b','a']),/inzwischen verändert/);
+ for(const desired of [['a','a','new'],['a','b'],['a','b','unknown']])assert.throws(()=>c.TFB.newsroom.reorder(input,'home',['a','b','new'],desired),/unvollständig/);
+ const swapped={pages:{home:{blocks:[{id:'b'},{id:'a'}]}}};assert.throws(()=>c.TFB.newsroom.reorder(swapped,'home',['a','b'],['b','a']),/inzwischen verändert/);
+});

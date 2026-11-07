@@ -155,7 +155,10 @@ try {
   await page.locator('[data-editor="block"] button[type="submit"]').click();
   await page.waitForFunction(() => JSON.parse(localStorage.getItem('tfb_kiosk_demo_v1')).site.pages.home.blocks.find(b => b.id === 'collage-home').images[3].endsWith('kai-eichmann.jpg'));
   const previousIndex = await page.evaluate(() => JSON.parse(localStorage.getItem('tfb_kiosk_demo_v1')).site.pages.home.blocks.findIndex(b => b.id === 'collage-home'));
-  await page.locator('[data-action="block-move"][data-id="collage-home"][data-dir="-1"]').click();
+  await page.locator('[data-action="home-order"][data-id="collage-home"]').click();
+  await page.locator('[data-order-id="collage-home"] [data-order-position]').selectOption({value:String(previousIndex-1)});
+  await page.locator('[data-home-order] [type=submit]').click();
+  await page.locator('[data-home-order]').waitFor({state:'detached'});
   await page.waitForFunction(previousIndex => {
     const blocks = JSON.parse(localStorage.getItem('tfb_kiosk_demo_v1')).site.pages.home.blocks;
     return blocks.findIndex(b => b.id === 'collage-home') === previousIndex - 1;

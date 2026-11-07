@@ -36,5 +36,11 @@
     if(to==='home')target.unshift(item);else insert(target,item);
     return next;
   }
-  TFB.newsroom={ordered,dateOf,validDate,insert,transfer};
+  function reorder(input,page,expected,desired) {
+    const next=structuredClone(input),blocks=next.pages[page].blocks;
+    if(JSON.stringify(blocks.map(b=>b.id))!==JSON.stringify(expected))throw Error('Die Reihenfolge oder die Inhalte der Seite wurden inzwischen verändert. Bitte die Übersicht neu öffnen.');
+    if(desired.length!==expected.length||new Set(desired).size!==desired.length||desired.some(id=>!expected.includes(id)))throw Error('Die Reihenfolge ist unvollständig. Bitte die Übersicht neu öffnen.');
+    const byId=new Map(blocks.map(b=>[b.id,b]));next.pages[page].blocks=desired.map(id=>byId.get(id));return next;
+  }
+  TFB.newsroom={ordered,dateOf,validDate,insert,transfer,reorder};
 })();

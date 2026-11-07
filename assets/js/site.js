@@ -960,8 +960,8 @@
       <div class="site-page ${edit ? 'editing-page' : ''} ${key === 'home' ? `home-look-${homeLook()}` : ''}" data-page="${key}">
         ${edit ? `
           <div class="editbar">
-            <div><strong>${esc(page.title)} bearbeiten</strong><span>${key==='aktuell'?'News und Termine bearbeiten · Reihenfolge nach Datum':'Bausteine antippen zum Ändern · Pfeile zum Sortieren'}</span></div>
-            <button type="button" class="btn primary" data-action="site-done">Fertig</button>
+            <div><strong>${esc(page.title)} bearbeiten</strong><span>${key==='aktuell'?'News und Termine bearbeiten · Reihenfolge nach Datum':key==='home'?'Inhalte bearbeiten · Reihenfolge bequem in der Übersicht ändern':'Bausteine antippen zum Ändern · Pfeile zum Sortieren'}</span></div>
+            <div class="home-edit-actions">${key==='home'?'<button type="button" class="btn" data-action="home-order">Reihenfolge ändern</button>':''}<button type="button" class="btn primary" data-action="site-done">Fertig</button></div>
           </div>` : ''}
         ${key === 'home' && !edit
           ? ''
@@ -980,7 +980,7 @@
           ${homeAddButtons(list)}` : ''}
         ${key==='aktuell'&&admin?newsroomTools():''}
         ${blocks}
-        ${key === 'home' && edit ? homeAddButtons(list) : ''}
+        ${key === 'home' && edit ? homeAddButtons(list)+'<div class="home-editor-bottom"><button type="button" class="btn" data-action="home-order">Reihenfolge ändern</button><button type="button" class="btn primary" data-action="site-done">Fertig</button></div>' : ''}
         ${edit && !['home','aktuell'].includes(key) && (key !== 'sport' || training) ? `<button type="button" class="btn block add-section" data-action="block-new">${icon.plus} Baustein hinzufügen</button>` : ''}
         ${edit || legal ? '' : partnerSlot(key, page.partnerKicker || 'Präsentiert von')}
       </div>`;
@@ -1213,19 +1213,39 @@
   }
 
   function editWrap(b, i, total, inner) {
-    const { icon } = ui();
+    const { icon } = ui(),home=editing==='home',editorial=['home','aktuell'].includes(editing);
     const label = b.mediaCollection?'Karussell':editing==='aktuell'&&b.type==='post'?'News':(BLOCK_TYPES.find(([t]) => t === b.type) || [0, b.type])[1];
-    return `
-      <div class="block-edit">
-        <div class="block-tools">
-          <span class="block-type">${esc(label)}</span>
-          ${editing!=='aktuell'?`<button type="button" data-action="block-move" data-id="${esc(b.id)}" data-dir="-1" ${i === 0 ? 'disabled' : ''} aria-label="Nach oben">${icon.up}</button>
-          <button type="button" data-action="block-move" data-id="${esc(b.id)}" data-dir="1" ${i === total - 1 ? 'disabled' : ''} aria-label="Nach unten">${icon.down}</button>`:''}
-          ${b.mediaCollection?`<button type="button" class="link small" data-action="media-transfer" data-page="${esc(editing)}" data-id="${esc(b.id)}">Kopieren / verschieben</button>`:''}
-          <button type="button" data-action="block-edit" data-id="${esc(b.id)}" aria-label="Bearbeiten">${icon.pencil}</button>
-        </div>
-        ${inner || `<p class="muted small empty-hint">${esc(label)} – noch leer</p>`}
-      </div>`;
+    const actions=`${home?`<button type="button" class="block-tool-text" data-action="home-order" data-id="${esc(b.id)}">Position ändern</button>`:editing!=='aktuell'?`<button type="button" data-action="block-move" data-id="${esc(b.id)}" data-dir="-1" ${i===0?'disabled':''} aria-label="Nach oben">${icon.up}</button><button type="button" data-action="block-move" data-id="${esc(b.id)}" data-dir="1" ${i===total-1?'disabled':''} aria-label="Nach unten">${icon.down}</button>`:''}${b.mediaCollection?`<button type="button" class="block-tool-text" data-action="media-transfer" data-page="${esc(editing)}" data-id="${esc(b.id)}">Kopieren / verschieben</button>`:''}<button type="button"${editorial?' class="block-tool-text"':''} data-action="block-edit" data-id="${esc(b.id)}" aria-label="Bearbeiten">${editorial?'Bearbeiten':icon.pencil}</button>`;
+    return `<div class="block-edit" data-edit-block="${esc(b.id)}"><div class="block-tools"><span class="block-type">${esc(label)}</span><div class="block-tool-actions">${actions}</div></div>${inner||`<p class="muted small empty-hint">${esc(label)} – noch leer</p>`}</div>`;
+  }
+
+  async function openHomeOrder(trigger) {
+    await ensure();if(!ui().state.member?.isAdmin)return;
+    site=await ui().api.site();dropUnsaved();const expected=site.pages.home.blocks.map(b=>b.id),byId=new Map(site.pages.home.blocks.map(b=>[b.id,b]));
+    let order=expected.slice(),selected=trigger?.dataset.id||'',dragged='',busy=false;
+    ui().openSheet(`<form class="editor home-order" data-home-order><h2>Reihenfolge auf Home</h2><p>Ziehe die Einträge an ihren Platz oder wähle direkt eine Position. Mehrere Änderungen werden gemeinsam gespeichert.</p><ol class="home-order-list" data-home-order-list></ol><p class="home-order-status muted small" role="status" aria-live="polite"></p><p class="form-error" role="alert"></p><div class="home-order-actions"><button type="button" class="btn" data-action="close-sheet">Abbrechen</button><button type="submit" class="btn primary">Reihenfolge speichern</button></div></form>`);
+    const form=document.querySelector('[data-home-order]'),list=form.querySelector('[data-home-order-list]'),save=form.querySelector('[type=submit]');
+    function render(focusId,focusPart='select') {
+      list.innerHTML=order.map((id,i)=>{const b=byId.get(id),title=b.title||b.caption||b.label||'Ohne Titel',type=b.mediaCollection?'Karussell':(BLOCK_TYPES.find(([key])=>key===b.type)||['','Inhalt'])[1],ref=b.mediaCollection?.entries?.[0]?.images?.[0]||b.images?.[0]||b.image;
+        return `<li class="home-order-row${selected===id?' is-selected':''}" draggable="true" data-order-id="${esc(id)}"><span class="home-order-grip" aria-hidden="true">⠿</span>${ref&&shownImage(ref)?`<img class="home-order-thumb" src="${esc(images[ref]||ref)}" alt="">`:'<span class="home-order-thumb home-order-empty" aria-hidden="true"></span>'}<span class="home-order-info"><strong>${esc(title)}</strong><small>${esc(type)}</small></span><label class="home-order-position"><span>Position</span><select data-order-position aria-label="Position für ${esc(title)}">${order.map((_,j)=>`<option value="${j}"${j===i?' selected':''}>${j+1}</option>`).join('')}</select></label><span class="home-order-steps"><button type="button" data-order-step="-1"${i===0?' disabled':''} aria-label="${esc(title)} nach oben">${ui().icon.up}</button><button type="button" data-order-step="1"${i===order.length-1?' disabled':''} aria-label="${esc(title)} nach unten">${ui().icon.down}</button></span></li>`;
+      }).join('');save.disabled=busy||JSON.stringify(order)===JSON.stringify(expected);if(focusId){const row=[...list.children].find(row=>row.dataset.orderId===focusId);const control=focusPart==='select'?row?.querySelector('select'):row?.querySelector(`[data-order-step="${focusPart}"]:not([disabled])`)||row?.querySelector('select');control?.focus({preventScroll:true});row?.scrollIntoView({block:'nearest'});}
+    }
+    function move(id,index,focusPart='select') {
+      if(busy)return;const previous=order.indexOf(id);if(previous<0||index<0||index>=order.length||index===previous)return;
+      order.splice(previous,1);order.splice(index,0,id);selected=id;dragged='';render(id,focusPart);form.querySelector('.home-order-status').textContent=`${byId.get(id).title||'Eintrag'} steht jetzt auf Position ${index+1}. Noch nicht gespeichert.`;
+    }
+    list.addEventListener('change',e=>{if(e.target.matches('[data-order-position]'))move(e.target.closest('[data-order-id]').dataset.orderId,Number(e.target.value));});
+    list.addEventListener('click',e=>{const button=e.target.closest('[data-order-step]');if(button){const id=button.closest('[data-order-id]').dataset.orderId;move(id,order.indexOf(id)+Number(button.dataset.orderStep),button.dataset.orderStep);}});
+    list.addEventListener('dragstart',e=>{if(busy){e.preventDefault();return;}const row=e.target.closest('[data-order-id]');if(!row)return;dragged=row.dataset.orderId;row.classList.add('is-dragging');e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',dragged);});
+    const clearDrop=()=>list.querySelectorAll('.is-drop-target,.is-dragging').forEach(row=>row.classList.remove('is-drop-target','is-dragging'));
+    list.addEventListener('dragover',e=>{const row=e.target.closest('[data-order-id]');if(!dragged||!row)return;e.preventDefault();list.querySelectorAll('.is-drop-target').forEach(el=>el.classList.remove('is-drop-target'));if(row.dataset.orderId!==dragged)row.classList.add('is-drop-target');e.dataTransfer.dropEffect='move';});
+    list.addEventListener('drop',e=>{const row=e.target.closest('[data-order-id]');if(!dragged||!row)return;e.preventDefault();const id=dragged;clearDrop();move(id,order.indexOf(row.dataset.orderId));dragged='';});
+    list.addEventListener('dragend',()=>{dragged='';clearDrop();});
+    form.addEventListener('submit',async e=>{e.preventDefault();if(busy||save.disabled)return;busy=true;save.disabled=true;form.querySelectorAll('select,[data-order-step]').forEach(el=>el.disabled=true);
+      try{const fresh=await ui().api.site(),next=TFB.newsroom.reorder(fresh,'home',expected,order);site=await ui().api.saveSite(next);editing='home';detailEditing=false;ui().closeSheet();await ui().renderView();const target=[...document.querySelectorAll('[data-edit-block]')].find(el=>el.dataset.editBlock===selected);if(target){const header=document.querySelector('.topbar')?.getBoundingClientRect().bottom||0;window.scrollTo(0,Math.max(0,window.scrollY+target.getBoundingClientRect().top-header-16));}ui().toast('Reihenfolge gespeichert',true);
+      }catch(err){busy=false;form.querySelector('.form-error').textContent=err.message;render();}
+    });
+    render(selected);
   }
 
   // Neu angelegte, aber nie gespeicherte Bausteine (Editor abgebrochen) verwerfen.
@@ -3201,6 +3221,7 @@
       commit();
     },
     'block-edit': (el) => openBlockEditor(el.dataset.id),
+    'home-order': el=>openHomeOrder(el),
     'block-new': () => openBlockPicker(),
     'aktuell-new': el=>newNewsroomItem(el.dataset.kind),
     'aktuell-transfer': ()=>openHomeTransfer(),
