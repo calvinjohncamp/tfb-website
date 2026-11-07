@@ -1,5 +1,37 @@
 # TFB-Kiosk – Projektgedächtnis und Übergabe
 
+## Ruhige News-Datierung und fester Home-Look v310 – 07.11.2026
+
+Unter Aktuell, Club und Clubarchiv entfallen die quadratischen Datums-Badges bei
+News. Das ausgeschriebene Datum bzw. Archivjahr bleibt erhalten. Dies gilt für
+Einzelfotos, mehrere Fotos, Galerien/Collagen im News-Bereich und Archivartikel
+mit oder ohne Foto, in beiden Farbwelten. Bei Save the Date rechts bleiben die
+Datumsfelder erhalten. Home-Fotomodule und Home-Artikel behalten ihre bisherige
+Darstellung. Umsetzung im Rendering (`newsPost`/`postPhotos` mit standardmäßig
+abgeschaltetem Badge, Home ausdrücklich eingeschaltet; Fotomodule abhängig von
+Seite). Keine pauschale CSS-Regel, die auch Termine verstecken würde.
+
+Home ist jetzt **verbindlich nur Wechselspiel (`home-look-6`)**. Der komplette
+Block „Look der Startseite“, die Auswahl Klassisch/Magazin und der zugehörige
+Action-/Speichercode sind entfernt. Home-Editor beginnt im Einstellungsbereich
+mit „Menü oben“, danach kommen unverändert Neues Thema, Medien-Collage, Collage,
+Galerie und gegebenenfalls Karussellübernahme. Auch ältere CMS-Snapshots mit
+`homeLook: '1'/'3'` werden als Wechselspiel dargestellt; die Daten werden dafür
+nicht in Produktion umgeschrieben. Beide Farbwelten nutzen denselben festen Look.
+Bearbeitung von Themen, Unterseiten, Alben, Fotomodulen und Karussells bleibt erhalten.
+
+Prüfung bestanden: 24 Tests in `node --test tools/test-home-features.mjs`;
+`tools/test-browser-home-editor-scope.mjs` in Chromium und WebKit (fester Look
+trotz altem CMS-Wert, kein Picker/Action mehr, Menü/Add-Buttons, unabhängiges
+Speichern, Datumsüberschriften ohne News-Badges in Aktuell/Club/Archiv und
+Archivdetail, Termin-Badges erhalten); WebKit
+`tools/test-browser-navigation-dates.mjs` auf sechs Größen inklusive iPad
+hoch/quer und Mobil prüft nun explizit Badges nur rechts. Alle Schreibprüfungen
+verwenden isolierte lokale Testdaten. Keine CMS-/Worker-Änderung. Cache v310.
+Veröffentlichungsnachweis folgt nach erfolgreichem Pages-Lauf.
+
+---
+
 ## Deckender iOS-Statusbereich v309 – 07.11.2026
 
 Die Systemzeile für Uhrzeit/WLAN/Batterie soll beim Scrollen keine Seiteninhalte

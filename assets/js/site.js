@@ -536,7 +536,7 @@
       case 'event':
         return eventCard(b, { accentDate });
       case 'post':
-        return b.mediaCollection ? mediaNewsPost(b) : newsPost(b, null, accentDate);
+        return b.mediaCollection ? mediaNewsPost(b) : newsPost(b, null, accentDate, page === 'home');
       case 'image':
         return b.original
           ? `<figure class="block-image natural ${alignClass(b.align)}" data-site-content="${esc(b.id)}">${picture(b.image, b.id, b.caption)}${b.caption ? `<figcaption>${esc(b.caption)}</figcaption>` : ''}</figure>`
@@ -552,7 +552,7 @@
             ${b.title ? `<h2>${esc(b.title)}</h2>` : ''}
             ${b.textPosition === 'above' ? text : ''}
             ${list.length
-              ? `<div class="gallery-media"><div class="${mosaic ? `collage module-collage collage-${Math.min(list.length, 5)}` : 'gallery-grid'}">${list.map((ref, i) => `<button type="button" class="${mosaic ? 'collage-item' : 'gallery-item'}" data-action="gallery-open" data-block="${esc(b.id)}" data-index="${i}" aria-label="Foto ${i + 1} von ${list.length} groß ansehen">${picture(ref, ref)}</button>`).join('')}</div>${b.date ? dateBadge(b.date, accentDate) : ''}</div>`
+              ? `<div class="gallery-media"><div class="${mosaic ? `collage module-collage collage-${Math.min(list.length, 5)}` : 'gallery-grid'}">${list.map((ref, i) => `<button type="button" class="${mosaic ? 'collage-item' : 'gallery-item'}" data-action="gallery-open" data-block="${esc(b.id)}" data-index="${i}" aria-label="Foto ${i + 1} von ${list.length} groß ansehen">${picture(ref, ref)}</button>`).join('')}</div>${b.date && !['aktuell', 'verein'].includes(page) ? dateBadge(b.date, accentDate) : ''}</div>`
               : '<p class="muted small empty-hint">Noch keine Fotos – über den Stift Fotos hinzufügen.</p>'}
             ${b.date ? `<p class="post-date"><time datetime="${esc(b.date)}">${signatureText(fmt(b.date, { day: 'numeric', month: 'long', year: 'numeric' }))}</time></p>` : ''}
             ${b.textPosition !== 'above' ? text : ''}
@@ -725,14 +725,14 @@
   }
   const mediaDetail = (block,page='aktuell',backHref) => TFB.homeMedia.detail(block,{imageOf:ref=>images[ref]||ref,paragraphs,admin:ui().state.member?.isAdmin,page,backHref});
 
-  function newsPost(b, archive = null, accentDate = false) {
-    const photos = postPhotos(b, Boolean(archive), accentDate);
+  function newsPost(b, archive = null, accentDate = false, showDateBadge = false) {
+    const photos = postPhotos(b, Boolean(archive), accentDate, showDateBadge);
     const fullDate = fmt(b.date, { day: 'numeric', month: 'long', year: 'numeric' }) || archive?.year || '';
     return `
       <article class="post card" data-site-content="${esc(b.id)}">
         ${photos}
         <div class="post-body">
-          ${archive && !photos && b.date ? `<div class="archive-date-standalone">${dateBadge(b.date)}</div>` : ''}
+          ${showDateBadge && archive && !photos && b.date ? `<div class="archive-date-standalone">${dateBadge(b.date)}</div>` : ''}
           ${!archive || fullDate ? `<p class="post-date">${signatureText(fullDate)}</p>` : ''}
           <h3>${archive?.href ? `<a class="post-title-link" href="${esc(archive.href)}">${esc(b.title)}</a>` : esc(b.title)}</h3>
           ${archive ? archive.body : paragraphs(b.text)}
@@ -741,11 +741,11 @@
   }
 
   // Beitrag (Aktuell): 1 Foto breit, 2–4 als gleich große Quadrate nebeneinander; jedes Foto einpassbar
-  function postPhotos(b, archive = false, accentDate = false) {
+  function postPhotos(b, archive = false, accentDate = false, showDateBadge = false) {
     const list = (b.images || []).filter(shownImage);
     const refs = list.length ? list : [b.image];
     if (archive && !refs.some(shownImage)) return '';
-    const badge = !archive || b.date ? dateBadge(b.date, accentDate) : '';
+    const badge = showDateBadge && (!archive || b.date) ? dateBadge(b.date, accentDate) : '';
     if (refs.length <= 1) {
       const pic = picture(refs[0], list.length ? refs[0] : b.id, b.title);
       return `<div class="post-media">${list.length ? `<button type="button" class="post-open" data-action="news-gallery" data-block="${esc(b.id)}" aria-label="Foto groß ansehen">${pic}</button>` : pic}${badge}</div>`;
@@ -961,7 +961,7 @@
       ? key==='aktuell'?layoutBlocks(list,key,b=>editWrap(b,list.indexOf(b),list.length,renderPageBlock(b))):list.map((b, i) => editWrap(b, i, list.length, renderPageBlock(b))).join('')
       : legal ? `<div class="legal-document">${list.map(renderPageBlock).join('')}</div>` : layoutBlocks(list, key, renderPageBlock);
     return `
-      <div class="site-page ${edit ? 'editing-page' : ''} ${key === 'home' ? `home-look-${homeLook()}` : ''}" data-page="${key}">
+      <div class="site-page ${edit ? 'editing-page' : ''} ${key === 'home' ? 'home-look-6' : ''}" data-page="${key}">
         ${edit ? `
           <div class="editbar">
             <div><strong>${esc(page.title)} bearbeiten</strong><span>${key==='aktuell'?'News und Termine bearbeiten · Reihenfolge nach Datum':key==='home'?'Inhalte bearbeiten · Reihenfolge bequem in der Übersicht ändern':'Bausteine antippen zum Ändern · Pfeile zum Sortieren'}</span></div>
@@ -980,7 +980,7 @@
         ${key === 'home' ? `<div class="home-masthead"><span>Neu im Club</span><span>${esc(new Date().toLocaleDateString('de-DE', { month: 'long', year: 'numeric' }))}</span></div>` : ''}
         ${key === 'home' && !edit && !list.some(b => b.type === 'feature') ? contentOverviewLink(key) : ''}
         ${key === 'home' && edit ? `
-          <section class="home-editor-settings" aria-label="Gestaltung und Menü">${lookPicker()}${navCard()}</section>
+          <section class="home-editor-settings" aria-label="Menü oben">${navCard()}</section>
           ${homeAddButtons(list)}` : ''}
         ${key==='aktuell'&&admin?newsroomTools():''}
         ${blocks}
@@ -989,10 +989,7 @@
         ${edit || legal ? '' : partnerSlot(key, page.partnerKicker || 'Präsentiert von')}
       </div>`;
   }
-  // Home: Look der Startseite – im Admin wählbar, gilt für alle Besucher (Standard: Wechselspiel)
-  const HOME_LOOKS = [['6', 'Wechselspiel', 'Foto und Text je zur Hälfte, Seiten wechseln, große Ziffer – ruhig und gut lesbar'],
-    ['1', 'Klassisch', 'Breite, Hoch- und Quadratfotos wie im Editor gewählt'],
-    ['3', 'Magazin', 'Zentrierte Serifen-Überschriften, gerahmte Fotos, rote Trenner']];
+  // Home uses the approved Wechselspiel layout, including older CMS snapshots.
   // ---------- Menü oben: Namen, Reihenfolge, Ziel (Seite der App oder Website), sichtbar ----------
   const MAX_NAV = 8;
   const navAll = () => (Array.isArray(site?.nav) && site.nav.length ? site.nav : TFB.defaultNav());
@@ -1088,61 +1085,6 @@
       : `<button type="button" class="btn block add-section add-feature" data-action="block-add" data-type="feature">${ui().icon.plus} Neues Thema <small>${n} von ${MAX_HOME_FEATURES}</small></button>`;
     const photoButtons = ['collage', 'gallery'].map(type => `<button type="button" class="btn block add-section" data-action="block-add" data-type="${type}">${ui().icon.camera} ${type === 'gallery' ? 'Galerie' : 'Collage'} hinzufügen</button>`).join('');
     return `<div class="home-editor-add">${feature}${n < MAX_HOME_FEATURES ? `<button type="button" class="btn block add-section" data-action="block-add" data-type="feature" data-media-collection> ${ui().icon.camera} Medien-Collage hinzufügen</button>` : ''}${photoButtons}${site.pages.aktuell.blocks.some(b=>b.mediaCollection&&!b._new)?'<button type="button" class="btn block add-section" data-action="aktuell-transfer">Karussell aus Aktuell übernehmen</button>':''}</div>`;
-  }
-  let requestedHomeLook = null;
-  let savingHomeLook = false;
-  const homeLook = () => requestedHomeLook || (HOME_LOOKS.some(([k]) => k === site?.homeLook) ? site.homeLook : '6');
-
-  function showHomeLook() {
-    const page = document.querySelector('.site-page[data-page="home"]');
-    if (!page) return;
-    const look = homeLook();
-    for (const [id] of HOME_LOOKS) page.classList.toggle(`home-look-${id}`, id === look);
-    for (const button of page.querySelectorAll('[data-action="home-look"]')) {
-      const active = button.dataset.look === look;
-      button.classList.toggle('on', active);
-      button.setAttribute('aria-pressed', String(active));
-    }
-  }
-
-  async function changeHomeLook(button) {
-    const next = button.dataset.look;
-    if (!ui().state.member?.isAdmin || !HOME_LOOKS.some(([id]) => id === next) || next === homeLook()) return;
-    requestedHomeLook = next;
-    showHomeLook();
-    if (savingHomeLook) return;
-    savingHomeLook = true;
-    // Give the browser a chance to paint before the CMS copies and saves the site.
-    await new Promise(resolve => setTimeout(resolve, 0));
-    try {
-      while (requestedHomeLook) {
-        const look = requestedHomeLook;
-        try {
-          site = await ui().api.saveSite({ ...site, homeLook: look });
-          if (requestedHomeLook === look) {
-            requestedHomeLook = null;
-            ui().toast(`Look „${HOME_LOOKS.find(([id]) => id === look)[1]}“ gespeichert`, true);
-          }
-        } catch (err) {
-          if (requestedHomeLook === look) {
-            requestedHomeLook = null;
-            showHomeLook();
-            ui().toast(err.message);
-          }
-        }
-      }
-    } finally {
-      savingHomeLook = false;
-    }
-  }
-  function lookPicker() {
-    const cur = homeLook();
-    return `<section class="look-picker" aria-label="Look der Startseite">
-      <h2>Look der Startseite</h2>
-      <div class="look-options">${HOME_LOOKS.map(([k, l, d]) => `<button type="button" class="${k === cur ? 'on' : ''}" data-action="home-look" data-look="${k}" aria-pressed="${k === cur}">
-        <b>${esc(l)}${k === '6' ? ' <small>Standard</small>' : ''}</b><span>${esc(d)}</span></button>`).join('')}</div>
-      <p class="muted small">Die Vorschau wechselt sofort. Der gewählte Look wird im Hintergrund für alle Besucher gespeichert.</p>
-    </section>`;
   }
   ['home', 'aktuell', 'sport', 'verein', 'impressum', 'satzung'].forEach((key) => { TFB.views[routeOf(key)] = () => pageView(key); });
 
@@ -3207,7 +3149,6 @@
       window.scrollTo(0, el.dataset.keepScroll ? y : 0);
     },
     'nav-edit': () => openNavEditor(),
-    'home-look': changeHomeLook,
     'site-done': () => { editing = null; ui().renderView(); window.scrollTo(0, 0); },
     'block-move': (el) => {
       const list = blocksOf();
