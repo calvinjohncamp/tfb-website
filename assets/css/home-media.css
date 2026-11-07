@@ -33,8 +33,8 @@
 .site-page[data-page="aktuell"] .block-tools{justify-content:flex-end}
 @media(max-width:700px){.newsroom-tools{padding:14px}.newsroom-create{display:grid;grid-template-columns:1fr 1fr}.newsroom-create>.btn{font-size:.78rem;padding:8px 10px;white-space:normal}}
 
-.media-news .post-body .post-date{font-size:.74rem;color:var(--muted)}
-.media-news .post-body h3{font-size:1.55rem;line-height:1.15;margin:10px 0 12px}
+.site-page:not([data-page="aktuell"]) .media-news .post-body .post-date{font-size:.74rem;color:var(--muted)}
+.site-page:not([data-page="aktuell"]) .media-news .post-body h3{font-size:1.55rem;line-height:1.15;margin:10px 0 12px}
 
 /* A shared footer keeps the magnifier centered and the title and pause apart. */
 .hm-footer{position:absolute;left:26px;right:26px;bottom:16px;z-index:210;display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:16px}

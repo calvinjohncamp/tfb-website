@@ -718,7 +718,10 @@
 
   function mediaNewsPost(b, {page='aktuell'} = {}) {
     const href=`#${page}/${encodeURIComponent(b.id)}`;
-    return `<article class="post card media-news" data-site-content="${esc(b.id)}">${TFB.homeMedia.cover(b,href,ref=>images[ref]||ref)}<div class="post-body">${b.date?`<p class="post-date">${signatureText(fmt(b.date,{day:'numeric',month:'long',year:'numeric'}))}</p>`:''}${b.kicker?`<p class="media-news-kicker">${signatureText(b.kicker)}</p>`:''}<h3><a class="post-title-link" href="${href}">${esc(b.title)}</a></h3>${b.subtitle?`<p class="media-news-subtitle">${signatureText(b.subtitle)}</p>`:''}${paragraphs(b.text)}<p><a class="media-news-link" href="${href}">${esc(b.mediaButtonLabel||'Beitrag ansehen')}</a></p></div></article>`;
+    // Aktuell uses the regular news hierarchy; keep Home copy intact for transfers.
+    const isNews = page === 'aktuell';
+    const title = isNews ? String(b.title || '').trim().replace(/\.+$/u, '') : b.title;
+    return `<article class="post card media-news" data-site-content="${esc(b.id)}">${TFB.homeMedia.cover(b,href,ref=>images[ref]||ref)}<div class="post-body">${b.date?`<p class="post-date">${signatureText(fmt(b.date,{day:'numeric',month:'long',year:'numeric'}))}</p>`:''}${!isNews&&b.kicker?`<p class="media-news-kicker">${signatureText(b.kicker)}</p>`:''}<h3><a class="post-title-link" href="${href}">${esc(title)}</a></h3>${!isNews&&b.subtitle?`<p class="media-news-subtitle">${signatureText(b.subtitle)}</p>`:''}${paragraphs(b.text)}<p><a class="media-news-link" href="${href}">${esc(b.mediaButtonLabel||'Beitrag ansehen')}</a></p></div></article>`;
   }
   const mediaDetail = (block,page='aktuell',backHref) => TFB.homeMedia.detail(block,{imageOf:ref=>images[ref]||ref,paragraphs,admin:ui().state.member?.isAdmin,page,backHref});
 

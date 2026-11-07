@@ -1,5 +1,32 @@
 # TFB – Übergabe für die nächste Sitzung
 
+## Aktuell-Karussells im regulären Artikellook v308 – 07.11.2026
+
+Aktuell-Karussells zeigen unter dem unveränderten Karussell nur das ausgeschriebene
+Datum und eine schwarze, fette Hauptüberschrift **ohne abschließenden Punkt**.
+Überüberschrift (`kicker`) und Unterüberschrift (`subtitle`) werden dort nicht
+angezeigt. Es gibt weiterhin keinen Datums-Button auf dem Karussell. Datum,
+Überschrift und Fließtext übernehmen dieselben Größen, Zeilenhöhen und Abstände
+wie normale Aktuell-Artikel, identisch in Gelb-Blau und Rot.
+
+Die Anpassung erfolgt ausschließlich bei der Darstellung in `mediaNewsPost`
+(`assets/js/site.js`), nicht durch Löschen oder Umschreiben der gespeicherten
+Felder. Home behält alle drei Texte und den originalen Titel einschließlich
+Punkt. Hin-/Rückverschieben und Kopieren müssen die Werte unverändert erhalten.
+Die größeren Karussell-Schriftregeln in `assets/css/home-media.css` gelten nicht
+mehr für die Aktuell-Seite; Archive behalten ihre bisherige Darstellung.
+Karussell-Bewegung und Detailansichten bleiben unverändert. Cache v308.
+
+`tools/test-browser-media-transfer.mjs` prüft jetzt zusätzlich in beiden Themen
+und drei Größen (834×1194, 1194×834, 1440×1050) die berechnete Typografie direkt
+gegen einen normalen Artikel, fehlende Zusatzzeilen/Datums-Buttons, erhaltene
+Originaldaten und wieder sichtbare Home-Überschriften nach dem Rückverschieben.
+Die bestehenden Prüfungen für Kopien, unabhängige Bearbeitung, eindeutige IDs
+und alte Detail-/Archivlinks bleiben enthalten. Alle Testdaten sind lokal isoliert.
+Veröffentlichungsnachweis folgt nach dem erfolgreichen Release.
+
+---
+
 ## Aktueller verbindlicher Stand v307 – 07.11.2026
 
 Diese Zusammenfassung hat Vorrang vor älteren, widersprüchlichen Farb- und

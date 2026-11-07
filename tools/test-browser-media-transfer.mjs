@@ -2,9 +2,9 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {resolve,extname} from 'node:path';
 import {fileURLToPath} from 'node:url';
-import {chromium} from 'playwright';
+import {chromium,webkit} from 'playwright';
 const root=fileURLToPath(new URL('../',import.meta.url)),origin='https://tfb-newsroom.invalid';
-const browser=await chromium.launch({headless:true});
+const browser=await (process.env.TFB_BROWSER==='webkit'?webkit:chromium).launch({headless:true});
 try{
  const page=await browser.newPage({serviceWorkers:'block',viewport:{width:1440,height:1050}}),errors=[];
  page.setDefaultTimeout(10000);page.on('pageerror',e=>errors.push(e.message));
@@ -14,15 +14,40 @@ try{
  if(await page.evaluate(()=>TFB.ui.state.member?.adminHidden))await page.locator('[data-action="admin-toggle"]').click();
 
 
- await page.evaluate(async()=>{const s=await TFB.api.site();s.pages.home.blocks=[{id:'existing-home',type:'feature',title:'Bestehendes Thema'}];s.pages.aktuell.blocks=[{id:'news-one',type:'post',title:'Signature-Umkleide',kicker:'Padel',date:'2026-11-07',text:'Original',mediaSingle:true,mediaCollection:{entries:[{id:'entry',title:'Umkleide Padel 2027',date:'2026-11-07',format:'4:5',images:['assets/images/board/kai-eichmann.jpg','assets/images/board/thomas-heine.jpg'],instagramUrl:'https://instagram.com/p/example'}]}}];await TFB.api.saveSite(s);await TFB.refreshSite(true);location.hash='#aktuell';await TFB.ui.renderView('aktuell');});
+ await page.evaluate(async()=>{const s=await TFB.api.site();s.pages.home.blocks=[{id:'existing-home',type:'feature',title:'Bestehendes Thema'}];s.pages.aktuell.blocks=[{id:'news-one',type:'post',title:'Signature-Umkleide.',kicker:'Padel',subtitle:'Unsere neue Umkleide',date:'2026-11-07',text:'Original',mediaSingle:true,mediaCollection:{entries:[{id:'entry',title:'Umkleide Padel 2027',date:'2026-11-07',format:'4:5',images:['assets/images/board/kai-eichmann.jpg','assets/images/board/thomas-heine.jpg'],instagramUrl:'https://instagram.com/p/example'}]}}];await TFB.api.saveSite(s);await TFB.refreshSite(true);location.hash='#aktuell';await TFB.ui.renderView('aktuell');});
+
+ // Compare against a regular article, using the same data and typography in both themes.
+ await page.evaluate(async()=>{const s=await TFB.api.site();s.pages.aktuell.blocks.push({id:'regular-comparison',type:'post',title:'Normaler Artikel',date:'2026-11-07',text:'Original'});await TFB.api.saveSite(s);await TFB.refreshSite(true);await TFB.ui.renderView('aktuell');});
+ for(const viewport of [{width:834,height:1194},{width:1194,height:834},{width:1440,height:1050}]){
+ await page.setViewportSize(viewport);
+ for(const yellow of [true,false]){
+  await page.evaluate(on=>document.documentElement.classList.toggle('tfb-logo-midnight-amber',on),yellow);
+  const card=page.locator('.media-news[data-site-content="news-one"]');
+  assert.equal(await card.locator('.post-body h3').innerText(),'Signature-Umkleide');
+  assert.equal(await card.locator('.media-news-kicker,.media-news-subtitle').count(),0);
+  assert.equal(await card.locator('.date-badge').count(),0);
+  const styles=await page.evaluate(()=>{
+   const selectors=['.post-date','h3','p:not(.post-date)'];
+   const read=root=>selectors.map(selector=>{const s=getComputedStyle(root.querySelector('.post-body '+selector));return ['fontFamily','fontSize','fontWeight','lineHeight','letterSpacing','color','marginTop','marginBottom'].map(k=>s[k]);});
+   return {carousel:read(document.querySelector('[data-site-content="news-one"]')),normal:read(document.querySelector('[data-site-content="regular-comparison"]'))};
+  });
+  assert.deepEqual(styles.carousel,styles.normal,`regular article typography, yellow=${yellow}`);
+ }
+ }
+ await page.evaluate(async()=>{const s=await TFB.api.site();s.pages.aktuell.blocks=s.pages.aktuell.blocks.filter(b=>b.id!=='regular-comparison');await TFB.api.saveSite(s);await TFB.refreshSite(true);await TFB.ui.renderView('aktuell');});
  const original=await page.evaluate(async()=>JSON.stringify((await TFB.api.site()).pages.aktuell.blocks[0]));
  await page.locator('[data-action=aktuell-transfer]').click();let row=page.locator('[data-transfer-source="news-one"]');await row.locator('[data-transfer-mode=copy]').click();await page.locator('.newsroom-transfer').waitFor({state:'detached'});
  let state=await page.evaluate(async()=>TFB.api.site());assert.equal(JSON.stringify(state.pages.aktuell.blocks[0]),original);assert.equal(state.pages.home.blocks.length,2);let copyId=state.pages.home.blocks[0].id;assert.notEqual(copyId,'news-one');assert.deepEqual(state.pages.home.blocks[0].mediaCollection,state.pages.aktuell.blocks[0].mediaCollection);
  await page.evaluate(async()=>{location.hash='#home';await TFB.ui.renderView('home');});await page.locator('[data-action=site-edit][data-page=home]').first().click();await page.locator('[data-action=block-edit][data-id="'+copyId+'"]').click();const form=page.locator('[data-hm-editor]');await form.locator('[name=title]').fill('Eigenständige Home-Kopie');await form.locator('[type=submit]').click();await form.waitFor({state:'detached'});assert.equal(await page.evaluate(async()=>JSON.stringify((await TFB.api.site()).pages.aktuell.blocks[0])),original);
  assert.deepEqual(await page.locator('.feature-number').allTextContents(),['01','02']);await page.locator('[data-action=media-transfer][data-id="'+copyId+'"]').click();row=page.locator('[data-transfer-source="'+copyId+'"]');await row.locator('[data-transfer-mode=copy]').click();await page.locator('.newsroom-transfer').waitFor({state:'detached'});state=await page.evaluate(async()=>TFB.api.site());assert.equal(state.pages.home.blocks.length,2);assert.equal(state.pages.aktuell.blocks.length,2);assert.equal(new Set([...state.pages.home.blocks,...state.pages.aktuell.blocks].map(b=>b.id)).size,4);
- await page.evaluate(async()=>{location.hash='#aktuell';await TFB.ui.renderView('aktuell');});await page.locator('[data-action=aktuell-transfer]').click();row=page.locator('[data-transfer-source="news-one"]');await row.locator('[data-transfer-mode=move]').click();await page.locator('.newsroom-transfer').waitFor({state:'detached'});state=await page.evaluate(async()=>TFB.api.site());assert.equal(state.pages.home.blocks[0].id,'news-one');assert.equal(state.pages.home.blocks[0].type,'feature');assert.equal(state.pages.aktuell.blocks.some(b=>b.id==='news-one'),false);assert.equal(state.pages.home.blocks[0].mediaCollection.entries[0].instagramUrl,'https://instagram.com/p/example');
+ await page.evaluate(async()=>{location.hash='#aktuell';await TFB.ui.renderView('aktuell');});await page.locator('[data-action=aktuell-transfer]').click();row=page.locator('[data-transfer-source="news-one"]');await row.locator('[data-transfer-mode=move]').click();await page.locator('.newsroom-transfer').waitFor({state:'detached'});state=await page.evaluate(async()=>TFB.api.site());assert.equal(state.pages.home.blocks[0].id,'news-one');assert.equal(state.pages.home.blocks[0].type,'feature');assert.equal(state.pages.home.blocks[0].title,'Signature-Umkleide.');assert.equal(state.pages.home.blocks[0].kicker,'Padel');assert.equal(state.pages.home.blocks[0].subtitle,'Unsere neue Umkleide');assert.equal(state.pages.aktuell.blocks.some(b=>b.id==='news-one'),false);assert.equal(state.pages.home.blocks[0].mediaCollection.entries[0].instagramUrl,'https://instagram.com/p/example');
+ await page.evaluate(async()=>{location.hash='#home';await TFB.ui.renderView('home');});
+ const restored=page.locator('[data-feature="news-one"]');
+ assert.equal(await restored.locator('.feature-kicker-label').textContent(),'Padel');
+ assert.equal(await restored.locator('h2').textContent(),'Signature-Umkleide.');
+ assert.equal(await restored.locator('.feature-sub').textContent(),'Unsere neue Umkleide');
  await page.evaluate(async()=>{location.hash='#aktuell/news-one';await TFB.ui.renderView('aktuell');});await page.locator('.hm-entry').waitFor();assert.equal(await page.locator('.hm-entry-copy h1').innerText(),'Umkleide Padel 2027');assert.equal(await page.locator('.story-tools a[href="#home"]').count(),1);
  // An old archive URL survives the reverse move as well.
  await page.evaluate(async()=>{location.hash='#club/archiv/beitrag/aktuell-news-one';await TFB.ui.renderView('club');});await page.locator('.hm-entry').waitFor();assert.equal(await page.locator('.hm-entry-copy h1').innerText(),'Umkleide Padel 2027');
- assert.deepEqual(errors,[]);console.log('PASS: copy both directions, independent Home edit, preserved source/media, unique IDs, move back, automatic Home numbering, old News and archive links.');
+ assert.deepEqual(errors,[]);console.log('PASS: Aktuell typography matches normal articles in both themes, no extra headings/date badge, preserved Home title/kicker/subtitle; copy both directions, independent Home edit, preserved source/media, unique IDs, move back, automatic Home numbering, old News and archive links.');
 }finally{await browser.close();}
