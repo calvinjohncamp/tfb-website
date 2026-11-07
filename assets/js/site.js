@@ -1337,16 +1337,21 @@
         </footer>` : ''}
       </article>`;
   }
+  function senderPicker(selected='personal',scope='club') {
+    if(scope!=='club'||!ui().isAdmin())return '';
+    const member=ui().state.member;
+    return `<fieldset class="chat-options compose-sender"><legend>Veröffentlichen als</legend><div class="chat-option-list">${[['personal',`${member.firstName} ${member.lastName}`,member.avatar],['tfb','TFB','assets/icons/icon-512.png']].map(([value,name,avatar])=>`<label class="meet-check compose-sender-option"><input type="radio" name="postAs" value="${value}"${selected===value?' checked':''}><span class="fpost-avatar${value==='tfb'?' tfb-sender-avatar':''}">${avatar?`<img src="${esc(avatar)}" alt="">`:esc(initialsOf(name))}</span><span>${esc(name)}</span></label>`).join('')}</div></fieldset>`;
+  }
   async function commentsMarkup(post) {
     const { api, state } = ui();
     const comments = (await api.comments(post.id)).slice().reverse();
     if (!comments.length) return '';
     return `<aside class="chat-replies" aria-label="Kommentare" tabindex="0">
       ${comments.length ? `<div class="comment-list">${comments.map(c => `<article class="comment" data-comment="${esc(c.id)}">
-        <span class="fpost-avatar">${c.avatar ? `<img src="${esc(c.avatar)}" alt="">` : esc(initialsOf(c.author))}</span><div class="chat-reply-body"><header><b>${esc(c.author)}</b><small>${esc(whenText(c.createdAt))}${c.editedAt ? ' · bearbeitet' : ''}</small></header>
-        ${c.text ? `<div class="comment-text">${postText(c.text)}</div>` : ''}
-        ${(c.images || []).length ? `<div class="message-collage n${c.images.length}">${c.images.map((ref, index) => `<button type="button" class="message-photo" data-action="comment-gallery" data-post="${esc(post.id)}" data-id="${esc(c.id)}" data-index="${index}" aria-label="Foto ${index + 1} von ${c.images.length} ansehen">${picture(ref, ref, '')}</button>`).join('')}</div>` : ''}
-        ${c.mine || (c.canModerate && state.member?.isAdmin) ? `<footer>${c.mine ? `<button type="button" data-action="comment-edit" data-id="${esc(c.id)}" data-post="${esc(post.id)}">Bearbeiten</button>` : ''}<button type="button" data-action="comment-delete" data-id="${esc(c.id)}">${c.mine ? 'Löschen' : 'Entfernen (Verwaltung)'}</button></footer>` : ''}
+        <span class="fpost-avatar${c.authorMode==='tfb'?' tfb-sender-avatar':''}">${c.avatar ? `<img src="${esc(c.avatar)}" alt="">` : esc(initialsOf(c.author))}</span><div class="chat-reply-body"><header><b>${esc(c.author)}</b><small>${esc(whenText(c.createdAt))}${c.editedAt ? ' · bearbeitet' : ''}</small></header>
+        ${c.hidden ? '<p class="comment-moderated">Dieser Kommentar wurde von den Tennisfreunden Bielstein ausgeblendet.</p>' : c.text ? `<div class="comment-text">${postText(c.text)}</div>` : ''}
+        ${!c.hidden && (c.images || []).length ? `<div class="message-collage n${c.images.length}">${c.images.map((ref, index) => `<button type="button" class="message-photo" data-action="comment-gallery" data-post="${esc(post.id)}" data-id="${esc(c.id)}" data-index="${index}" aria-label="Foto ${index + 1} von ${c.images.length} ansehen">${picture(ref, ref, '')}</button>`).join('')}</div>` : ''}
+        ${c.mine || (c.canModerate && ui().isAdmin()) ? `<footer>${c.mine&&!c.hidden ? `<button type="button" data-action="comment-edit" data-id="${esc(c.id)}" data-post="${esc(post.id)}">Bearbeiten</button>` : ''}${c.mine?`<button type="button" data-action="comment-delete" data-id="${esc(c.id)}">Löschen</button>`:''}${c.canModerate&&ui().isAdmin()?`<button type="button" data-action="comment-hide" data-id="${esc(c.id)}" data-hidden="${c.hidden?'0':'1'}">${c.hidden?'Wieder anzeigen':'Ausblenden'}</button>`:''}</footer>` : ''}
       </div></article>`).join('')}</div>` : ''}
     </aside>`;
   }
@@ -1413,7 +1418,7 @@
     if (may.reason === 'rules') return openRules(post.scope, resume);
     if (!may.ok) return toast('Hier kommentieren die Spieler dieser Mannschaft.');
     openSheet(`<form data-comment-form="${esc(post.id)}" class="editor comment-form" novalidate>
-      <h2>Dein Kommentar</h2>
+      <h2>Dein Kommentar</h2>${senderPicker('personal',post.scope)}
       <textarea name="text" rows="4" maxlength="2000" aria-label="Dein Kommentar" placeholder="Dein Kommentar …"></textarea>
       ${emojiPicker()}<div data-comment-attachments>${commentAttachments([])}</div>
       <p class="form-error" role="alert"></p><button type="submit" class="btn signal">Senden</button></form>`);
@@ -1462,7 +1467,7 @@
     try {
       const refs = commentImages.get(form) || [];
       if (refs.length) validatePhotoConsent(form, 'commentPhoto');
-      await ui().api.addComment(form.dataset.commentForm, form.elements.text.value, { images: refs });
+      await ui().api.addComment(form.dataset.commentForm, form.elements.text.value, { images: refs, authorMode:form.elements.postAs?.value||'personal' });
       ui().closeSheet();
       await ui().renderView();
     } catch (error) { form.querySelector('.form-error').textContent = error.message; button.disabled = false; }
@@ -1708,7 +1713,7 @@
       openSheet(`
         <form class="editor compose" data-compose novalidate>
           <h2>${existing ? 'Beitrag bearbeiten' : isTeam ? `${esc(chatText().teamLabel)} · ${esc(teamLabel(scope.slice(5)))}` : esc(chatText().feedTitle)}</h2>
-          ${scope==='club'&&ui().isAdmin()?`<fieldset class="chat-options compose-sender"><legend>Veröffentlichen als</legend><div class="chat-option-list">${[['personal',`${state.member.firstName} ${state.member.lastName}`,state.member.avatar],['tfb','TFB','assets/icons/icon-512.png']].map(([value,name,avatar])=>`<label class="meet-check compose-sender-option"><input type="radio" name="postAs" value="${value}"${draft.authorMode===value?' checked':''}><span class="fpost-avatar${value==='tfb'?' tfb-sender-avatar':''}">${avatar?`<img src="${esc(avatar)}" alt="">`:esc(initialsOf(name))}</span><span>${esc(name)}</span></label>`).join('')}</div></fieldset>`:''}
+          ${senderPicker(draft.authorMode,scope)}
           <textarea name="text" rows="5" maxlength="2000" placeholder="${isTeam ? 'Wie lief das Spiel? Was war los bei der Tour?' : 'Was gibt’s Neues im Club?'}">${esc(draft.text)}</textarea>
           <label class="field compose-heading"><span>Überschrift (freiwillig)</span><input class="compose-title" name="title" maxlength="90" value="${esc(draft.title)}" placeholder="z. B. ${isTeam ? 'Auswärtssieg in Hennef' : 'Grillabend am Mittwoch'}"></label>
           <div class="compose-photos">
@@ -3242,8 +3247,8 @@
     'comment-edit': async (el) => {
       const { api, openSheet, closeSheet, toast } = ui();
       const comment = (await api.comments(el.dataset.post)).find(c => c.id === el.dataset.id && c.mine);
-      if (!comment) return;
-      openSheet(`<form class="editor comment-edit-form" data-comment-edit novalidate><h2>Kommentar bearbeiten</h2><label class="field"><span>Dein Kommentar</span><textarea name="text" rows="4" maxlength="2000">${esc(comment.text)}</textarea></label>${emojiPicker()}<div data-comment-attachments>${commentAttachments(comment.images || [])}</div><p class="form-error" role="alert"></p><button type="submit" class="btn signal block">Speichern</button></form>`);
+      if (!comment||comment.hidden) return;
+      openSheet(`<form class="editor comment-edit-form" data-comment-edit novalidate><h2>Kommentar bearbeiten</h2>${senderPicker(comment.authorMode||'personal',postCache[comment.postId]?.scope||'club')}<label class="field"><span>Dein Kommentar</span><textarea name="text" rows="4" maxlength="2000">${esc(comment.text)}</textarea></label>${emojiPicker()}<div data-comment-attachments>${commentAttachments(comment.images || [])}</div><p class="form-error" role="alert"></p><button type="submit" class="btn signal block">Speichern</button></form>`);
       const form = document.querySelector('[data-comment-edit]');
       commentImages.set(form, (comment.images || []).slice());
       form.addEventListener('submit', async e => {
@@ -3251,11 +3256,16 @@
         try {
           const refs = commentImages.get(form) || [];
           if (refs.length) validatePhotoConsent(form, 'commentPhoto');
-          await api.editComment(comment.id, form.elements.text.value, { images: refs }); closeSheet(); await ui().renderView(); toast('Kommentar gespeichert', true);
+          await api.editComment(comment.id, form.elements.text.value, { images: refs, authorMode:form.elements.postAs?.value||'personal' }); closeSheet(); await ui().renderView(); toast('Kommentar gespeichert', true);
         }
         catch (error) { form.querySelector('.form-error').textContent = error.message; button.disabled = false; }
       });
       form.elements.text.focus();
+    },
+    'comment-hide': async el => {
+      const hidden=el.dataset.hidden==='1';
+      if(hidden&&!el.dataset.armed){el.dataset.armed='1';el.textContent='Wirklich ausblenden?';return;}
+      el.disabled=true;try{await ui().api.hideComment(el.dataset.id,hidden);await ui().renderView();[...document.querySelectorAll('[data-comment]')].find(row=>row.dataset.comment===el.dataset.id)?.scrollIntoView({block:'nearest'});ui().toast(hidden?'Kommentar ausgeblendet':'Kommentar wieder sichtbar',true);}catch(error){el.disabled=false;ui().toast(error.message);}
     },
     'comment-delete': async (el) => {
       if (!el.dataset.armed) { el.dataset.armed = '1'; el.textContent = 'Wirklich entfernen?'; return; }

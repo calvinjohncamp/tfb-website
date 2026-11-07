@@ -205,3 +205,5 @@ body:has(.cs-mobile-video[open]) { overflow: hidden; }
 .compose-sender-option { padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; gap: 9px; }
 .compose-sender-option:has(input:checked) { border-color: var(--signal); }
 .compose-sender-option .fpost-avatar { width: 36px; height: 36px; flex: 0 0 36px; }
+
+.comment-moderated { color: var(--muted); background: #88888809; border-left: 2px solid var(--signal); padding: 10px 12px; border-radius: 0 6px 6px 0; font-size: .84rem; line-height: 1.5; }

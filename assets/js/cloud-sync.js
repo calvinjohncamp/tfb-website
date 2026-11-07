@@ -14,7 +14,7 @@
   }
   api.publicCatalog=async()=> (await guestState()).catalog;
   const id=()=>crypto.randomUUID(), key=r=>r.kind+':'+r.id;
-  const writeNames=['saveCatalog','setAvatar','setPhotoPermissions','updateProfile','acceptConsent','acceptFeedRules','setParentConsent','addToTab','undo','addPost','editPost','deletePost','removePostFromTeam','hidePost','addComment','editComment','deleteComment','readChatPosts','readCommentPosts'];
+  const writeNames=['saveCatalog','setAvatar','setPhotoPermissions','updateProfile','acceptConsent','acceptFeedRules','setParentConsent','addToTab','undo','addPost','editPost','deletePost','removePostFromTeam','hidePost','addComment','editComment','deleteComment','hideComment','readChatPosts','readCommentPosts'];
   const readNames=['posts','comments','teamPostCounts','myOpenMonth','myStatements','tally'];
   for(const name of [...writeNames,...readNames,'images','putMemberImage'])local[name]=api[name].bind(api);
   api.images=async options=>({...await local.images(options),...(!member?Object.fromEntries((await guestState()).images.map(ref=>[ref,publicBase+'/public/chat-media?'+new URLSearchParams({ref})])):{})});
@@ -78,7 +78,7 @@
       if(err.status&&err.status<500){await rememberPending(null,ownerId);if(member?.id===ownerId)await refresh(true).catch(()=>{});}
       api.syncError=err.message;throw err;
     }
-    await refresh(true);
+    guest=null;guestAt=0;await refresh(true);
   }
   api.connectSync=async m=>serial(async()=>{
     if(member?.id===m.id&&state)return (await refresh())||publicMember||m;
@@ -95,7 +95,7 @@
     if(state.meetProtocol===1){const original=await storage('readonly',s=>s.get('meet-original:'+member.id));if(original)await importMeetingSnapshot(original.data);}
     return publicMember;
   });
-  api.disconnectSync=()=>{generation++;if(state){api.clearSyncedData?.();TFB.meet?.applySynced?.({groups:[],meets:[],series:[],inbox:[],noSampleGroups:true});}member=null;state=null;publicMember=null;pending=null;last=0;photoOwners.clear();knownFaces.clear();};
+  api.disconnectSync=()=>{generation++;guest=null;guestAt=0;if(state){api.clearSyncedData?.();TFB.meet?.applySynced?.({groups:[],meets:[],series:[],inbox:[],noSampleGroups:true});}member=null;state=null;publicMember=null;pending=null;last=0;photoOwners.clear();knownFaces.clear();};
   api.centralSync=true;
   for(const name of writeNames)api[name]=(...args)=>serial(async()=>{
     if(!member)throw Error('Bitte zuerst anmelden.');
@@ -277,7 +277,13 @@
     return refresh(true);
   });
   async function poll(){
-    if(!member||document.hidden||document.querySelector('#sheet-root .editor'))return;
+    if(!member){
+      if(document.hidden||!['chat','team','gefluester'].includes(TFB.ui?.currentView())||document.querySelector('#sheet-root:not(:empty),.editor,[data-form=auth],.lightbox,.cs-viewer'))return;
+      const current=generation,before=JSON.stringify(guest);guestAt=0;
+      try{const next=await guestState();if(current===generation&&!member&&JSON.stringify(next)!==before){TFB.imageRevision=(TFB.imageRevision||0)+1;await TFB.ui.renderView();}}catch{}
+      return;
+    }
+    if(document.hidden||document.querySelector('#sheet-root .editor'))return;
     try {const changed=await serial(async()=>{
       const revision=await call('/app/revision');
       if(state?.revision===revision.revision)return false;

@@ -128,7 +128,7 @@ TFB.loadChatVideoPreviews = root => {
 
 let draft, studio, layerIndex = 0, cropMode = false;
 const fades = { none:0, short:.25, medium:.6, long:1.2 };
-const SLIDE_SECONDS = 2.4;
+const SLIDE_SECONDS = 3.4;
 const slideshowDuration = count => Number((count * SLIDE_SECONDS).toFixed(1));
 const fadeLabels = { none:'Ohne Überblenden', short:'Kurz · 0,25 s', medium:'Mittel · 0,6 s', long:'Lang · 1,2 s' };
 const seconds = value => /^\d+(?:[,.]\d{1,2})?$/.test(String(value).trim()) ? Number(String(value).replace(',', '.')) : NaN;

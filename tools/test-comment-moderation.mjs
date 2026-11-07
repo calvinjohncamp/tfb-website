@@ -1,0 +1,19 @@
+import {test} from 'node:test';import assert from 'node:assert/strict';import {fixture} from './app-sync-fixture.mjs';import worker from './worker-test-loader.mjs';
+const post={kind:'post',id:'official',revision:0,value:{scope:'club',text:'Official article',images:[],authorMode:'tfb'}};
+const comment=(id,value={},revision=0)=>({kind:'comment',id,revision,value:{postId:'official',text:'A reply',images:[],...value}});
+test('Admin replies may use TFB, ordinary members cannot; sender switches without changing ownership',async()=>{const f=await fixture();await f.commit([post]);assert.equal((await f.commit([comment('forged',{authorMode:'tfb'})],f.otherToken)).status,403);assert.equal((await f.commit([comment('reply',{authorMode:'tfb'})])).status,200);let value=(await f.state()).body.records.find(r=>r.id==='reply').value;assert.equal(value.authorId,f.admin.id);assert.equal(value.authorMode,'tfb');assert.equal((await f.call('/public/community')).body.comments[0].author,'Tennisfreunde Bielstein');assert.equal((await f.commit([comment('reply',{authorMode:'personal'},1)])).status,200);assert.equal((await f.call('/public/community')).body.comments[0].author,'Demo Owner');});
+test('Moderation redacts public/authenticated text and image access, records actor and permits safe restoration',async()=>{
+ const f=await fixture();await f.commit([post]);const ref='img:comment-photo';assert.equal((await f.commit([{kind:'media',id:ref,revision:0,value:{data:'data:image/png;base64,AAAA'}},comment('bad',{text:'Original unseemly text',images:[ref]})],f.otherToken)).status,200);
+ const raw=(await f.state()).body.records.find(r=>r.id==='bad');const request=(value,revision=raw.revision,token=f.adminToken)=>f.commit([{kind:'comment',id:'bad',revision,value}],token);
+ assert.equal((await request({...raw.value,hidden:true},raw.revision,f.otherToken)).status,403);
+ assert.equal((await request({...raw.value,hidden:true,text:'Altered by admin'})).status,403);
+ assert.equal((await request({...raw.value,hidden:true})).status,200);
+ let admin=(await f.state()).body.records.find(r=>r.id==='bad');assert.equal(admin.ownerId,f.otherId);assert.equal(admin.value.moderatedBy,f.admin.id);assert.equal(admin.value.text,'Original unseemly text');assert.equal(admin.value.hidden,true);
+ const guest=(await f.call('/public/community')).body;assert.equal(guest.comments[0].hidden,true);assert.equal(guest.comments[0].text,'');assert.deepEqual(guest.comments[0].images,[]);assert(!JSON.stringify(guest).includes('Original unseemly text'));assert(!guest.images.includes(ref));
+ const media=await worker.fetch(new Request('https://tfb-api.test/public/chat-media?'+new URLSearchParams({ref})),f.env);assert.equal(media.status,404);
+ f.env.DB.sqlite.prepare('UPDATE members SET is_admin=0 WHERE id=?').run(f.admin.id);const reader=(await f.state()).body;assert.equal(reader.records.find(r=>r.id==='bad').value.text,'');assert(!reader.records.some(r=>r.kind==='media'&&r.id===ref));f.env.DB.sqlite.prepare('UPDATE members SET is_admin=1 WHERE id=?').run(f.admin.id);
+ assert.equal((await request({...admin.value,hidden:false},admin.revision,f.otherToken)).status,403);assert.equal((await request({...admin.value,text:'Bypass hide'},admin.revision,f.otherToken)).status,403);
+ assert.equal((await request({...admin.value,hidden:false},admin.revision)).status,200);assert.equal((await f.call('/public/community')).body.comments[0].text,'Original unseemly text');
+ assert.equal((await request({...admin.value,hidden:true},1)).status,409,'Stale moderation is rejected');
+ const restored=(await f.state()).body.records.find(r=>r.id==='bad');assert.equal((await f.commit([{kind:'comment',id:'bad',revision:restored.revision,deleted:true}])).status,200);assert.equal((await request({...restored.value,hidden:true},restored.revision+1)).status,409,'A removed comment cannot be restored through moderation');
+});

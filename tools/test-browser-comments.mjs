@@ -117,13 +117,14 @@ try {
   const remove = page.locator('.comment').filter({ hasText: 'Überarbeitete Ergänzung' }).locator('[data-action="comment-delete"]');
   await remove.click(); await remove.click();
   await page.waitForFunction(() => document.querySelectorAll('.comment').length === 4);
-  // Admin can remove another person's comment, but cannot edit it.
+  // Admin can hide another person's comment with a visible moderation note, but cannot edit it.
   await page.evaluate(async () => { await useCommentMember('moderator', true); TFB.api.mode = 'test'; TFB.api.secureDirectory = true; await TFB.ui.renderView(); });
   if (await page.evaluate(() => TFB.ui.state.member?.adminHidden)) await page.locator('[data-action="admin-toggle"]').click();
   assert.equal(await page.locator('.comment [data-action="comment-edit"]').count(), 0);
-  const modRemove = page.locator('.comment [data-action="comment-delete"]').first();
+  const modRemove = page.locator('.comment [data-action="comment-hide"]').first();
   await modRemove.click(); await modRemove.click();
-  await page.waitForFunction(() => document.querySelectorAll('.comment').length === 3);
+  await page.waitForFunction(() => document.querySelectorAll('.comment-moderated').length === 1);
+  assert.equal(await page.locator('.comment').count(),4);
   // Photo replies: reject four files, allow three, require consent, open gallery.
   const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jR1kAAAAASUVORK5CYII=', 'base64');
   const files = Array.from({ length: 4 }, (_, i) => ({ name: `foto-${i}.png`, mimeType: 'image/png', buffer: png }));

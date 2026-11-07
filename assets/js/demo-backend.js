@@ -797,7 +797,7 @@
       const seen = new Set(accountOf(member.id)?.commentRead || []);
       const own = new Map(db.community.posts.filter(p => p.authorId === member.id && !p.hidden).map(p => [p.id, p]));
       const grouped = new Map();
-      (db.community.comments || []).filter(c => own.has(c.postId) && c.authorId !== member.id && !seen.has(c.id)
+      (db.community.comments || []).filter(c => !c.hidden && own.has(c.postId) && c.authorId !== member.id && !seen.has(c.id)
         && Date.parse(c.createdAt) >= Date.now() - 7 * DAY).sort((a, b) => b.createdAt.localeCompare(a.createdAt)).forEach(c => {
           if (!grouped.has(c.postId)) grouped.set(c.postId, []);
           grouped.get(c.postId).push(c);
@@ -820,23 +820,24 @@
       const member = db.members.find(m => m.id === sessionMemberId() && m.active);
       if (!post || (post.hidden && !member?.isAdmin && post.authorId !== member?.id)) return [];
       return (db.community.comments || []).filter(c => c.postId === postId).sort((a, b) => a.createdAt.localeCompare(b.createdAt)).map(c => ({
-        ...clone(c), author: displayName(db.members.find(m => m.id === c.authorId)),
-        avatar: (() => {
+        ...clone(c), ...(!member?.isAdmin&&c.hidden?{text:'',images:[]}:{}), author: c.authorMode==='tfb'?'Tennisfreunde Bielstein':displayName(db.members.find(m => m.id === c.authorId)),
+        avatar: c.authorMode==='tfb'?'assets/icons/icon-512.png':(() => {
           const author = db.members.find(m => m.id === c.authorId);
           return author && photoAllowed(author, member ? 'members' : 'public') ? accountOf(author.id).avatar || null : null;
         })(), mine: c.authorId === member?.id, canModerate: Boolean(member?.isAdmin),
       }));
     },
-    async addComment(postId, text, { images = [] } = {}) {
+    async addComment(postId, text, { images = [], authorMode = 'personal' } = {}) {
       const member = requireMember();
       const post = db.community.posts.find(p => p.id === postId && !p.hidden);
       if (!post) throw Error('Dieser Beitrag ist nicht mehr verfügbar.');
       if (!mayWrite(member, post.scope).ok) throw Error('Bitte zuerst die Hinweise bestätigen oder die Mannschaftsberechtigung prüfen.');
+      if(authorMode==='tfb'&&(!member.isAdmin||post.scope!=='club'))throw Error('Nur Admins dürfen im Clubchat als TFB antworten.');
       const value = String(text || '').trim();
       if (!Array.isArray(images) || images.length > 3 || images.some(ref => typeof ref !== 'string' || !/^img:.+/.test(ref))) throw Error('Pro Kommentar sind höchstens 3 Fotos möglich.');
       if ((!value && !images.length) || value.length > 2000) throw Error('Bitte einen Kommentar oder ein Foto hinzufügen (höchstens 2000 Zeichen).');
       const next = clone(db);
-      next.community.comments = [...(next.community.comments || []), { id: 'c-' + uid(), postId, authorId: member.id, text: value, images: images.slice(), createdAt: new Date().toISOString() }];
+      next.community.comments = [...(next.community.comments || []), { id: 'c-' + uid(), postId, authorId: member.id, ...(authorMode==='tfb'?{authorMode:'tfb'}:{}), text: value, images: images.slice(), createdAt: new Date().toISOString() }];
       if (!save(next)) throw Error('Der Kommentar konnte nicht gespeichert werden.');
       db = next; document.dispatchEvent(new Event('tfb-chat-updated'));
     },
@@ -847,6 +848,9 @@
       if (!comment || comment.authorId !== member.id) throw Error('Du kannst nur eigene Kommentare bearbeiten.');
       const post = next.community.posts.find(p => p.id === comment.postId && !p.hidden);
       if (!post) throw Error('Dieser Beitrag ist nicht mehr verfügbar.');
+      if(comment.hidden)throw Error('Dieser Kommentar wurde ausgeblendet.');
+      if((options.authorMode==='tfb'||comment.authorMode==='tfb')&&(!member.isAdmin||post.scope!=='club'))throw Error('Nur Admins dürfen im Clubchat als TFB antworten.');
+      if(options.authorMode!==undefined)comment.authorMode=options.authorMode==='tfb'?'tfb':'personal';
       const value = String(text || '').trim();
       const images = options.images === undefined ? (comment.images || []) : options.images;
       if (!Array.isArray(images) || images.length > 3 || images.some(ref => typeof ref !== 'string' || !/^img:.+/.test(ref))) throw Error('Pro Kommentar sind höchstens 3 Fotos möglich.');
@@ -854,6 +858,13 @@
       comment.text = value; comment.images = images.slice(); comment.editedAt = new Date().toISOString();
       if (!save(next)) throw Error('Der Kommentar konnte nicht gespeichert werden.');
       db = next; document.dispatchEvent(new Event('tfb-chat-updated'));
+    },
+    async hideComment(id, hidden=true) {
+      if(!requireMember().isAdmin)throw Error('Nur Admins dürfen Kommentare moderieren.');
+      const next=clone(db),comment=(next.community.comments||[]).find(c=>c.id===id);
+      if(!comment)throw Error('Kommentar nicht gefunden.');
+      comment.hidden=Boolean(hidden);if(!save(next))throw Error('Kommentar konnte nicht gespeichert werden.');
+      db=next;document.dispatchEvent(new Event('tfb-chat-updated'));
     },
     async deleteComment(id) {
       const member = requireMember();

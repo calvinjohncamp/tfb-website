@@ -91,13 +91,17 @@ async function records(env, filter = () => true) {
   const payload=new Map(); for(const c of chunks)payload.set(c.payload_id,(payload.get(c.payload_id)||'')+c.data);
   return meta.map(r=>({...r,value:JSON.parse(payload.get(r.payload_id)||'null')}));
 }
+function publicCommentValue(value) {
+  if(!value.hidden)return value;
+  return Object.fromEntries(['id','postId','authorId','createdAt','authorMode','moderatedAt'].filter(k=>value[k]!==undefined).map(k=>[k,value[k]]).concat([['text',''],['images',[]],['hidden',true]]));
+}
 // Guest projection contains published posts only, never accounts or invitation records.
-const guestFields=['id','authorId','scope','title','text','images','createdAt','editedAt','alsoTeams','designs','dots','slideshowLayers','photoView','postId','authorMode'];
+const guestFields=['id','authorId','scope','title','text','images','createdAt','editedAt','alsoTeams','designs','dots','slideshowLayers','photoView','postId','authorMode','hidden','moderatedAt'];
 async function publicRows(env) {
   const rows=await records(env,r=>!r.deleted&&['post','comment','catalog'].includes(r.kind));
   const posts=rows.filter(r=>r.kind==='post'&&!r.value.hidden);
   const ids=new Set(posts.map(r=>r.id));
-  return {rows,posts,comments:rows.filter(r=>r.kind==='comment'&&ids.has(r.value.postId))};
+  return {rows,posts,comments:rows.filter(r=>r.kind==='comment'&&ids.has(r.value.postId)).map(r=>({...r,value:publicCommentValue(r.value)}))};
 }
 function guestRefs(rows) {
   return new Set(rows.flatMap(r=>[...(r.value.images||[]),...(r.value.designs||[]).flatMap(d=>[d.ref,d.logoRef])]).filter(Boolean));
@@ -105,7 +109,7 @@ function guestRefs(rows) {
 export async function publicCommunity(env) {
   const {rows,posts,comments}=await publicRows(env);
   const names=new Map((await env.DB.prepare('SELECT id,first_name,last_name FROM members WHERE active=1').all()).results.map(m=>[m.id,`${m.first_name} ${m.last_name}`.trim()]));
-  const present=r=>({...Object.fromEntries(guestFields.filter(k=>r.value[k]!==undefined).map(k=>[k,r.value[k]])),author:r.kind==='post'&&r.value.authorMode==='tfb'?'Tennisfreunde Bielstein':names.get(r.owner_id)||'Mitglied',avatar:r.kind==='post'&&r.value.authorMode==='tfb'?'assets/icons/icon-512.png':null,mine:false,canModerate:false,team:r.scope.startsWith('team:')?r.scope.slice(5):null});
+  const present=r=>({...Object.fromEntries(guestFields.filter(k=>r.value[k]!==undefined).map(k=>[k,r.value[k]])),author:r.value.authorMode==='tfb'?'Tennisfreunde Bielstein':names.get(r.owner_id)||'Mitglied',avatar:r.value.authorMode==='tfb'?'assets/icons/icon-512.png':null,mine:false,canModerate:false,team:r.scope.startsWith('team:')?r.scope.slice(5):null});
   return {posts:posts.map(r=>({...present(r),commentCount:comments.filter(c=>c.value.postId===r.id).length})),comments:comments.map(present),images:[...guestRefs([...posts,...comments])].filter(r=>r.startsWith('img:')),catalog:rows.find(r=>r.kind==='catalog'&&r.id==='club')?.value||catalog};
 }
 export async function publicChatMedia(env,ref,postId) {
@@ -169,7 +173,7 @@ export async function syncState(env, member) {
   const planning=meetingProjection(c,member);
   const posts=c.rows.filter(r=>r.kind==='post'&&c.canPost(r));
   const postIds=new Set(posts.map(r=>r.id));
-  const comments=c.rows.filter(r=>r.kind==='comment'&&!r.deleted&&postIds.has(r.value.postId));
+  const comments=c.rows.filter(r=>r.kind==='comment'&&!r.deleted&&postIds.has(r.value.postId)).map(r=>member.is_admin?r:{...r,value:publicCommentValue(r.value)});
   const mediaIds=new Set([...posts,...comments].flatMap(r=>r.value.images||[]));
   const own=c.rows.filter(r=>r.kind==='catalog'||r.owner_id===member.id&&(['account','item','media'].includes(r.kind)||r.deleted&&['post','comment'].includes(r.kind)));
   const media=c.rows.filter(r=>r.kind==='media'&&!r.deleted&&mediaIds.has(r.id)&&r.owner_id!==member.id);
@@ -193,11 +197,18 @@ async function validate(env,member,c,op,all,importing) {
   if((old?.revision||0)!==op.revision)fail(409,'Die Daten wurden auf einem anderen Gerät geändert. Bitte neu laden.');
   if(op.deleted&&!['post','comment','media'].includes(op.kind))fail(400,'Diese Daten können hier nicht gelöscht werden.');
   if(op.deleted&&!old)fail(404,'Datensatz nicht vorhanden.');
+  if(op.kind==='comment'&&old?.deleted&&!op.deleted)fail(409,'Dieser Kommentar wurde bereits entfernt.');
   const owner=old?.owner_id||member.id;
   const v=op.value;
   if(!op.deleted&&(!v||typeof v!=='object'||Array.isArray(v)))fail(400,'Angaben fehlen.');
   let value=null, scope=old?.scope||'';
   const now=new Date().toISOString();
+  if(!op.deleted&&op.kind==='comment'&&old&&typeof v.hidden==='boolean'&&v.hidden!==Boolean(old.value.hidden)) {
+    if(!member.is_admin)fail(403,'Nur Admins dürfen Kommentare moderieren.');
+    const allowed=new Set(['hidden','moderatedAt','moderatedBy']);
+    if([...new Set([...Object.keys(old.value),...Object.keys(v)])].some(k=>!allowed.has(k)&&JSON.stringify(old.value[k])!==JSON.stringify(v[k])))fail(403,'Beim Moderieren darf der Kommentarinhalt nicht verändert werden.');
+    return {...op,value:{...old.value,hidden:v.hidden,moderatedAt:now,moderatedBy:member.id},scope:old.scope,ownerId:old.owner_id};
+  }
   if(!op.deleted&&op.kind==='account') {
     if(op.id!==member.id)fail(403,'Nur das eigene Profil kann gespeichert werden.');
     value=Object.fromEntries(profileFields.filter(k=>v[k]!==undefined).map(k=>[k,v[k]]));
@@ -260,11 +271,18 @@ async function validate(env,member,c,op,all,importing) {
       }
       if(member.is_admin)value.hidden=Boolean(v.hidden);else value.hidden=Boolean(old?.value.hidden);
     } else {
+      if(old&&old.owner_id!==member.id)fail(403,'Du kannst nur eigene Kommentare bearbeiten.');
+      if(v.hidden||old?.value.hidden)fail(403,'Dieser Kommentar wurde ausgeblendet und kann nur durch die Verwaltung wieder angezeigt werden.');
       const parent=c.map.get('post:'+v.postId)||all.find(r=>r.kind==='post'&&r.id===v.postId);
       const parentScope=parent?.scope||parent?.value?.scope;
       if(!parent||parent.deleted||!c.canScope(parentScope)||parent.value?.hidden)fail(403,'Beitrag nicht verfügbar.');
       scope=parentScope;
       value={id:op.id,postId:text(v.postId,120),authorId:owner,text:text(v.text||''),images:v.images||[],createdAt:old?.value.createdAt||(importing?timestamp(v.createdAt):now)};
+      const authorMode=v.authorMode??old?.value.authorMode??'personal';
+      if(!['personal','tfb'].includes(authorMode))fail(400,'Ungültiger Absender.');
+      if((authorMode==='tfb'||old?.value.authorMode==='tfb')&&(!member.is_admin||scope!=='club'))fail(403,'Nur Admins dürfen im Clubchat als TFB antworten.');
+      if(authorMode==='tfb')value.authorMode='tfb';
+      for(const key of ['moderatedAt','moderatedBy'])if(old?.value[key])value[key]=old.value[key];
     }
     if(!Array.isArray(value.images)||value.images.length>(op.kind==='post'?6:3)||value.images.some(ref=>typeof ref!=='string'))fail(400,'Zu viele Fotos.');
     if(!value.text.trim()&&!value.images.length&&!value.designs?.length)fail(400,'Bitte Text oder ein Foto hinzufügen.');
