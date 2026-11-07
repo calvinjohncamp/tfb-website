@@ -109,3 +109,5 @@ body.hm-zoom-open{overflow:hidden}
 .hm-pause svg { display:block; width:15px; height:15px; fill:currentColor; }
 
 .hm-orbit:not([data-hm-ready]) .hm-stage { visibility:hidden; }
+
+.hm-card:not([data-hm-loaded]){visibility:hidden}

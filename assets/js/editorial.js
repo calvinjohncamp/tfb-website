@@ -15,8 +15,18 @@
  const readDraft=()=>{try{return JSON.parse(localStorage.getItem(draftKey())||'null');}catch{return null;}};
  const hash=async x=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(typeof x==='string'?x:stable(x)))),b=>b.toString(16).padStart(2,'0')).join('');
  const photoUrl=ref=>base+'/public/site-media/'+encodeURIComponent(ref);
+ // Warm only the first cover on the requested public page, before app rendering.
+ const warmed=new Set();
+ function warmCover(value){
+  const page=location.hash.startsWith('#aktuell')?'aktuell':!location.hash||location.hash.startsWith('#home')?'home':null;
+  const block=page&&value.documents['page:'+page]?.value?.blocks?.find(b=>b.mediaCollection&&!b._new);
+  const ref=block?.mediaCollection?.entries?.[0]?.images?.[0];
+  if(!ref||!/^img:cms-[a-f0-9]{64}$/.test(ref)||warmed.has(ref))return;
+  warmed.add(ref);const img=new Image();img.fetchPriority='high';img.decoding='async';img.src=photoUrl(ref);
+ }
  function apply(value,isPrivate=false){if(value?.format!=='tfb-editorial-state'||!value.documents?.['page:home'])throw Error('Die zentralen Seiteninhalte sind unvollständig.');
   if(isPrivate)privateState=value;else{lastError='';state=value;try{localStorage.setItem(cacheKey,JSON.stringify(value));}catch{}}
+  if(!isPrivate)warmCover(value);
   images={...images,...Object.fromEntries(value.media.filter(m=>!isPrivate||!images[m.ref]).map(m=>[m.ref,photoUrl(m.ref)]))};TFB.imageRevision=(TFB.imageRevision||0)+1;return value;
  }
  async function refresh(wantPrivate=false){if(wantPrivate)return apply(await call('/admin/site'),true);

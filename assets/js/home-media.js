@@ -3,7 +3,7 @@
   const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const entries = block => (block.mediaCollection?.entries || []).filter(e => e.title && e.images?.length);
   const source = (ref, imageOf) => imageOf(ref) || ref;
-  const image = (ref, imageOf, alt = '') => `<img src="${esc(source(ref,imageOf))}" alt="${esc(alt)}" loading="lazy" decoding="async">`;
+  const image = (ref, imageOf, alt = '', lead = false) => `<img src="${esc(source(ref,imageOf))}" alt="${esc(alt)}" loading="${lead?'eager':'lazy'}" fetchpriority="${lead?'high':'low'}" decoding="async">`;
   const link = value => { try { const u = new URL(value); return /^https?:$/.test(u.protocol) ? u.href : ''; } catch { return ''; } };
   const magnifier='<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="m15.5 15.5 5 5"></path></svg>';
   const playbackIcon = playing => `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">${playing?'<rect x="7" y="5" width="3.5" height="14" rx=".7"/><rect x="13.5" y="5" width="3.5" height="14" rx=".7"/>':'<path d="M8 5.5v13l10-6.5z"/>'}</svg>`;
@@ -11,7 +11,7 @@
   function cover(block, href, imageOf) {
     const entry = entries(block)[0], refs = entry?.images || [], manual=block.animationStart==='manual';
     if (!refs.length) return `<div class="feature-media hm-empty">Noch keine Bilder veröffentlicht.</div>`;
-    return `<div class="feature-media hm-orbit" data-hm-orbit data-hm-start="${block.animationStart==='manual'?'manual':'auto'}" aria-label="Einblicke in ${esc(block.title)}"><div class="hm-stage">${refs.map((ref,i) => `<a class="hm-card" href="${esc(href)}" aria-label="Bild ${i+1}: Alle Einblicke ansehen">${image(ref,imageOf,entry.title)}</a>`).join('')}</div><div class="hm-footer"><a class="hm-caption" href="${esc(href)}"><span>${esc(entry.title)}</span></a><button type="button" class="hm-zoom-button" aria-label="Karussell vergrößern" title="Karussell vergrößern">${magnifier}</button><button type="button" class="hm-pause" aria-label="${manual?'Bildbewegung starten':'Bildbewegung pausieren'}" aria-pressed="${manual}"${refs.length<2?' hidden':''}>${playbackIcon(!manual)}</button></div></div>`;
+    return `<div class="feature-media hm-orbit" data-hm-orbit data-hm-start="${block.animationStart==='manual'?'manual':'auto'}" aria-label="Einblicke in ${esc(block.title)}"><div class="hm-stage">${refs.map((ref,i) => `<a class="hm-card" href="${esc(href)}" aria-label="Bild ${i+1}: Alle Einblicke ansehen">${image(ref,imageOf,entry.title,i===0)}</a>`).join('')}</div><div class="hm-footer"><a class="hm-caption" href="${esc(href)}"><span>${esc(entry.title)}</span></a><button type="button" class="hm-zoom-button" aria-label="Karussell vergrößern" title="Karussell vergrößern">${magnifier}</button><button type="button" class="hm-pause" aria-label="${manual?'Bildbewegung starten':'Bildbewegung pausieren'}" aria-pressed="${manual}"${refs.length<2?' hidden':''}>${playbackIcon(!manual)}</button></div></div>`;
   }
   async function detail(block, { imageOf, paragraphs, admin, page='home', backHref }) {
     const studio = await import('./chat-media.js');
@@ -33,6 +33,8 @@
     const enlarged=node.classList.contains('hm-zoom-orbit'), hoverable=matchMedia('(hover: hover) and (pointer: fine)');
     let keyboard=false,allowMotion=Boolean(initial.allowMotion);
     const motionBlocked=()=>reduced.matches&&!allowMotion;
+    const loaded=cards.map(()=>false);
+    const nextImagesReady=()=>loaded[Math.floor(phase)%n]&&loaded[(Math.floor(phase)+1)%n];
     const depthOrder = at => cards.map((_,i)=>({i,depth:Math.cos(2*Math.PI*(i-at-.00001)/n)})).sort((a,b)=>a.depth-b.depth||a.i-b.i).map(x=>x.i);
     const layout = () => {
       const w=node.clientWidth,h=node.clientHeight,percent=n===1?64:n===2?54:n===3?50:48;
@@ -41,7 +43,7 @@
       // Change paint order only while receding cards are fully transparent.
       // Reuse the real cards: creating/removing composited image copies caused
       // flashes in the clipped inline view on iPad, even when zoom looked fine.
-      const distance=Math.min(1,Math.abs(progress-.5)/.24),fade=distance*distance*(3-2*distance);
+      const distance=Math.min(1,Math.abs(progress-.5)*2),fade=distance*distance*(3-2*distance);
       cards.forEach((card,i)=>{
         const angle=2*Math.PI*(i-phase)/n,c=Math.cos(angle),sin=Math.sin(angle);
         card.style.width=cardWidth;
@@ -52,8 +54,8 @@
       node.dataset.hmOrder=order.join(',');node.dataset.hmPhase=String(phase);node.dataset.hmReady='true';
     };
     const stop = () => {clearTimeout(timer);cancelAnimationFrame(frame);node.dataset.hmRunning='false';};
-    const canRun = () => n>1&&node.isConnected&&visible&&!document.hidden&&!motionBlocked()&&(enlarged||!hover&&!focused)&&!paused&&(!zoom||zoom.node===node);
-    const sync = (delay=3000) => {stop();button.setAttribute('aria-pressed',String(paused||motionBlocked()));button.setAttribute('aria-label',paused||motionBlocked()?'Bildbewegung starten':'Bildbewegung pausieren');const playing=!(paused||motionBlocked());if(button.dataset.hmPlaying!==String(playing)){button.innerHTML=playbackIcon(playing);button.dataset.hmPlaying=String(playing);}button.disabled=false;if(!canRun())return;node.dataset.hmRunning='true';timer=setTimeout(()=>{const start=performance.now(),from=phase,to=Math.floor(phase+.0001)+1;const tick=now=>{if(!canRun()){stop();return;}const t=Math.min(1,(now-start)/900);phase=from+(to-from)*t*t*(3-2*t);layout();if(t<1)frame=requestAnimationFrame(tick);else{phase=to%n;layout();sync(2100);}};frame=requestAnimationFrame(tick);},delay);};
+    const canRun = () => n>1&&node.isConnected&&visible&&nextImagesReady()&&!document.hidden&&!motionBlocked()&&(enlarged||!hover&&!focused)&&!paused&&(!zoom||zoom.node===node);
+    const sync = (delay=3000) => {stop();button.setAttribute('aria-pressed',String(paused||motionBlocked()));button.setAttribute('aria-label',paused||motionBlocked()?'Bildbewegung starten':'Bildbewegung pausieren');const playing=!(paused||motionBlocked());if(button.dataset.hmPlaying!==String(playing)){button.innerHTML=playbackIcon(playing);button.dataset.hmPlaying=String(playing);}button.disabled=false;if(!canRun())return;node.dataset.hmRunning='true';timer=setTimeout(()=>{const start=performance.now(),from=phase,to=Math.floor(phase+.0001)+1;const tick=now=>{if(!canRun()){stop();return;}const t=Math.min(1,(now-start)/1600);phase=from+(to-from)*t*t*(3-2*t);layout();if(t<1)frame=requestAnimationFrame(tick);else{phase=to%n;layout();sync(2100);}};frame=requestAnimationFrame(tick);},delay);};
     button.addEventListener('click',()=>{if(motionBlocked()){allowMotion=true;paused=false;}else paused=!paused;hover=false;sync();});
     node.addEventListener('pointerenter',e=>{if(e.pointerType==='mouse'&&hoverable.matches){hover=true;sync();}});
     node.addEventListener('pointerleave',e=>{if(e.pointerType==='mouse'){hover=false;sync();}});
@@ -66,6 +68,19 @@
     const resize=new ResizeObserver(layout);resize.observe(node);
     const changed=()=>{allowMotion=false;if(reduced.matches){phase=Math.round(phase)%n;layout();}sync();};
     const visibility=()=>sync();reduced.addEventListener('change',changed);document.addEventListener('visibilitychange',visibility);
+    cards.forEach((card,i)=>{
+      const img=card.querySelector('img');
+      const reveal=async()=>{
+        if(loaded[i]||!img.naturalWidth)return;
+        try{await img.decode();}catch{return;}
+        if(!node.isConnected)return;
+        loaded[i]=true;card.dataset.hmLoaded='true';
+        // Keep the current picture until its successor can actually be drawn.
+        if(node.dataset.hmRunning!=='true')sync();
+      };
+      img.addEventListener('load',reveal);
+      if(img.complete)queueMicrotask(reveal);
+    });
     layout();sync();return {node,getState:()=>({phase,paused,allowMotion}),setState(state){phase=state.phase;paused=state.paused;allowMotion=Boolean(state.allowMotion);layout();sync();},refresh:sync,destroy(){stop();document.removeEventListener('keydown',keyInput);document.removeEventListener('pointerdown',pointerInput);intersection.disconnect();resize.disconnect();reduced.removeEventListener('change',changed);document.removeEventListener('visibilitychange',visibility);}};
   }
   function closeZoom(restoreFocus=true) {

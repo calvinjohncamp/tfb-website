@@ -28,6 +28,8 @@ for(const engine of [chromium,webkit]){
      await page.evaluate(phase=>controller.setState({phase,paused:true}),phase);
      return (await page.locator('.hm-orbit').screenshot()).toString('base64');
     };
+    await page.evaluate(phase=>controller.setState({phase,paused:true}),step+.25);
+    assert(await page.locator('.hm-card').evaluateAll(cards=>cards.some(card=>Math.abs(Number(card.style.opacity)-.5)<.001)),'Outgoing picture fades across the whole half-step, not in a short burst');
     const before=await snapshot(step+.49999),after=await snapshot(step+.50001);
     const difference=await page.evaluate(async({before,after})=>{
      const pixels=async data=>{const img=new Image();img.src='data:image/png;base64,'+data;await img.decode();const c=document.createElement('canvas');c.width=img.width;c.height=img.height;const ctx=c.getContext('2d');ctx.drawImage(img,0,0);return ctx.getImageData(0,0,c.width,c.height).data;};
