@@ -41,7 +41,7 @@ css=assets/css/brand.css
   done
 } > $css
 
-# App-Symbole und Favicon: heller quadratischer Grund, schwarzes TFB ohne Ball.
+# App-Symbole und Favicon: heller quadratischer Grund, TFB in Signature-Blau ohne Ball.
 # Betriebssysteme maskieren App-Symbole selbst; das Browser-Favicon bleibt eckig.
 I=assets/icons
 node tools/build-app-icons.mjs

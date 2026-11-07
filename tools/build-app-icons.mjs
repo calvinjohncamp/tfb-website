@@ -8,7 +8,7 @@ import {chromium} from 'playwright';
 const root=fileURLToPath(new URL('../',import.meta.url));
 const original='data:image/png;base64,'+readFileSync(resolve(root,'assets/brand/tfb-logo-original.png')).toString('base64');
 // The cool world is the website's default. Read its actual tokens, including
-// inherited root colors, so the icon does not maintain a separate brand palette.
+// inherited root colors. Icon ink follows the default yellow/blue brand palette.
 const base=readFileSync(resolve(root,'assets/css/app.css'),'utf8').match(/:root\s*\{([^}]+)\}/)[1];
 const cool=readFileSync(resolve(root,'assets/css/design-preview.css'),'utf8').match(/\.editorial-preview-active\s*\{([^}]+)\}/)[1];
 function color(token){
@@ -16,7 +16,10 @@ function color(token){
   if(!match)throw new Error(`Website color missing: ${token}`);
   return match[1].toUpperCase();
 }
-const palette={background:color('--bg'),ink:color('--logo')};
+const brandCss=readFileSync(resolve(root,'assets/css/partner-visibility.css'),'utf8');
+const blue=brandCss.match(/--tfb-midnight-blue:\s*(#[0-9a-fA-F]{6})\s*;/)?.[1];
+if(!blue)throw new Error('Signature blue missing');
+const palette={background:color('--bg'),ink:blue.toUpperCase()};
 console.log('Website palette:',palette);
 const manifestPath=resolve(root,'manifest.webmanifest');
 writeFileSync(manifestPath,readFileSync(manifestPath,'utf8').replace(/("background_color":\s*)"[^"]+"/,`$1"${palette.background}"`));

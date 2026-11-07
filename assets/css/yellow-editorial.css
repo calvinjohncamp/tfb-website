@@ -82,7 +82,6 @@ span.signature-highlight { font: inherit; color: inherit; letter-spacing: inheri
 :root.tfb-logo-midnight-amber :is(.story-h.is-signature, .story-quote.is-signature p) .signature-highlight,
 :root.tfb-logo-midnight-amber .site-page .post-date .signature-highlight,
 :root.tfb-logo-midnight-amber .view[data-view="home"] :is(.hm-entry-intro, .hm-entry-kicker) .signature-highlight,
-:root.tfb-logo-midnight-amber .view[data-view="aktuell"] :is(.media-news-kicker, .media-news-subtitle, .hm-entry-intro, .hm-entry-kicker) .signature-highlight,
 :root.tfb-logo-midnight-amber .story-lead,
 :root.tfb-logo-midnight-amber .story .more-link:not(.back),
 :root.tfb-logo-midnight-amber .site-page .link-card-body em,
@@ -107,4 +106,10 @@ span.signature-highlight { font: inherit; color: inherit; letter-spacing: inheri
 /* Verschachtelte alte/neue Auszeichnungen erzeugen keinen doppelten Farbauftrag. */
 :root.tfb-logo-midnight-amber :is(.site-page, .story, .post, .event, .rich-area) :is(.tx-red, .tx-highlight, u) :is(.tx-red, .tx-highlight, u) {
   background-image: none; padding-inline: 0; margin-inline: 0;
+}
+
+/* Aktuell: Themenzeile und Unterzeile neutral. Bewusst markierte Textpassagen
+   bleiben über den Editor weiterhin möglich; Datumszeilen behalten ihren Akzent. */
+.view[data-view="aktuell"] :is(.media-news-kicker, .media-news-subtitle, .hm-entry-intro, .hm-entry-kicker) {
+  color: inherit; font-weight: inherit;
 }

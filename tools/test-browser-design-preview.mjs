@@ -12,11 +12,12 @@ try {
   const headerBall = page.locator('.topbar [data-tfb-brand]');
   const admin = page.locator('[data-action="admin-toggle"]');
   const world = () => page.evaluate(() => document.body.dataset.designWorld);
-  await splashBall.click();
   assert.equal(await splashBall.getAttribute('aria-pressed'), 'true');
+  await splashBall.click();
+  assert.equal(await splashBall.getAttribute('aria-pressed'), 'false');
   assert.equal(await splash.locator('[data-action="splash-edit"]').count(), 0);
   await splash.locator('[data-action="splash-enter"]').click();
-  assert.equal(await headerBall.getAttribute('aria-pressed'), 'true');
+  assert.equal(await headerBall.getAttribute('aria-pressed'), 'false');
   assert.equal(await world(), 'cool');
   assert.equal(await admin.count(), 0);
   assert.equal(await page.locator('[data-design-preview]').count(), 0);
@@ -50,16 +51,16 @@ try {
   await page.waitForFunction(() => document.querySelector('[data-feature]')?.style.getPropertyValue('--feature-bg') === '#99C6FD');
   assert.equal(await world(), 'custom');
   await page.getByRole('button', { name: 'Warme Welt' }).click();
-  await page.locator('.home-tools [data-action="site-edit"]').click();
+  await page.locator('[data-action="site-edit"][data-page="home"]').first().click();
   await page.locator('[data-action="block-edit"]').first().click();
   const blockEditor = page.locator('[data-editor="block"]');
   await blockEditor.locator('input[name="bg"]').fill('#AABBCC');
   await page.waitForFunction(() => document.querySelector('[data-feature]')?.style.getPropertyValue('--feature-bg') === '#AABBCC');
   assert.equal(await world(), 'custom');
   await blockEditor.locator('[type="submit"]').click();
-  await page.getByRole('button', { name: 'Fertig', exact: true }).click();
+  await page.getByRole('button', { name: 'Fertig', exact: true }).first().click();
   assert.equal(await background(), '#AABBCC');
-  await page.getByRole('button', { name: 'Einstiegsseite bearbeiten' }).click();
+  await page.getByRole('button', { name: 'Splash bearbeiten' }).click();
   const editor = page.locator('[data-editor="splash"]');
   await editor.locator('[name="headline"]').fill('Vorschau für den Test');
   await editor.getByRole('button', { name: 'Vorschau ansehen' }).click();
@@ -74,7 +75,7 @@ try {
   await page.waitForURL(/#sport$/);
   await headerBall.click();
   assert.match(page.url(), /#sport$/);
-  assert.equal(await headerBall.getAttribute('aria-pressed'), 'false');
+  assert.equal(await headerBall.getAttribute('aria-pressed'), 'true');
   await page.locator('.brand-home').click({ position: {x: 5, y: 5} });
   await page.waitForURL(/#home$/);
   for (const width of [320, 390, 834, 1024, 1440]) {

@@ -1,7 +1,7 @@
 (function () {
   const brandKey = 'tfb_brand_theme';
-  let brand = 'signature';
-  const normalizeBrand = value => value === 'club' ? 'club' : 'signature';
+  let brand = 'club';
+  const normalizeBrand = value => value === 'signature' ? 'signature' : 'club';
   try { brand = normalizeBrand(localStorage.getItem(brandKey)); } catch (_) {}
 
   function applyBrand() {
