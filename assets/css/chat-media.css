@@ -164,7 +164,14 @@ body:has(.cs-mobile-video[open]) { overflow: hidden; }
 }
 .cs-page-menu { display:flex; align-items:center; flex-wrap:wrap; gap:7px; }
 .cs-inspector :is(input[type="text"], input:not([type]), textarea, select) { width: 100%; border: 1px solid var(--line); border-radius: 6px; background: var(--paper); color: var(--ink); padding: 7px 9px; font-family: inherit; }
-.cs-slideshow { display:block; min-width:40px; margin:6px auto 0; }
+.cs-slideshow { display:grid; place-items:center; width:36px; height:30px; min-width:0; min-height:0; padding:0; margin:8px auto; border:1px solid #17171755; border-radius:8px; background:transparent; color:#171717; cursor:pointer; appearance:none; -webkit-appearance:none; box-shadow:none; }
+.cs-slideshow svg { display:block; width:15px; height:15px; fill:currentColor; }
+.cs-viewer .cs-slideshow { border-color:#ffffff55; background:#ffffff0a; color:#fff; }
+.cs-slideshow:hover { background:#1717170a; }
+.cs-viewer .cs-slideshow:hover { background:#ffffff18; }
+.cs-slideshow:focus-visible { outline:2px solid var(--signal); outline-offset:3px; }
+.cs-play { display:grid; place-items:center; }
+.cs-play svg { display:block; width:20px; height:20px; fill:currentColor; }
 .compose .compose-photos { grid-template-columns: repeat(4,minmax(0,1fr)); align-items:start; gap:10px 8px; }
 .compose .compose-photos .gallery-add { min-width:0; width:100%; text-align:center; padding:4px; }
 .compose-photo-view { display:flex; align-items:end; gap:8px 12px; flex-wrap:wrap; margin:16px 0 10px; }

@@ -1,3 +1,4 @@
+const playbackIcon = playing => `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">${playing?'<rect x="7" y="5" width="3.5" height="14" rx=".7"/><rect x="13.5" y="5" width="3.5" height="14" rx=".7"/>':'<path d="M8 5.5v13l10-6.5z"/>'}</svg>`;
 const fonts = { title: 'Bricolage Grotesque', body: 'DM Sans', mono: 'Space Mono' };
 const logos = {
   rot: { label: 'TFB · Signature Rot', src: 'assets/brand/tfb-logo-signature-red.png' },
@@ -145,7 +146,7 @@ function syncClipButton(video) {
   const button = player?.querySelector('[data-cs-load-video], [data-cs-edit-video]');
   if (!button || (!hasVideoEdit(video) && !video.closest('.cs-mobile-video') && !button.hasAttribute('data-cs-edit-video'))) return;
   player.classList.toggle('is-playing', !video.paused && !video.ended);
-  button.textContent = video.paused || video.ended ? '▶' : 'Ⅱ';
+  button.innerHTML = playbackIcon(!video.paused && !video.ended);
   button.setAttribute('aria-label', video.paused || video.ended ? 'Video abspielen' : 'Video pausieren');
 }
 function timingOf(layer) {
@@ -265,7 +266,7 @@ function stage(slide, editing = false, fitPhoto = false) {
   return `<div class="cs-stage${editing ? ' is-editing' : ''}${slide.kind === 'slideshow' ? ' cs-shared-preview' : ''}" style="--cs-ratio:${slide.format}">
     ${fitPhoto ? `<div class="cs-photo-frame" style="--cs-photo-ratio:${slide.format}">${content}</div>` : content}
     ${editing && cropMode ? '<div class="cs-crop-hit" data-cs-drag="crop" aria-label="Ausschnitt ziehen"></div>' : ''}
-    ${editing && slide.kind === 'video' ? '<button class="cs-play" type="button" data-cs-edit-video aria-label="Video abspielen">▶</button>' : ''}
+    ${editing && slide.kind === 'video' ? `<button class="cs-play" type="button" data-cs-edit-video aria-label="Video abspielen">${playbackIcon(false)}</button>` : ''}
   </div>`;
 }
 
@@ -311,7 +312,7 @@ export function publishedGallery(post, imageOf) {
       const source = video ? '' : imageOf(slide.ref);
       const html = stage({...slide, source, kind:video ? 'video' : 'image'}, false, slideshow || carousel);
       return `<div class="cs-screen" data-cs-published-page="${index}"${index ? ' hidden' : ''}>${html}
-        ${video ? `<button type="button" class="cs-play" data-cs-load-video="${esc(slide.ref)}" aria-label="Video abspielen">▶</button>` : ''}
+        ${video ? `<button type="button" class="cs-play" data-cs-load-video="${esc(slide.ref)}" aria-label="Video abspielen">${playbackIcon(false)}</button>` : ''}
         ${video ? '<div class="cs-clip-controls" hidden><input type="range" min="0" step="any" value="0" data-cs-clip-seek aria-label="Position im Video"><button type="button" data-cs-clip-mute aria-pressed="false">Ton aus</button></div>' : ''}
         <button type="button" class="cs-expand" data-cs-published-full aria-label="Vollbild">⛶</button>
         ${video ? '' : '<button type="button" class="cs-image-hit" data-cs-published-full aria-label="Bild groß ansehen"></button>'}
@@ -320,7 +321,7 @@ export function publishedGallery(post, imageOf) {
     ${slideshow && post.slideshowLayers?.length ? `<div class="cs-slideshow-text">${textLayersMarkup({layers:post.slideshowLayers,kind:'slideshow'})}</div>` : ''}
     </div>
     ${post.dots !== 'top' ? navigation : ''}
-    ${slideshow ? '<button type="button" class="btn small cs-slideshow" data-cs-slideshow aria-label="Bilder abspielen">▶</button>' : ''}
+    ${slideshow ? `<button type="button" class="cs-slideshow" data-cs-slideshow aria-label="Bilder abspielen" aria-pressed="false">${playbackIcon(false)}</button>` : ''}
   </div>`;
 }
 
@@ -342,7 +343,8 @@ function pauseSlideshow(gallery) {
   if (!state) return;
   cancelAnimationFrame(state.frame);
   state.frame = null;
-  state.button.textContent = '▶';
+  state.button.innerHTML = playbackIcon(false);
+  state.button.setAttribute('aria-pressed','false');
   state.button.setAttribute('aria-label','Bilder abspielen');
 }
 function slideshowPage(gallery, state, index) {
@@ -369,7 +371,8 @@ function startSlideshow(gallery) {
   const state = slideshowState(gallery);
   if (state.frame !== null) return;
   gallery.classList.add('is-slideshow');
-  state.button.textContent = 'Ⅱ';
+  state.button.innerHTML = playbackIcon(true);
+  state.button.setAttribute('aria-pressed','true');
   state.button.setAttribute('aria-label','Bilder pausieren');
   const anchor = performance.now() - state.elapsed * 1000;
   const tick = now => {
@@ -781,7 +784,7 @@ function openPublishedViewer(gallery, button, fromStart = false) {
     mute.setAttribute('aria-pressed','false');
   });
   copy.querySelectorAll('[data-cs-load-video]').forEach(button => {
-    button.textContent = '▶';
+    button.innerHTML = playbackIcon(false);
     button.setAttribute('aria-label','Video abspielen');
   });
   dialog.innerHTML = `<div class="cs-viewer-tools">
@@ -840,7 +843,7 @@ function openMobileVideo(gallery, button) {
     screen.removeEventListener('click',tapVideo);
     if (!hasVideoEdit(video)) {
       controls.hidden = true;
-      play.textContent = '▶';
+      play.innerHTML = playbackIcon(false);
       play.setAttribute('aria-label','Video abspielen');
     }
     screen.classList.remove('is-playing');
@@ -953,7 +956,7 @@ document.addEventListener('click', async event => {
       if (!video.isConnected) return;
       playClip(video, Boolean(video.dataset.inspect)).catch(() => {});
     }
-    else { video.pause(); button.textContent = '▶'; }
+    else { video.pause(); button.innerHTML = playbackIcon(false); }
   }
   if ('csPick' in data) {
     const control = studio.querySelector('[name="color"]');

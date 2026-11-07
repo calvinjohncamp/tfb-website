@@ -6,11 +6,12 @@
   const image = (ref, imageOf, alt = '') => `<img src="${esc(source(ref,imageOf))}" alt="${esc(alt)}" loading="lazy" decoding="async">`;
   const link = value => { try { const u = new URL(value); return /^https?:$/.test(u.protocol) ? u.href : ''; } catch { return ''; } };
   const magnifier='<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="m15.5 15.5 5 5"></path></svg>';
+  const playbackIcon = playing => `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">${playing?'<rect x="7" y="5" width="3.5" height="14" rx=".7"/><rect x="13.5" y="5" width="3.5" height="14" rx=".7"/>':'<path d="M8 5.5v13l10-6.5z"/>'}</svg>`;
   let zoom=null;
   function cover(block, href, imageOf) {
     const entry = entries(block)[0], refs = entry?.images || [], manual=block.animationStart==='manual';
     if (!refs.length) return `<div class="feature-media hm-empty">Noch keine Bilder veröffentlicht.</div>`;
-    return `<div class="feature-media hm-orbit" data-hm-orbit data-hm-start="${block.animationStart==='manual'?'manual':'auto'}" aria-label="Einblicke in ${esc(block.title)}"><div class="hm-stage">${refs.map((ref,i) => `<a class="hm-card" href="${esc(href)}" aria-label="Bild ${i+1}: Alle Einblicke ansehen">${image(ref,imageOf,entry.title)}</a>`).join('')}</div><div class="hm-footer"><a class="hm-caption" href="${esc(href)}"><span>${esc(entry.title)}</span></a><button type="button" class="hm-zoom-button" aria-label="Karussell vergrößern" title="Karussell vergrößern">${magnifier}</button><button type="button" class="hm-pause" aria-label="${manual?'Bildbewegung starten':'Bildbewegung pausieren'}" aria-pressed="${manual}"${refs.length<2?' hidden':''}><span aria-hidden="true">${manual?'▷':'Ⅱ'}</span></button></div></div>`;
+    return `<div class="feature-media hm-orbit" data-hm-orbit data-hm-start="${block.animationStart==='manual'?'manual':'auto'}" aria-label="Einblicke in ${esc(block.title)}"><div class="hm-stage">${refs.map((ref,i) => `<a class="hm-card" href="${esc(href)}" aria-label="Bild ${i+1}: Alle Einblicke ansehen">${image(ref,imageOf,entry.title)}</a>`).join('')}</div><div class="hm-footer"><a class="hm-caption" href="${esc(href)}"><span>${esc(entry.title)}</span></a><button type="button" class="hm-zoom-button" aria-label="Karussell vergrößern" title="Karussell vergrößern">${magnifier}</button><button type="button" class="hm-pause" aria-label="${manual?'Bildbewegung starten':'Bildbewegung pausieren'}" aria-pressed="${manual}"${refs.length<2?' hidden':''}>${playbackIcon(!manual)}</button></div></div>`;
   }
   async function detail(block, { imageOf, paragraphs, admin, page='home', backHref }) {
     const studio = await import('./chat-media.js');
@@ -33,8 +34,8 @@
     let keyboard=false,allowMotion=Boolean(initial.allowMotion);
     const motionBlocked=()=>reduced.matches&&!allowMotion;
     const stage=node.querySelector('.hm-stage');
-    let orderKey='',ghost=null,ghostCards=[],blend=null;
-    const clearBlend=()=>{blend?.cancel();blend=null;ghost?.remove();ghost=null;ghostCards=[];};
+    let orderKey='',front=-1,transition=null,transitionIndex=-1,blend=null;
+    const clearTransition=()=>{blend?.cancel();blend=null;transition?.remove();transition=null;transitionIndex=-1;};
     const layout = () => {
       const w=node.clientWidth,h=node.clientHeight,percent=n===1?64:n===2?54:n===3?50:48;
       const cardWidth=enlarged?Math.min(w*(w<h?.82:percent/100),h*(n===1?.84:.66)*4/5)+'px':node.closest('.media-news')?Math.min(w*percent/100,h*(n===1?.88:.72)*4/5)+'px':percent+'%';
@@ -42,20 +43,22 @@
       // Resolve equal depths in the direction of travel, avoiding a first-frame flip.
       const order=cards.map((_,i)=>({i,depth:Math.cos(2*Math.PI*(i-phase-.00001)/n)})).sort((a,b)=>a.depth-b.depth||a.i-b.i).map(x=>x.i),key=order.join(',');
       if(key!==orderKey){
-        if(orderKey && !reduced.matches && n>1){
-          clearBlend();ghost=stage.cloneNode(true);ghost.classList.add('hm-ghost');ghost.setAttribute('aria-hidden','true');ghost.inert=true;
-          ghostCards=[...ghost.children];ghostCards.forEach(card=>{card.classList.replace('hm-card','hm-ghost-card');card.removeAttribute('href');card.removeAttribute('aria-label');card.removeAttribute('tabindex');});
-          node.append(ghost);
-          const layer=ghost;blend=ghost.animate([{opacity:1},{opacity:0}],{duration:360,easing:'ease-in-out',fill:'forwards'});blend.onfinish=()=>{if(ghost===layer)clearBlend();else layer.remove();};
-        }else clearBlend();
-        order.forEach((i,rank)=>cards[i].style.zIndex=String(rank+1));orderKey=key;node.dataset.hmOrder=key;
+        const nextFront=order[order.length-1];
+        // Crossfade only the outgoing foreground card. A duplicate of the entire
+        // stage exposed its rear cards through the fade on Safari/iPad.
+        if(front>=0&&front!==nextFront&&!reduced.matches){
+          clearTransition();transitionIndex=front;transition=cards[front].cloneNode(true);
+          transition.className='hm-transition-card';transition.removeAttribute('href');transition.removeAttribute('aria-label');transition.inert=true;transition.setAttribute('aria-hidden','true');transition.style.zIndex=String(n+1);stage.append(transition);
+          blend=transition.animate([{opacity:1},{opacity:0}],{duration:360,easing:'ease-in-out',fill:'forwards'});blend.onfinish=clearTransition;
+        }
+        order.forEach((i,rank)=>cards[i].style.zIndex=String(rank+1));front=nextFront;orderKey=key;node.dataset.hmOrder=key;
       }
-      ghostCards.forEach((card,i)=>{card.style.transform=cards[i].style.transform;card.style.width=cards[i].style.width;});
-      node.dataset.hmPhase=String(phase);
+      if(transition){transition.style.transform=cards[transitionIndex].style.transform;transition.style.width=cards[transitionIndex].style.width;}
+      node.dataset.hmPhase=String(phase);node.dataset.hmReady='true';
     };
     const stop = () => {clearTimeout(timer);cancelAnimationFrame(frame);node.dataset.hmRunning='false';};
     const canRun = () => n>1&&node.isConnected&&visible&&!document.hidden&&!motionBlocked()&&(enlarged||!hover&&!focused)&&!paused&&(!zoom||zoom.node===node);
-    const sync = (delay=3000) => {stop();button.setAttribute('aria-pressed',String(paused||motionBlocked()));button.setAttribute('aria-label',paused||motionBlocked()?'Bildbewegung starten':'Bildbewegung pausieren');button.firstElementChild.textContent=paused||motionBlocked()?'▷':'Ⅱ';button.disabled=false;if(!canRun())return;node.dataset.hmRunning='true';timer=setTimeout(()=>{const start=performance.now(),from=phase,to=Math.floor(phase+.0001)+1;const tick=now=>{if(!canRun()){stop();return;}const t=Math.min(1,(now-start)/900);phase=from+(to-from)*t*t*(3-2*t);layout();if(t<1)frame=requestAnimationFrame(tick);else{phase=to%n;layout();sync(2100);}};frame=requestAnimationFrame(tick);},delay);};
+    const sync = (delay=3000) => {stop();button.setAttribute('aria-pressed',String(paused||motionBlocked()));button.setAttribute('aria-label',paused||motionBlocked()?'Bildbewegung starten':'Bildbewegung pausieren');const playing=!(paused||motionBlocked());if(button.dataset.hmPlaying!==String(playing)){button.innerHTML=playbackIcon(playing);button.dataset.hmPlaying=String(playing);}button.disabled=false;if(!canRun())return;node.dataset.hmRunning='true';timer=setTimeout(()=>{const start=performance.now(),from=phase,to=Math.floor(phase+.0001)+1;const tick=now=>{if(!canRun()){stop();return;}const t=Math.min(1,(now-start)/900);phase=from+(to-from)*t*t*(3-2*t);layout();if(t<1)frame=requestAnimationFrame(tick);else{phase=to%n;layout();sync(2100);}};frame=requestAnimationFrame(tick);},delay);};
     button.addEventListener('click',()=>{if(motionBlocked()){allowMotion=true;paused=false;}else paused=!paused;hover=false;sync();});
     node.addEventListener('pointerenter',e=>{if(e.pointerType==='mouse'&&hoverable.matches){hover=true;sync();}});
     node.addEventListener('pointerleave',e=>{if(e.pointerType==='mouse'){hover=false;sync();}});
@@ -66,9 +69,9 @@
     document.addEventListener('keydown',keyInput);document.addEventListener('pointerdown',pointerInput);
     const intersection=new IntersectionObserver(rows=>{const next=rows[0].isIntersecting;if(visible===next)return;visible=next;sync();},{threshold:.15});intersection.observe(node);
     const resize=new ResizeObserver(layout);resize.observe(node);
-    const changed=()=>{allowMotion=false;if(reduced.matches){clearBlend();phase=Math.round(phase)%n;layout();}sync();};
+    const changed=()=>{allowMotion=false;clearTransition();if(reduced.matches){phase=Math.round(phase)%n;layout();}sync();};
     const visibility=()=>sync();reduced.addEventListener('change',changed);document.addEventListener('visibilitychange',visibility);
-    layout();sync();return {node,getState:()=>({phase,paused,allowMotion}),setState(state){phase=state.phase;paused=state.paused;allowMotion=Boolean(state.allowMotion);layout();sync();},refresh:sync,destroy(){stop();clearBlend();document.removeEventListener('keydown',keyInput);document.removeEventListener('pointerdown',pointerInput);intersection.disconnect();resize.disconnect();reduced.removeEventListener('change',changed);document.removeEventListener('visibilitychange',visibility);}};
+    layout();sync();return {node,getState:()=>({phase,paused,allowMotion}),setState(state){phase=state.phase;paused=state.paused;allowMotion=Boolean(state.allowMotion);layout();sync();},refresh:sync,destroy(){stop();clearTransition();document.removeEventListener('keydown',keyInput);document.removeEventListener('pointerdown',pointerInput);intersection.disconnect();resize.disconnect();reduced.removeEventListener('change',changed);document.removeEventListener('visibilitychange',visibility);}};
   }
   function closeZoom(restoreFocus=true) {
     if(!zoom)return;
@@ -84,7 +87,7 @@
     hydrate();const node=trigger.closest('[data-hm-orbit]'),source=[...controllers].find(c=>c.node===node);
     if(!source)return;
     const dialog=document.createElement('dialog');dialog.className='hm-zoom-dialog';dialog.setAttribute('aria-label','Karussell in großer Ansicht');
-    const enlarged=node.cloneNode(true);enlarged.className='hm-orbit hm-zoom-orbit';enlarged.querySelectorAll('.hm-ghost,.hm-zoom-button').forEach(el=>el.remove());
+    const enlarged=node.cloneNode(true);enlarged.className='hm-orbit hm-zoom-orbit';enlarged.querySelectorAll('.hm-transition-card,.hm-zoom-button').forEach(el=>el.remove());
     enlarged.querySelectorAll('img').forEach(img=>img.loading='eager');
     const close=document.createElement('button');close.type='button';close.className='hm-zoom-close';close.setAttribute('aria-label','Große Ansicht schließen');close.textContent='×';
     dialog.append(enlarged,close);document.body.append(dialog);document.body.classList.add('hm-zoom-open');dialog.showModal();
