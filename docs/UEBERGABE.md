@@ -31,7 +31,11 @@ hoch/quer, iPhone, explizit Null-Inset und positive Insets; feste Geometrie,
 Rand-Hit-Test und identische Pixel mit/ohne grellen Inhalt darunter nach Scrollen.
 Native iPad-Systemleiste bleibt lokal nicht prüfbar (kein iOS-Simulator installiert).
 **Gerätebestätigung durch Nutzer steht noch aus.**
-Veröffentlichungsnachweis folgt nach erfolgreichem Pages-Lauf.
+Live-Commit `bad596613da318037c30c517479dc720d69d2440`; erfolgreicher
+[Pages-Lauf 42412542482](https://github.com/calvinjohncamp/tfb-website/actions/runs/42412542482).
+Live-HTML, CSS und Service Worker per SHA-256 mit dem Paket verglichen:
+identisch. Nachweis `.private/release-v311/live-proof.json` in der
+Dropbox-Arbeitskopie. Die tatsächliche iPad-Bestätigung bleibt ausstehend.
 
 ---
 
