@@ -195,3 +195,5 @@ body:has(.cs-mobile-video[open]) { overflow: hidden; }
 .chat-option-list { display: flex; flex-wrap: wrap; gap: 6px 22px; }
 .chat-option-list .meet-check { margin: 0; min-height: 36px; cursor: pointer; }
 .chat-option-list input { flex: 0 0 20px; padding: 0; margin: 0; }
+
+.compose-photo-view .meet-check:has(input:disabled) { opacity: .45; cursor: default; }

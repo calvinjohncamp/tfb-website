@@ -47,6 +47,7 @@ try {
   assert.equal(await page.locator('[name="photoPeople"]').count(),0,'No question without media');
   await page.locator('[data-cphoto]').setInputFiles(files.map((data,index) => ({name:`slide-${index+1}.png`,mimeType:'image/png',buffer:Buffer.from(data,'base64')})));
   await page.waitForFunction(() => document.querySelectorAll('[data-compose] .compose-medium').length === 4 && !document.querySelector('[data-compose] [type="submit"]').disabled);
+  assert.equal(await page.locator('[name="photoView"]:checked').inputValue(),'collage','New image posts default to collage');
   assert.equal(await page.locator('[data-cdesign], [data-cslideshow]').count(),0,'No media editor in the simplified composer');
   await page.locator('[name="photoPeople"][value="no"]').check();
   assert.equal(await page.locator('[name="photoOk"]').count(),0,'No consent checkbox for no people');
@@ -54,6 +55,8 @@ try {
   assert.equal(await page.locator('[name="photoPeople"]:checked').inputValue(),'no','Answer survives composer redraw');
   assert.equal(await page.getByRole('group',{name:'Bilder anzeigen als',exact:true}).getByRole('radio').count(),3);
   assert.equal(await page.locator('select[name="photoView"],select[name="photoPeople"]').count(),0);
+  assert.deepEqual(await page.locator('[name="photoView"]').evaluateAll(nodes=>nodes.map(n=>n.value)),['collage','slideshow','carousel']);
+  await page.locator('[name="photoView"][value="collage"]').check();
   await page.locator('[name="photoView"]:checked').focus();
   await page.locator('[name="photoView"]:checked').press('ArrowRight');
   assert.equal(await page.locator('[name="photoView"]:checked').inputValue(),'slideshow','Arrow keys select the next display mode');

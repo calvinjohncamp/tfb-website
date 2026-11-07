@@ -1699,9 +1699,12 @@
     });
     const myTeams = scope === 'club' ? (state.member.teams || []) : [];
     const isTeam = scope.startsWith('team:');
+    const hasVideo = () => draft.media.some(media => media.ref.startsWith('vid:'));
+    let imageView = hasVideo() ? 'collage' : draft.photoView;
     const hasSlideshow = () => scope === 'club' && draft.media.length > 1 &&
       draft.media.every(media => !media.ref.startsWith('vid:') && (images[media.ref] || /^assets\//.test(media.ref)));
     const render = () => {
+      draft.photoView = hasVideo() ? 'carousel' : imageView;
       openSheet(`
         <form class="editor compose" data-compose novalidate>
           <h2>${existing ? 'Beitrag bearbeiten' : isTeam ? `${esc(chatText().teamLabel)} · ${esc(teamLabel(scope.slice(5)))}` : esc(chatText().feedTitle)}</h2>
@@ -1714,10 +1717,10 @@
               </div>`).join('')}
             ${draft.media.length < 6 ? `<label class="gallery-add">${ui().icon.camera}<span>${scope === 'club' ? 'Medien hinzufügen' : 'Fotos'}</span><input type="file" accept="${scope === 'club' ? 'image/*,video/*,.mov,.mp4,.m4v,.webm' : 'image/*'}" multiple data-cphoto hidden></label>` : ''}
           </div>
-          ${hasSlideshow() ? `<div class="compose-photo-view"><fieldset class="chat-options"><legend>Bilder anzeigen als</legend>
-            <div class="chat-option-list">${[['carousel','Karussell'],['slideshow','Diashow'],['collage','Collage']].map(([value,label]) =>
-              `<label class="meet-check"><input type="radio" name="photoView" value="${value}"${draft.photoView === value ? ' checked' : ''}><span>${label}</span></label>`).join('')}</div></fieldset>
-            ${draft.photoView === 'carousel' ? '<p class="small muted">Bilder vollständig anzeigen und selbst durchblättern.</p>' : ''}</div>` : ''}
+          ${hasSlideshow() || hasVideo() ? `<div class="compose-photo-view"><fieldset class="chat-options"><legend>Bilder anzeigen als</legend>
+            <div class="chat-option-list">${[['collage','Collage'],['slideshow','Diashow'],['carousel','Karussell']].map(([value,label]) =>
+              `<label class="meet-check"><input type="radio" name="photoView" value="${value}"${draft.photoView === value ? ' checked' : ''}${hasVideo()&&value!=='carousel'?' disabled':''}><span>${label}</span></label>`).join('')}</div></fieldset>
+            ${hasVideo() ? '<p class="small muted">Videos werden einzeln abgespielt. Collage und Diashow stehen nur für Fotos zur Verfügung.</p>' : draft.photoView === 'carousel' ? '<p class="small muted">Bilder vollständig anzeigen und selbst durchblättern.</p>' : ''}</div>` : ''}
           <p class="small muted">${scope === 'club' ? 'Bis zu 6 Fotos oder Videos. Clips bis 30 Sekunden werden bei Bedarf automatisch verkleinert.' : 'Bis zu 6 Fotos.'}</p>
           ${draft.media.length ? photoConsent('photo', draft.photoPeople, draft.photoAgreed) : ''}
           ${scope === 'club' ? `<div class="compose-teams"><p class="small muted">${myTeams.length > 1 ? 'Auch in meinen Mannschaften anzeigen' : 'Auch in meiner Mannschaft anzeigen'}</p>
@@ -1735,7 +1738,7 @@
         draft.text = form.elements.text.value;
         draft.photoPeople = form.elements.photoPeople?.value || '';
         draft.photoAgreed = Boolean(form.elements.photoOk?.checked);
-        if (form.elements.photoView) draft.photoView = form.elements.photoView.value;
+        if (form.elements.photoView) { draft.photoView = form.elements.photoView.value; if(!hasVideo())imageView=draft.photoView; }
         draft.alsoTeams = [...draft.alsoTeams.filter(k => !myTeams.includes(k)), ...[...form.querySelectorAll('[name=alsoTeam]:checked')].map(input => input.value)];
       };
       let busy = false;
@@ -1835,7 +1838,7 @@
           const payload = {title:draft.title,text:draft.text,alsoTeams:draft.alsoTeams,dots:draft.dots,
             images:draft.media.filter(media => !media.ref.startsWith('vid:')).map(media => media.ref),
             designs:studio ? draft.media.map(media => media.design || studio.mediaDesign(media.ref,16,9)) : [],
-            slideshowLayers, photoView:hasSlideshow() ? draft.photoView : 'collage'};
+            slideshowLayers, photoView:hasVideo() ? 'carousel' : hasSlideshow() ? draft.photoView : 'collage'};
           if (existing) await api.editPost(existing.id,payload);
           else await api.addPost({scope,...payload});
           closeSheet();
