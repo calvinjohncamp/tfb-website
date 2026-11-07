@@ -1,6 +1,6 @@
 // TFB-Kiosk – Service Worker.
 // Netz zuerst, damit Änderungen sofort ankommen; ohne Netz startet die App aus dem Zwischenspeicher.
-const CACHE = 'tfb-kiosk-v281';
+const CACHE = 'tfb-kiosk-v282';
 const SHELL = [
   './assets/js/member-directory.js', './assets/js/cloud-sync.js',
   './assets/js/snapshot-zip.js', './assets/js/editorial.js',
@@ -14,6 +14,7 @@ const SHELL = [
   './assets/icons/icon-512.png', './assets/icons/icon-maskable-512.png', './assets/icons/icon-180.png',
   './assets/brand/tfb-logo-midnight-amber.png',
   './assets/css/chat-media.css', './assets/js/chat-media.js',
+  './assets/css/home-media.css', './assets/js/home-media.js',
   './assets/css/club-archive.css', './assets/js/club-archive.js',
   './assets/css/brand.css', './assets/css/app.css',
   './assets/css/design-preview.css', './assets/js/design-preview.js',

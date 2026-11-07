@@ -439,7 +439,7 @@
         const list = page === 'home' ? homeBlocks().filter((x) => x.type === 'feature' && (!x._new || (preview && x.id === preview.id))) : [];
         const n = String(Math.max(1, list.findIndex((x) => x.id === b.id) + 1)).padStart(2, '0');
         const mode = b.navigation || (hasMore(b) ? 'detail' : 'link');
-        const more = mode === 'detail' && hasMore(b) && (editing !== page || preview) ? `#home/${b.id}` : '';
+        const more = (b.mediaCollection || mode === 'detail' && hasMore(b)) && (editing !== page || preview) ? `#home/${b.id}` : '';
         const hit = (editing !== page || preview) ? (mode === 'link' ? safeLink(b.link?.url) : more) : '';
         const wrap = (html) => (hit ? `<a class="feature-hit" href="${esc(hit)}"${/^https?:/i.test(hit) ? ' target="_blank" rel="noopener"' : ''}>${html}</a>` : html);
         // Link-Platz (immer linksbündig): „left“ = links unter der Unterzeile, „right-<n>“ = rechts
@@ -466,7 +466,7 @@
             const v = [bg ? `--feature-bg:${bg}` : '', linkBg ? `--link-bg:${linkBg}` : '', gapOk(b.linkTop) ? `--link-top:${b.linkTop}px` : '', gapOk(b.linkGap) ? `--link-gap:${b.linkGap}px` : ''].filter(Boolean).join(';');
             return v ? ` style="${v}"` : '';
           })()}>
-            ${(b.images || []).filter(shownImage).length ? newsCollage(b) : wrap(`<div class="feature-media">${picture(b.image, b.id, b.title)}</div>`)}
+            ${b.mediaCollection ? TFB.homeMedia.cover(b, `#home/${b.id}`, ref => images[ref] || ref) : (b.images || []).filter(shownImage).length ? newsCollage(b) : wrap(`<div class="feature-media">${picture(b.image, b.id, b.title)}</div>`)}
             <div class="feature-body">
               <div class="feature-left">
                 <div class="feature-kicker"><span class="feature-number">${n}</span><span class="feature-kicker-label">${esc(b.kicker || '')}</span>
@@ -479,7 +479,7 @@
               <div class="feature-right">
                 <div class="feature-text">${textHtml}</div>
                 ${slot('right', 'Link hierher')}
-                ${more && b.showMore !== false ? `<p class="feature-more"><a class="more-link" href="${esc(more)}">Mehr erfahren <span aria-hidden="true"><svg class="link-arrow" viewBox="0 0 806 1000" aria-hidden="true" focusable="false"><path transform="translate(0 755) scale(1 -1)" d="M528 -14 448 66 546 164 587 189 581 206 533 198H50V312H533L581 304L587 321L546 346L448 444L528 524L756 296V214Z"/></svg></span></a></p>` : ''}
+                ${more && b.showMore !== false ? `<p class="feature-more"><a class="more-link" href="${esc(more)}">${esc(b.mediaButtonLabel || 'Mehr erfahren')} <span aria-hidden="true"><svg class="link-arrow" viewBox="0 0 806 1000" aria-hidden="true" focusable="false"><path transform="translate(0 755) scale(1 -1)" d="M528 -14 448 66 546 164 587 189 581 206 533 198H50V312H533L581 304L587 321L546 346L448 444L528 524L756 296V214Z"/></svg></span></a></p>` : ''}
               </div>
             </div>
           </article>`;
@@ -648,7 +648,7 @@
   }).observe(document.getElementById('sheet-root') || document.body, { childList: true });
 
   // ---------- Unterseite eines Home-Themas („Mehr erfahren“) ----------
-  const hasMore = (b) => Boolean(b.more && ((b.more.text || '').trim() || (b.more.images || []).length || b.more.quote));
+  const hasMore = (b) => Boolean(b.mediaCollection || b.more && ((b.more.text || '').trim() || (b.more.images || []).length || b.more.quote));
   const safeLink = (url) => /^(#|https?:\/\/)/i.test(url || '') ? url : '';
   function featureLinks(b) {
     const list = [];
@@ -817,6 +817,7 @@
     const b = homeBlocks().find((x) => x.id === id);
     if (!b) return `${ui().viewHead('Home', 'Diesen Beitrag gibt es nicht mehr.', false)}<p><a class="btn" href="#home">Zur Startseite</a></p>`;
     const admin = state.member && state.member.isAdmin;
+    if (b.mediaCollection) return TFB.homeMedia.detail(b, {imageOf:ref=>images[ref] || ref,paragraphs,admin});
     return storyHtml(b, {
       n: String(homeBlocks().filter((x) => x.type === 'feature').indexOf(b) + 1).padStart(2, '0'),
       editHtml: admin ? `<button type="button" class="view-close" data-action="feature-edit" data-id="${esc(b.id)}" aria-label="Bearbeiten">${icon.pencil}</button>` : '',
@@ -1041,7 +1042,7 @@
       ? `<p class="muted small add-limit">Die Startseite zeigt höchstens ${MAX_HOME_FEATURES} Themen. Für ein neues Thema bitte zuerst eines löschen.</p>`
       : `<button type="button" class="btn block add-section add-feature" data-action="block-add" data-type="feature">${ui().icon.plus} Neues Thema <small>${n} von ${MAX_HOME_FEATURES}</small></button>`;
     const photoButtons = ['collage', 'gallery'].map(type => `<button type="button" class="btn block add-section" data-action="block-add" data-type="${type}">${ui().icon.camera} ${type === 'gallery' ? 'Galerie' : 'Collage'} hinzufügen</button>`).join('');
-    return `<div class="home-editor-add">${feature}${photoButtons}</div>`;
+    return `<div class="home-editor-add">${feature}${n < MAX_HOME_FEATURES ? `<button type="button" class="btn block add-section" data-action="block-add" data-type="feature" data-media-collection> ${ui().icon.camera} Medien-Collage hinzufügen</button>` : ''}${photoButtons}</div>`;
   }
   let requestedHomeLook = null;
   let savingHomeLook = false;
@@ -2103,6 +2104,13 @@
     const { openSheet, closeSheet } = ui();
     const original = findBlock(id);
     if (!original) return;
+    if (original.mediaCollection) {
+      const page = editing;
+      return TFB.homeMedia.openEditor(original, {imageOf:ref=>images[ref] || ref,uploadFiles:async files=>{const refs=[];for(const file of files){if(file.size>10*1024*1024)throw Error('Bitte Bilder bis 10 MB wählen.');const data=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(Error('Bild konnte nicht gelesen werden.'));reader.readAsDataURL(file);});const ref=await ui().api.putImage(data);images[ref]=data;refs.push(ref);}return refs;},
+        onSave:async draft=>{const next=structuredClone(site);next.pages[page].blocks=next.pages[page].blocks.map(b=>b.id===id?draft:b);site=await ui().api.saveSite(next);if(detailEditing){editing=null;detailEditing=false;}ui().toast('Gespeichert',true);await ui().renderView();},
+        onDelete:async()=>{const next=structuredClone(site);next.pages[page].blocks=next.pages[page].blocks.filter(b=>b.id!==id);site=await ui().api.saveSite(next);if(detailEditing){editing=null;detailEditing=false;location.hash='#home';}await ui().renderView();},
+      });
+    }
     const draft = JSON.parse(JSON.stringify(original));
     if (draft.type === 'feature') { draft.more = { ...(draft.more || {}) }; initSections(draft.more); }
     if (draft.type === 'post' && !(draft.images || []).length && draft.image) { draft.images = [draft.image]; draft.image = null; }
@@ -3155,6 +3163,7 @@
       if (editing === 'home' && el.dataset.type === 'feature' && blocksOf().filter((b) => b.type === 'feature' && !b._new).length >= MAX_HOME_FEATURES) { ui().toast(`Höchstens ${MAX_HOME_FEATURES} Themen auf der Startseite.`); return; }
       dropUnsaved();
       const block = { ...newBlock(el.dataset.type), _new: true };
+      if (el.hasAttribute('data-media-collection')) Object.assign(block,{navigation:'detail',mediaButtonLabel:'Einblicke entdecken',mediaCollection:TFB.homeMedia.fresh()});
       // Neue Beiträge/Termine direkt hinter den letzten gleicher Art, sonst ans Ende.
       const list = blocksOf();
       const lastSame = list.map((b) => b.type).lastIndexOf(block.type);
