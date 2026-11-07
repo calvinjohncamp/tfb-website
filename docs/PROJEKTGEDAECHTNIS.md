@@ -1,5 +1,32 @@
 # TFB-Kiosk – Projektgedächtnis und Übergabe
 
+## Sitzungsabschluss und iPad-Freigabe – 07.11.2026
+
+Der Nutzer bestätigt zur veröffentlichten Korrektur v311 ausdrücklich:
+„Perfekt, das hat funktioniert.“ Damit ist der gemeldete Durchschein-Effekt
+hinter Uhrzeit, WLAN und Batterie **auf seinem iPad behoben und bestätigt**.
+Der Statuszeilenfehler ist abgeschlossen; keine weitere Korrektur dazu offen.
+Diese Bestätigung betrifft das Nutzer-iPad, keine gesonderte iPhone-Geräteprüfung.
+
+Verbindlicher Abschlussstand: Website live v311, Cache `tfb-kiosk-v311`,
+Live-Code `bad596613da318037c30c517479dc720d69d2440`, erfolgreicher
+[Pages-Lauf 42412542482](https://github.com/calvinjohncamp/tfb-website/actions/runs/42412542482).
+Den echten `.tfb-statusbar-shield` einschließlich 12px-Mindesthöhe beibehalten;
+nicht auf die auf dem Gerät unwirksame Pseudoelement-Lösung v309 zurückgehen.
+
+Die bisherigen Freigaben gelten weiter: Gelb-Blau als Standard, Rot umschaltbar;
+Freihand-Textmarker in Gelb-Blau; ruhige News-Datierung ohne quadratische Badges
+links, Datumsfelder bei Save the Date rechts; Home fest im Wechselspiel ohne
+Look-Auswahl; Aktuell-Karussells im normalen Artikellook mit erhaltenen Home-
+Textfeldern; bestätigte Karussell-Bewegung v300 unverändert.
+
+Für heute sind alle beauftragten Arbeiten abgeschlossen. Diese Aktualisierung
+sichert nur Dokumentation und Gerätefreigabe; kein erneutes Deployment nötig.
+Für die nächste Sitzung weiterhin von GitHub main sauber ausgehen und die
+zahlreichen unabhängigen Dropbox-Änderungen nicht pauschal veröffentlichen.
+
+---
+
 ## iPad-Statuszeile: v309 auf echtem Gerät widerlegt, Korrektur v311 – 07.11.2026
 
 Nutzer-Screenshot IMG_2762.PNG zeigt unter Uhrzeit/WLAN/Batterie weiterhin
@@ -30,12 +57,12 @@ echter DOM-Knoten/ARIA, WebKit für Touch und Desktop, beide Farbwelten, iPad
 hoch/quer, iPhone, explizit Null-Inset und positive Insets; feste Geometrie,
 Rand-Hit-Test und identische Pixel mit/ohne grellen Inhalt darunter nach Scrollen.
 Native iPad-Systemleiste bleibt lokal nicht prüfbar (kein iOS-Simulator installiert).
-**Gerätebestätigung durch Nutzer steht noch aus.**
+**Gerätebestätigung liegt vor:** Nutzer am 07.11.2026: „Perfekt, das hat funktioniert.“
 Live-Commit `bad596613da318037c30c517479dc720d69d2440`; erfolgreicher
 [Pages-Lauf 42412542482](https://github.com/calvinjohncamp/tfb-website/actions/runs/42412542482).
 Live-HTML, CSS und Service Worker per SHA-256 mit dem Paket verglichen:
 identisch. Nachweis `.private/release-v311/live-proof.json` in der
-Dropbox-Arbeitskopie. Die tatsächliche iPad-Bestätigung bleibt ausstehend.
+Dropbox-Arbeitskopie. Die erfolgreiche Funktion auf dem Nutzer-iPad ist inzwischen bestätigt.
 
 ---
 
