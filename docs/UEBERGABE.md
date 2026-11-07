@@ -23,7 +23,11 @@ gegen einen normalen Artikel, fehlende Zusatzzeilen/Datums-Buttons, erhaltene
 Originaldaten und wieder sichtbare Home-Überschriften nach dem Rückverschieben.
 Die bestehenden Prüfungen für Kopien, unabhängige Bearbeitung, eindeutige IDs
 und alte Detail-/Archivlinks bleiben enthalten. Alle Testdaten sind lokal isoliert.
-Veröffentlichungsnachweis folgt nach dem erfolgreichen Release.
+Chromium und WebKit: alle Prüfungen bestanden. Live-Commit `956a8dbde2383267952a59f892e19a44e5f5ad3d`;
+erfolgreicher [Pages-Lauf 42411315506](https://github.com/calvinjohncamp/tfb-website/actions/runs/42411315506).
+Live-CSS, JavaScript, beide Mail-Vorschauen und Service Worker am 07.11.2026,
+20:30 UTC per SHA-256 mit dem Paket verglichen: identisch. Nachweis in der
+Dropbox-Arbeitskopie `.private/release-v308/live-proof.json`.
 
 ---
 
