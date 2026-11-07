@@ -432,6 +432,29 @@
       </a>`;
   }
 
+  function newsroomTools() {
+    const hasHome=site.pages.home.blocks.some(b=>!b._new&&b.mediaCollection);
+    return `<section class="newsroom-tools" aria-label="Aktuell verwalten"><div class="newsroom-create"><button class="btn" data-action="aktuell-new" data-kind="event">Termin hinzufügen</button><button class="btn" data-action="aktuell-new" data-kind="post">News hinzufügen</button><button class="btn" data-action="aktuell-new" data-kind="media">Karussell hinzufügen</button>${hasHome?'<button class="btn" data-action="aktuell-transfer">Home-Karussell übernehmen</button>':''}</div><details class="newsroom-more"><summary>Weitere Inhalte</summary><p>Galerien, einzelne Fotos und zusätzliche Texte bleiben verfügbar.</p><button class="link" data-action="aktuell-more">Weitere Inhalte hinzufügen</button></details></section>`;
+  }
+  async function newNewsroomItem(kind) {
+    await ensure();if(!ui().state.member?.isAdmin||!['event','post','media'].includes(kind))return;
+    editing='aktuell';detailEditing=true;aktuellTab=kind==='event'?'dates':'news';dropUnsaved();
+    const block={...newBlock(kind==='media'?'post':kind),_new:true};
+    if(kind==='media')Object.assign(block,{kicker:'',subtitle:'',mediaButtonLabel:'Beitrag ansehen',mediaSingle:true,mediaCollection:{entries:[{id:crypto.randomUUID(),title:'',subtitle:'',kicker:'',date:block.date,text:'',format:'4:5',images:[],instagramUrl:''}]}});
+    TFB.newsroom.insert(blocksOf(),block);openBlockEditor(block.id,true);
+  }
+  async function openHomeTransfer() {
+    await ensure();if(!ui().state.member?.isAdmin)return;
+    const sources=site.pages.home.blocks.filter(b=>!b._new&&b.mediaCollection);
+    ui().openSheet(`<section class="editor newsroom-transfer"><h2>Home-Karussell nach Aktuell verschieben</h2><p>Der Beitrag wird von Home entfernt und mit allen Bildern und Texten in Aktuell übernommen. Das Veröffentlichungsdatum bestimmt seine Position. Er bleibt auch im Clubarchiv auffindbar.</p>${sources.map(b=>`<section class="newsroom-source"><h3>${esc(b.title)}</h3><p class="muted small">${b.mediaCollection.entries.reduce((n,e)=>n+e.images.length,0)} Bildseiten · ${b.mediaCollection.entries.length} Beiträge</p><label class="field"><span>Veröffentlichungsdatum</span><input type="date" data-transfer-date="${esc(b.id)}" value="${esc(TFB.newsroom.dateOf(b)||today())}"></label><button class="btn" data-transfer-home="${esc(b.id)}">Nach Aktuell verschieben</button></section>`).join('')||'<p>Auf Home gibt es derzeit kein Karussell zum Verschieben.</p>'}<p class="form-error" role="alert"></p></section>`);
+    const panel=document.querySelector('.newsroom-transfer');let busy=false;
+    panel.addEventListener('click',async e=>{const button=e.target.closest('[data-transfer-home]');if(!button||busy)return;busy=true;panel.querySelectorAll('button').forEach(b=>b.disabled=true);
+      try{const id=button.dataset.transferHome,date=[...panel.querySelectorAll('[data-transfer-date]')].find(el=>el.dataset.transferDate===id).value;
+        const fresh=await ui().api.site(),next=TFB.newsroom.transfer(fresh,id,date);site=await ui().api.saveSite(next);editing=null;detailEditing=false;ui().closeSheet();aktuellTab='news';await ui().renderView();ui().toast('Von Home nach Aktuell verschoben',true);
+      }catch(err){panel.querySelector('.form-error').textContent=err.message;busy=false;panel.querySelectorAll('button').forEach(b=>b.disabled=false);}
+    });
+  }
+
   // ---------- Bausteine darstellen ----------
   function renderBlock(b, page, accentDate = false) {
     switch (b.type) {
@@ -508,7 +531,7 @@
       case 'event':
         return eventCard(b, { accentDate });
       case 'post':
-        return newsPost(b, null, accentDate);
+        return b.mediaCollection ? mediaNewsPost(b) : newsPost(b, null, accentDate);
       case 'image':
         return b.original
           ? `<figure class="block-image natural ${alignClass(b.align)}" data-site-content="${esc(b.id)}">${picture(b.image, b.id, b.caption)}${b.caption ? `<figcaption>${esc(b.caption)}</figcaption>` : ''}</figure>`
@@ -688,6 +711,12 @@
       </article>`;
   }
 
+  function mediaNewsPost(b, {page='aktuell'} = {}) {
+    const href=`#${page}/${encodeURIComponent(b.id)}`;
+    return `<article class="post card media-news" data-site-content="${esc(b.id)}">${TFB.homeMedia.cover(b,href,ref=>images[ref]||ref)}<div class="post-body">${b.date?`<p class="post-date">${esc(fmt(b.date,{day:'numeric',month:'long',year:'numeric'}))}</p>`:''}${b.kicker?`<p class="media-news-kicker">${esc(b.kicker)}</p>`:''}<h3><a class="post-title-link" href="${href}">${esc(b.title)}</a></h3>${b.subtitle?`<p class="media-news-subtitle">${esc(b.subtitle)}</p>`:''}${paragraphs(b.text)}<p><a class="media-news-link" href="${href}">${esc(b.mediaButtonLabel||'Beitrag ansehen')}</a></p></div></article>`;
+  }
+  const mediaDetail = (block,page='aktuell',backHref) => TFB.homeMedia.detail(block,{imageOf:ref=>images[ref]||ref,paragraphs,admin:ui().state.member?.isAdmin,page,backHref});
+
   function newsPost(b, archive = null, accentDate = false) {
     const photos = postPhotos(b, Boolean(archive), accentDate);
     const fullDate = fmt(b.date, { day: 'numeric', month: 'long', year: 'numeric' }) || archive?.year || '';
@@ -815,6 +844,7 @@
   async function featureDetail(id) {
     const { icon, state, partnerSlot } = ui();
     const b = homeBlocks().find((x) => x.id === id);
+    if (!b) { const moved=site.pages.aktuell.blocks.find(x=>x.id===id&&x.mediaCollection); if(moved)return mediaDetail(moved); }
     if (!b) return `${ui().viewHead('Home', 'Diesen Beitrag gibt es nicht mehr.', false)}<p><a class="btn" href="#home">Zur Startseite</a></p>`;
     const admin = state.member && state.member.isAdmin;
     if (b.mediaCollection) return TFB.homeMedia.detail(b, {imageOf:ref=>images[ref] || ref,paragraphs,admin});
@@ -846,7 +876,7 @@
     return `<div class="content-overview-tools"><a class="btn small" href="#${key}/alle">Alle Beiträge ${ui().icon.chevron}</a></div>`;
   }
   async function contentOverview(key) {
-    const list = contentBlocks(key);
+    const list = key==='aktuell' ? TFB.newsroom.ordered(contentBlocks(key)) : contentBlocks(key);
     const { icon } = ui();
     const plain = value => { const el = document.createElement('div'); el.innerHTML = paragraphs(value || ''); return el.textContent || ''; };
     return `<div class="overview content-overview" data-content-page="${key}">
@@ -861,7 +891,7 @@
         const refs = (b.images?.length ? b.images : [b.image]).filter(shownImage);
         const title = b.title || b.caption || CONTENT_TYPES.find(([type]) => type === b.type)[1];
         const text = b.showText === false ? '' : plain(b.text);
-        return `<a class="mini" href="#${key}/beitrag/${encodeURIComponent(b.id)}" data-author="" data-text="${esc(`${title} ${b.kicker || ''} ${b.subtitle || ''} ${text}`.toLowerCase())}" data-where="${b.type}" data-teams="" data-photos="${refs.length}" data-at="${esc(b.date || '')}">
+        return `<a class="mini" href="${b.mediaCollection?`#${key}/${encodeURIComponent(b.id)}`:`#${key}/beitrag/${encodeURIComponent(b.id)}`}" data-author="" data-text="${esc(`${title} ${b.kicker || ''} ${b.subtitle || ''} ${text}`.toLowerCase())}" data-where="${b.type}" data-teams="" data-photos="${refs.length}" data-at="${esc(b.date || '')}">
           ${refs.length ? `<span class="mini-img">${picture(refs[0], refs[0], title)}${refs.length > 1 ? `<i>${refs.length} Fotos</i>` : ''}</span>` : ''}
           <span class="mini-head"><span><b>${esc(title)}</b>${b.date ? `<small>${esc(fmt(b.date, { day: 'numeric', month: 'long', year: 'numeric' }))}</small>` : ''}</span></span>
           ${text ? `<span class="mini-text">${esc(text)}</span>` : ''}</a>`;
@@ -887,11 +917,16 @@
           ...[...contentBlocks('aktuell'), ...site.pages.aktuell.blocks.filter(b => b.type === 'event' && !b._new)].map(b => ({ b, page: 'aktuell' })),
           ...contentBlocks('home').map(b => ({ b, page: 'home' })),
         ],
-        newsPost, eventCard, newsDatesLayout, contentOverviewLink, paragraphs, picture, shownImage,
+        newsPost, eventCard, newsDatesLayout, contentOverviewLink, paragraphs, picture, shownImage, mediaPost:mediaNewsPost, mediaDetail:(b,page)=>mediaDetail(b,page,'#club/archiv'),
       });
     }
     if (['home', 'aktuell'].includes(key) && section === 'alle') { editing = null; return contentOverview(key); }
     if (key === 'aktuell' && section === 'beitrag') aktuellTab = 'news';
+    if (key === 'aktuell' && section && section !== 'alle') {
+      const id=section==='beitrag'?location.hash.split('/')[2]:section;
+      const media=site.pages.aktuell.blocks.find(b=>b.id===decodeURIComponent(id||'')&&b.mediaCollection);
+      if(media)return mediaDetail(media);
+    }
     if (key === 'home' && preview?.tab === 'album') return albumDetail(preview.id);
     if (key === 'home' && preview && preview.tab === 'sub') return featureDetail(preview.id);
     if (key === 'home' && !preview && location.hash.split('/')[2] === 'fotos') return albumDetail(location.hash.split('/')[1]);
@@ -902,7 +937,7 @@
     const edit = editing === key && state.member && state.member.isAdmin && !preview;
     const admin = state.member && state.member.isAdmin;
     const training = key === 'sport' && location.hash.split('/')[1] === 'training';
-    const list = (key === 'home' ? homeBlocks() : page.blocks).map(b => photoPreview?.id === b.id ? photoPreview.draft : b).filter((b) => (!b._new || (preview && b.id === preview.id) || photoPreview?.id === b.id)
+    const list = (key === 'home' ? homeBlocks() : key==='aktuell'?TFB.newsroom.ordered(page.blocks):page.blocks).map(b => photoPreview?.id === b.id ? photoPreview.draft : b).filter((b) => (!b._new || (preview && b.id === preview.id) || photoPreview?.id === b.id)
       && (key !== 'sport' || (training ? b.type !== 'teams' : b.type === 'teams')));
     const legal = key === 'impressum' || key === 'satzung';
     let newsDates = 0;
@@ -914,13 +949,13 @@
     }) : []);
     const renderPageBlock = b => renderBlock(b, key, accentDates.has(b));
     const blocks = edit
-      ? list.map((b, i) => editWrap(b, i, list.length, renderPageBlock(b))).join('')
+      ? key==='aktuell'?layoutBlocks(list,key,b=>editWrap(b,list.indexOf(b),list.length,renderPageBlock(b))):list.map((b, i) => editWrap(b, i, list.length, renderPageBlock(b))).join('')
       : legal ? `<div class="legal-document">${list.map(renderPageBlock).join('')}</div>` : layoutBlocks(list, key, renderPageBlock);
     return `
       <div class="site-page ${edit ? 'editing-page' : ''} ${key === 'home' ? `home-look-${homeLook()}` : ''}" data-page="${key}">
         ${edit ? `
           <div class="editbar">
-            <div><strong>${esc(page.title)} bearbeiten</strong><span>Bausteine antippen zum Ändern · Pfeile zum Sortieren</span></div>
+            <div><strong>${esc(page.title)} bearbeiten</strong><span>${key==='aktuell'?'News und Termine bearbeiten · Reihenfolge nach Datum':'Bausteine antippen zum Ändern · Pfeile zum Sortieren'}</span></div>
             <button type="button" class="btn primary" data-action="site-done">Fertig</button>
           </div>` : ''}
         ${key === 'home' && !edit
@@ -938,9 +973,10 @@
         ${key === 'home' && edit ? `
           <section class="home-editor-settings" aria-label="Gestaltung und Menü">${lookPicker()}${navCard()}</section>
           ${homeAddButtons(list)}` : ''}
+        ${key==='aktuell'&&admin?newsroomTools():''}
         ${blocks}
         ${key === 'home' && edit ? homeAddButtons(list) : ''}
-        ${edit && key !== 'home' && (key !== 'sport' || training) ? `<button type="button" class="btn block add-section" data-action="block-new">${icon.plus} Baustein hinzufügen</button>` : ''}
+        ${edit && !['home','aktuell'].includes(key) && (key !== 'sport' || training) ? `<button type="button" class="btn block add-section" data-action="block-new">${icon.plus} Baustein hinzufügen</button>` : ''}
         ${edit || legal ? '' : partnerSlot(key, page.partnerKicker || 'Präsentiert von')}
       </div>`;
   }
@@ -1160,7 +1196,7 @@
       else html += run.join('');
       i = j;
     }
-    if (key === 'aktuell' && aside.length) {
+    if (key === 'aktuell') {
       return newsDatesLayout(html, aside.map((b, i) => renderColumnBlock(b, i === 0)).join(''), aktuellTab, 'aktuell-tab');
     }
     if (!aside.length) return `<div class="page-grid single"><div class="page-main">${html}</div></div>`;
@@ -1173,13 +1209,13 @@
 
   function editWrap(b, i, total, inner) {
     const { icon } = ui();
-    const label = (BLOCK_TYPES.find(([t]) => t === b.type) || [0, b.type])[1];
+    const label = b.mediaCollection?'Karussell':editing==='aktuell'&&b.type==='post'?'News':(BLOCK_TYPES.find(([t]) => t === b.type) || [0, b.type])[1];
     return `
       <div class="block-edit">
         <div class="block-tools">
           <span class="block-type">${esc(label)}</span>
-          <button type="button" data-action="block-move" data-id="${esc(b.id)}" data-dir="-1" ${i === 0 ? 'disabled' : ''} aria-label="Nach oben">${icon.up}</button>
-          <button type="button" data-action="block-move" data-id="${esc(b.id)}" data-dir="1" ${i === total - 1 ? 'disabled' : ''} aria-label="Nach unten">${icon.down}</button>
+          ${editing!=='aktuell'?`<button type="button" data-action="block-move" data-id="${esc(b.id)}" data-dir="-1" ${i === 0 ? 'disabled' : ''} aria-label="Nach oben">${icon.up}</button>
+          <button type="button" data-action="block-move" data-id="${esc(b.id)}" data-dir="1" ${i === total - 1 ? 'disabled' : ''} aria-label="Nach unten">${icon.down}</button>`:''}
           <button type="button" data-action="block-edit" data-id="${esc(b.id)}" aria-label="Bearbeiten">${icon.pencil}</button>
         </div>
         ${inner || `<p class="muted small empty-hint">${esc(label)} – noch leer</p>`}
@@ -2106,9 +2142,9 @@
     if (!original) return;
     if (original.mediaCollection) {
       const page = editing;
-      return TFB.homeMedia.openEditor(original, {imageOf:ref=>images[ref] || ref,uploadFiles:async files=>{const refs=[];for(const file of files){if(file.size>10*1024*1024)throw Error('Bitte Bilder bis 10 MB wählen.');const data=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(Error('Bild konnte nicht gelesen werden.'));reader.readAsDataURL(file);});const ref=await ui().api.putImage(data);images[ref]=data;refs.push(ref);}return refs;},
+      return TFB.homeMedia.openEditor(original, {page,imageOf:ref=>images[ref] || ref,uploadFiles:async files=>{const refs=[];for(const file of files){if(file.size>10*1024*1024)throw Error('Bitte Bilder bis 10 MB wählen.');const data=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(Error('Bild konnte nicht gelesen werden.'));reader.readAsDataURL(file);});const ref=await ui().api.putImage(data);images[ref]=data;refs.push(ref);}return refs;},
         onSave:async draft=>{const next=structuredClone(site);next.pages[page].blocks=next.pages[page].blocks.map(b=>b.id===id?draft:b);site=await ui().api.saveSite(next);if(detailEditing){editing=null;detailEditing=false;}ui().toast('Gespeichert',true);await ui().renderView();},
-        onDelete:async()=>{const next=structuredClone(site);next.pages[page].blocks=next.pages[page].blocks.filter(b=>b.id!==id);site=await ui().api.saveSite(next);if(detailEditing){editing=null;detailEditing=false;location.hash='#home';}await ui().renderView();},
+        onDelete:async()=>{const next=structuredClone(site);next.pages[page].blocks=next.pages[page].blocks.filter(b=>b.id!==id);site=await ui().api.saveSite(next);if(detailEditing){editing=null;detailEditing=false;location.hash='#'+page;}await ui().renderView();},
       });
     }
     const draft = JSON.parse(JSON.stringify(original));
@@ -2137,7 +2173,7 @@
         module.outerHTML = renderBlock(draft, editing, badge?.classList.contains('date-badge-accent'));
       } else ui().renderView();
     };
-    const label = (BLOCK_TYPES.find(([t]) => t === draft.type) || [0, 'Baustein'])[1];
+    const label = editing==='aktuell'&&draft.type==='post'?'News-Artikel':(BLOCK_TYPES.find(([t]) => t === draft.type) || [0, 'Inhalt'])[1];
 
     const body = () => {
       switch (draft.type) {
@@ -2249,8 +2285,8 @@
                     <button type="button" class="link" data-att-remove>Entfernen</button></div></div></div>`
                 : `<label class="btn">Bild oder PDF wählen<input type="file" accept="image/*,application/pdf" data-att-input hidden></label>`}
             </div>`;
-        case 'post': return postPhotosField(draft) + field('Datum', 'date', draft.date, { type: 'date' })
-          + field('Überschrift', 'title', draft.title) + field('Text', 'text', draft.text, { area: true, rich: true, simple: true, rows: 9, placeholder: 'Text schreiben – Wort markieren, dann Fett, Kursiv oder Rot' });
+        case 'post': return field('Überschrift', 'title', draft.title) + field('Veröffentlichungsdatum', 'date', draft.date, { type: 'date' })
+          + field('Text', 'text', draft.text, { area: true, rich: true, simple: true, rows: 9, placeholder: 'Text schreiben – Wort markieren, dann Fett, Kursiv oder Rot' }) + postPhotosField(draft);
         case 'image': return imageField(draft.image, draft.id) + field('Bildunterschrift', 'caption', draft.caption)
           + `<label class="meet-check"><input type="checkbox" name="imgOriginal" data-rerender ${draft.original ? 'checked' : ''}><span>Originalformat (nicht zuschneiden)</span></label>`
           + (draft.original ? `<div class="field"><span>Ausrichtung</span><div class="seg align-seg">${[['left', 'Links'], ['center', 'Mitte'], ['right', 'Rechts']].map(([v, l]) =>
@@ -2289,7 +2325,7 @@
       const keepScroll = document.querySelector('#sheet-root .sheet') ? document.querySelector('#sheet-root .sheet').scrollTop : 0;
       openSheet(`
         <form class="editor ${live ? 'editor-live' : ''}" data-editor="block" novalidate>
-          <h2>${isNew ? (live ? 'Neues Thema' : `Neuer Baustein: ${esc(label)}`) : live ? 'Thema bearbeiten' : `${esc(label)} bearbeiten`}</h2>
+          <h2>${isNew ? (live ? 'Neues Thema' : `${esc(label)} hinzufügen`) : live ? 'Thema bearbeiten' : `${esc(label)} bearbeiten`}</h2>
           ${live ? themeNav() : ''}
           ${body()}
           <p class="form-error" role="alert"></p>
@@ -2297,7 +2333,7 @@
             <button type="submit" class="btn primary block">Speichern</button>
             ${live ? '<button type="button" class="btn block ed-peek" data-ed-peek>Vorschau ansehen</button>' : ''}
           </div>
-          <button type="button" class="btn block danger" data-delete>${live ? 'Thema löschen' : 'Baustein löschen'}</button>
+          <button type="button" class="btn block danger" data-delete>${live ? 'Thema löschen' : editing==='aktuell'?esc(label)+' löschen':'Baustein löschen'}</button>
         </form>`);
       const form = document.querySelector('[data-editor=block]');
       bindRichFields(form, draft, draft.more?.sections);
@@ -2621,13 +2657,14 @@
     const save = (form) => {
       collect(form);
       if (['event', 'post', 'feature'].includes(draft.type) && !draft.title) { form.querySelector('.form-error').textContent = 'Bitte einen Titel eingeben.'; return; }
+      if(editing==='aktuell'&&['post','event'].includes(draft.type)&&!TFB.newsroom.validDate(draft.date)){form.querySelector('.form-error').textContent='Bitte ein gültiges Datum wählen.';return;}
       delete draft._new;
       const list = blocksOf();
       markColors(list.find((b) => b.id === id), draft);
       list[list.findIndex((b) => b.id === id)] = draft;
       endLive();
       closeSheet();
-      commit(isNew ? 'Baustein hinzugefügt' : 'Gespeichert');
+      commit(isNew ? editing==='aktuell'?label+' hinzugefügt':'Baustein hinzugefügt' : 'Gespeichert');
     };
     render();
   }
@@ -2636,9 +2673,9 @@
     const { openSheet } = ui();
     openSheet(`
       <div class="editor">
-        <h2>Baustein hinzufügen</h2>
+        <h2>${editing==='aktuell'?'Weitere Inhalte':'Baustein hinzufügen'}</h2>
         <div class="type-list">
-          ${BLOCK_TYPES.map(([type, label, hint]) => `<button type="button" class="type-option" data-action="block-add" data-type="${type}"><strong>${label}</strong><span>${hint}</span></button>`).join('')}
+          ${BLOCK_TYPES.filter(([type])=>editing!=='aktuell'||['gallery','collage','text','heading','image','button'].includes(type)).map(([type, label, hint]) => `<button type="button" class="type-option" data-action="block-add" data-type="${type}"><strong>${label}</strong><span>${hint}</span></button>`).join('')}
         </div>
       </div>`);
   }
@@ -3159,6 +3196,9 @@
     },
     'block-edit': (el) => openBlockEditor(el.dataset.id),
     'block-new': () => openBlockPicker(),
+    'aktuell-new': el=>newNewsroomItem(el.dataset.kind),
+    'aktuell-transfer': ()=>openHomeTransfer(),
+    'aktuell-more': ()=>{editing='aktuell';openBlockPicker();},
     'block-add': (el) => {
       if (editing === 'home' && el.dataset.type === 'feature' && blocksOf().filter((b) => b.type === 'feature' && !b._new).length >= MAX_HOME_FEATURES) { ui().toast(`Höchstens ${MAX_HOME_FEATURES} Themen auf der Startseite.`); return; }
       dropUnsaved();
@@ -3182,7 +3222,7 @@
       return commit('Links sortiert');
     },
     'album-edit': (el) => { editing = 'home'; detailEditing = true; openBlockEditor(el.dataset.id, false, 'album'); },
-    'feature-edit': (el) => { editing = 'home'; detailEditing = true; openBlockEditor(el.dataset.id, false, 'sub'); },
+    'feature-edit': (el) => { editing = el.dataset.page || 'home'; detailEditing = true; openBlockEditor(el.dataset.id, false, 'sub'); },
     'aktuell-tab': (el) => {
       aktuellTab = el.dataset.tab;
       showNewsDatesTab(el);

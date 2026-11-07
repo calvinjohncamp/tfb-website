@@ -20,7 +20,7 @@ try {
     catch (_) { return route.fulfill({ status: 404, body: '' }); }
   });
   await page.addInitScript(() => localStorage.setItem('tfb_kiosk_demo_session_v1', 'm-demo'));
-  await page.goto('http://tfb-gallery-test.invalid/#home');
+  await page.goto('http://tfb-gallery-test.invalid/?tfbPresentation=1#home');
   await page.waitForFunction(() => window.TFB?.ui);
   await page.evaluate(() => {
     const db = JSON.parse(localStorage.getItem('tfb_kiosk_demo_v1'));
@@ -116,7 +116,7 @@ try {
   assert.equal(await page.locator('.block-gallery:not(.block-collage) time').getAttribute('datetime'), '2026-10-14');
   await page.locator('[data-action="admin-toggle"]').click();
   await page.locator('[data-action="site-edit"][data-page="home"]').first().click();
-  await page.locator('[data-action="block-add"][data-type="gallery"]').click();
+  await page.locator('[data-action="block-add"][data-type="gallery"]').first().click();
   await page.locator('[data-editor="block"] [name="title"]').fill('Neue Galerie');
   await page.locator('[data-editor="block"] button[type="submit"]').click();
   await page.waitForFunction(() => JSON.parse(localStorage.getItem('tfb_kiosk_demo_v1')).site.pages.home.blocks.some(b => b.type === 'gallery' && b.title === 'Neue Galerie'));
@@ -125,7 +125,7 @@ try {
   assert.equal(saved.images.length, 5);
   assert.ok(saved.images[3].endsWith('kai-eichmann.jpg'));
   assert.equal(saved.textPosition, 'above');
-  await page.locator('[data-action="block-add"][data-type="collage"]').click();
+  await page.locator('[data-action="block-add"][data-type="collage"]').first().click();
   await page.locator('[data-editor="block"] [name="title"]').fill('Neue Collage');
   await page.locator('[data-editor="block"] button[type="submit"]').click();
   await page.waitForFunction(() => JSON.parse(localStorage.getItem('tfb_kiosk_demo_v1')).site.pages.home.blocks.some(b => b.type === 'collage' && b.title === 'Neue Collage'));

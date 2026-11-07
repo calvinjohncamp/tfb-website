@@ -32,6 +32,7 @@ async function setup() {
   context.TFB.ui = { api, state: { member: { isAdmin: true } }, icon: new Proxy({}, { get: () => '<svg></svg>' }),
     esc: value => String(value ?? '').replaceAll('&','&amp;').replaceAll('"','&quot;').replaceAll('<','&lt;'),
     partnerSlot: () => '', viewHead: () => '', toast() {}, renderView() {}, openLightbox: (...args) => opened.push(args), openSheet: html => opened.push(html) };
+  vm.runInContext(readFileSync(new URL('assets/js/newsroom.js', root), 'utf8'), context);
   vm.runInContext(readFileSync(new URL('assets/js/site.js', root), 'utf8'), context);
   return { context, api, opened, storage };
 }
@@ -97,6 +98,7 @@ test('Home and Aktuell share galleries with optional article date and preserved 
   assert.equal(JSON.parse(storage.get('tfb_kiosk_demo_v1')).site.pages.home.blocks.at(-1).text, 'Unser eigener Galerietext');
   for (const key of ['home', 'aktuell']) site.pages[key].blocks.at(-1).showText = true;
   await api.saveSite(site);
+  vm.runInContext(readFileSync(new URL('assets/js/newsroom.js', root), 'utf8'), context);
   vm.runInContext(readFileSync(new URL('assets/js/site.js', root), 'utf8'), context);
   for (const key of ['home', 'aktuell']) {
     const html = await context.TFB.views[key]();
@@ -128,6 +130,7 @@ test('collage modules and galleries preserve chosen text order on Home and Aktue
     site.pages[key].blocks.filter(b => ['gallery', 'collage'].includes(b.type)).forEach(b => { b.textPosition = 'below'; });
   }
   await api.saveSite(site);
+  vm.runInContext(readFileSync(new URL('assets/js/newsroom.js', root), 'utf8'), context);
   vm.runInContext(readFileSync(new URL('assets/js/site.js', root), 'utf8'), context);
   for (const key of ['home', 'aktuell']) {
     const html = await context.TFB.views[key]();

@@ -19,7 +19,7 @@ try {
     try { return route.fulfill({ body: readFileSync(path), contentType: types[extname(path)] || 'application/octet-stream' }); }
     catch (_) { return route.fulfill({ status: 404, body: '' }); }
   });
-  await page.goto('http://tfb-overview-test.invalid/#home');
+  await page.goto('http://tfb-overview-test.invalid/?tfbPresentation=1#home');
   await page.waitForFunction(() => window.TFB?.ui);
   await page.evaluate(() => {
     const db = JSON.parse(localStorage.getItem('tfb_kiosk_demo_v1'));
@@ -43,7 +43,7 @@ try {
     const numberBox = await page.locator('.feature-first .feature-number').boundingBox();
     assert.ok(buttonBox.x >= bodyBox.x && buttonBox.x + buttonBox.width <= bodyBox.x + bodyBox.width);
     assert.ok(buttonBox.x >= numberBox.x + numberBox.width || buttonBox.y + buttonBox.height <= numberBox.y || buttonBox.y >= numberBox.y + numberBox.height);
-    if (width < 900) assert.ok(Math.abs(buttonBox.y + buttonBox.height - numberBox.y - numberBox.height) < 2);
+    if (width < 900) {const kicker=await page.locator('.feature-first .feature-kicker-label').boundingBox();assert.ok(buttonBox.y + buttonBox.height <= kicker.y + 2, 'Overview stays above the editorial text');}
     assert.equal(await page.locator('.site-page > .content-overview-tools').count(), 0);
     await page.screenshot({ path: `/tmp/tfb-overview-placement-home-${label}.png` });
     await page.evaluate(() => { location.hash = '#aktuell'; });

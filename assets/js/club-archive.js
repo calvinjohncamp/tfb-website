@@ -119,6 +119,7 @@
   }
 
   function article(item, full = false) {
+    if(item.mediaBlock)return render.mediaPost(item.mediaBlock,{page:item.mediaPage});
     const body = `
       <div class="archive-text">${full ? item.fullBody : item.body}</div>
       ${!full && item.hasAlbums ? `<p><a class="more-link" href="${detail(item)}">Zur vollständigen Galerie</a></p>` : ''}`;
@@ -129,6 +130,7 @@
 
   function articleView(item) {
     if (!item) return `<section class="club-archive">${heading(overviewRoute)}<p>Beitrag nicht gefunden.</p></section>`;
+    if(item.mediaBlock)return render.mediaDetail(item.mediaBlock,item.mediaPage);
     const related = item.series ? entries.filter(other => other.id !== item.id && other.series === item.series) : [];
     return `<section class="site-page club-archive archive-reading">
       ${heading(overviewRoute)}
@@ -177,10 +179,11 @@
     const text = [b.subtitle, b.showText === false ? '' : b.text, story]
       .filter((value, index, all) => value && all.indexOf(value) === index).join('\n\n');
     const photos = [...new Set([
-      ...(b.images || []), b.image, ...(more.heroImages || []), ...(more.images || []),
+      ...(b.mediaCollection?.entries||[]).flatMap(e=>e.images||[]), ...(b.images || []), b.image, ...(more.heroImages || []), ...(more.images || []),
       ...(b.album?.enabled ? b.album.images || [] : []),
     ].filter(ref => ref && !ref.startsWith('ph:') && render.shownImage(ref)))];
-    const year = b.date?.slice(0, 4) || '';
+    const year = (b.date||b.mediaCollection?.entries?.[0]?.date)?.slice(0,4)||'';
+    const mediaText=(b.mediaCollection?.entries||[]).map(e=>[e.kicker,e.title,e.subtitle,e.text].filter(Boolean).join(' ')).join(' ');
     const title = b.title || b.caption || 'Fotos aus dem Club';
     const topic = gallery ? 'Fotogalerien' : 'Vereinsleben';
     const topics = [...new Set([topic, ...(prior?.topics || [])])];
@@ -189,8 +192,8 @@
       .map(link => `<p><a class="more-link" href="${esc(link.url)}">${esc(link.label || 'Mehr erfahren')}</a></p>`).join('') : '';
     const body = (text ? render.paragraphs(text) : '') + links;
     const summary = text.replace(/\{\/?[a-z]+\}|\*\*/g, '').replace(/\s+/g, ' ').trim();
-    return { id: prior?.id || `${page}-${b.id}`, title, date: b.date || '', year, sortYear, gallery, photos, topics,
-      body, fullBody: body, source: prior?.source, search: normalize(`${title} ${text} ${topics.join(' ')} ${year}`),
+    return { id: prior?.id || `${b.sourceHomeId?'home':page}-${b.id}`, ...(b.mediaCollection?{mediaBlock:b,mediaPage:page}:{}), title, date: b.date || b.mediaCollection?.entries?.[0]?.date || '', year, sortYear, gallery, photos, topics,
+      body, fullBody: body, source: prior?.source, search: normalize(`${title} ${text} ${mediaText} ${topics.join(' ')} ${year}`),
       summary: summary.length > 180 ? summary.slice(0, 180).replace(/\s+\S*$/, '') + ' …' : summary };
   }
 

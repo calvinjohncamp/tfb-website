@@ -69,3 +69,14 @@ test('board portraits retain approved crops and originals without publishing pri
  const record=f.env.DB.sqlite.prepare("SELECT payload_id FROM app_records WHERE kind='account' AND id=?").get(f.admin.id);const payload=f.env.DB.sqlite.prepare('SELECT data FROM app_payloads WHERE payload_id=? AND part=0').get(record.payload_id);const account=JSON.parse(payload.data);account.photoPublic=true;account.photoPending=false;f.env.DB.sqlite.prepare('UPDATE app_payloads SET data=? WHERE payload_id=? AND part=0').run(JSON.stringify(account),record.payload_id);
  board=(await f.call('/public/site')).body.boardPeople;assert.equal(board[1].avatar,png);assert.equal(board[1].avatarLarge,png);
 });
+
+test('Home-to-Aktuell media transfer commits both pages or neither on a revision conflict',async()=>{
+ const f=await setup();const upload=await f.call('/admin/site/media',{data:png},f.adminToken),ref=upload.body.ref;
+ const source={id:'signature',type:'feature',title:'Signature',mediaCollection:{entries:[{id:'one',title:'Umkleide',format:'4:5',images:[ref,ref,ref,ref,ref]}]}};
+ await save(f,[change('page:home',0,{blocks:[source]}),change('page:aktuell',0,{blocks:[]})]);
+ const moved={...source,type:'post',date:'2026-11-07'};
+ const conflict=await save(f,[change('page:home',1,{blocks:[]}),change('page:aktuell',0,{blocks:[moved]})]);assert.equal(conflict.status,409);
+ let state=(await f.call('/public/site')).body;assert.equal(state.documents['page:home'].value.blocks[0].id,'signature');assert.equal(state.documents['page:aktuell'].value.blocks.length,0);
+ const success=await save(f,[change('page:home',1,{blocks:[]}),change('page:aktuell',1,{blocks:[moved]})]);assert.equal(success.status,200);
+ state=(await f.call('/public/site')).body;assert.equal(state.documents['page:home'].value.blocks.length,0);assert.deepEqual(state.documents['page:aktuell'].value.blocks[0].mediaCollection,source.mediaCollection);
+});
