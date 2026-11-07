@@ -216,7 +216,7 @@ async function validate(env,member,c,op,all,importing) {
       }
       const slideshowLayers = v.slideshowLayers ?? old?.value.slideshowLayers;
       const photoView = v.photoView ?? old?.value.photoView;
-      if (photoView === 'slideshow' && value.images.length > 1 && !value.designs?.some(slide => videoRef(slide.ref))) {
+      if (['slideshow','carousel'].includes(photoView) && value.images.length > 1 && !value.designs?.some(slide => videoRef(slide.ref))) {
         value.photoView = photoView;
       }
       if (slideshowLayers && value.designs?.length > 1 && value.designs.every(slide => !videoRef(slide.ref))) {

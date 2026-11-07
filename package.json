@@ -17,7 +17,8 @@
     "test:browser:gallery": "node tools/test-browser-gallery.mjs",
     "test:browser:backups": "node tools/test-browser-backups.mjs",
     "test:editorial": "node --test tools/test-editorial.mjs",
-    "test:browser:editorial": "node tools/test-browser-editorial.mjs"
+    "test:browser:editorial": "node tools/test-browser-editorial.mjs",
+    "test:browser:chat-carousel": "node tools/test-browser-chat-carousel.mjs"
   },
   "devDependencies": {
     "playwright": "^1.64.0"

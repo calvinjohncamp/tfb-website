@@ -1,5 +1,10 @@
 # TFB-Website
 
+## Chat-Karussell v277
+
+Manuell blätterbare Bildbeiträge in Clubgeflüster. Bedienung und Prüfungen:
+[Release v277](docs/RELEASE-v277.md).
+
 ## Gemeinsame Splash Gestaltung und Projektordnung vom 27.10.2026
 
 Die aktive TFB-Website und dieses Git-Repository liegen lokal jetzt unter

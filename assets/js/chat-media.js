@@ -291,15 +291,22 @@ export function mediaDesign(ref, width, height, kind = 'image') {
 }
 
 export function publishedGallery(post, imageOf) {
-  const slideshow = post.designs.length > 1 && post.designs.every(slide => !slide.ref.startsWith('vid:'));
+  const carousel = post.photoView === 'carousel';
+  const slideshow = !carousel && post.designs.length > 1 && post.designs.every(slide => !slide.ref.startsWith('vid:'));
   const format = post.designs[0]?.format || '4 / 5';
-  return `<div class="cs-published" data-cs-post="${esc(post.id)}"${slideshow ? ` data-cs-auto style="--cs-slideshow-ratio:${format}"` : ''}>
-    ${post.dots === 'top' ? pageDots(post.designs) : ''}
+  const navigation = carousel ? `<div class="cs-carousel-nav">
+    <button type="button" data-cs-step="-1" aria-label="Vorheriges Bild" disabled>‹</button>
+    ${pageDots(post.designs)}
+    <button type="button" data-cs-step="1" aria-label="Nächstes Bild"${post.designs.length < 2 ? ' disabled' : ''}>›</button>
+    <span class="cs-carousel-status" aria-live="polite" aria-atomic="true">Bild 1 von ${post.designs.length}</span>
+  </div>` : pageDots(post.designs);
+  return `<div class="cs-published${carousel ? ' cs-carousel' : ''}" data-cs-post="${esc(post.id)}"${carousel ? ' tabindex="0" role="region" aria-label="Bilderkarussell"' : ''}${slideshow ? ` data-cs-auto style="--cs-slideshow-ratio:${format}"` : ''}>
+    ${post.dots === 'top' ? navigation : ''}
     <div class="cs-screens">
     ${post.designs.map((slide, index) => {
       const video = slide.ref.startsWith('vid:');
       const source = video ? '' : imageOf(slide.ref);
-      const html = stage({...slide, source, kind:video ? 'video' : 'image'}, false, slideshow);
+      const html = stage({...slide, source, kind:video ? 'video' : 'image'}, false, slideshow || carousel);
       return `<div class="cs-screen" data-cs-published-page="${index}"${index ? ' hidden' : ''}>${html}
         ${video ? `<button type="button" class="cs-play" data-cs-load-video="${esc(slide.ref)}" aria-label="Video abspielen">▶</button>` : ''}
         ${video ? '<div class="cs-clip-controls" hidden><input type="range" min="0" step="any" value="0" data-cs-clip-seek aria-label="Position im Video"><button type="button" data-cs-clip-mute aria-pressed="false">Ton aus</button></div>' : ''}
@@ -309,7 +316,7 @@ export function publishedGallery(post, imageOf) {
     }).join('')}
     ${slideshow && post.slideshowLayers?.length ? `<div class="cs-slideshow-text">${textLayersMarkup({layers:post.slideshowLayers,kind:'slideshow'})}</div>` : ''}
     </div>
-    ${post.dots !== 'top' ? pageDots(post.designs) : ''}
+    ${post.dots !== 'top' ? navigation : ''}
     ${slideshow ? '<button type="button" class="btn small cs-slideshow" data-cs-slideshow aria-label="Bilder abspielen">▶</button>' : ''}
   </div>`;
 }
@@ -412,8 +419,24 @@ function selectPublished(gallery, index) {
     if (i === index) button.setAttribute('aria-current','true');
     else button.removeAttribute('aria-current');
   });
+  gallery.querySelectorAll('[data-cs-step]').forEach(button => {
+    button.disabled = Number(button.dataset.csStep) < 0 ? index === 0 : index === pages.length - 1;
+  });
+  const status = gallery.querySelector('.cs-carousel-status');
+  if (status) status.textContent = `Bild ${index + 1} von ${pages.length}`;
   observeVideoPreview(gallery);
 }
+document.addEventListener('keydown', event => {
+  const gallery = event.target.closest('.cs-carousel');
+  if (!gallery || event.target.matches('input, textarea, select, [contenteditable="true"]')) return;
+  const pages = gallery.querySelectorAll('[data-cs-published-page]');
+  const current = gallery.querySelector('[data-cs-published-page]:not([hidden])');
+  const index = Number(current?.dataset.csPublishedPage || 0);
+  const next = {ArrowLeft:index - 1, ArrowRight:index + 1, Home:0, End:pages.length - 1}[event.key];
+  if (next === undefined) return;
+  event.preventDefault();
+  pickGalleryPage(gallery, Math.max(0, Math.min(pages.length - 1, next)));
+});
 let publishedSwipe;
 document.addEventListener('touchstart', event => {
   const gallery = event.target.closest('.cs-published');
@@ -743,7 +766,7 @@ function openPublishedViewer(gallery, button, fromStart = false) {
     button.setAttribute('aria-label','Video abspielen');
   });
   dialog.innerHTML = `<div class="cs-viewer-tools">
-    ${slideshow ? '' : '<button type="button" aria-pressed="false" data-cs-wide>16:9</button>'}
+    ${slideshow || gallery.classList.contains('cs-carousel') ? '' : '<button type="button" aria-pressed="false" data-cs-wide>16:9</button>'}
     <button type="button" aria-label="Vollbild schließen" data-cs-viewer-close>×</button></div>`;
   const wide = dialog.querySelector('[data-cs-wide]');
   if (wide) wide.onclick = () => wide.setAttribute('aria-pressed', String(dialog.classList.toggle('wide')));
@@ -830,6 +853,11 @@ document.addEventListener('click', async event => {
     return;
   }
   const gallery = button.closest('.cs-published');
+  if (gallery && 'csStep' in data) {
+    const current = gallery.querySelector('[data-cs-published-page]:not([hidden])');
+    pickGalleryPage(gallery, Number(current?.dataset.csPublishedPage || 0) + Number(data.csStep));
+    return;
+  }
   if (gallery && 'csClipMute' in data) {
     const video = button.closest('.cs-screen').querySelector('video');
     video.muted = !video.muted;

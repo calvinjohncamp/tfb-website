@@ -149,3 +149,20 @@ test('a photo slideshow keeps shared timing separate from individual photo text'
   assert.equal((await gallery()).slideshowLayers,undefined);
   assert.equal((await gallery()).photoView,undefined);
 });
+
+test('manual photo carousel persists for other members, survives edits, and can return to collage', async () => {
+  const f = await fixture();
+  const refs = ['img:carousel-one','img:carousel-two'];
+  const photos = refs.map(id => ({kind:'media',id,revision:0,value:{data:'data:image/png;base64,AAAA'}}));
+  const designs = refs.map(ref => ({ref,format:'4 / 5',layers:[]}));
+  assert.equal((await f.commit([...photos,post('carousel',{images:refs,designs,photoView:'carousel'})])).status,200);
+  const saved = async () => (await f.state(f.otherToken)).body.records.find(row => row.id === 'carousel').value;
+  assert.equal((await saved()).photoView,'carousel');
+  assert.deepEqual((await saved()).designs.map(slide => slide.ref),refs);
+  assert.equal((await f.commit([post('carousel',{images:refs,designs,text:'Changed caption'},1)])).status,200);
+  assert.equal((await saved()).photoView,'carousel');
+  assert.equal((await f.commit([post('carousel',{images:refs,designs,photoView:'collage'},2)])).status,200);
+  assert.equal((await saved()).photoView,undefined);
+  assert.equal((await f.commit([post('single-photo',{images:[refs[0]],designs:[designs[0]],photoView:'carousel'})])).status,200);
+  assert.equal((await f.state()).body.records.find(row => row.id === 'single-photo').value.photoView,undefined);
+});

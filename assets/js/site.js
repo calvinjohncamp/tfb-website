@@ -1380,15 +1380,16 @@
       (post.designs.length > 1 && !post.designs.some(slide => slide.ref.startsWith('vid:'))));
     const gallery = (post.designs || photos.length > 1) && await import('./chat-media.js').then(studio =>
       studio.publishedGallery(post.designs ? post : {...post, designs:photos.map(ref => studio.mediaDesign(ref,16,9))}, ref => images[ref] || ref));
+    const carousel = post.photoView === 'carousel';
     const slideshow = post.photoView === 'slideshow';
-    const media = editSlideshow ? `<div data-cs-photo-view>
+    const media = editSlideshow && !carousel ? `<div data-cs-photo-view>
       <div data-cs-collage${slideshow ? ' hidden' : ''}>${postCollage(post, photos)}
         <button type="button" class="btn small cs-slideshow" data-cs-show-slideshow aria-label="Bilder als Diashow abspielen">▶</button></div>
       <div data-cs-carousel${slideshow ? '' : ' hidden'}>${gallery}
         <button type="button" class="btn small cs-collage-toggle" data-cs-show-collage aria-label="Collage ansehen"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 13h18M14 3v10M10 13v8"/></svg></button></div>
     </div>` : gallery;
     const replies = await commentsMarkup(post);
-    return `<div class="chat-post-row${media && (!editSlideshow || slideshow) && post.designs?.some(slide => slide.format !== '16 / 9') ? ' has-designed-media' : ''}">${postHtml(post, Boolean(ui().state.member), {chat:true, editSlideshow, media:media || undefined})}${replies}</div>`;
+    return `<div class="chat-post-row${media && (!editSlideshow || slideshow || carousel) && post.designs?.some(slide => slide.format !== '16 / 9') ? ' has-designed-media' : ''}">${postHtml(post, Boolean(ui().state.member), {chat:true, editSlideshow, media:media || undefined})}${replies}</div>`;
   }
   document.addEventListener('submit', async e => {
     const form = e.target.closest('[data-comment-form]');
@@ -1625,8 +1626,8 @@
             ${draft.media.length < 6 ? `<label class="gallery-add">${ui().icon.camera}<span>${scope === 'club' ? 'Medien hinzufügen' : 'Fotos'}</span><input type="file" accept="${scope === 'club' ? 'image/*,video/*,.mov,.mp4,.m4v,.webm' : 'image/*'}" multiple data-cphoto hidden></label>` : ''}
           </div>
           ${hasSlideshow() ? `<div class="compose-photo-view"><label class="field"><span>Bilder anzeigen als</span>
-            <select name="photoView"><option value="collage"${draft.photoView === 'collage' ? ' selected' : ''}>Collage</option><option value="slideshow"${draft.photoView === 'slideshow' ? ' selected' : ''}>Diashow</option></select></label>
-            <button type="button" class="btn small" data-cslideshow>Text für alle Bilder</button></div>` : ''}
+            <select name="photoView"><option value="collage"${draft.photoView === 'collage' ? ' selected' : ''}>Collage</option><option value="slideshow"${draft.photoView === 'slideshow' ? ' selected' : ''}>Diashow</option><option value="carousel"${draft.photoView === 'carousel' ? ' selected' : ''}>Karussell</option></select></label>
+            ${draft.photoView === 'carousel' ? '<p class="small muted">Bilder vollständig anzeigen und selbst durchblättern.</p>' : '<button type="button" class="btn small" data-cslideshow>Text für alle Bilder</button>'}</div>` : ''}
           <p class="small muted">${scope === 'club' ? 'Bis zu 6 Fotos oder Videos. Clips bis 30 Sekunden werden bei Bedarf automatisch verkleinert.' : 'Bis zu 6 Fotos.'}</p>
           ${draft.media.length ? '<label class="meet-check"><input type="checkbox" name="photoOk" required><span>Die abgebildeten Personen sind mit der Veröffentlichung einverstanden.</span></label>' : ''}
           ${scope === 'club' ? `<div class="compose-teams"><p class="small muted">${myTeams.length > 1 ? 'Auch in meinen Mannschaften anzeigen' : 'Auch in meiner Mannschaft anzeigen'}</p>
@@ -1690,6 +1691,7 @@
         finally { setBusy(false); }
       });
       form.addEventListener('change', async e => {
+        if (e.target.name === 'photoView') { keep(); render(); return; }
         if (!e.target.matches('[data-cphoto]') || !e.target.files.length || busy) return;
         keep();
         const files = [...e.target.files];

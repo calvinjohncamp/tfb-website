@@ -982,7 +982,7 @@
       const mine = alsoTeams.filter((k) => member.isAdmin || inTeam(member, k));
       const post = { id: 'p-' + uid(), scope, authorId: member.id, createdAt: new Date().toISOString(), ...(String(title || '').trim() ? { title: String(title).trim().slice(0, 90) } : {}), text: t.slice(0, 2000), images: images.slice(0, 6), ...(designs.length ? {designs:clone(designs), dots} : {}), ...(scope === 'club' && mine.length ? { alsoTeams: mine } : {}) };
       if (slideshowLayers.length) post.slideshowLayers = clone(slideshowLayers);
-      if (photoView === 'slideshow') post.photoView = photoView;
+      if (['slideshow', 'carousel'].includes(photoView)) post.photoView = photoView;
       db.community.posts.push(post);
       if (!save(db)) throw new Error('Speichern nicht möglich.');
       document.dispatchEvent(new Event('tfb-chat-updated'));
