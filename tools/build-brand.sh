@@ -41,8 +41,8 @@ css=assets/css/brand.css
   done
 } > $css
 
-# App-Symbole: heller Grund, dunkles TFB und roter Ball in Originalproportionen.
-# Eigenständige Favicon-Vorlage erhält das bisherige kompakte Zeichen ohne Ball.
+# App-Symbole und Favicon: heller quadratischer Grund, schwarzes TFB ohne Ball.
+# Betriebssysteme maskieren App-Symbole selbst; das Browser-Favicon bleibt eckig.
 I=assets/icons
 node tools/build-app-icons.mjs
 magick $B/tfb-favicon-source.png -resize 64x64 $I/favicon-64.png

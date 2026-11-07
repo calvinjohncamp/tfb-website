@@ -1,5 +1,5 @@
 // App icons use the enlarged original TFB letters without ball or subtitle.
-// The browser favicon has its own unchanged source.
+// Browser favicon uses the same square artwork; platforms mask app icons themselves.
 import {readFileSync,writeFileSync} from 'node:fs';
 import {fileURLToPath} from 'node:url';
 import {resolve} from 'node:path';
@@ -27,6 +27,7 @@ const browser=await chromium.launch({headless:true});
 try{
   for(const [file,size,width] of [
     ['assets/brand/tfb-app-icon-source.png',1024,80/88*100],
+    ['assets/brand/tfb-favicon-source.png',1024,80/88*100],
     ['assets/icons/icon-512.png',512,80/88*100],
     ['assets/icons/icon-192.png',192,80/88*100],
     ['assets/icons/icon-180.png',180,80/88*100],
