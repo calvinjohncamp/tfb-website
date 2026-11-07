@@ -215,3 +215,49 @@ html.tfb-logo-midnight-amber :is(.tfb-logo-split, .tfb-splash-wordmark) .tfb-log
 html.tfb-logo-midnight-amber :is(.tfb-logo-split, .tfb-splash-wordmark) .tfb-logo-ball {
   opacity: 0;
 }
+
+/* Gelbe Farbwelt: Logo-Blau als Schriftfarbe auf gelben Flächen. */
+:root.tfb-logo-midnight-amber .tfb-splash h1 em { color: var(--tfb-midnight-blue); }
+:root.tfb-logo-midnight-amber body .app .topbar .topnav .tab.active {
+  color: var(--ink); background: transparent;
+}
+:root.tfb-logo-midnight-amber body .app .topbar .topnav .tab.active::before {
+  border-color: transparent; background: transparent;
+}
+:root.tfb-logo-midnight-amber body .app .topbar .topnav .tab.active::after {
+  content: ""; left: 0; right: 0; bottom: 0; background: var(--signature);
+}
+:root.tfb-logo-midnight-amber body :is(.btn.primary, .btn.signal, .tfb-splash-enter, .membership-apply-button, .portrait-cta):hover:not(:disabled) {
+  color: var(--tfb-midnight-blue);
+}
+:root.tfb-logo-midnight-amber body .btn.club-archive-link {
+  background: var(--signature); border-color: var(--signature); color: var(--tfb-midnight-blue);
+}
+:root.tfb-logo-midnight-amber body .date-badge {
+  background: var(--tfb-midnight-blue); color: var(--signature);
+}
+:root.tfb-logo-midnight-amber body .date-badge > :is(small, b),
+:root.tfb-logo-midnight-amber body .view[data-view] .date-badge > :is(small, b) { color: var(--signature); opacity: 1; }
+:root.tfb-logo-midnight-amber body .view[data-view="aktuell"] .date-badge-accent {
+  background: var(--signature);
+}
+:root.tfb-logo-midnight-amber body .view[data-view="aktuell"] .date-badge-accent > :is(small, b) {
+  color: var(--tfb-midnight-blue);
+}
+:root.tfb-logo-midnight-amber body .team-news-btn:is(.has, .has-portrait) { border-color: var(--signature); }
+:root.tfb-logo-midnight-amber body .team-news-btn :is(em.on, span) { color: var(--ink); }
+:root.tfb-logo-midnight-amber body .portrait-cta .portrait-cta-body :is(small, b, span, em, i) { color: var(--tfb-midnight-blue); }
+:root.tfb-logo-midnight-amber body .meet-kind-tile :is(strong, small) { color: var(--tfb-midnight-blue); }
+:root.tfb-logo-midnight-amber body .meet-mine.yes {
+  color: var(--ink); background: transparent; box-shadow: inset 0 0 0 1.5px var(--signature);
+}
+:root.tfb-logo-midnight-amber body .meet-row.yes .meet-avatar {
+  background: var(--signature); color: var(--tfb-midnight-blue);
+}
+
+/* Die PDF-Vorschau bleibt in der App; das Kreuz liegt außerhalb des PDF-Rahmens. */
+.sheet:has(.membership-mail-dialog) { width: min(960px, 100%); max-width: 960px; }
+.membership-mail-dialog h2 { padding: 0 48px 18px 0; font-size: 1.05rem; }
+.membership-mail-dialog iframe {
+  display: block; width: 100%; height: 70vh; height: 70dvh; border: 1px solid var(--line); border-radius: 4px; background: #efefef;
+}

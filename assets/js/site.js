@@ -568,7 +568,7 @@
       case 'facts':
         return `<section class="block-facts">${(b.items || []).map((f) => `<div><b>${esc(f.value)}</b><span>${esc(f.label)}</span></div>`).join('')}</section>`;
       case 'button': {
-        if (b.id === 'v-mitglied-btn' || b.url === '#aufnahme') return `<div class="block-button membership-actions"><button type="button" class="btn membership-fees-button" data-action="membership-fees">Mitgliedsbeiträge</button><button type="button" class="btn membership-apply-button" data-action="membership-open">${esc(b.label || 'Zum Anmeldeformular')}</button>${b.note ? `<p class="membership-benefit">${esc(b.note)}</p>` : ''}<a class="membership-mail-preview" href="assets/docs/tfb-mitgliedsanmeldung-muster.pdf" target="_blank" rel="noopener" aria-label="Muster der E-Mail-Bestätigung als PDF in neuem Tab öffnen">E-Mail-Bestätigung (PDF)&nbsp;<svg class="link-arrow" viewBox="0 0 806 1000" aria-hidden="true" focusable="false"><path transform="translate(0 755) scale(1 -1)" d="M528 -14 448 66 546 164 587 189 581 206 533 198H50V312H533L581 304L587 321L546 346L448 444L528 524L756 296V214Z"/></svg></a></div>`;
+        if (b.id === 'v-mitglied-btn' || b.url === '#aufnahme') return `<div class="block-button membership-actions"><button type="button" class="btn membership-fees-button" data-action="membership-fees">Mitgliedsbeiträge</button><button type="button" class="btn membership-apply-button" data-action="membership-open">${esc(b.label || 'Zum Anmeldeformular')}</button>${b.note ? `<p class="membership-benefit">${esc(b.note)}</p>` : ''}<a class="membership-mail-preview" href="assets/docs/tfb-mitgliedsanmeldung-muster.pdf" data-action="membership-mail-preview" aria-haspopup="dialog" aria-label="Muster der E-Mail-Bestätigung öffnen">E-Mail-Bestätigung (Vorschau)&nbsp;<svg class="link-arrow" viewBox="0 0 806 1000" aria-hidden="true" focusable="false"><path transform="translate(0 755) scale(1 -1)" d="M528 -14 448 66 546 164 587 189 581 206 533 198H50V312H533L581 304L587 321L546 346L448 444L528 524L756 296V214Z"/></svg></a></div>`;
         const ext = /^https?:/i.test(b.url || '');
         return `<p class="block-button"><a class="btn primary" href="${esc(b.url || '#')}" ${ext ? 'target="_blank" rel="noopener"' : ''}>${esc(b.label || 'Mehr')}${ext ? ' <svg class="link-arrow" viewBox="0 0 806 1000" aria-hidden="true" focusable="false"><path transform="translate(0 755) scale(1 -1)" d="M528 -14 448 66 546 164 587 189 581 206 533 198H50V312H533L581 304L587 321L546 346L448 444L528 524L756 296V214Z"/></svg>' : ''}</a></p>`;
       }
@@ -601,7 +601,7 @@
             <a class="team team-row" href="#team/${esc(teamKey(t.name))}">
               <span class="team-thumb ${photo ? '' : 'empty'}">${photo || ui().icon.camera}${count ? `<span class="team-dot">${count}</span>` : ''}</span>
               <span class="team-name"><strong>${esc(t.name.replace(/\s*\(.*?\)/g, ''))}${/\((.*?)\)/.test(t.name) ? ` <i>${esc(t.name.match(/\((.*?)\)/)[1])}</i>` : ''}</strong><small>${esc(t.group)}</small></span>
-              <span class="team-news-btn ${count ? 'has' : ''}"><em class="${hasPortrait ? 'on' : ''}">Mannschaftsporträt</em> + <em class="${count ? 'on' : ''}">News</em>${count ? `<b>${count}</b>` : ''}<span aria-hidden="true"><svg class="link-arrow" viewBox="0 0 806 1000" aria-hidden="true" focusable="false"><path transform="translate(0 755) scale(1 -1)" d="M528 -14 448 66 546 164 587 189 581 206 533 198H50V312H533L581 304L587 321L546 346L448 444L528 524L756 296V214Z"/></svg></span></span>
+              <span class="team-news-btn ${count ? 'has' : ''} ${hasPortrait ? 'has-portrait' : ''}"><em class="${hasPortrait ? 'on' : ''}">Mannschaftsporträt</em> + <em class="${count ? 'on' : ''}">News</em>${count ? `<b>${count}</b>` : ''}<span aria-hidden="true"><svg class="link-arrow" viewBox="0 0 806 1000" aria-hidden="true" focusable="false"><path transform="translate(0 755) scale(1 -1)" d="M528 -14 448 66 546 164 587 189 581 206 533 198H50V312H533L581 304L587 321L546 346L448 444L528 524L756 296V214Z"/></svg></span></span>
               <span class="team-stand"><b class="${t.rank === '1' ? 'top' : ''}">${esc(t.rank || '–')}.</b><small>Platz · ${esc(t.points)}</small></span>
             </a>`;
           }).join('')}
@@ -3144,6 +3144,16 @@
       }, el, { format: el.dataset.format || '' });
     },
     'chat-text-edit': editChatText,
+    'membership-mail-preview': (el, event) => {
+      event.preventDefault();
+      ui().openSheet(`<section class="membership-mail-dialog" aria-labelledby="membership-mail-title">
+        <h2 id="membership-mail-title">E-Mail-Bestätigung · Muster</h2>
+        <iframe src="assets/docs/tfb-mitgliedsanmeldung-muster.html" sandbox="allow-same-origin" title="Beispiel der E-Mail zur Mitgliedsanmeldung"></iframe>
+      </section>`);
+      const dialog = document.querySelector('.membership-mail-dialog').closest('[role="dialog"]');
+      dialog.setAttribute('aria-labelledby', 'membership-mail-title');
+      dialog.querySelector('.sheet-close').focus({ preventScroll: true });
+    },
     'membership-fees': () => {
       const rows = [
         ['Kinder bis 6 Jahre', 'Beitragsfrei'],

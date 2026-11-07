@@ -1098,9 +1098,11 @@
     document.body.classList.add('no-scroll');
   }
   function closeSheet() {
+    const mailPreview = $sheet.querySelector('.membership-mail-dialog');
     $sheet.classList.remove('open');
     $sheet.innerHTML = '';
     document.body.classList.remove('no-scroll');
+    if (mailPreview) document.querySelector('[data-action="membership-mail-preview"]')?.focus({ preventScroll: true });
   }
 
   let toastTimer = null;
