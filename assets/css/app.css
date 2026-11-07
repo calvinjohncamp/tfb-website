@@ -2784,3 +2784,12 @@ svg.link-arrow.link-arrow path { fill:currentColor; stroke:none; }
 @media (max-width:1100px) {
   .app .topbar { padding-top:calc(24px + env(safe-area-inset-top, 0px)); }
 }
+
+/* Home: quiet Signature frames for numbering and editorial links. */
+.site-page.home-look-6 .feature .feature-kicker .feature-number{display:inline-flex;align-items:center;justify-content:center;min-width:52px;min-height:38px;padding:5px 10px;border:1px solid var(--signal);border-radius:8px;background:transparent;color:#171717;-webkit-text-stroke:0;font-family:var(--font);font-size:1.35rem;font-weight:750;line-height:1;letter-spacing:0}
+.site-page[data-page="home"] .feature :is(.link-chip,.feature-link>.btn.signal,.feature-more>.more-link,.content-overview-tools>.btn){display:inline-flex;align-items:center;justify-content:center;max-width:100%;min-height:38px;padding:8px 14px;border:1px solid var(--signal);border-radius:8px;background:transparent;box-shadow:none;color:#171717;font-size:.86rem;font-weight:650;line-height:1.35;text-decoration:none;gap:0;transition:background .15s}
+.site-page[data-page="home"] .feature :is(.link-chip,.feature-link>.btn.signal,.feature-more>.more-link,.content-overview-tools>.btn):hover{background:rgba(196,85,58,.07);box-shadow:none}
+.site-page[data-page="home"] .feature :is(.link-chip,.feature-link>.btn.signal,.feature-more>.more-link,.content-overview-tools>.btn):focus-visible{outline:2px solid var(--signal);outline-offset:3px}
+.site-page[data-page="home"] .feature :is(.link-chip-img,.link-chip>small,.feature-link>.btn.signal>span,.feature-more>.more-link>span){display:none}
+
+.site-page[data-page="home"] .feature .content-overview-tools>.btn svg{display:none}
