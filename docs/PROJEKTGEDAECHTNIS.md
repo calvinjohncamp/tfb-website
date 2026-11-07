@@ -1,8 +1,1212 @@
 # TFB-Kiosk – Projektgedächtnis und Übergabe
 
+## Aktueller verbindlicher Stand v307 – 07.11.2026
+
+Diese Zusammenfassung hat Vorrang vor älteren, widersprüchlichen Farb- und
+Icon-Angaben weiter unten. Die freigegebene Karussell-Bewegung aus v300 bleibt
+unverändert. Schriftarten, Magazinlayout und helle Hintergründe beibehalten;
+die verworfenen Farb-/Schriftentwürfe nicht wieder einführen.
+
+### Aktuelle Korrekturen
+
+- Aktuell: „Eine Idee nimmt Gestalt an.“ und die anderen Karussell-Überschriften
+  sind in **beiden Farbwelten schwarz, fett und ohne Unterstreichung**. Die
+  spezielle rote Überschrift aus v306 ist aufgehoben; keine nicht editierbare
+  Farbausnahme mehr einführen.
+- Sport/Mannschaften: Aktive Mannschafts-/Saisonauswahl `.team-seasons button.on`
+  hat in Gelb-Blau Signature-Blau (#001D3D) als Hintergrund und weiße Schrift.
+  In Rot bleibt sie schwarz (#171717) mit weißer Schrift. Beim Wechsel folgt die
+  Gestaltung der Auswahl. Keine globale Änderung an Dating-Pills.
+- Service-Worker-Cache v307. Keine Änderung an CMS-Inhalten oder Mailversand.
+
+### Freigegebene Farbwelt und Bearbeitung (v302–v306)
+
+- **Gelb-Blau ist die Voreinstellung**, gespeicherte ausdrückliche Auswahl Rot
+  bleibt erhalten (`tfb_brand_theme`: club/signature). Signature-Gelb #FFC300,
+  Signature-Blau #001D3D; Rot #C4553A. Heller Hintergrund #EFEFEF.
+- Gelbe Textbetonung ausschließlich als **Freihand-Textmarker**. Kein trockener
+  Stift, keine langen gelben Unterstreichungen, keine gelbe Fließtextschrift.
+  SVG `assets/brand/tfb-highlight-freihand.svg` als nativer Inline-Hintergrund mit
+  `box-decoration-break: clone` (auch WebKit); keine vermessenen Overlay-Rechtecke.
+  Große Initiale P und Home-Nummerierungen dürfen gelb bleiben.
+- In Rot bedeutet Hervorheben weiterhin rote Schrift, ohne Textmarker oder
+  automatische Unterstreichung. Fett ist eine getrennte Editorfunktion. Bestehende
+  `{rot}`, `{marker}` und neue `{hervorheben}`-Auszeichnungen werden unterstützt.
+  Editor zeigt themengerecht „Textmarker“ bzw. „Rot“. Home 05 enthält ausdrücklich
+  fette alte Hervorhebungen bei „Frühjahr 2027“ und „COMING SOON“; gelbe Legacy-
+  Darstellung bleibt wie freigegeben, neue Hervorhebungen erlauben separates Fett.
+- Unter Aktuell wurden nur die damals vorhandenen Artikeltexte bereinigt:
+  Jugendmeisterschaft b-mv3zxn57, 50 Jahre p-1, U18 b-mv3zr4uq. Künftige
+  Hervorhebungen im Admin bleiben möglich. Ausgeschriebenes Datum bleibt betont;
+  automatische Medien-Kicker sind neutral. CMS-Stand 66, Sicherung vor Bereinigung
+  „Vor Aktuell-Bereinigung und blauem App-Symbol · 07.11.2026“; Nachweise unter
+  `.private/release-v305/`. Keine pauschale CSS-Unterdrückung aller Markierungen.
+- Datums-Buttons: Gelb-Blau gelber Hintergrund/blaue Schrift; Rot schwarzer
+  Hintergrund, **alle** Teile (Wochentag, Zahl, Monat) weiß und vollständig deckend.
+- Menü in beiden Welten ohne aktive Pill-Fläche, auch iPad hochkant. Gelbe Linie
+  mit ca. 8,6px Textabstand über Hoch-/Querformat und Desktop (20% weniger als
+  früher gelb hochkant); rote Linie mit ca. 5px wie freigegebener roter Desktop.
+  Tastatur-Fokusringe bleiben erhalten.
+- Home-Klickbuttons: dezenter gelber Rahmen/blaue Schrift in Gelb-Blau; expliziter
+  Signature-Rot-Rahmen mit normaler dunkler Schrift in Rot.
+- Club History „Mehr erfahren“: kleiner transparenter Outline-Button wie Home,
+  38px hoch, 1px Rahmen, ohne Pfeil. Club-Beiträge und Archiv in Gelb-Blau blau
+  mit weißer Schrift; Archiv ohne Pfeil, Route planen behält Richtungspfeil.
+- Club Mitgliedsantrag: Vorschau als schließbarer Dialog (X, Escape, Hintergrund,
+  Fokusrückgabe). In Gelb-Blau gelb-blaue Beispielmail, in Rot rote Beispielmail.
+  `tools/build-membership-mail-variants.mjs` erzeugt die gelbe Variante aus der
+  roten Vorlage. Beide HTML-Dateien sind explizit in Pages-Build und Cache erlaubt.
+  **Nur Vorschau**, tatsächlicher Mailversand wurde nicht verändert.
+- App-Symbole und Favicon seit v305: **Signature-Blau statt Schwarz**, gleiche
+  TFB-Geometrie, deckendes quadratisches #EFEFEF, ohne Ball/Unterzeile. iOS180,
+  App192/512 und maskable512; PNG64 und ICO16–256. Erzeugung über
+  `tools/build-app-icons.mjs` und `tools/build-brand.sh`. Alte v301-Schwarz-Angaben
+  sind historisch. Icon-URLs mit v305 sind weiterhin richtig.
+- Chat und Dating bleiben gestalterisch wie freigegeben.
+
+### Quellen, Prüfung und Veröffentlichung
+
+Aktuelle Gestaltung: `assets/css/yellow-editorial.css` (letztes öffentliches
+Stylesheet), Editor/Rendering `assets/js/site.js`, Themenstandard
+`assets/js/design-preview.js`, Cache `sw.js`. Keine Änderungen an der bestätigten
+Karussell-Geometrie oder Bewegung nötig.
+
+Für v307 bestanden die isolierten WebKit-Prüfungen
+`node tools/test-browser-team-pills.mjs` (390/834/1194px, beide Themen,
+Auswahlwechsel, kein horizontaler Überlauf) und
+`node tools/test-browser-navigation-dates.mjs` (sechs Größen von Mobil bis
+Desktop, Menülücken, keine Pill, Datumsfarben, schwarze Karussell-Titel auch
+bei Hover). Weitere etablierte Prüfungen: `tools/test-browser-theme-polish.mjs`,
+`tools/test-browser-design-preview.mjs`, `node --test tools/test-home-features.mjs`.
+Browserprüfungen verwenden isolierte lokale Fixtures, keine Produktionsschreibzugriffe.
+
+Live: https://joern-kaemper.de/ — GitHub `calvinjohncamp/tfb-website`, main;
+Veröffentlichung bewusst über Workflow `publish-website.yml`, nicht automatisch
+bei jedem Push. `python3 tools/prepare-pages.py` paketiert nur öffentliche,
+bereits versionierte Dateien nach `_site`. Vor dem Build neue Assets explizit
+stagen; weder private Nachweise noch node_modules veröffentlichen.
+
+**Arbeitskopie beachten:** Dropbox enthält zahlreiche ältere/unabhängige lokale
+Änderungen. Nicht pauschal committen/pushen oder auf main zurücksetzen. Live-Quelle
+ist GitHub main. Für weitere Releases davon sauber auschecken und nur beauftragte
+Änderungen übernehmen. Dieses Release wurde isoliert in
+`/private/tmp/tfb-release-yellow-blue-v302-local` vorbereitet; der temporäre Pfad
+ist keine dauerhafte Quelle. Gestaltungsdateien, Tests und diese Dokumente werden
+in die Dropbox-Arbeitskopie zurückgespiegelt. Letzter vorheriger Live-Stand v306:
+`f9fa7133f0b8abfac65c7e3e2a0f7557ae2a69a0`, Pages-Lauf `42408618034`.
+Veröffentlichungsnachweis v307 wird nach erfolgreichem Lauf ergänzt.
+
+---
+
+## Favicon passend zum App-Symbol v301 – 07.11.2026
+
+Auf Nutzerwunsch schwarzes TFB auf hellem (#efefef), vollständig quadratischem
+Hintergrund ohne abgerundete Ecken, Ball oder Unterzeile. Favicon-Quelle identisch
+mit bestehendem App-Quellmotiv. PNG 64px und ICO 16–256px neu erzeugt; Build-Pipeline
+hält die Motive künftig synchron. Index/Präsentationsseite mit Favicon-Link ?v=301,
+Cache v301. App-Icons und verbindlich freigegebenes Karussell v300 unverändert.
+Live-Commit `46949041a6b7a08b82467a43510831f2630e5965`, erfolgreicher Pages-Lauf
+`42381459481`. Quellvergleich, deckende helle Ecken, PNG-/ICO-Größen und visuelle
+64px-Prüfung erfolgreich. Live-Dateien stimmen mit Veröffentlichungspaket überein.
+Nachweise `.private/release-v301/`; Details `docs/RELEASE-v301.md`.
+
+
+## Verbindlich freigegebener Karussell-Stand v300 – 07.11.2026
+
+Der Nutzer hat die aktuelle Live-Version ausdrücklich als „mit Abstand die beste
+Version bisher“ und „perfekt“ bestätigt. **v300 ist damit der freigegebene
+Referenzstand für Home, Aktuell und die Vollbildansicht.** Künftige Arbeiten bauen
+darauf auf; die bestätigte Bewegung und Darstellung nicht beiläufig verändern.
+Die vorherigen Versuche mit vollständigem Ausblenden und Wiederauftauchen der
+Karten sind verworfen.
+
+Festgehaltene Gestaltung und Bedienung:
+- Karten bleiben sichtbar und deckend; nur ihre Überlappungsreihenfolge wird weich
+  überblendet. Das zurückwandernde Motiv verschwindet optisch hinter den anderen,
+  statt vollständig auszublenden und erneut aufzutauchen.
+- Bewegung 1,6 Sekunden; erste Ruhezeit 3 Sekunden, weitere Ruhezeiten 2,1 Sekunden.
+- Persistente Zeichenfläche ohne temporäre DOM-Bildkopien; bestehende Linkkarten,
+  Unterseiten, Lupe/Vollbild, Play/Pause und Escape bleiben erhalten.
+- Startmodus pro Karussell im Admin: automatisch oder erst per Play. Touch-Fokus
+  stoppt den Autostart nicht; reduzierte Bewegung bleibt berücksichtigt.
+- Erstes Motiv priorisiert laden; leere Bildrahmen verborgen halten; Bewegung erst,
+  wenn aktuelles und nächstes Motiv dekodiert sind.
+- Bestehende Funktionen zum Kopieren/Verschieben zwischen Home und Aktuell sowie
+  die Vermeidung doppelter Artikel im Clubarchiv bleiben Teil des Gesamtstandes.
+
+Technische Referenz: Commit `1a7ec1804c42541ec9f227c0264964007bb94c0f`,
+Pages-Lauf `42380189446`, Cache v300. Prüfungen und Live-Nachweise unter
+`.private/release-v300/`; Implementierungsdetails im nachfolgenden v300-Eintrag
+und in `docs/RELEASE-v300.md`. Diese Aktualisierung dokumentiert die Freigabe;
+keine Änderung am Website-Code oder an veröffentlichten Inhalten.
+
+
+## Karten bleiben beim Tiefenwechsel sichtbar v300 – 07.11.2026
+
+Nutzer findet v299 weicher, aber Null-Ausblenden und Wiederauftauchen unpassend.
+Ersetzt deshalb die Fade-Kurve einzelner Karten: sämtliche echten Karten auf
+Deckkraft 1. Überblendung nur der Überlappungsreihenfolge, nicht des ganzen Motivs.
+Live-Commit `1a7ec1804c42541ec9f227c0264964007bb94c0f`, erfolgreicher Pages-Lauf
+`42380189446`, Cache v300. Kein CMS-/Worker-Eingriff.
+
+Eine persistente, aria-hidden Canvas-Fläche zeichnet zwei deckende Kartenordnungen
+in wiederverwendbare Offscreen-Puffer. Premultiplizierte additive Mischung hält
+übereinstimmend bedeckte Bereiche deckend statt den Hintergrund durchscheinen zu
+lassen. Frei liegende Teile der zurückweichenden Karte behalten ihre volle Farbe;
+nur die Überlappung geht sanft von einer Reihenfolge in die andere über. Keine
+DOM-Bildkopien und kein Schichten-Auf-/Abbau bei jedem Schritt. Ursprüngliche
+Linkkarten bleiben mit Positionen, Labels, Fokusrahmen und Tiefensortierung für
+Unterseiten-/Tastaturbedienung erhalten; ihre Bilder/Schatten werden bei aktiver
+Zeichenfläche verborgen. Ohne Canvas-Kontext bleiben normale Karten sichtbar.
+Größe/Form, 1,6-s-Bewegung, Ruhezeiten und Ladepriorität/-Bereitschaft unverändert.
+Auflösung bis DPR 2, maximal 3 Mio. Pixel pro Fläche; Freigabe bei Abbau. Zoom
+bekommt eigene Zeichenfläche. Nach Bild-Decoding sofortiger Neuaufbau.
+
+Chromium/WebKit-Screenshotprüfung aller fünf Wechsel Home/News/Zoom erfolgreich.
+Zusätzlicher Pixeltest des frei liegenden linken Rands jeder ausgehenden Karte
+weist volle Motivfarbe am Mittelpunkt nach, kein Null-Fade. Genau fünf Original-
+Linkkarten plus eine persistente Canvas-Fläche. Lade-, Render-, Zoom-, Standzeit-,
+Home- und iPad-Touchprüfungen erfolgreich. Physisches iPad weiterhin nur durch
+Nutzer prüfbar. Live-Dateihashes identisch, Home/Aktuell mit deckenden Karten
+und genau einer Zeichenfläche fehlerfrei; CMS-Revision 63 unverändert.
+Nachweise `.private/release-v300/`.
+
+
+## Langsame Überblendung und Bildlade-Reihenfolge v299 – 07.11.2026
+
+Nutzer bestätigt v298 auf echtem iPad ohne Flackern, wünscht aber langsameres
+Ausblenden. Zusätzlich Ladeverzögerung mit dunkler Fläche/leeren Karten gemeldet.
+Live-Commit `ab05cffb604a62dd60acd21b1f06755c98f9aaf2`, erfolgreicher Pages-Lauf
+`42379613088`, Cache v299. Kein Worker-/CMS-Schreibzugriff.
+
+Orbit-Bewegung 1600 statt 900 ms. Fade über den gesamten Schritt, nicht nur
+kurz um die Mitte: ausgehendes Motiv blendet langsam aus, nächstes wird frei,
+Ebenenwechsel weiterhin bei Deckkraft null und ohne temporäre Bildebenen.
+Ruhezeiten 3 s initial/2,1 s wiederkehrend und Foto-Diashow unverändert.
+
+Erstes Motiv eager/high priority; öffentliches CMS lädt es bereits vor dem
+App-Rendering für die angeforderte Home-/Aktuell-Seite vor. Andere Motive lazy/low.
+Karten erst nach Bild-Decoding sichtbar, dadurch keine leeren Schattenrahmen.
+Animation wartet auf aktuelles und nächstes dekodiertes Motiv; erstes Bild kann
+vor allen übrigen erscheinen. Originaldateien unverändert (Umkleide 8,6 MB PNG).
+Keine Komprimierung zugesagt: erster Netzwerkdownload bleibt nötig, spätere
+Dateigrößenoptimierung bleibt möglich. Systemische Nachfolger-Warteprüfung gilt
+auch für neue Artikel; keine fest verdrahteten Artikel-/Medien-IDs.
+
+Chromium/WebKit mit absichtlich verzögerten Antworten: Priorität, kein leerer
+Rahmen, frühe Einzelbildanzeige, Halten bis Nachfolger bereit und Weiterlauf.
+Screenshot-Kontinuität für alle fünf Wechsel Home/News/Zoom und halbtransparente
+Karte bei Viertelschritt geprüft. Render-, Zoom-, Standzeit-, iPad-Touch-, Home-
+und echte zentrale Redaktions-/Sicherungstests erfolgreich. Ungültige Desktop-
+Bildfixture durch gültige SVGs ersetzt, da ungeladene Karten jetzt verborgen sind.
+Live-Dateihashes identisch; Home/Aktuell animieren fehlerfrei im WebKit-Touchtest,
+CMS-Revision 63 unverändert. Eigene physische iPad-Prüfung bleibt nicht möglich.
+Nachweise `.private/release-v299/`.
+
+
+## Kleine iPad-Karussellansicht: Überblendung ohne Kopien v298 – 07.11.2026
+
+Live-Commit `3e80ec8842f9a5496fd94ee681fcddb03e0ac983`, erfolgreicher Pages-Lauf
+`42378916645`, Cache v298. Nutzer meldet trotz v297 und zweier App-Neustarts
+weiterhin Flackern oben links im kleinen Karussell; Lupe/Vollbild funktioniert.
+Die v297-Emulation hat den tatsächlichen Gerätefehler nicht erfasst.
+
+Ersetzt v297-Übergang: KEINE temporäre Vordergrundkarte und KEINE Bühnenkopie.
+Nur die vorhandenen Karten werden animiert. Zurückweichende Karten blenden vor
+dem mittigen Ebenenwechsel aus und danach wieder ein; Reihenfolge wechselt,
+während diese Karten transparent sind. In Ruhe sind alle Motive deckend.
+Zweidimensionale Transformation statt translate3d; erzwungene GPU-Hinweise weg.
+Gilt Home, Aktuell und Vollbild; Größen/Positionen, Zeiten, Startmodus und
+Bewegungspräferenz unverändert. Keine CMS-/Worker-Änderung.
+
+Neuer Test `tools/test-browser-inline-carousel.mjs`: Pixelvergleich aller fünf
+kritischen Ebenenwechsel in kleiner Home-, kleiner News- und großer Ansicht,
+Chromium/WebKit, Touch und DPR 2. Dauerhaft fünf echte Karten, keine temporären
+Bildebenen; Ruhepositionen deckend. Bestehende Render-, Zoom-, Standzeit-, Home-
+und iPad-Autostarttests erfolgreich. Keine eigene physische iPad-Prüfung;
+Nutzerrückmeldung zur Hardware bleibt maßgeblich. Live-Dateihashes stimmen überein,
+Home/Aktuell animieren im WebKit-Touchtest fehlerfrei; CMS-Revision 63 unverändert.
+Nachweise `.private/release-v298/`.
+
+
+## Ruhige Karussell-Übergänge und Play/Pause v297 – 07.11.2026
+
+Live-Commit `9cb8f0e072e883f4388cd4c8e850ff23da49fd4a`, erfolgreicher Pages-Lauf
+`42367865406`. Cache v297; kein Worker- oder CMS-Schreibzugriff.
+
+Nutzer bestätigt: iPad-Autostart läuft nach Abschalten von „Bewegung reduzieren“
+und Neustart der App. Bestehende Präferenzlogik erhalten, keine neue Ausnahme.
+Das Durchscheinen der ursprünglichen Fünfer-Collage wurde durch eine vollständig
+geklonte, ausblendende Bühne verursacht. Jetzt wird nur die ausgehende vorderste
+Karte über 360 ms ausgeblendet; übrige Karten direkt stabil sortiert. Keine
+komplette Bühnenkopie mehr, weder auf Home/Aktuell noch in Vollbild. Erstaufbau
+zeigt Karten erst nach Positionierung. Bewegung und längere Verweilzeiten bleiben.
+
+Play/Pause durch SVG statt Schriftzeichen; Foto-Viewer kompakt, dunkler Button
+mit weißem Symbol. Home-/Aktuell- und Video-Steuerung mit denselben SVG-Formen.
+Unveränderter Zustand ersetzt das SVG nicht bei Fokus, damit Klickziele stabil
+bleiben. Chromium- und WebKit-Pixelprüfung bestätigt sichtbare Vordergrundkarte;
+keine doppelten Bühnen, höchstens eine einzelne Übergangskopie. Home-, Chat-,
+Zoom-, Standzeit- und iPad-Touchtests erfolgreich. Keine eigene Hardwareprüfung.
+Live-Hashes identisch, WebKit-Touch animiert Home und Aktuell fehlerfrei.
+CMS-Revision 63 unverändert. Nachweise: `.private/release-v297/`.
+
+
+## TFB-Kommentare, Moderation und längere Bildanzeige v296 – 07.11.2026
+
+Live-Commit `818fbb272a4df640ef857de6d03557434e407826`, Pages-Lauf
+`42366565974` erfolgreich. Worker-Version
+`93e415fb-9d8d-433d-90da-6fc1f158a75c` veröffentlicht.
+
+Neue Anforderung ersetzt die v294-Beschränkung auf Beiträge: Auch neue und
+bearbeitete eigene Clubchat-Kommentare haben für echte Admins die Auswahl
+persönlich / TFB. Gemeinsamer senderPicker mit Beiträgen; Standard pro neuem
+Kommentar persönlich. Rundes TFB-Symbol und Name Tennisfreunde Bielstein wie
+bei offiziellen Posts. Echte authorId/ownerId bleibt erhalten. Server prüft
+Admin + Club-Scope, gefälschte Absender werden abgewiesen. Normale Mitglieder
+haben keinen Umschalter. Home/Aktuell erhalten keine Absenderwahl.
+
+Moderation: Ausblenden mit zweiter Bestätigung; danach öffentlicher Platzhalter
+„Dieser Kommentar wurde von den Tennisfreunden Bielstein ausgeblendet.“
+Admins können Wieder anzeigen verwenden, Originaltext/Fotos bleiben dafür
+intern erhalten. Eigene Kommentare weiterhin löschbar. Fremde Kommentartexte
+sind nicht umschreibbar. Moderation speichert hidden/moderatedAt/moderatedBy
+serverseitig, erhält Eigentümer und prüft Revisionen sowie gelöschte Datensätze.
+Kommentarinhalte werden vor Auslieferung an Gäste/Nichtadmins redigiert;
+öffentlicher Medienzugriff auf ausgeblendete Kommentarbilder entfällt, außer
+bei unabhängiger Veröffentlichung derselben Datei in einem sichtbaren Beitrag.
+Ausgeblendete Kommentare erzeugen keine normalen Kommentarhinweise.
+
+Gastansichten von Chat/Mannschaften übernehmen Änderungen ungefähr alle 10 s;
+aktive Formulare, Login und Bildansichten werden dabei nicht unterbrochen.
+Gastcache nach Speichern/Logout invalidiert. Die Moderationsaktion hält den
+betroffenen Kommentar im Blick; Platzhalter zählt weiterhin als Kommentar.
+
+Mehr Verweildauer: Foto-Diashow 3,4 statt 2,4 s je Bild; Orbit auf Home/Aktuell
+inkl. Vollbild: erster Start 3 statt 2 s, wiederkehrende Ruhezeit 2,1 statt 1,1 s.
+Übergang 900 ms bzw. Foto-Fade 360 ms unverändert. Manuelles Blättern bleibt
+sofort, Clipdauern und explizite Textzeiten bleiben unverändert. Die v295-
+Safari-/Touch-Korrektur und bewusstes Play bei reduzierter Bewegung bleiben aktiv.
+
+15 Servertests erfolgreich: Rollen, Absenderwechsel, Besitzer, Redigierung,
+Mediensperre, Moderation, Restore, Konflikte/gelöschte Kommentare. Echter Worker
+im isolierten Browser: TFB/persönlicher Kommentar, Bearbeiten, Ausblenden mit
+Bestätigung, öffentliche Ansicht, Wiederfreigabe, mobile Breite und automatischer
+Gastabgleich. Bestehende Kommentar-/Foto-/Emoji-, Chat-Karussell-, Home-, Zoom-
+und Safari-Touchprüfungen erfolgreich. Timingtest bestätigt längere Standzeiten.
+268 Pages-Dateien; Worker-Dry-Run erfolgreich. Live-Dateihashes identisch; echte
+öffentliche Daten lesend geprüft (5 Kommentare, keine live ausgeblendet).
+Home/Aktuell animieren im WebKit-Touchprofil, keine JS-Fehler. CMS-Revision 63
+und Dokumente vor/nach Release identisch; keine Live-Posts/Kommentare durch uns
+umgestellt oder moderiert. Nachweise `.private/release-v296`, Details
+`docs/RELEASE-v296.md`. Originaldateien gezielt synchronisiert; lokale SW-
+Abweichungen erhalten und nur Cacheversion angehoben.
+
+## Safari-/Touch-Karussellkorrektur v295 – 07.11.2026
+
+Live-Commit `a740d922e2024fb9f45e752f95969f17bd5dbbc6`, erfolgreicher frischer
+Pages-Lauf `42365432710`. Erster Lauf `42364618697` hing in syncing_files und
+wurde nach 10 Minuten abgebrochen; gh run rerun erzeugte zwei github-pages-
+Artefakte und schlug fehl. Daher bei solchen Publishing-Retries einen frischen
+workflow_dispatch-Lauf starten, statt denselben Upload-Job erneut auszuführen.
+
+Reproduzierter WebKit-Touchfehler: verbliebener Bildkarten-Fokus stoppte die
+Animation. Fokus-Pause gilt jetzt nur nach echter Tab-Tastaturbedienung; Touch/
+Pointer hebt sie auf. Hover-Pause nur bei passender Hover-/Feinzeiger-Fähigkeit.
+Play wird nicht vom darüberstehenden Mauszeiger blockiert. IntersectionObserver
+setzt Timer nur bei geänderter Sichtbarkeit neu. Neue Modality-Listener werden
+beim Abbau entfernt. Home/Aktuell verwenden denselben Controller.
+
+„Bewegung reduzieren“ verhindert weiterhin Autostart. Play bleibt aber verfügbar
+und kann die Bewegung für diese Ansicht ausdrücklich freigeben; diese Wahl wird
+ins Vollbild und zurück übernommen, nicht dauerhaft gespeichert. Neu aktivierte
+Reduktionspräferenz hebt die Freigabe auf. Bestehende Admin-Startwahl bleibt gültig.
+
+Safari/WebKit und Chromium mit simuliertem iPad-Touchprofil geprüft: Autostart,
+verbliebener Touch-Fokus, manueller Start, reduzierte Bewegung, explizites Play,
+Vollbild und Pause. Zusätzlicher Desktopkontext prüft erhaltene Tastaturpause.
+Home-Medien-/Zoom-Browserchecks erfolgreich, 268 Pages-Dateien. Live-WebKit-Test
+(1024x1366, Touch): Home und Aktuell auto animieren, keine JS-Fehler; Dateihashes
+gleich zum Teststand. Kein physisches iPad ferngesteuert. Keine Backend- oder
+CMS-Schreibzugriffe durch das Release. Während der langen Veröffentlichung
+stieg die Live-CMS-Revision von 62 auf 63 (page:home); diese parallele Änderung
+wurde erhalten. Nachweise `.private/release-v295`, Details `docs/RELEASE-v295.md`.
+Originaldateien gezielt synchronisiert; lokale SW-Abweichungen erhalten.
+
+## Offizieller TFB-Absender im Chat v294 – 07.11.2026
+
+Live-Commit `c4368c6e7cd93cd14b34f5429fef8b48f7904d88`, Pages-Lauf
+`42364047817` erfolgreich; Worker-Version
+`a1df44c0-5905-4fa3-a9fa-8469f166bf10` veröffentlicht.
+
+Nur bei Club-Chatbeiträgen erhalten tatsächliche Admins im Composer oben die
+Auswahl „Veröffentlichen als“: persönlich (eigenes Profilbild/Name) oder TFB.
+Die Wahl ist pro Beitrag, Standard neuer Beiträge bleibt persönlich. Bearbeiten
+lädt die gespeicherte Wahl; Wechsel in beide Richtungen wird zentral gesichert.
+Home/Aktuell und Kommentare erhalten keinen Absenderumschalter. Normale Mitglieder
+sehen die Funktion nicht; die echte Adminberechtigung wird serverseitig geprüft.
+
+TFB-Symbol: vorhandenes App-Asset `assets/icons/icon-512.png` (reines TFB ohne
+Ball/Unterzeile), im hellen #efefef-Kreis mit 1px schwarzem Rahmen und Innenabstand.
+Offizielle Posts zeigen „Tennisfreunde Bielstein“ mit diesem Symbol in Chat,
+Übersicht und Gastansicht. Textbeiträge brauchen kein Bild. Datenfeld
+`authorMode: tfb`; echte authorId/ownerId bleibt zur Rechteprüfung/Nachvollziehbarkeit
+beim veröffentlichenden Admin. Kein gemeinsames Konto/keine Rollenänderungen.
+Künftige Admins können mit ihrem eigenen Konto offiziell veröffentlichen.
+Kommentare bleiben persönlich, auch unter einem offiziellen Beitrag.
+
+Server lässt ausschließlich Admin + Club-Scope als TFB zu; unbekannte Modi und
+Fälschungen werden abgewiesen. Beim Wechsel zurück wird `personal` explizit im
+lokalen Änderungsauftrag geführt, zentral wieder ohne TFB-Kennzeichnung gespeichert.
+Zusätzlich wird die v293-Karussellwahl bei Videos jetzt zentral erhalten (bislang
+hat der Server dieses Feld bei Video-Designs verworfen); Videoimport unverändert.
+
+13 Server-/Zugriffstests erfolgreich, einschließlich Besitz-ID, Fake-Absender,
+Gastansicht, persönliche Kommentare und zweiter Admin. Isolierter Browser mit
+echtem Worker: text-only veröffentlichen, Neuladen, beide Absenderwechsel,
+Standard pro Beitrag, Gastansicht und fehlende Auswahl für Nichtadmins.
+Desktop/390px visuell geprüft. Bestehender Chat-Karussell-Browsercheck erfolgreich.
+268 Pages-Dateien, Worker-Dry-Run erfolgreich. Live-Dateien bytegleich; öffentlich
+4 vorhandene Beiträge, private Admin-API anonym 401. CMS-Dokumente und Revision 62
+vor/nach Release unverändert; keine bestehenden Posts umgestellt. Nachweise
+`.private/release-v294`, Details `docs/RELEASE-v294.md`. Originaldateien gezielt
+synchronisiert, lokale SW-Anpassungen erhalten und nur Cacheversion aktualisiert.
+
+## Chat-Medienauswahl: Collage zuerst, Videos gezielt v293 – 07.11.2026
+
+Live-Commit `4aa6e4027fc099be16fdd345cc9d782b088147dc`, Pages-Lauf
+`42363329128` erfolgreich. Keine Backend-/CMS-Inhaltsänderung.
+
+Chat-Composer: direkte Radios in der Reihenfolge Collage, Diashow, Karussell.
+Neue Fotobeiträge beginnen mit Collage; gespeicherte Foto-Darstellung bleibt
+beim Bearbeiten erhalten. Sobald mindestens ein Video enthalten ist (Hoch-,
+Querformat oder mit Fotos gemischt), sind Collage und Diashow sichtbar, aber
+nativ disabled und optisch reduziert. Karussell wird ausgewählt und auch im
+Payload gespeichert. Videos starten weiter einzeln über Play. Wird das letzte
+Video aus demselben Entwurf entfernt, werden Fotooptionen wieder aktiv und
+die zuvor gewählte Fotoanzeige wiederhergestellt, sonst gilt Collage.
+
+Zwei isolierte Browserprüfungen erfolgreich: bestehender Karussell-Ablauf mit
+neuer Reihenfolge, Standard, Tastatur, Speichern/Neuladen und bisherigen
+Darstellungen; Video-UI für 9:16/16:9, deaktivierte Optionen, gespeichertes
+Karussell und Foto → Video → Foto. Der unveränderte Videokonverter ist im neuen
+UI-Test synthetisch ersetzt, kein realer Transcoding-Test behauptet. 268 Pages-
+Dateien; Live-Dateien bytegleich zum Teststand. CMS-Dokumente und Revision 62
+vor/nach Release unverändert. Details `docs/RELEASE-v293.md`, Nachweise
+`.private/release-v293`. Originalarbeitsstand gezielt synchronisiert; lokale
+SW-Abweichungen erhalten, nur Cacheversion angepasst.
+
+## Getrennte Home-Editoren und eindeutiges Clubarchiv v292 – 07.11.2026
+
+Live-Commit `8000ff4d364c89bfdea191b3ff344442ee3f6353`, Pages-Lauf
+`42363004023` erfolgreich. Kein Backend-Deployment, keine CMS-Inhaltsänderung.
+
+Home-Bearbeitung: oben bleiben allgemeiner Look und Menü, darunter einzelne
+Inhalte mit eigenen Werkzeugen. Normale Themen öffnen nur Startseite und
+Unterseite dieses Themas. Themen-Nummernleiste, Plus und Wechsel/Speichern zu
+anderen Themen im Formular entfernt. Karussell-, Galerie- und Collageneditoren
+bleiben eigenständig. Bereits verknüpfte Fotokollagen haben am Thema einen
+eigenen Button „Fotokollage bearbeiten“; dieses Formular enthält nur die
+Fotokollage, keine Themen-/Start-/Unterseitenwechsel und keine Löschaktion für
+das gesamte Thema. Speichern sichert den jeweiligen Bereich, Fertig beendet
+die Seitenbearbeitung. Keine automatische Veröffentlichung beim Feldwechsel.
+
+Clubarchiv: gleiche Karussells aus Home/Aktuell nur einmal. Bestehende Kopien
+über Quell-ID und erhaltene Eintrags-IDs der Mediensammlung erkannt; neue
+Transfers/Kopien tragen zusätzlich stabile `articleId`. Quellartikel bleibt
+beim Kopieren unverändert. Bei zwei Platzierungen bevorzugt das Archiv Aktuell.
+Alte Archiv-URLs der ausgeblendeten Kopie bleiben Aliase auf die gemeinsame
+Darstellung. Unabhängige Artikel mit gleichen Fotos werden nicht zusammengelegt.
+Home/Aktuell behalten ihre unabhängigen, getrennt bearbeitbaren Platzierungen.
+
+36 Unit-Tests erfolgreich; Browser für getrennte Themen-/Unterseiten-/Album-,
+Galerie-, Collagen- und Karussellbearbeitung, unabhängige Speicherungen und
+Fertig. Bestehende Transfer-/Archivlinks und Home-Medien regressionsgeprüft.
+268 Pages-Dateien. Live-GET-Prüfung: ausgelieferte Dateien bytegleich, bekannter
+Home/Aktuell-Doppelartikel erscheint einmal, alter Kopie-Archivlink funktioniert,
+keine JS-Fehler. CMS-Dokumente und Revision 62 vor/nach Release unverändert.
+Nachweise `.private/release-v292`, Details `docs/RELEASE-v292.md`. Taskdateien
+gezielt in den Originalarbeitsstand übernommen, lokale SW-Abweichungen erhalten.
+
+## Karussell-Start, Gäste und Mannschaftspflege v291 – 07.11.2026
+
+Live-Commit `5fc9fae7e11e6ceeb1f195dd12947306ada8e4e6`, Pages-Lauf
+`42361989353` erfolgreich. Worker-Version
+`edcbedfe-f8e8-43fd-9b60-de0c98913edb` veröffentlicht.
+
+- Karussell-Editor Home/Aktuell: direkte Radios „Animation startet sofort“ /
+  „Animation erst per Play starten“. Feld `animationStart: auto|manual`, ohne
+  Feld bleibt bisheriges Auto-Verhalten. Die Wahl bleibt beim Kopieren und
+  Verschieben erhalten. Play/Pause und Vollbild übernehmen den aktuellen Zustand;
+  ein neuer Aufruf beginnt gemäß Startwahl. Bestehende Artikel wurden nicht umgestellt.
+- Kiosk, Chat, Dating 2.0 stehen auch Gästen im Menü offen. Öffentlicher Katalog
+  mit Preisen; veröffentlichte Club- und Mannschaftsbeiträge samt Kommentaren
+  und zugehörigen Medien über eigene öffentliche Projektion. Verborgene oder
+  gelöschte Beiträge und nicht verknüpfte Medien bleiben gesperrt. Keine Konten,
+  Mitglieds-E-Mails oder geschützten Profilfotos im öffentlichen Beitrags-DTO.
+- Dating zeigt Gästen Match-/Trainings-/Gruppen-Einstieg mit Anmeldung für
+  Aktionen; persönliche Einladungen, Antworten und Gruppenlisten bleiben privat.
+  Kiosk-Anschreiben und Chat-Schreiben erfordern Anmeldung; Strichlisten und
+  Abrechnungen werden Gästen nicht ausgegeben.
+- Aktive Mitglieder: Chats/Kommentare wie bisher, jetzt zusätzlich zentral
+  Teamfoto, Porträt und Berichte der eigenen `member_teams`-Zuordnung pflegen.
+  Server prüft jede einzelne Feldänderung; fremde Teams und Home/Aktuell bleiben
+  Admins vorbehalten. Teammedien liegen im CMS; Versionskonflikte werden gemeldet.
+- Keine freie Registrierung allein über beliebige E-Mail. Bestehendes aktives
+  importiertes Konto (eindeutige E-Mail/Mitgliedsnummer), erstmalig Freischaltcode
+  aus Mitgliederverwaltung erforderlich. Keine Mitglieder-/Adminrollen geändert.
+
+40 Server-/Redaktions-/Sortiertests erfolgreich; isolierte Browserprüfung für
+beide gespeicherten Startoptionen, Vollbild-Play, Gastnavigation, Chat, Kiosk,
+Dating und mobile Breite. Home-Medien und Zoom regressionsgeprüft. Zweigeräte-
+Sync inklusive Kommentaren, Anschreiben und Wiederholung nach unterbrochener
+Speicherung erfolgreich. Live nur GET: 2 Home-Karussells, 4 Chatbeiträge,
+25 Kioskartikel, 4 Dating-Einstiege, keine JS-Fehler; anonyme private API-Aufrufe
+401. CMS-Dokumente und Revision 60 vor/nach Release identisch. 268 Pages-Dateien.
+Nachweise `.private/release-v291`; technische Notiz `docs/RELEASE-v291.md`.
+Originalarbeitsstand gezielt synchronisiert, lokale SW-/Testfixture-Abweichungen
+erhalten. Kein erneuter Source-ZIP-Upload; die frühere Auto-Review-Sperre dafür
+bleibt unverändert bestehen und war nicht Teil dieser Veröffentlichung.
+
+## Home-Admin und schnelle Reihenfolge v290 - 07.11.2026
+
+Live-Commit `0f16b6cfddce5de021724edc08be27bb04e2d812`, Pages-Lauf
+`42360708772` erfolgreich. Home-/Aktuell-Werkzeuge stehen in einer eigenen
+statischen Kopfzeile mit passend breiten Textbuttons. Home: Position ändern,
+Kopieren / verschieben und Bearbeiten. Mobile Zeilen umbrechen sauber.
+Die Home-Bearbeitungsleiste überdeckt keine Artikel mehr. Fertig und
+Reihenfolge ändern stehen oben und unten bereit.
+
+Kompakte Sortierübersicht für alle Home-Elemente: Ziehen, Direktposition oder
+Pfeile. Mehrere Änderungen bleiben im Entwurf und werden gemeinsam in einem
+Commit gespeichert. Abbrechen verwirft den Sortierentwurf. Die Liste scrollt
+separat. Anschließend wird der zuletzt verschobene Inhalt gezeigt. Nummern
+und Bildseiten passen sich automatisch an. Galerie-Bildfolgen bleiben erhalten.
+
+Öffnen lädt den aktuellen Stand. Speichern übernimmt aktuelle Inhaltsfelder;
+parallele Titel-/Textänderungen bleiben erhalten. Geänderte Eintragslisten oder
+Reihenfolgen werden abgewiesen. Fehler lassen den Entwurf offen. Reiner Planer
+newsroom.reorder, vorhandene CMS-API mit Revisionsschutz unverändert.
+
+38 Fachtests und neuer Home-Order-Browsertest grün: Werkzeuge ohne Überlappung
+bei 1440/390/320px, Direktposition/Pfeile/Ziehen, ein Commit, keine Vorab-
+Speicherung, Abbruch, Fehler/Retry, parallele Felder/Eintrag, Mobil und Reload.
+Home-Medien-, Galerie- und Transfer-Browserregressionen ebenfalls grün.
+Echte Inhalte nur rein lesend angesehen. Live-Dateien bytegleich; CMS-Revision
+56 vor/nach identisch, alle Dokumente identisch. Keine tatsächlichen Inhalte
+umsortiert, kein Worker-/Schemawechsel. Arbeitsordner gezielt aktualisiert,
+übrige lokale Arbeit erhalten. Nachweise `.private/release-v290/`.
+Quellarchiv-Upload weiterhin ohne neue Zustimmung ausgesetzt.
+
+## Freigegebener Karussell-Standard für Home und Aktuell – 07.11.2026
+
+Vom Nutzer einschließlich der Dialoggestaltung in v289 und der finalen
+Karussellbewegung in v300 ausdrücklich bestätigt. v300 ist der verbindliche
+Referenzstand; frühere Fade-Varianten sind durch diesen Stand ersetzt.
+Dieser zusammengefasste Stand ist die Grundlage für weitere Erweiterungen;
+die folgenden Release-Notizen dokumentieren die Entstehung.
+
+- **Darstellung:** Home und Aktuell behalten ihre bestehende Gestaltung. Auf Home
+  stehen alle Motive als bewegtes Kartenkarussell auf dunklem Hintergrund, mit
+  weichem Tiefenwechsel: seit v300 bleiben alle Motive deckend; nur die
+  Überlappungsreihenfolge wird auf einer persistenten Zeichenfläche überblendet.
+  Keine temporären Bild-/Bühnenkopien, kein Null-Fade mit Wiederauftauchen.
+  1600-ms-Bewegung; erstes Motiv priorisiert, ungeladene Karten verborgen,
+  Bewegung erst mit dekodiertem Nachfolger.
+  Die aktuelle News-Darstellung ist ebenfalls
+  freigegeben: Karussell oben, Erläuterung darunter, Termine daneben. Keine
+  Umstellung auf eine neue Quadrat-/Text-Anordnung in Aktuell.
+- **Bedienung:** Bildkarten und Beschriftung öffnen die zugehörige Unterseite.
+  Unten bleiben Beschriftung links, reduzierte weiße Lupe mittig und Pause rechts.
+  Normale Ansicht berücksichtigt Maus-/Tastaturpause und reduzierte Bewegung.
+- **Archiv-Identität:** Kopien eines Karussells aus Home/Aktuell erscheinen im
+  Clubarchiv einmal; Quell-/Eintrags-IDs erkennen ältere Kopien, `articleId` neue.
+  Alte Archivlinks bleiben erreichbar; beide Platzierungen bleiben bearbeitbar.
+- **Touch und Bewegungspräferenz:** Touch-Fokus darf die Animation nicht anhalten.
+  Tastaturfokus pausiert weiterhin. „Bewegung reduzieren“ sperrt Autostart, aber
+  ausdrückliches Play bleibt verfügbar und wird ins Vollbild übernommen.
+- **Verweildauer seit v296:** Foto-Diashow 3,4 s/Bild; bewegtes Karussell erster
+  Start nach 3 s, danach 2,1 s Ruhezeit plus unveränderter 0,9-s-Übergang.
+  Manuelles Blättern bleibt ohne Verzögerung.
+- **Startwahl:** Pro Artikel automatischer Start oder zunächst ruhig mit Play.
+  Admin-Radios auf Home/Aktuell; Kopieren und Verschieben übernehmen die Wahl.
+  Standard für bestehende Artikel bleibt automatisch.
+- **Vollbild:** Die Lupe öffnet eine bildschirmfüllende Dialogebene mit demselben
+  bewegten, überblendenden Karussell. Bildstand und Pause werden übernommen;
+  der Hintergrund pausiert. Escape oder Kreuz schließt, ein Bildklick führt zur
+  normalen Unterseite. Beim Schließen kehren Bildstand/Pause zurück. Auch auf
+  dem Handy nutzbar, mit größerem vorderem Motiv und sauberer Fokusführung.
+- **Unterseite:** Großes manuelles Karussell, Miniaturen, Durchklicken und
+  Bild-Großansicht; daneben drei bearbeitbare Textzeilen (Themenzeile, Haupttitel,
+  Untertitel) und Begleittext, mobil untereinander. Kein zusätzlicher Sammlungskopf
+  und keine Startseiten-Linkzeile; Rückweg über TFB-Logo bzw. Schließen-Steuerung.
+  Optionaler Instagram-Link ergänzt den auf der Website sichtbaren Inhalt.
+- **Inhalte:** Die Formate 4:5, 9:16, 16:9 und 5:4 sind vorgesehen. Originalbilder
+  werden über den Admin gepflegt. Die erste Canva-/Instagram-Serie verwendet
+  1080 × 1350 Pixel; weitere Seitenverhältnisse nur bei inhaltlichem Bedarf.
+- **Admin:** In Aktuell stehen Termin hinzufügen, News hinzufügen und Karussell
+  hinzufügen direkt oben. Zusatzformate bleiben unter Weitere Inhalte. Neue
+  Aktuell-Karussells verwenden ein gemeinsames Formular für Übersicht/Detail;
+  übernommene Home-Sammlungen behalten ihre getrennten Texte und Einträge.
+- **Home-Reihenfolge (v290):** Werkzeuge in eigener Zeile über dem Beitrag.
+  Reihenfolge ändern oder Position ändern öffnet eine kompakte Übersicht
+  aller Elemente: Ziehen, Direktposition und Pfeile. Mehrere Umstellungen
+  gemeinsam speichern; Abbrechen verwirft den Entwurf. Nummerierung und
+  Bildseiten folgen automatisch, aktuelle Inhalte bleiben geschützt.
+- **Kopieren und Verschieben:** Beide Aktionen funktionieren Home ↔ Aktuell.
+  Verschieben entfernt die Quelle und übernimmt den Beitrag in einem gemeinsamen,
+  revisionsgeschützten Speichervorgang auf die Zielseite. Kopieren erhält die
+  Quelle und erstellt eine unabhängig bearbeitbare Inhaltskopie mit neuer ID.
+  Bestehende Bilddateien werden wiederverwendet, nicht doppelt hochgeladen.
+- **Platzierung und Historie:** Auf Home wird der übernommene Beitrag erstes Thema;
+  Nummerierung und Bildseite folgen stets der aktuellen Reihenfolge (links,
+  rechts, links …), auch nach Umordnen. Home erlaubt höchstens zehn Themen.
+  In Aktuell bestimmt das Veröffentlichungsdatum die Position: News absteigend,
+  Termine aufsteigend. Beiträge bleiben im Clubarchiv auffindbar; alte Home-,
+  Aktuell- und Archiv-Adressen bleiben nach Umzügen nutzbar.
+- **Gestaltung beibehalten:** Große rote Konturzahlen ohne Rahmen geben Home den
+  Magazincharakter; etwas kleiner als ursprünglich, mit Luft zum Text. Linkbuttons
+  mit zurückhaltendem Signature-Rot-Rahmen, schwarzen Beschriftungen und dezenten
+  Ecken, ohne dekorative Icons/Pfeile. Im Übernahmedialog gleich breite Buttons,
+  ausreichende Abstände, auf dem Handy untereinander. Auch Admin-Ansichten sind
+  Teil des freigegebenen Gestaltungsanspruchs.
+
+**Technischer Anknüpfungspunkt:** `assets/js/home-media.js` und
+`assets/css/home-media.css` (Darstellung, Vollbild, Medieneditor),
+`assets/js/newsroom.js` (Sortierung, Kopier-/Umzugsplan), `assets/js/site.js`
+(Admin-Einstiege/Routen) und `assets/js/club-archive.js` (Archiv/alte Adressen).
+Aktueller bestätigter Live-Stand v289, Commit
+`1055f4b8356d454b5ddddff661db0d6c1a147e2e`. Nachweise und Detailprüfungen in den
+Release-Notizen v286–v289; die Kerntests umfassen Vollbild/Pause/Escape,
+bidirektionale Kopien/Umzüge, unabhängige Bearbeitung, Konflikte und Mobilansicht.
+
+## Karussell-Übernahmedialog v289 – 07.11.2026
+
+Live-Commit `1055f4b8356d454b5ddddff661db0d6c1a147e2e`, Pages-Lauf
+`42356119766` erfolgreich. Nutzer empfand Kopieren-/Verschieben-Buttons
+im Admin-Dialog als geklemmt. Dialog jetzt mit klarer Titel-/Metadaten-
+Gliederung und mehr Abstand vor den Aktionen. Desktop zwei gleich breite
+Spalten mit12px Zwischenraum, Mobil bis520px volle Breite untereinander.
+Mindestens46px Buttonhöhe, mindestens16px Abstand zum vorherigen Inhalt.
+Titel in normaler Schreibweise, Singular „1 Beitrag“ korrigiert.
+
+Bestehender Browserablauf für beide Übernahmerichtungen und unabhängige
+Editoränderung grün; isolierte Layoutprüfung1440/390px und visuelle Kontrolle
+grün. Live CSS/JS/SW bytegleich geprüft. Keine CMS-/Workeränderung.
+Gezielt im lokalen Arbeitsordner übernommen; übrige Änderungen erhalten.
+Belege `.private/release-v289/`. Kein Quellarchiv-Upload ohne neue Zustimmung.
+
+## TFB-Splash-Fensterhöhe v288 – 07.11.2026
+
+Live-Commit `3e2c1132585413467bdbcdefba3f599dafebb94c`, Pages-Lauf
+`42355766117` erfolgreich. Nutzer-Mac-Screenshot zeigte unten abgeschnittenen
+Premium-Partner. Reproduziert: 1920×880, Splash-Inhalt950px, 70px Überlauf.
+CSS verdichtet Desktop-Außenabstände/Zwischenräume höhenabhängig bis950px;
+unter876px zusätzlich maßvoll kleinere Logo-/Headline-Größe, breiterer Text
+und kompakterer Einstieg. Partner-Tile/Logo-Größe bleibt.
+
+Live jetzt1920×880: Scrollhöhe880px, kein Überlauf, oben36.95px Luft und
+Partner-Unterkante853.61px. Weitere komplett sichtbare Desktop-Fenster:
+1440×900/821/850/875/876/780, 1366×720 und1440×1050. Unter32px oberem bzw.
+24px unterem Abstand wird nicht verdichtet; besonders flache Fenster dürfen
+weiterhin scrollen. Smartphone/Tablet-Portrait und sehr flaches Landscape
+behalten bisherige Regeln. Chromium-/WebKit-Splash-Browsertest grün.
+
+Live CSS/SW bytegleich geprüft. Keine Text-/Partner-/CMS-/Workeränderungen,
+Padel-App nicht geändert. Gezielte Änderungen im lokalen Arbeitsordner
+übernommen; dortige noch unveröffentlichte var(--signature)-Farbänderungen
+bewusst erhalten. Belege `.private/release-v288/`. Quellarchiv-Upload bleibt
+wie zuvor ohne neue Zustimmung ausgesetzt.
+
+## Karussell-Lupe, Kopieren und Verschieben v287 – 07.11.2026
+
+Live-Commit `945becd652548b27a805003d6df9cd842c5194c6`, Pages-Lauf
+`42355023020` erfolgreich. Weiße Lupe mittig in der Fußzeile jedes bewegten
+Karussells (Home, Aktuell, Archiv). Native Vollbild-Dialogebene übernimmt
+Bildstand und Pause, hält den Fokus im Dialog und pausiert den Hintergrund.
+Escape oder Kreuz schließt, Bildklick öffnet die gewohnte Unterseite. Zustand
+kehrt zur kleinen Ansicht zurück; bei Navigation wird die Ebene aufgeräumt.
+Großes vorderes Motiv auch auf Hochformat-Handys. Normales News-Layout bleibt.
+
+Aktuell-Admin: Karussell kopieren / verschieben. Home-Editor: Karussell aus
+Aktuell übernehmen sowie je Sammlung Kopieren / verschieben. Auswahl bietet
+beide Richtungen und je zwei klar beschriftete Aktionen. Move erhält ID und
+speichert beide Seiten gemeinsam, Copy erzeugt neue ID und unabhängige tiefe
+Inhaltskopie mit denselben Bildreferenzen (kein doppelter Upload). Home-Ziel
+wird erstes Thema; Nummerierung/Links-Rechts-Abfolge folgen automatisch.
+Aktuell nach gewähltem Datum, Home-Maximum 10 bleibt. News-, Home- und Archiv-
+Altlinks folgen bei Umzügen weiter. archivePage erhält den ursprünglichen
+Archivnamensraum; Kopien erhalten einen eigenen. mediaSingle wird bei der
+Übernahme entfernt, damit Home-Übersicht/Detail unabhängig editierbar bleiben.
+
+36 Fachtests grün; Zoom-Browsertest (Animation, Pause/Bildstand, Escape/Fokus,
+Hintergrundpause, wiederholtes Öffnen, Bildnavigation, reduzierte Bewegung,
+Mobil, Navigation und Einzelbild) grün. Neuer bidirektionaler Übernahme-Test
+inkl. echter unabhängiger Editoränderung und alter News-/Archivlinks grün.
+Home- und Newsroom-Regressionsbrowser grün. Echte Motivvorschau rein lesend.
+Live am echten Aktuell-Beitrag fünf Bilder, Animation, Zoom, Pause, Escape,
+Handy und Unterseite geprüft, keine Browserfehler. Live-Dateien bytegleich.
+CMS-Revision 48 vor/nach unverändert, alle Dokumente identisch. Nutzer hatte
+Umkleide bereits selbst nach Aktuell verschoben: b-mw61khx5 liegt dort; es wurde
+kein tatsächlicher Beitrag für Tests kopiert oder verschoben. Nutzer kann nun
+Nach Home kopieren wählen, um beide Bereiche parallel zu nutzen.
+
+Kein Worker-/Schemawechsel. Source-Archiv-Upload ohne neue Zustimmung weiterhin
+ausgesetzt (v283). Arbeitsordner gezielt aktualisiert; übrige lokale Änderungen
+erhalten. Belege `.private/release-v287/`; isolierte Quelle weiterhin unter
+`/private/tmp/tfb-release-home-v283/`, Branch release/carousel-zoom-transfer-v287.
+
+## Aktuell-Redaktion und Karussells v286 – 07.11.2026
+
+Live-Commit `6c03fb0fc6464b9bbafe4626893d659ce4a13f71`, erfolgreicher Pages-Lauf
+`42353931603`. Admin-Einstieg oben: Termin hinzufügen, News hinzufügen,
+Karussell hinzufügen, Home-Karussell übernehmen (bei vorhandener Sammlung).
+Zusatzformate unter eingeklapptem Weitere Inhalte. Bearbeiten nutzt normale
+News-/Terminspalten und verständliche Bezeichnungen. Neues Karussell als
+ein Formular mit gemeinsamer Übersicht/Detailbeschriftung, Datum, Original-
+Uploads, vier Formaten und optionalem Instagram-Link. Übernommene Home-
+Sammlungen behalten getrennte Texte/Einträge. Gleiche Kartenbewegung, Pause
+und große manuelle Unterseite wie Home, für News-Spalten angepasst.
+
+newsroom.js sortiert News nach Datum absteigend und Termine aufsteigend;
+neue gleichdatierte Inhalte zuerst. View-Sortierung schreibt Altinhalte nicht
+um. Umzug durch expliziten Admin-Klick mit Datum, ein revisionsgeschützter
+Commit für beide Seiten, ohne erneute Bild-Uploads. IDs/Referenzen/Texte bleiben
+erhalten. Alte Home-Links und Archiv-Adressen funktionieren weiter; Clubarchiv
+zeigt alle Bildseiten und berücksichtigt die Beitragstexte bei der Suche.
+
+33 Fachtests inkl. echter Worker-CMS-Transaktion für Umzug/Konflikt erfolgreich;
+neuer Newsroom-Browsertest inkl. direkter Anlage, Detailbearbeitung/Vollbild,
+Fehlerfall, einem Commit für beide Seiten, Reload, alten Links, Übersicht,
+Archiv und Mobil erfolgreich. Home-, Galerie- und Übersichts-Browsertests
+ebenfalls grün. Alte Testharnesses um Splash-Bypass/doppelte Home-Addbuttons
+und die seit v285 gültige Nummernposition korrigiert.
+
+Live-Dateien bytegleich; öffentliche Aktuell-Ansicht, Termine, mobile Ansicht
+und Home-Detail geprüft, keine Browserfehler. Admin-Workflows vollständig mit
+isolierten Testdaten geprüft; kein tatsächlicher Admin-Beitrag angelegt oder
+verschoben. Der Live-Check öffentlicher Daten ist rein lesend. CMS-Revision
+47 vor/nach Veröffentlichung identisch, alle Dokumente identisch. Bestehende
+Home-Sammlung bleibt erhalten; Nutzer kann Umzug nun selbst auslösen.
+
+Kein Worker-/Schemawechsel. Quellarchiv-Übertragung weiterhin ohne ausdrückliche
+Zustimmung ausgesetzt (v283). Gezielt in `01 Software` übernommen; andere lokale
+Änderungen erhalten. Belege `.private/release-v286/`, vollständiger isolierter
+Release unter `/private/tmp/tfb-release-home-v283/` (Branch release/aktuell-media-v286).
+
+## Home-Magazinnummern v285 – 07.11.2026
+
+Live-Commit `c55382a63d2e500727f6cfc85934804f43e07fbf`, Pages-Lauf
+`42352367862` erfolgreich. Nutzerkorrektur: Nummern ausdrücklich NICHT als
+kleine gerahmte Pills. Große rote Konturzahlen ohne Rahmen wiederhergestellt,
+Desktop 4.8rem statt ursprünglich 6rem, mobil 3.5rem statt 4.2rem. Mehr Luft
+unter der Nummer (16px Desktop, 12px Mobil) rückt den übrigen Text nach unten.
+Magazincharakter beibehalten; die neuen Linkbuttons und Pause bleiben erhalten.
+Lokale und Live-Browserkontrolle inkl. Ziffern ohne Rahmen, Kontur, Buttons,
+Pause, Logo-Rückweg, Mobilgröße und Überlauf erfolgreich. Live-Dateien
+bytegleich. Keine CMS-Schreibzugriffe oder Worker-/Sicherungsänderungen.
+Lokalen Arbeitsordner gezielt aktualisiert. Belege `.private/release-v285/`.
+
+## Home-Feinschliff v284 – 07.11.2026
+
+Live-Commit `d68952f6cb1449210909784e347a4c3890b1fcea`, Pages-Lauf
+`42351688224` erfolgreich. Beitragsnummern kompakt mit Signature-Rot-Rahmen
+und schwarzer kräftiger Ziffer. Home-Linkbuttons inkl. Mehr erfahren, Album,
+Buchen, Kiosk und Alle Beiträge mit 8px-Ecken/rotem Rahmen/schwarzem Text,
+ohne sichtbare dekorative Symbole oder Pfeile. Pause-Schalter ebenfalls
+kompakt gerahmt. Karussell-Unterseite ohne Startseiten-Links oben/unten;
+Bild/Text rücken höher. Rückweg über TFB-Logo geprüft.
+
+23 Home-Fachtests und Home-Browsertest erfolgreich. Zusätzliche Prüfung aller
+sieben aktuellen Linkbuttons, Ziffern, Pause, Logo-Navigation und Mobilansicht
+lokal sowie live erfolgreich; keine Browserfehler, Live-Dateien bytegleich.
+Kein CMS-Schreibzugriff, keine Änderungen an Nutzertexten oder Bildreihenfolge.
+Keine Worker-Änderung. Quellarchiv-Übertragung weiterhin ohne neue Zustimmung
+ausgesetzt (siehe v283). Private Belege unter `.private/release-v284/`.
+Gezielte Änderungen im lokalen Ordner `01 Software` nachgeführt.
+
+## Home-Karussell v283 – 07.11.2026
+
+Live unter https://joern-kaemper.de, Commit `8b2dfc750580570ddd00195ad8158faf281af060`,
+Pages-Lauf `42351204290` erfolgreich. Tiefenwechsel der Home-Collage überblendet
+360 ms; Bildseiten-entdecken-Link entfernt, linke Beschriftung/Pause erhalten.
+Unterseite ohne zusätzlichen Sammlungskopf, größeres Karussell links, rechts
+pro Beitrag editierbarer Kicker/Haupttitel/Untertitel/Text. Alte Kicker fallen
+zunächst auf den Home-Kicker zurück. Automatische Bildseitenfolge links/rechts
+folgt Nummerierung und aktueller Reihenfolge; CSS-Prioritätsfehler bei alten
+Bild-rechts-Layouts behoben.
+
+91 Fachtests, Home-Browsertest einschließlich Umsortieren/neuer erster Beitrag,
+zusätzlicher Überblendtest und Liveprüfung Desktop/Mobil erfolgreich. Live alle
+fünf Beiträge in korrekter Abfolge; keine Browserfehler. Veröffentlichte Dateien
+bytegleich geprüft. Keine CMS-Schreibzugriffe durch diesen Release. Während der
+Arbeit hat der Nutzer Home-Hinweistext und Buttonlabel auf „Zeig her!“ geändert
+(CMS 43 → 46); diese Änderungen bleiben erhalten, keine Wiederherstellung.
+
+OFFEN: Automatische Freigabeprüfung blockierte die Übertragung des Quellarchivs
+in den bestehenden privaten R2-Sicherungsspeicher und die Release-Registrierung,
+auch nach Nachweis des bisherigen Sicherungsablaufs. Nicht umgehen. Explizite
+Nutzerzustimmung dafür erfragen. Website-Deploy selbst erfolgreich. Lokales
+Quellarchiv/Manifest/SQL unter `/private/tmp/tfb-release-home-v283/.private/release-v283/`.
+Kein Worker-Deployment. Keine Archivkopie in Dropbox (Speicher sparen).
+Gezielte Änderungen in `01 Software` übernommen; andere lokale Arbeit erhalten.
+
+## 07.11.2026 · Home-Mediencollage live v282
+
+Nutzer gibt die bewegte Home-Vorschau ausdrücklich zur Live-Umsetzung frei.
+Veröffentlicht: eb30c292c0541cbde62e0bd23ed9089f7618763a, Cache v282,
+Pages-Lauf 42348456842 erfolgreich. Neue Dateien assets/js/home-media.js und
+assets/css/home-media.css, bestehender Feature-Rahmen bleibt erhalten.
+Home-Admin bietet Medien-Collage hinzufügen. Sammlung als mediaCollection
+im Feature: Überschriften/Einleitung und entries mit Titel/Unterüberschrift/
+Datum/Text/Format/Bildreferenzen/optional Instagram-Link. Eigener Editor mit
+Startseite/Beiträge, Reihenfolge/Uploads/Entfernen, Originaldateien bis 10 MB.
+CMS nutzt unverändert bestehenden Worker/D1/R2 und Revisionsschutz.
+Keine Migration und kein Worker-Deployment.
+
+Home-Kartenumlauf mit allen Motiven des ersten Beitrags, jede Karte führt
+zur Unterseite, Pause/hover/focus/reduced-motion/visibility und Observer-Cleanup.
+Unterseite verwendet bestehendes manuelles Chat-Karussell, ergänzende Miniaturen,
+Großansicht. Bei mehr als sechs Beiträgen zunächst sechs plus Alle N Beiträge.
+Vier Formate je Beitrag wählbar: 4:5, 9:16, 16:9, 5:4. Aktuell noch nicht erweitert.
+
+Freigegebenen echten Umkleidebeitrag über normalen angemeldeten Chrome-Admin
+angelegt: Block b-mw61khx5 als Thema 05 vor Impressionen, CMS-Revision 36.
+https://joern-kaemper.de/#home/b-mw61khx5
+Fünf Original-PNGs aus Fertig-zum-Hochladen-1080x1350 in richtiger Reihenfolge
+in CMS/R2 hochgeladen und öffentlich bytegenau gegen Dateien geprüft. Vorige
+fünf Home-Blöcke vollständig unverändert, übrige Dokumentrevisionen unverändert.
+Admin-Werkzeuge nach Pflege wieder ausgeblendet, native Browser-Unterseite
+als Ergebnis offengelassen. Automatischer Erweiterungs-Upload benötigte nicht
+vorhandene Datei-URL-Freigabe; stattdessen normalen nativen Dateidialog genutzt.
+Keine zusätzlichen Browserrechte oder Sicherheitsänderungen.
+
+91 Fachtests, neuer Home-Browsertest mit Upload/Save/Reload/Admintextänderung,
+mehr als sechs Beiträgen, Desktop/Mobil sowie bestehende Redaktions- und
+Chat-Karussell-Browsertests erfolgreich. Live-Code bytegleich, alle fünf
+Originale 1080×1350 bytegleich, Bewegung/Klickziele/Thumbnail/Fullview/Mobil
+und fehlerfreie Browserkonsole geprüft. Nachweise .private/release-v282/
+live-check.json, test-summary.json und Live-Screenshots. Quellarchiv im privaten
+R2 registriert; keine weitere ZIP-Kopie in Dropbox. Lokalen Code gezielt
+nachgeführt, fremde/ältere uncommitted Änderungen erhalten.
+
+
+## 07.11.2026 · Home-Vorschau: alle Motive als bewegtes Karussell
+
+Nutzer wünscht sichtbare Vielfalt entsprechend der tatsächlichen Bildanzahl
+und regt automatisches Nach-vorne-Rücken alle ca. zwei Sekunden an.
+Vorhandene lokale Home-Vorschau in-place aktualisiert, keine neue
+Versionskopie und keine zusätzlichen Medienkopien. Alle fünf Bildkarten
+sind gleichzeitig erkennbar vorhanden und jede Karte verlinkt #einblicke.
+Elliptischer Umlauf mit Größenstaffelung und weichem Tiefenwechsel;
+erster Wechsel nach 2 Sekunden, Bewegung 900 ms, danach 1100 ms Pause.
+Anordnung aus tatsächlicher Kartenliste berechnet, keine Füllbilder.
+Pausenknopf, Maus-/Kartenfokus-Pause, Seiten-/Sichtbarkeitspause und
+Beachtung prefers-reduced-motion umgesetzt; mit einem Bild statisch.
+Unterseite bleibt manuell wie zuvor.
+
+Alle fünf Bilder im Umlauf vorne nachgewiesen; 1/2/3/5 Karten bei 1440/390px
+mit tatsächlicher sichtbarer und anklickbarer Fläche für jede Karte geprüft.
+Pause/Fortsetzen/Fokus/reduzierte Bewegung und Unterseitenpause erfolgreich.
+Home- und Unterseitenansichten aktualisiert, Nachweis Karussell-Pruefung.json
+in 04 Projektmaterial/Home-Mediencollage-Vorschau. Aktuelle bearbeitbare
+Vorschauquelle ist Home-und-Unterseite.html dort (älterer temporärer Builder
+unter /tmp/tfb-home-proposal.py hat noch die vorherige Dreier-Collage).
+Live v281, Anwendungscode und CMS unverändert.
+
+
+## 07.11.2026 · Home-Mediencollage als Vorschau erstellt
+
+Nutzer beauftragt zunächst Vorschau, keine Live-Umsetzung. Öffentliche aktuelle
+Home-Seite schreibgeschützt geprüft: Look 6 Wechselspiel, vier bestehende
+Themen. Vorschau fokussiert einen möglichen fünften Themenblock (05), mit
+unveränderter bestehender Kopfzeile, Typografie, Nummerierung und Textfläche.
+Bildhälfte: dunkles warmes Anthrazit, Außenansicht vorne, Raum/Duschen versetzt
+dahinter. Bildfläche und Button öffnen lokale Unterseite. Dort Sammlung mit
+einem echten Umkleidebeitrag und fünf vollständig dargestellten 4:5-Bildseiten
+als manuelles Karussell, Miniaturen und Großansicht; mobil untereinander.
+Kein erfundener Instagram-Link und keine künstlichen weiteren Beiträge.
+
+Dropbox: 04 Projektmaterial/Home-Mediencollage-Vorschau/Home-und-Unterseite.html
+plus Home-Desktop.png, Home-Mobil.png, Unterseite-Desktop.png, Unterseite-Mobil.png,
+Anleitung und Pruefung.json. Vorhandene Upload-PNGs nur verlinkt, keine Kopien.
+Desktop 1440 und Mobil 390 ohne Überlauf/defekte Bilder geprüft; Bild-/Buttonlink,
+Pfeile, Miniaturen und umlaufende Großansicht/Escape erfolgreich. Keine
+Netzwerkzugriffe aus der Vorschau. Vorschaucode liegt ausschließlich im
+Projektmaterial; Anwendungscode, Live-Version v281 und CMS unverändert.
+Nächster Schritt ist Nutzerfeedback zur Gestaltung, danach ggf. echter
+Medien-Collagen-Baustein und wiederverwendbare Sammlung für Home/Aktuell.
+
+
+## 07.11.2026 · Direktwahl live v281 und Medienordner bereinigt
+
+Auf Nutzerauftrag Karussell/Diashow/Collage sowie Personen Ja/Nein als
+direkte beschriftete Radio-Auswahl statt Auswahllisten umgesetzt. Pro Gruppe
+nur eine Auswahl, Anzeigeart beim Bearbeiten erhalten, Einverständnis nur
+bei Ja. Auch Kommentarfotos entsprechend. Tastaturfokus nach Wechsel erhalten.
+91 Fachtests, Karussell-/Kommentar-Browsertests und Desktop-/Mobilprüfung
+erfolgreich. Live-Commit f8ca93415bc5b1b91c670d463eb00a098815eab6, Cache v281,
+Pages-Lauf 42346146735 erfolgreich. Öffentliche Dateien bytegleich geprüft,
+keine Live-Testbeiträge. Worker unverändert. Nachweise .private/release-v281.
+Quellarchiv im privaten R2 registriert; keine zusätzliche ZIP-Kopie in Dropbox.
+
+Nutzer ausdrücklich gegen vollständige Kopien jeder Medien-Arbeitsversion.
+Instagram-01-Umkleide bereinigt: 228,4 auf 16,9 MB (211,5 MB entfernt).
+Die fünf aktuellen 1080×1350-Upload-PNGs per Hash unverändert erhalten.
+Aktuelle Struktur: Fertig-zum-Hochladen-1080x1350, Canva-Vorlage mit aktueller
+bearbeitbarer Importquelle/Referenz/Verknüpfung, Gesamtvorschau.png,
+05-Aussenansicht-Bildauswahl, Begleittext und kurze Anleitung.
+Alte Vorschau-02 bis -09, alte Root-Entwürfe, Import-Backups und kleine
+Canva-Thumbnails entfernt. Alte Links auf diese Vorschau-Ordner sind veraltet.
+Originalausschnitte, 4x5/5x4/9x16/16x9 und ursprüngliche Quelldateien erhalten.
+Aktueller Canva-Master DAHaNk_CTmA bleibt unverändert.
+Cleanup-Nachweis .private/media-cleanup-2026-11-07.json. Zukünftig aktuelle
+Medienfassung vor Ort aktualisieren, keine vollständigen Zwischenversionen
+oder zusätzlichen Medien-Sicherungsordner in Dropbox anlegen.
+
+
+## 07.11.2026 · Auflösungsverwechslung bereinigt
+
+Screenshot zeigt Verwendung von Canva-Seite-2.png (400 × 500), nicht des
+fertigen 1080 × 1350 PNGs. Alle fünf hochauflösenden Bildseiten geprüft und
+verlustfrei mit klaren Dateinamen in Instagram-01-Umkleide/
+Fertig-zum-Hochladen-1080x1350 gesammelt. Kleine Canva-Thumbnails in
+Vorschau-09-Signature und Canva-Vorlage jeweils nach
+Nur-Canva-Vorschaubilder-400x500 verschoben. SHA-/Maßnachweis in
+Vorschau-09-Signature/Aufloesungspruefung.json.
+Für Uploads ausschließlich die fünf Dateien im Fertig-zum-Hochladen-Ordner
+verwenden. Bestehender Live-Beitrag nicht verändert; niedrig aufgelöste
+Website-Bilder müssen durch die vollen PNGs ersetzt werden.
+Canva-Master und Seitengestaltung unverändert.
+
+
+## 07.11.2026 · Seite 2: Das verstehen wir unter Signature.
+
+Auf ausdrückliche Freigabe ausschließlich die Unterzeile der Raumansicht
+(Seite 2) ersetzt: „Das verstehen wir unter Signature.“ Außenansicht bleibt
+Seite 1; übrige Texte, Motive und Reihenfolge unverändert.
+Aktuelle Dropbox-Fassung: Instagram-01-Umkleide/Vorschau-09-Signature.
+Aktueller Canva-Master: DAHaNk_CTmA, https://www.canva.com/d/WIIIC8K0h7R_I9F
+Voriger Master DAHaNXAH6Ks bleibt als Sicherungsstand erhalten.
+Fünf Seiten, 1080 × 1350, bearbeitbare Texte/Bilder und neuer Untertitel
+über Canva geprüft; Seite 2 und Gesamtübersicht neu gerendert.
+Keine Veröffentlichung auf Website oder Instagram.
+
+
+## 07.11.2026 · Hereinspaziert-Außenansicht jetzt zuerst
+
+Nutzer korrigiert vorherigen Stand: Außenansicht wird erste statt letzte Seite.
+Neue exakte Unterzeile: „Hereinspaziert... so könnte der Eingang zu unserer neuen
+Padel-Umkleide aussehen.“ Bewusster Umbruch nach Eingang; Hauptüberschrift
+„Vorfreude beginnt / vor der Tür.“ bleibt. Reihenfolge danach: Raumansicht,
+Bank, Duschen, Bank mit Regal. PNGs 1080 × 1350, aktuelle Dropbox-Fassung
+Instagram-01-Umkleide/Vorschau-08-Hereinspaziert mit Gesamtvorschau.
+Aktueller Canva-Master ist neue Fassung DAHaNXAH6Ks:
+https://www.canva.com/d/wYvrEx7jDk_DuOT
+Voriger Master DAHaNA3klN8 als Sicherungsstand erhalten. Seitenmaße, Reihenfolge,
+Texte und Bearbeitbarkeit über Canva geprüft, echte Vorschauen gespeichert.
+Canva-Merge scheiterte an API-Einschränkung/Versionskonflikt; vollständige Fassung
+stattdessen erfolgreich importiert. Für Import unter 10 MB Bild-Payload als JPEG
+Qualität 97 ohne Motiv-/Layoutänderung; PNG-Dateien unverändert erhalten.
+Keine Website- oder Instagram-Veröffentlichung.
+
+
+## 07.11.2026 · Instagram-Umkleide um Außenansicht ergänzt
+
+Auf Nutzerfreigabe fünfte und letzte Seite in bestehenden Canva-Master
+DAHaNA3klN8 eingefügt; die ersten vier Seiten unverändert. 1080 × 1350.
+Headline: „Vorfreude beginnt / vor der Tür.“ Unterzeile: „So stellen wir uns
+den Eingang zu unserer neuen Padel-Umkleide vor.“ Kopfzeile und orange Linie
+wie freigegebene Vorlage. Canva-Maße, bearbeitbare Texte/Bilder und Vorschau
+geprüft. Master nun fünf Seiten: https://www.canva.com/d/XBpFhNrS698EVa4
+Dropbox unter Instagram-01-Umkleide/Vorschau-07-mit-Aussenansicht: Seite 5 als
+PNG, alle fünf Seiten, Gesamtvorschau, HTML-Quelle und Canva-Verknüpfung.
+Außenbild anhand Referenz mit Imagegen neu gerendert; kein pixelidentischer
+Originalausschnitt. Keine Veröffentlichung auf Website oder Instagram.
+
+
+## 07.11.2026 · Personenabfrage bei Chat-Medien live (v280)
+
+Nutzer hat die einfache Ja/Nein-Abfrage ausdrücklich beauftragt und die
+Live-Veröffentlichung freigegeben. Frage bei Bildern/Videos: „Sind Personen
+erkennbar abgebildet?“ Keine Vorauswahl. Bei Nein weder Einverständnishinweis
+noch Checkbox; bei Ja erscheint die verpflichtende bisherige Checkbox.
+Ohne Medien keine Abfrage. Dieselbe Logik für neue/bearbeitete Kommentarfotos.
+Beim Darstellungswechsel/Umsortieren bleibt die Antwort erhalten; zusätzliche
+Medien setzen sie zurück. Kein KI-Einsatz, keine zusätzliche Datenspeicherung.
+91 Fachtests sowie Karussell- und Kommentar-Browsertests erfolgreich. Geprüft:
+unbeantwortet blockiert, Ja ohne Bestätigung blockiert, Nein speichert ohne
+Checkbox, Ja/Nein-Wechsel, Erhalt alter Gestaltungen und Kommentare.
+
+Live-Commit 344c56525740bd5cbaf7aab6d14eacfa668de84e, Cache tfb-kiosk-v280,
+Pages-Lauf 42344304946 erfolgreich. Live-Dateien bytegleich; Browserprüfung
+fehlerfrei. Keine Live-Testbeiträge. Nur Frontend, Worker unverändert.
+Quellarchiv für Wiederherstellung im bestehenden privaten R2 registriert.
+Nachweise .private/release-v280/live-check.json und test-summary.json;
+Details docs/RELEASE-v280.md. Lokale Änderung gezielt nachgeführt; andere
+unfertige Änderungen unverändert erhalten. Für weitere Veröffentlichungen
+weiter isolierte Worktrees auf origin/main verwenden.
+
+
+## 07.11.2026 · Chat vereinfachen und Canva-Video-Master (v279)
+
+Auf ausdrücklichen Nutzerauftrag entfallen im Chat die Bildgestaltungsschaltflächen
+(Gestalten, gemeinsamer Bildtext und Ausschnitteditor). Beiträge und Kommentare
+bleiben bearbeitbar; Medien lassen sich hinzufügen, entfernen und umsortieren.
+Gespeicherte Gestaltungen älterer Beiträge bleiben erhalten. Ungestaltete neue
+Medien erscheinen vollständig ohne Beschnitt. Die sichtbaren Karussellpfeile
+sind nun 22 statt 44 Pixel groß (50 Prozent weniger Durchmesser), bei weiterhin
+44 Pixel großen Touchflächen. Endloses Blättern einschließlich Bildklick in der
+Großansicht bleibt erhalten.
+
+91 Fachtests sowie die Karussell- und Kommentar-Browsertests erfolgreich,
+einschließlich Erhalt alter Beschriftungen beim normalen Bearbeiten.
+Nur Frontend; bestehender Worker unverändert, keine Datenmigration oder Testposts live.
+
+Canva-Master mit jeweils zwei bearbeitbaren Einstiegs-/Schlusskarten:
+- Hochformat 1080 × 1920, DAHaNROi4Lo: https://www.canva.com/d/QGgmopx8IwgLyaF
+- Querformat 1920 × 1080, DAHaNZr8_8U: https://www.canva.com/d/17F6J-PDnHeiYjX
+
+Texte, Fotos und Original-Logo sind getrennt bearbeitbar; Dimensionen über Canva
+geprüft. Stil: Bricolage Grotesque/DM Sans, helle Bilder, kleine Absenderzeile,
+orange Linie nur bei Untertitel. Vor Verwendung Master kopieren, eigene
+Filmsequenzen zwischen Karten einsetzen, Dauer in Canva festlegen (etwa je
+2 Sekunden für Einstieg/Abspann). Chat gesamt maximal 30 Sekunden. Keine
+Filmsequenzen, Animation oder Musik erzeugt. Dropbox-Anleitung, Vorschaubilder,
+HTML-Ausgangsdateien und Canva-Verknüpfungen liegen unter
+04 Projektmaterial/Canva-Vorlagen/Video-Master.
+
+Live erfolgreich geprüft: Commit 54c2940790ed1601070ae8564f23c7de241f9931,
+Pages-Lauf 42343621482 erfolgreich. Öffentliche Dateien bytegleich;
+Live-DOM prüft 22px-Pfeile, vollständige Bilder und endloses Durchklicken.
+Nachweise: .private/release-v279/live-check.json.
+
+
+## Medien-Collagen für Home und Aktuell – Konzept bestätigt, 07.11.2026
+
+Status: Nutzer hat das folgende Konzept bestätigt. Home und Aktuell bleiben
+Konzept; die Chat-Ergänzung „Karussell“ wurde anschließend separat beauftragt
+und auf ausdrücklichen Folgeauftrag live veröffentlicht; aktueller Stand v278.
+Die bestehende Gestaltung von Home und Aktuell ausdrücklich beibehalten.
+
+### Karussell-Bedienung – live v278, 07.11.2026
+
+Auf Nutzerfeedback die unteren Pfeile als deutlich sichtbare farbige runde
+44-Pixel-Schaltflächen mit kräftigen SVG-Pfeilen gestaltet. In der Großansicht
+schaltet ein Klick auf das Foto zum nächsten Bild. Bilder, Pfeile, Tastatur und
+Wischen laufen endlos vom letzten zum ersten und umgekehrt. Kein Autoplay.
+Nach Wischen wird ein unmittelbar folgender Touch-Klick auf dem Foto abgefangen,
+damit weder doppelt geschaltet noch versehentlich die Großansicht geöffnet wird.
+
+Live-Quellstand `41a785ebed886dd4176ffdf3b23ed7602d5927c8`, Cache `tfb-kiosk-v278`.
+[Pages-Lauf erfolgreich](https://github.com/calvinjohncamp/tfb-website/actions/runs/42342702358).
+Frontend-Release auf Basis `9432a54` im isolierten Worktree
+`/private/tmp/tfb-release-carousel-v278`. Kein Worker-Deployment, keine Migration,
+keine Änderung am bereits vom Nutzer veröffentlichten Umkleide-Beitrag.
+91 Fachtests sowie erweiterter Karussell-Browsertest bestanden; Desktop, Mobil
+und Großansicht visuell geprüft. Fünf Live-Dateien bytegleich, Umlauf und fünf
+aufeinanderfolgende Bildklicks im Live-Modul mit lokalen DOM-Testelementen geprüft.
+Privates Quellarchiv in R2 registriert; Nachweise in `.private/release-v278/`.
+
+### Chat-Karussell – live v277, 07.11.2026
+
+Veröffentlicht und live geprüft: Quellstand
+`e46e50994ed87e0dad098b0ad275b82558e4d609`, Cache `tfb-kiosk-v277`,
+Worker `24b72482-3179-463c-92b6-70537712248d`.
+[Erfolgreicher Pages-Lauf](https://github.com/calvinjohncamp/tfb-website/actions/runs/42341856985).
+Isolierter Release-Worktree `/private/tmp/tfb-release-carousel-v277`, Basis
+`39cc124`; ältere lokale Änderungen im Dropbox-Arbeitsordner erhalten.
+Private D1-Sicherung, Quellarchiv und Nachweise in `.private/release-v277/`.
+Quellarchiv in privatem R2 registriert. Fünf Live-Dateien bytegleich geprüft;
+Live-Modul manuell mit rein lokalen DOM-Testelementen durchgeblättert, ohne
+Autoplay und mit vollständigen Bildern. Geschützter Endpunkt anonym weiter 401.
+Kein echter Beitrag angelegt; Nutzer veröffentlicht seinen Beitrag selbst.
+
+In der vorhandenen Clubgeflüster-Maske „Schreib was“ erscheint nach Hinzufügen
+mehrerer Fotos unter „Bilder anzeigen als“ zusätzlich „Karussell“. Bestehende
+Auswahl Collage/Diashow und deren Voreinstellung bleiben erhalten. Karussells
+zeigen Bilder vollständig, ohne automatische Wiedergabe; Bedienung über Pfeile,
+Punkte, Wischgesten und Pfeiltasten/Home/End. Großansicht unterstützt dasselbe
+manuelle Blättern. Gemeinsame Diashow-Texte sind in diesem Modus nicht angeboten;
+fertige Canva-Seiten benötigen keine weitere Gestaltung im Chat.
+
+`photoView: 'carousel'` wird lokal und im geschützten Worker gespeichert. Für
+Live-Betrieb müssen deshalb Worker und Frontend gemeinsam aktualisiert werden;
+keine Datenbankmigration nötig. Quelländerungen: site.js, chat-media.js/-css,
+demo-backend.js und server/cloudflare/app-sync.mjs. Worker vor Frontend
+veröffentlicht; keine bestehenden Chat-, Mitglieder- oder Inhaltsdaten geändert.
+
+Prüfung: alle zehn App-Sync-Tests bestanden (einschließlich Gerätewechsel,
+Bearbeiten und Wechsel zurück zur Collage). Neuer isolierter Browsertest
+`npm run test:browser:chat-carousel`: Upload über echte Maske, Speichern/Reload,
+vollständiges 4:5, kein Autoplay, Pfeile/Punkte/Tastatur, Großansicht, mobile
+Wischgesten und Collage-/Diashow-Regressionsprüfung erfolgreich. Bestehender
+Browsertest `node tools/test-browser-comments.mjs` ebenfalls erfolgreich.
+Desktop-/Mobilansichten mit synthetischen Bildern visuell geprüft; nur künstliche
+Test-Ursprünge und lokale/In-Memory-Daten verwendet.
+Zusätzlich Release-Prüfung: acht Foto-Fachtests und vier Exporttests bestanden.
+Breiter Fachlauf 90/91 bestanden; ältere Galerie-Erwartung in
+`test-home-features.mjs` scheitert unverändert auch auf der Basis `39cc124`.
+Dieser nachgewiesene Bestandsfehler wurde nicht mit dem Release vermischt.
+
+Auf weiteren Nutzerauftrag veraltete Galerie-Testerwartung anschließend
+bereinigt: Chat-Fotoaufruf öffnet das angeklickte Einzelbild; „Alle Fotos“ öffnet
+die Übersicht. Test prüft jetzt beide Wege mit sechs unterschiedlichen Motiven,
+Tastatur, Navigation und Wischgesten ohne doppeltes Weiterschalten. Alle 91
+Fachtests bestanden. Repository-Korrektur `9432a54`, nur Test und Release-Doku;
+keine Änderung der Live-Galerie und kein neuer Deploymentlauf. Live bleibt
+Anwendungsstand `e46e509` / Cache v277.
+
+- Im Home-Editor einen zusätzlichen Medien-Collagen-Baustein vorsehen. Er nutzt
+  den bestehenden Aufbau von „Neues Thema“: Nummerierung, obere Überschrift,
+  Hauptüberschrift, Unterüberschrift, kurzer Hinweistext und Button zur Unterseite.
+  Die genaue Bedienbezeichnung ist bei Umsetzung festzulegen; „Medien-Collage
+  hinzufügen“ unterscheidet die Funktion von der vorhandenen Fotocollage.
+- In der bestehenden Bildfläche eine gestaltete Vorschau: ein Hauptmotiv im
+  Vordergrund, weitere Motive leicht versetzt dahinter, dezente Schatten und
+  passende vorhandene Rundungen. Gemeinsamer Einstieg über Bildfläche und Button;
+  verdeckte Karten brauchen keine einzelnen Klickziele. Film-/Karussellsymbol
+  und Beitragsanzahl nach Bedarf. Auch eine Sammlung mit nur einem Beitrag muss
+  funktionieren; keine erfundenen oder mehrfach duplizierten Beiträge zum Füllen.
+- Als Hintergrund ist warmes dunkles Anthrazit passend zur TFB-Farbwelt
+  vorgeschlagen und konzeptionell akzeptiert; genaue Farbe und Ausarbeitung erst
+  in der Vorschau festlegen. Von den beiden hellen App-Flächen abheben, Signature-
+  Farbe sparsam einsetzen. Kein allgemeines Redesign und kein neuer Home-Feed.
+- Unterseite in der vorhandenen Themenseiten-Gestaltung: geordnete Beiträge mit
+  Titel, Datum, Begleittext und vollständig dargestellten Medien. Hochformate auf
+  Desktop gegebenenfalls neben Text, Querformate breit; mobil untereinander.
+  Anfangs alle vorhandenen Inhalte zeigen. Bei größerer Sammlung zunächst z. B.
+  sechs Beiträge und „Alle N Beiträge anzeigen“ auf derselben Unterseite anbieten.
+- Unter Aktuell im News-Editor denselben Inhaltstyp ergänzen, im bestehenden
+  News-Aufbau. Sammlung nur einmal pflegen und auf Home und/oder Aktuell
+  verwenden; Einstiegstexte dürfen je Platzierung unterschiedlich sein.
+- Vier unterstützte Formate: 4:5 (1080 × 1350), 9:16 (1080 × 1920),
+  16:9 (1920 × 1080), 5:4 (1350 × 1080). Vorschaumotiv separat wählbar;
+  geöffnete Grafiken/Karussells/Filme im Originalverhältnis vollständig zeigen.
+  Nicht jeden Beitrag in allen vier Formaten produzieren: Formate nach Bedarf.
+- Inhalte auf der Website selbst zeigen. Optional ergänzender Link „Auf
+  Instagram ansehen“ zum Originalbeitrag. Ein Instagram-Link ersetzt keine
+  Website-Mediendatei. Kein Instagram-Import oder automatisches Posting vereinbart.
+- Geplante Pflege: Sammlung mit Überschriften/Einleitung; pro Beitrag Titel,
+  Datum, Text, Medien, Format, Vorschaumotiv, optional Instagram-Link; Reihenfolge
+  und Hauptmotiv wählbar. Canva-Projekt und Produktionsoriginale erhalten.
+
+### Nächster Schritt: erster Beitrag zum Padelprojekt
+
+Fortschritt 07.11.2026: Nutzer beginnt mit den vorhandenen Signature-Orange-
+Visualisierungen der Umkleide. Erste technische Ausschnittserie nach Sichtung
+auf fünf Motive je Format bereinigt: Raum Spindwand, Raum Türwand, Duschen,
+Bank mit weiterem Raumkontext und Bank mit dem originalen Umkleideregal
+(zwei Schläger nebeneinander pro Reihe). Enge Waschplatz-/Spinddetails und die
+beiden Varianten des separaten Kiosk-Regals verworfen. Keine Gegenstände oder
+Blickwinkel neu generiert; ausschließlich Zuschnitt und Skalierung. Quellauflösung
+begrenzt, keine echte Detailauflösung durch Vergrößern hinzugewonnen.
+20 Ausgabe-PNGs, unskalierte Ausschnitte, vier Vorschauen und aktualisierte ZIP
+liegen unter `04 Projektmaterial/Umkleide-Medien-2026-11-07` im Projektstamm.
+Noch kein fertiger Canva-/Instagram-Beitrag und keine Website-Umsetzung.
+
+Anschließend erste vierseitige 4:5-Instagram-Gestaltungsvorschau erstellt:
+Raum Spindwand → Bank → Duschen → Bank mit originalem Umkleideregal.
+1080 × 1350 PNGs, Gesamtübersicht, Begleittext und lokale HTML-Gestaltungsvorlage
+liegen im Unterordner `Instagram-01-Umkleide` des genannten Medienordners.
+Leitidee „Nach dem Match. Zeit zum Wohlfühlen.“; alle Seiten mit dezentem
+Planungs-/Visualisierungshinweis. Originalbilder unverändert, Text und Verläufe
+darübergelegt. Vorschau visuell und auf Maße/Textüberlauf geprüft. Noch kein
+Canva-Dokument, keine Veröffentlichung auf Instagram oder Website.
+
+Zweite Vorschau auf Nutzerwunsch unter `Instagram-01-Umkleide/Vorschau-02-frischer`:
+vier 4:5-PNGs, Übersicht und Vorher-/Nachher-Vergleich der Bank. Dunkle Verläufe
+reduziert und örtlicher auf Schriftbereiche begrenzt; Originalbilder unverändert.
+Erste Vorschau zum Vergleich erhalten. Für den ersten Instagram-Karussellbeitrag
+bleibt 4:5 der Produktionsstand; zusätzliche 9:16- oder Querformatfassungen noch
+nicht beauftragt. Keine Apps oder Live-Inhalte geändert.
+
+Dritte Vorschau nach expliziter Freigabe der Textreduktion unter
+`Instagram-01-Umkleide/Vorschau-03-reduziert` erstellt: heller Bildstand bleibt,
+links PADEL BIELSTEIN, rechts UNSERE SIGNATURE-UMKLEIDE. Zwischenüberschriften,
+CTA-Frage, Wischhinweis, wiederholte Planungsfußzeile und orange Linie unter
+der Überschrift entfernt. Kleine Seitenzahl linksbündig unter jedem Textblock.
+Seite 1 Unterüberschrift „So könnte unsere neue Padel-Umkleide aussehen.“;
+Seite 4 „Ein Ort zum Spielen und Wohlfühlen.“; Seite 2/3 nur Hauptüberschrift.
+Vier 1080 × 1350 PNGs und Übersicht visuell sowie auf Textüberlauf geprüft.
+Begleittext erklärt weiterhin den Entwurfs-/Planungscharakter. Frühere Versionen
+erhalten; nichts veröffentlicht und keinen Website-Code geändert.
+
+Abgestimmter Gestaltungsstand nach weiteren Nutzerkorrekturen:
+`Instagram-01-Umkleide/Vorschau-06-abgestimmt` ist der aktuelle Entwurf.
+Kopfzeilen PADEL BIELSTEIN und UNSERE SIGNATURE-UMKLEIDE stehen auf derselben
+Schriftgrundlinie. Keine Seitenzahlen. Ursprüngliche Akzentlinie (60 × 4 px,
+#ff782e, 27 px Abstand nach oben) ausschließlich unter vorhandenen
+Unterüberschriften, also auf Seite 1 und 4; Seite 2/3 ohne Linie. Frischere
+Bildwirkung und reduzierte Texte beibehalten. Nutzer bestätigt, dass diese
+Gestaltung zur TFB-Website passt. Vier PNGs 1080 × 1350, Übersicht, Begleittext
+und lokale HTML-Vorlage vorhanden; visuell, Textgrenzen und Kopfzeilen-Grundlinie
+geprüft. Noch keine Veröffentlichung oder Canva-Übertragung.
+
+Canva-Übertragung anschließend auf Nutzerauftrag abgeschlossen. Verbindliche
+Mastervorlage: `DAHaNA3klN8`, Titel „MASTER · Padel Bielstein · Instagram 4:5 ·
+Umkleide“, Bearbeiten: https://www.canva.com/d/u0bPug-oCc_bA2u . Vier Seiten
+1080 × 1350; einzelne Textfelder und Fotoebenen auf allen Seiten als bearbeitbar
+geprüft, vier Canva-Vorschauen visuell kontrolliert. HTML-Import musste volle
+Schriftnamen „Bricolage Grotesque“ / „DM Sans“ statt interner Aliase und explizite
+Kopfzeilenpositionen erhalten. Vorheriger Testimport `DAHaNMKU0eU` ist nicht die
+verbindliche Vorlage. Reine Prüftransaktionen jeweils ohne Änderungen geschlossen.
+Unter `Instagram-01-Umkleide/Canva-Vorlage` liegen .webloc, Anleitung, Importquelle,
+Referenz und echte Canva-Seitenvorschauen. Normales Masterdesign: für neue Beiträge
+zuerst kopieren, dann Fotos/Texte austauschen; keine veröffentlichte Brand Template.
+Keine Instagram- oder Website-Veröffentlichung.
+
+Es gibt noch keine fertigen Beiträge. Nutzer besitzt bereits selbst erstellte
+Bilder, die das geplante Padelkonzept simulieren. Daraus zuerst einen attraktiven
+Auftakt entwickeln, der Lust auf das Projekt macht. Die Bilder liegen noch nicht
+in den passenden Formaten vor; bei Sichtung, Auswahl, Reihenfolge, Formatadaption
+und Text unterstützen. Die drei angehängten App-/Collagenreferenzen dieses Chats
+sind Gestaltungsbeispiele, nicht die Padel-Projektbilder.
+
+Empfohlener Einstieg: ein 4:5-Bildkarussell (1080 × 1350) aus geeigneten vorhandenen
+Motiven, mit Titelmotiv und kurzem Begleittext. Endgültige Seitenzahl und Zuschnitte
+erst nach Sichtung der Originalbilder festlegen. Simulationen als Entwurf bzw.
+Visualisierung erkennbar halten; keine bereits gebauten Anlagen suggerieren.
+Weitere Formate nur nach Bedarf ableiten. Website-Ausbau später anhand dieses
+ersten echten Beitrags konkretisieren. Fortsetzung kann auf diesen Abschnitt
+verweisen. Mit diesem Auftrag ausschließlich Projektgedächtnis aktualisiert;
+keinen Website-Code, keine Live-Inhalte oder Infrastruktur geändert.
+
+## Home, Aktuell und Clubgeflüster – 06.11.2026, Abendstand
+
+- Live-Website [joern-kaemper.de](https://joern-kaemper.de/). Der zuletzt
+  verifizierte Programmstand ist `39cc124` mit Service-Worker-Cache
+  `tfb-kiosk-v276`. Die [Übergabe](UEBERGABE.md) nennt Bedienwege und Prüfungen.
+- Auf Home liegen „Look der Startseite“ und „Menü oben“ in einem gemeinsamen
+  Rahmen. Im Bearbeiten-Modus gibt es oberhalb und unterhalb der Inhalte dieselbe
+  kompakte Reihe „Neues Thema“, „Collage hinzufügen“, „Galerie hinzufügen“.
+  Die Reihenfolge ist bewusst gewählt. Collagen zeigen Bilder in verschiedenen
+  Größen, Galerien in gleichmäßigen Kacheln. Beide unterstützen bis zu 100 Fotos,
+  Überschrift, Datum und optionalen Text.
+- Wechselspiel, Klassisch und Magazin erscheinen beim Klick sofort in der
+  Vorschau. Der gewählte Look wird im Hintergrund zentral gespeichert. Bei
+  mehreren schnellen Klicks zählt die letzte Auswahl. Scheitert deren Speicherung,
+  zeigt die Vorschau wieder den zuletzt bestätigten Look.
+- Unter Aktuell beginnen News und Save the Date jeweils mit einem schwarzen
+  Datumsfeld. Jedes zweite sichtbare Datumsfeld nutzt Signature Rot mit weißer
+  Schrift oder Signature Gelb mit dunkler Schrift. Datierte Fotocollagen zählen
+  in der News-Spalte mit.
+- Der zweite News-Beitrag „50 Jahre Tennisfreunde Bielstein“ zeigt den vollständigen
+  OVZ-Originalscan aus Dropbox. Der JPEG-Scan hat 4.549 × 4.000 Pixel und ist in
+  der Großansicht verfügbar. Die Redaktion verweist aus D1 auf die unveränderte
+  Datei in Cloudflare R2.
+- Bei Chat-Kommentaren kann man mehrere Emojis nacheinander auswählen. Zwischen
+  direkt aufeinanderfolgenden Emojis steht ein Leerzeichen. Für Touch-Geräte
+  wurden die Videowiedergabe und die sichtbare Zuordnung der Antworten zum Beitrag
+  überarbeitet.
+- Die im Chat abgestimmte Splash-Formulierung ist als redaktioneller Text
+  festgehalten. Eine Veröffentlichung dieses Wortlauts ist hier nicht bestätigt.
+  „Wir spielen Tennis mit Freunden. Auf sechs Plätzen unter freiem Himmel.
+  Und in Kürze kommen zwei Padel-Courts dazu.“
+
 ## Clubgeflüster und Startverhalten – 06.11.2026
 
-- Website-Stand v271 auf https://joern-kaemper.de. Einstieg für die Fortsetzung
+- Früherer Website-Stand v271 vom selben Tag. Einstieg für die Fortsetzung
   ist die [aktuelle Übergabe](UEBERGABE.md). Der folgende Stand v233 dient als
   historischer Nachweis für Redaktion und Sicherungen.
 - Clubgeflüster bleibt eigenständig. „Schreib was“ ist der gemeinsame Einstieg für
@@ -45,9 +1249,8 @@
 
 ## Historischer Gesamtstand – 26.10.2026
 
-Aktueller veröffentlichter Stand ist **v233** auf https://joern-kaemper.de.
-Die folgenden älteren Versions- und Konzeptabschnitte sind historische Nachweise;
-bei Widersprüchen gilt diese Zusammenfassung samt den v233-/v232-Nachweisen.
+Am 26.10.2026 war **v233** veröffentlicht. Die folgenden Versions- und
+Konzeptabschnitte dokumentieren den damaligen Stand.
 
 - Redaktionelle Inhalte, Beitragsreihenfolge, Navigation und gemeinsame Gestaltung
   werden zentral über den bestehenden TFB-Worker/D1 und privaten R2-Speicher gepflegt.

@@ -148,9 +148,6 @@ body .site-page[data-page="verein"] .story-teaser .more-link > span { display: n
 .view[data-view="aktuell"] .media-news .post-title-link {
   color: var(--ink); text-decoration: none; font-weight: inherit;
 }
-:root:not(.tfb-logo-midnight-amber) .view[data-view="aktuell"] .media-news .post-title-link {
-  color: var(--tfb-signature-red);
-}
 /* Aktiver Menüpunkt in beiden Welten ohne Pill; Tastatur-Fokusringe bleiben. */
 body .app .topbar .topnav .tab.active::before {
   content: none; background: none; border: 0;
@@ -159,4 +156,14 @@ body .app .topbar .topnav .tab.active::before {
 :root:not(.tfb-logo-midnight-amber) body .app .topbar .topnav .tab.active::after {
   left: 0; right: .2em; height: 2px;
   top: calc(50% + .65em + 4.95px); bottom: auto;
+}
+
+/* Einheitliche Karussell-Überschriften, ohne nicht editierbare Farbausnahme. */
+.view[data-view="aktuell"] .media-news .post-title-link { color: #171717; }
+/* Nur die aktive Mannschafts-/Saisonauswahl, keine Änderung an Dating-Pills. */
+:root.tfb-logo-midnight-amber body .view[data-view="sport"] .team-seasons button.on {
+  background: var(--tfb-midnight-blue); border-color: var(--tfb-midnight-blue); color: #fff;
+}
+:root:not(.tfb-logo-midnight-amber) body .view[data-view="sport"] .team-seasons button.on {
+  background: #171717; border-color: #171717; color: #fff;
 }
