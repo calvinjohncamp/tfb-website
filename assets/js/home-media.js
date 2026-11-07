@@ -33,28 +33,23 @@
     const enlarged=node.classList.contains('hm-zoom-orbit'), hoverable=matchMedia('(hover: hover) and (pointer: fine)');
     let keyboard=false,allowMotion=Boolean(initial.allowMotion);
     const motionBlocked=()=>reduced.matches&&!allowMotion;
-    const stage=node.querySelector('.hm-stage');
-    let orderKey='',front=-1,transition=null,transitionIndex=-1,blend=null;
-    const clearTransition=()=>{blend?.cancel();blend=null;transition?.remove();transition=null;transitionIndex=-1;};
+    const depthOrder = at => cards.map((_,i)=>({i,depth:Math.cos(2*Math.PI*(i-at-.00001)/n)})).sort((a,b)=>a.depth-b.depth||a.i-b.i).map(x=>x.i);
     const layout = () => {
       const w=node.clientWidth,h=node.clientHeight,percent=n===1?64:n===2?54:n===3?50:48;
       const cardWidth=enlarged?Math.min(w*(w<h?.82:percent/100),h*(n===1?.84:.66)*4/5)+'px':node.closest('.media-news')?Math.min(w*percent/100,h*(n===1?.88:.72)*4/5)+'px':percent+'%';
-      cards.forEach((card,i)=>{const angle=2*Math.PI*(i-phase)/n,c=Math.cos(angle),sin=Math.sin(angle);card.style.width=cardWidth;card.style.transform=`translate(-50%,-50%) translate3d(${sin*w*.285}px,${-(1-c)*h*.13}px,0) rotate(${-sin*10}deg) scale(${.58+.42*(c+1)/2})`;});
-      // Resolve equal depths in the direction of travel, avoiding a first-frame flip.
-      const order=cards.map((_,i)=>({i,depth:Math.cos(2*Math.PI*(i-phase-.00001)/n)})).sort((a,b)=>a.depth-b.depth||a.i-b.i).map(x=>x.i),key=order.join(',');
-      if(key!==orderKey){
-        const nextFront=order[order.length-1];
-        // Crossfade only the outgoing foreground card. A duplicate of the entire
-        // stage exposed its rear cards through the fade on Safari/iPad.
-        if(front>=0&&front!==nextFront&&!reduced.matches){
-          clearTransition();transitionIndex=front;transition=cards[front].cloneNode(true);
-          transition.className='hm-transition-card';transition.removeAttribute('href');transition.removeAttribute('aria-label');transition.inert=true;transition.setAttribute('aria-hidden','true');transition.style.zIndex=String(n+1);stage.append(transition);
-          blend=transition.animate([{opacity:1},{opacity:0}],{duration:360,easing:'ease-in-out',fill:'forwards'});blend.onfinish=clearTransition;
-        }
-        order.forEach((i,rank)=>cards[i].style.zIndex=String(rank+1));front=nextFront;orderKey=key;node.dataset.hmOrder=key;
-      }
-      if(transition){transition.style.transform=cards[transitionIndex].style.transform;transition.style.width=cards[transitionIndex].style.width;}
-      node.dataset.hmPhase=String(phase);node.dataset.hmReady='true';
+      const step=Math.floor(phase),progress=phase-step,before=depthOrder(step),after=depthOrder(step+1),order=progress<.5?before:after;
+      // Change paint order only while receding cards are fully transparent.
+      // Reuse the real cards: creating/removing composited image copies caused
+      // flashes in the clipped inline view on iPad, even when zoom looked fine.
+      const distance=Math.min(1,Math.abs(progress-.5)/.24),fade=distance*distance*(3-2*distance);
+      cards.forEach((card,i)=>{
+        const angle=2*Math.PI*(i-phase)/n,c=Math.cos(angle),sin=Math.sin(angle);
+        card.style.width=cardWidth;
+        card.style.transform=`translate(-50%,-50%) translate(${sin*w*.285}px,${-(1-c)*h*.13}px) rotate(${-sin*10}deg) scale(${.58+.42*(c+1)/2})`;
+        card.style.zIndex=String(order.indexOf(i)+1);
+        card.style.opacity=String(!reduced.matches&&after.indexOf(i)<before.indexOf(i)?fade:1);
+      });
+      node.dataset.hmOrder=order.join(',');node.dataset.hmPhase=String(phase);node.dataset.hmReady='true';
     };
     const stop = () => {clearTimeout(timer);cancelAnimationFrame(frame);node.dataset.hmRunning='false';};
     const canRun = () => n>1&&node.isConnected&&visible&&!document.hidden&&!motionBlocked()&&(enlarged||!hover&&!focused)&&!paused&&(!zoom||zoom.node===node);
@@ -69,9 +64,9 @@
     document.addEventListener('keydown',keyInput);document.addEventListener('pointerdown',pointerInput);
     const intersection=new IntersectionObserver(rows=>{const next=rows[0].isIntersecting;if(visible===next)return;visible=next;sync();},{threshold:.15});intersection.observe(node);
     const resize=new ResizeObserver(layout);resize.observe(node);
-    const changed=()=>{allowMotion=false;clearTransition();if(reduced.matches){phase=Math.round(phase)%n;layout();}sync();};
+    const changed=()=>{allowMotion=false;if(reduced.matches){phase=Math.round(phase)%n;layout();}sync();};
     const visibility=()=>sync();reduced.addEventListener('change',changed);document.addEventListener('visibilitychange',visibility);
-    layout();sync();return {node,getState:()=>({phase,paused,allowMotion}),setState(state){phase=state.phase;paused=state.paused;allowMotion=Boolean(state.allowMotion);layout();sync();},refresh:sync,destroy(){stop();clearTransition();document.removeEventListener('keydown',keyInput);document.removeEventListener('pointerdown',pointerInput);intersection.disconnect();resize.disconnect();reduced.removeEventListener('change',changed);document.removeEventListener('visibilitychange',visibility);}};
+    layout();sync();return {node,getState:()=>({phase,paused,allowMotion}),setState(state){phase=state.phase;paused=state.paused;allowMotion=Boolean(state.allowMotion);layout();sync();},refresh:sync,destroy(){stop();document.removeEventListener('keydown',keyInput);document.removeEventListener('pointerdown',pointerInput);intersection.disconnect();resize.disconnect();reduced.removeEventListener('change',changed);document.removeEventListener('visibilitychange',visibility);}};
   }
   function closeZoom(restoreFocus=true) {
     if(!zoom)return;
