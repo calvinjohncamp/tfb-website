@@ -58,14 +58,18 @@ try {
   await gallery().scrollIntoViewIfNeeded();
   assert.equal(await gallery().getAttribute('data-cs-auto'),null);
   assert.equal(await gallery().locator('[data-cs-slideshow]').count(),0);
-  assert.equal(await gallery().locator('[data-cs-step="-1"]').isDisabled(),true);
+  assert.equal(await gallery().locator('[data-cs-step="-1"]').isDisabled(),false);
+  await gallery().locator('[data-cs-step="-1"]').click(); assert.equal(await index(),3,'Previous wraps to the last image');
+  await gallery().locator('[data-cs-step="1"]').click(); assert.equal(await index(),0,'Next wraps to the first image');
   await page.waitForTimeout(2900);
   assert.equal(await index(),0,'Visible carousel does not advance automatically');
   const fit = await current().locator('.cs-media img').evaluate(img => ({fit:getComputedStyle(img).objectFit,width:img.naturalWidth,height:img.naturalHeight,ratio:img.closest('.cs-stage').getBoundingClientRect().width/img.closest('.cs-stage').getBoundingClientRect().height}));
   assert.equal(fit.fit,'contain'); assert.equal(fit.width,1080); assert.equal(fit.height,1350); assert.ok(Math.abs(fit.ratio-.8)<.005);
   await gallery().locator('[data-cs-step="1"]').click(); assert.equal(await index(),1);
   await gallery().focus(); await page.keyboard.press('End'); assert.equal(await index(),3);
-  assert.equal(await gallery().locator('[data-cs-step="1"]').isDisabled(),true);
+  assert.equal(await gallery().locator('[data-cs-step="1"]').isDisabled(),false);
+  await page.keyboard.press('ArrowRight'); assert.equal(await index(),0,'Keyboard wraps forward');
+  await page.keyboard.press('ArrowLeft'); assert.equal(await index(),3,'Keyboard wraps backward');
   await page.keyboard.press('Home'); assert.equal(await index(),0);
   await gallery().locator('[data-cs-published-dot="2"]').click(); assert.equal(await index(),2);
   await page.screenshot({path:'/tmp/tfb-chat-carousel-desktop.png'});
@@ -74,6 +78,20 @@ try {
   await viewer.waitFor(); assert.equal(await index(viewer),2);
   assert.equal(await page.locator('[data-cs-wide]').count(),0);
   await viewer.locator('[data-cs-step="1"]').click(); assert.equal(await index(viewer),3);
+  for (let step=1; step<=9; step++) {
+    await current(viewer).locator('[data-cs-next-photo]').click();
+    assert.equal(await index(viewer),(3+step)%4,'Repeated fullscreen image clicks loop without stopping');
+  }
+  await viewer.locator('[data-cs-step="-1"]').click(); assert.equal(await index(viewer),3);
+  await viewer.locator('[data-cs-step="1"]').click(); assert.equal(await index(viewer),0);
+  await viewer.dispatchEvent('touchstart',{touches:[{identifier:1,clientX:300,clientY:300}]});
+  await viewer.dispatchEvent('touchend',{changedTouches:[{identifier:1,clientX:80,clientY:305}]});
+  assert.equal(await index(viewer),1);
+  await current(viewer).locator('[data-cs-next-photo]').dispatchEvent('click');
+  assert.equal(await index(viewer),1,'A synthetic click after a swipe does not advance twice');
+  await page.waitForTimeout(550);
+  await current(viewer).locator('[data-cs-next-photo]').click(); assert.equal(await index(viewer),2);
+  await page.screenshot({path:'/tmp/tfb-chat-carousel-viewer.png'});
   await page.keyboard.press('Escape'); await page.locator('.cs-viewer').waitFor({state:'detached'});
   assert.equal(await index(),2,'Closing the viewer keeps the feed position');
   await page.reload(); await page.locator('.cs-carousel').waitFor();
@@ -82,6 +100,8 @@ try {
   await gallery().dispatchEvent('touchstart',{touches:[{identifier:1,clientX:300,clientY:300}]});
   await gallery().dispatchEvent('touchend',{changedTouches:[{identifier:1,clientX:80,clientY:305}]});
   assert.equal(await index(),1,'Horizontal swipe advances');
+  await current().locator('.cs-image-hit').dispatchEvent('click');
+  assert.equal(await page.locator('.cs-viewer').count(),0,'A swipe does not accidentally open the viewer');
   await gallery().dispatchEvent('touchstart',{touches:[{identifier:1,clientX:300,clientY:300}]});
   await gallery().dispatchEvent('touchend',{changedTouches:[{identifier:1,clientX:240,clientY:500}]});
   assert.equal(await index(),1,'Vertical scrolling does not advance');
@@ -99,5 +119,5 @@ try {
   await page.locator('[data-cs-carousel]:not([hidden]) [data-cs-auto]').first().waitFor();
   await page.waitForFunction(() => document.querySelector('[data-cs-auto] [data-cs-published-page]:not([hidden]):not([data-cs-outgoing])')?.dataset.csPublishedPage !== '0');
   assert.deepEqual(errors,[]);
-  console.log('PASS: composer, save/reload, full 4:5, no autoplay, arrows, dots, keyboard, viewer, swipe and legacy modes');
+  console.log('PASS: composer, save/reload, full 4:5, no autoplay, looping arrows/keyboard/image clicks, swipe without double clicks, viewer and legacy modes');
 } finally { await browser.close(); }

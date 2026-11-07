@@ -294,10 +294,11 @@ export function publishedGallery(post, imageOf) {
   const carousel = post.photoView === 'carousel';
   const slideshow = !carousel && post.designs.length > 1 && post.designs.every(slide => !slide.ref.startsWith('vid:'));
   const format = post.designs[0]?.format || '4 / 5';
+  const arrow = direction => `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="${direction < 0 ? 'M15 5 8 12l7 7' : 'm9 5 7 7-7 7'}"/></svg>`;
   const navigation = carousel ? `<div class="cs-carousel-nav">
-    <button type="button" data-cs-step="-1" aria-label="Vorheriges Bild" disabled>‹</button>
+    <button type="button" data-cs-step="-1" aria-label="Vorheriges Bild"${post.designs.length < 2 ? ' disabled' : ''}>${arrow(-1)}</button>
     ${pageDots(post.designs)}
-    <button type="button" data-cs-step="1" aria-label="Nächstes Bild"${post.designs.length < 2 ? ' disabled' : ''}>›</button>
+    <button type="button" data-cs-step="1" aria-label="Nächstes Bild"${post.designs.length < 2 ? ' disabled' : ''}>${arrow(1)}</button>
     <span class="cs-carousel-status" aria-live="polite" aria-atomic="true">Bild 1 von ${post.designs.length}</span>
   </div>` : pageDots(post.designs);
   return `<div class="cs-published${carousel ? ' cs-carousel' : ''}" data-cs-post="${esc(post.id)}"${carousel ? ' tabindex="0" role="region" aria-label="Bilderkarussell"' : ''}${slideshow ? ` data-cs-auto style="--cs-slideshow-ratio:${format}"` : ''}>
@@ -380,7 +381,12 @@ function startSlideshow(gallery) {
   state.frame = requestAnimationFrame(tick);
 }
 function pickGalleryPage(gallery, index) {
-  if (!gallery.hasAttribute('data-cs-auto')) { selectPublished(gallery,index); return; }
+  if (!gallery.hasAttribute('data-cs-auto')) {
+    const count = gallery.querySelectorAll('[data-cs-published-page]').length;
+    if (gallery.classList.contains('cs-carousel') && count) index = (index % count + count) % count;
+    selectPublished(gallery,index);
+    return;
+  }
   const state = slideshowState(gallery);
   if (!state.pages[index]) return;
   gallery.classList.add('is-slideshow');
@@ -420,7 +426,7 @@ function selectPublished(gallery, index) {
     else button.removeAttribute('aria-current');
   });
   gallery.querySelectorAll('[data-cs-step]').forEach(button => {
-    button.disabled = Number(button.dataset.csStep) < 0 ? index === 0 : index === pages.length - 1;
+    button.disabled = pages.length < 2;
   });
   const status = gallery.querySelector('.cs-carousel-status');
   if (status) status.textContent = `Bild ${index + 1} von ${pages.length}`;
@@ -435,20 +441,26 @@ document.addEventListener('keydown', event => {
   const next = {ArrowLeft:index - 1, ArrowRight:index + 1, Home:0, End:pages.length - 1}[event.key];
   if (next === undefined) return;
   event.preventDefault();
-  pickGalleryPage(gallery, Math.max(0, Math.min(pages.length - 1, next)));
+  pickGalleryPage(gallery, next);
 });
 let publishedSwipe;
+const carouselClickSuppression = new WeakMap();
 document.addEventListener('touchstart', event => {
   const gallery = event.target.closest('.cs-published');
-  if (gallery && event.touches.length === 1) publishedSwipe = {gallery, x:event.touches[0].clientX,y:event.touches[0].clientY};
+  publishedSwipe = gallery && event.touches.length === 1
+    ? {gallery, x:event.touches[0].clientX,y:event.touches[0].clientY} : null;
 }, {passive:true});
+document.addEventListener('touchcancel', () => { publishedSwipe = null; }, {passive:true});
+document.addEventListener('touchmove', event => { if (event.touches.length !== 1) publishedSwipe = null; }, {passive:true});
 document.addEventListener('touchend', event => {
   if (!publishedSwipe) return;
   const {gallery,x,y} = publishedSwipe;
   publishedSwipe = null;
   const end = event.changedTouches[0];
+  if (!end) return;
   const dx = end.clientX - x;
   if (Math.abs(dx) < 45 || Math.abs(dx) <= Math.abs(end.clientY - y)) return;
+  if (gallery.classList.contains('cs-carousel')) carouselClickSuppression.set(gallery, Date.now() + 500);
   const current = gallery.querySelector('[data-cs-published-page]:not([hidden]):not([data-cs-outgoing])');
   if (current) pickGalleryPage(gallery, Number(current.dataset.csPublishedPage) + (dx < 0 ? 1 : -1));
 }, {passive:true});
@@ -748,6 +760,11 @@ function openPublishedViewer(gallery, button, fromStart = false) {
     copy.classList.add('is-slideshow');
   }
   copy.querySelectorAll('[data-cs-published-full], .cs-image-hit').forEach(control => control.remove());
+  if (gallery.classList.contains('cs-carousel')) {
+    copy.querySelectorAll('.cs-screen').forEach(screen => {
+      if (!screen.querySelector('video')) screen.insertAdjacentHTML('beforeend', '<button type="button" class="cs-image-hit" data-cs-next-photo aria-label="Nächstes Bild"></button>');
+    });
+  }
   copy.querySelectorAll('video').forEach(video => {
     video.removeAttribute('src');
     delete video.dataset.started;
@@ -853,6 +870,15 @@ document.addEventListener('click', async event => {
     return;
   }
   const gallery = button.closest('.cs-published');
+  if (gallery && button.matches('.cs-image-hit') && Date.now() < (carouselClickSuppression.get(gallery) || 0)) {
+    event.preventDefault();
+    return;
+  }
+  if (gallery && 'csNextPhoto' in data) {
+    const current = gallery.querySelector('[data-cs-published-page]:not([hidden])');
+    pickGalleryPage(gallery, Number(current?.dataset.csPublishedPage || 0) + 1);
+    return;
+  }
   if (gallery && 'csStep' in data) {
     const current = gallery.querySelector('[data-cs-published-page]:not([hidden])');
     pickGalleryPage(gallery, Number(current?.dataset.csPublishedPage || 0) + Number(data.csStep));
