@@ -29,7 +29,9 @@
   function mountOrbit(node,initial={}) {
     const cards = [...node.querySelectorAll('.hm-card')], n = cards.length, button = node.querySelector('.hm-pause'), reduced = matchMedia('(prefers-reduced-motion: reduce)');
     let phase=Number(initial.phase)||0,timer=0,frame=0,visible=false,hover=false,focused=false,paused=initial.paused===undefined?node.dataset.hmStart==='manual':Boolean(initial.paused);
-    const enlarged=node.classList.contains('hm-zoom-orbit');
+    const enlarged=node.classList.contains('hm-zoom-orbit'), hoverable=matchMedia('(hover: hover) and (pointer: fine)');
+    let keyboard=false,allowMotion=Boolean(initial.allowMotion);
+    const motionBlocked=()=>reduced.matches&&!allowMotion;
     const stage=node.querySelector('.hm-stage');
     let orderKey='',ghost=null,ghostCards=[],blend=null;
     const clearBlend=()=>{blend?.cancel();blend=null;ghost?.remove();ghost=null;ghostCards=[];};
@@ -52,18 +54,21 @@
       node.dataset.hmPhase=String(phase);
     };
     const stop = () => {clearTimeout(timer);cancelAnimationFrame(frame);node.dataset.hmRunning='false';};
-    const canRun = () => n>1&&node.isConnected&&visible&&!document.hidden&&!reduced.matches&&(enlarged||!hover&&!focused)&&!paused&&(!zoom||zoom.node===node);
-    const sync = (delay=2000) => {stop();button.setAttribute('aria-pressed',String(paused||reduced.matches));button.setAttribute('aria-label',paused||reduced.matches?'Bildbewegung starten':'Bildbewegung pausieren');button.firstElementChild.textContent=paused||reduced.matches?'▷':'Ⅱ';button.disabled=reduced.matches;if(!canRun())return;node.dataset.hmRunning='true';timer=setTimeout(()=>{const start=performance.now(),from=phase,to=Math.floor(phase+.0001)+1;const tick=now=>{if(!canRun()){stop();return;}const t=Math.min(1,(now-start)/900);phase=from+(to-from)*t*t*(3-2*t);layout();if(t<1)frame=requestAnimationFrame(tick);else{phase=to%n;layout();sync(1100);}};frame=requestAnimationFrame(tick);},delay);};
-    button.addEventListener('click',()=>{paused=!paused;sync();});
-    node.addEventListener('pointerenter',e=>{if(e.pointerType==='mouse'){hover=true;sync();}});
+    const canRun = () => n>1&&node.isConnected&&visible&&!document.hidden&&!motionBlocked()&&(enlarged||!hover&&!focused)&&!paused&&(!zoom||zoom.node===node);
+    const sync = (delay=2000) => {stop();button.setAttribute('aria-pressed',String(paused||motionBlocked()));button.setAttribute('aria-label',paused||motionBlocked()?'Bildbewegung starten':'Bildbewegung pausieren');button.firstElementChild.textContent=paused||motionBlocked()?'▷':'Ⅱ';button.disabled=false;if(!canRun())return;node.dataset.hmRunning='true';timer=setTimeout(()=>{const start=performance.now(),from=phase,to=Math.floor(phase+.0001)+1;const tick=now=>{if(!canRun()){stop();return;}const t=Math.min(1,(now-start)/900);phase=from+(to-from)*t*t*(3-2*t);layout();if(t<1)frame=requestAnimationFrame(tick);else{phase=to%n;layout();sync(1100);}};frame=requestAnimationFrame(tick);},delay);};
+    button.addEventListener('click',()=>{if(motionBlocked()){allowMotion=true;paused=false;}else paused=!paused;hover=false;sync();});
+    node.addEventListener('pointerenter',e=>{if(e.pointerType==='mouse'&&hoverable.matches){hover=true;sync();}});
     node.addEventListener('pointerleave',e=>{if(e.pointerType==='mouse'){hover=false;sync();}});
-    const focus=()=>{focused=node.contains(document.activeElement)&&document.activeElement!==button&&document.activeElement!==node.querySelector('.hm-zoom-button');sync();};
+    const focus=()=>{focused=keyboard&&node.contains(document.activeElement)&&document.activeElement!==button&&document.activeElement!==node.querySelector('.hm-zoom-button');sync();};
     node.addEventListener('focusin',focus);node.addEventListener('focusout',()=>queueMicrotask(focus));
-    const intersection=new IntersectionObserver(rows=>{visible=rows[0].isIntersecting;sync();},{threshold:.15});intersection.observe(node);
+    const keyInput=e=>{if(e.key==='Tab'){keyboard=true;focus();}};
+    const pointerInput=e=>{keyboard=false;if(e.pointerType!=='mouse')hover=false;focus();};
+    document.addEventListener('keydown',keyInput);document.addEventListener('pointerdown',pointerInput);
+    const intersection=new IntersectionObserver(rows=>{const next=rows[0].isIntersecting;if(visible===next)return;visible=next;sync();},{threshold:.15});intersection.observe(node);
     const resize=new ResizeObserver(layout);resize.observe(node);
-    const changed=()=>{if(reduced.matches){clearBlend();phase=Math.round(phase)%n;layout();}sync();};
+    const changed=()=>{allowMotion=false;if(reduced.matches){clearBlend();phase=Math.round(phase)%n;layout();}sync();};
     const visibility=()=>sync();reduced.addEventListener('change',changed);document.addEventListener('visibilitychange',visibility);
-    layout();sync();return {node,getState:()=>({phase,paused}),setState(state){phase=state.phase;paused=state.paused;layout();sync();},refresh:sync,destroy(){stop();clearBlend();intersection.disconnect();resize.disconnect();reduced.removeEventListener('change',changed);document.removeEventListener('visibilitychange',visibility);}};
+    layout();sync();return {node,getState:()=>({phase,paused,allowMotion}),setState(state){phase=state.phase;paused=state.paused;allowMotion=Boolean(state.allowMotion);layout();sync();},refresh:sync,destroy(){stop();clearBlend();document.removeEventListener('keydown',keyInput);document.removeEventListener('pointerdown',pointerInput);intersection.disconnect();resize.disconnect();reduced.removeEventListener('change',changed);document.removeEventListener('visibilitychange',visibility);}};
   }
   function closeZoom(restoreFocus=true) {
     if(!zoom)return;
