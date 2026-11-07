@@ -16,7 +16,7 @@ test('Equal dates follow editorial order, including an item inserted at the top'
 test('Transfer builds one two-page change, preserves all media and editorial fields, and never mutates its source',()=>{
  const source={id:'signature',type:'feature',title:'Eine Idee',layout:'portrait-right',kicker:'Planung',text:'Hinweis',mediaButtonLabel:'Zeig her!',mediaCollection:{title:'Sammlung',entries:[{id:'e',title:'Detail',subtitle:'Signature',format:'9:16',images:['cms:1','cms:2'],instagramUrl:'https://instagram.com/p/example'}]}};
  const input={_cms:{versions:{'page:home':4,'page:aktuell':2}},pages:{home:{blocks:[source,{id:'other',type:'feature'}]},aktuell:{blocks:[{id:'existing',type:'post'}]},verein:{blocks:[]}}},before=structuredClone(input),next=plain(transfer(input,'signature','2026-11-07'));
- assert.deepEqual(input,before);assert.deepEqual(next.pages.home.blocks,[{id:'other',type:'feature'}]);assert.deepEqual(next.pages.aktuell.blocks[0],{...source,type:'post',date:'2026-11-07',sourceHomeId:'signature'});assert.deepEqual(next._cms,input._cms);assert.deepEqual(next.pages.verein,input.pages.verein);
+ assert.deepEqual(input,before);assert.deepEqual(next.pages.home.blocks,[{id:'other',type:'feature'}]);assert.deepEqual(next.pages.aktuell.blocks[0],{...source,articleId:'signature',type:'post',date:'2026-11-07',sourceHomeId:'signature'});assert.deepEqual(next._cms,input._cms);assert.deepEqual(next.pages.verein,input.pages.verein);
 });
 test('Transfer refuses missing sources, duplicate targets, and invalid dates',()=>{
  const b={id:'x',mediaCollection:{entries:[]}},input={pages:{home:{blocks:[b]},aktuell:{blocks:[]}}};assert.throws(()=>transfer(input,'absent','2026-11-07'),/nicht mehr verfügbar/);assert.throws(()=>transfer(input,'x','2026-02-30'),/datum/i);assert.throws(()=>transfer(input,'x',''),/datum/i);input.pages.aktuell.blocks.push(b);assert.throws(()=>transfer(input,'x','2026-11-07'),/bereits/);
@@ -49,4 +49,10 @@ test('Home reordering rejects changed lists and incomplete permutations instead 
  const input={pages:{home:{blocks:[{id:'a'},{id:'b'},{id:'new'}]}}};assert.throws(()=>c.TFB.newsroom.reorder(input,'home',['a','b'],['b','a']),/inzwischen verändert/);
  for(const desired of [['a','a','new'],['a','b'],['a','b','unknown']])assert.throws(()=>c.TFB.newsroom.reorder(input,'home',['a','b','new'],desired),/unvollständig/);
  const swapped={pages:{home:{blocks:[{id:'b'},{id:'a'}]}}};assert.throws(()=>c.TFB.newsroom.reorder(swapped,'home',['a','b'],['b','a']),/inzwischen verändert/);
+});
+
+test('Copy and reverse copy retain a single article identity without modifying the source',()=>{
+ const original={id:'root',type:'feature',mediaCollection:{entries:[{id:'series'}]}};const site={pages:{home:{blocks:[original]},aktuell:{blocks:[]}}};
+ const copied=plain(transfer(site,'root','2026-11-07',{mode:'copy'}));assert.deepEqual(copied.pages.home.blocks[0],original);const copy=copied.pages.aktuell.blocks[0];assert.equal(copy.articleId,'root');
+ const back=plain(transfer(copied,copy.id,'',{from:'aktuell',mode:'copy'}));assert.equal(back.pages.home.blocks[0].articleId,'root');assert.notEqual(back.pages.home.blocks[0].id,'root');
 });

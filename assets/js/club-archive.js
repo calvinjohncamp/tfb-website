@@ -207,9 +207,20 @@
       const prior = entry.page === 'aktuell' ? mirrored.get(entry.b.id) : undefined;
       const item = editorial(entry, prior, newest);
       if (prior) replaced.add(prior.id);
-      // Home und Aktuell enthalten teilweise dieselbe Fotostrecke.
-      if (item.gallery && item.date && item.photos.length && current.some(other =>
-        other.gallery && other.date === item.date && item.photos.every(ref => other.photos.includes(ref)))) continue;
+      // Copies retain article identity; legacy copies retain their entry IDs.
+      const keys=b=>b.mediaCollection ? [b.id,b.articleId,b.sourceHomeId].filter(Boolean).map(id=>'article:'+id).concat(
+        b.mediaCollection.entries?.length&&b.mediaCollection.entries.every(e=>e.id)
+          ? ['entries:'+JSON.stringify(b.mediaCollection.entries.map(e=>e.id).sort())] : []) : [];
+      item.identityKeys=keys(entry.b);
+      const duplicates=current.filter(other=>item.identityKeys.some(key=>other.identityKeys?.includes(key)) ||
+        item.gallery&&item.date&&item.photos.length&&other.gallery&&other.date===item.date&&item.photos.every(ref=>other.photos.includes(ref)));
+      if(duplicates.length){
+        const canonical=duplicates[0];
+        canonical.archiveAliases=[...new Set([...(canonical.archiveAliases||[]),item.id,...duplicates.slice(1).flatMap(other=>[other.id,...(other.archiveAliases||[])])])];
+        canonical.identityKeys=[...new Set([...canonical.identityKeys,...item.identityKeys,...duplicates.flatMap(other=>other.identityKeys||[])])];
+        for(const duplicate of duplicates.slice(1))current.splice(current.indexOf(duplicate),1);
+        continue;
+      }
       current.push(item);
     }
     return [...current, ...items.filter(item => !replaced.has(item.id)).map(imported)]
@@ -283,7 +294,7 @@
       const { items } = await loadArchive();
       render = toolkit;
       entries = combine(items.filter(item => !item.event), toolkit.blocks.filter(({ b }) => b.type !== 'event'));
-      byId = new Map(entries.map(item => [item.id, item]));
+      byId = new Map(entries.flatMap(item => [item.id,...(item.archiveAliases||[])].map(id=>[id,item])));
       const historical = items.filter(item => item.event).map(historicalDate);
       const historicalById = new Map(historical.map(item => [item.id, item]));
       dates = [...toolkit.blocks.filter(({ b }) => b.type === 'event').map(({ b }) => b), ...historical].sort(newestFirst);

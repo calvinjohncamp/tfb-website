@@ -25,7 +25,7 @@
     const target=next.pages[to].blocks;
     if(mode==='move'&&target.some(b=>b.id===id))throw Error('Dieser Beitrag ist bereits auf der Zielseite vorhanden.');
     if(to==='home'&&target.filter(b=>b.type==='feature'&&!b._new).length>=maxHome)throw Error(`Home zeigt höchstens ${maxHome} Themen. Bitte zuerst Platz schaffen.`);
-    const item={...structuredClone(source),type:to==='home'?'feature':'post'};
+    const item={...structuredClone(source),articleId:source.articleId||source.sourceHomeId||source.id,type:to==='home'?'feature':'post'};
     if(mode==='copy'){item.id='b-'+crypto.randomUUID();item.archivePage=to;}
     else if(from==='aktuell'&&!item.sourceHomeId&&!item.archivePage)item.archivePage='aktuell';
     if(to==='aktuell')Object.assign(item,{date,sourceHomeId:source.sourceHomeId||source.id});

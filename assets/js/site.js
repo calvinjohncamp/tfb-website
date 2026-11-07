@@ -1215,7 +1215,7 @@
   function editWrap(b, i, total, inner) {
     const { icon } = ui(),home=editing==='home',editorial=['home','aktuell'].includes(editing);
     const label = b.mediaCollection?'Karussell':editing==='aktuell'&&b.type==='post'?'News':(BLOCK_TYPES.find(([t]) => t === b.type) || [0, b.type])[1];
-    const actions=`${home?`<button type="button" class="block-tool-text" data-action="home-order" data-id="${esc(b.id)}">Position ändern</button>`:editing!=='aktuell'?`<button type="button" data-action="block-move" data-id="${esc(b.id)}" data-dir="-1" ${i===0?'disabled':''} aria-label="Nach oben">${icon.up}</button><button type="button" data-action="block-move" data-id="${esc(b.id)}" data-dir="1" ${i===total-1?'disabled':''} aria-label="Nach unten">${icon.down}</button>`:''}${b.mediaCollection?`<button type="button" class="block-tool-text" data-action="media-transfer" data-page="${esc(editing)}" data-id="${esc(b.id)}">Kopieren / verschieben</button>`:''}<button type="button"${editorial?' class="block-tool-text"':''} data-action="block-edit" data-id="${esc(b.id)}" aria-label="Bearbeiten">${editorial?'Bearbeiten':icon.pencil}</button>`;
+    const actions=`${home?`<button type="button" class="block-tool-text" data-action="home-order" data-id="${esc(b.id)}">Position ändern</button>`:editing!=='aktuell'?`<button type="button" data-action="block-move" data-id="${esc(b.id)}" data-dir="-1" ${i===0?'disabled':''} aria-label="Nach oben">${icon.up}</button><button type="button" data-action="block-move" data-id="${esc(b.id)}" data-dir="1" ${i===total-1?'disabled':''} aria-label="Nach unten">${icon.down}</button>`:''}${home&&!b.mediaCollection&&b.type==='feature'&&b.album?.enabled?`<button type="button" class="block-tool-text" data-action="block-album-edit" data-id="${esc(b.id)}">Fotokollage bearbeiten</button>`:''}${b.mediaCollection?`<button type="button" class="block-tool-text" data-action="media-transfer" data-page="${esc(editing)}" data-id="${esc(b.id)}">Kopieren / verschieben</button>`:''}<button type="button"${editorial?' class="block-tool-text"':''} data-action="block-edit" data-id="${esc(b.id)}" aria-label="Bearbeiten">${editorial?'Bearbeiten':icon.pencil}</button>`;
     return `<div class="block-edit" data-edit-block="${esc(b.id)}"><div class="block-tools"><span class="block-type">${esc(label)}</span><div class="block-tool-actions">${actions}</div></div>${inner||`<p class="muted small empty-hint">${esc(label)} – noch leer</p>`}</div>`;
   }
 
@@ -2178,16 +2178,9 @@
     if (draft.type === 'post' && !(draft.images || []).length && draft.image) { draft.images = [draft.image]; draft.image = null; }
     let edTab = startTab;
     const edMore = {};   // „Mehr Gestaltung“ je Reiter auf/zu (bleibt beim Neuzeichnen)
-    // Themen-Leiste: zwischen den Themen der Startseite wechseln (speichert das aktuelle), + legt ein neues an
-    const themeNav = () => {
-      const all = site.pages.home.blocks.filter((b) => b.type === 'feature' && (!b._new || b.id === id));
-      return `<nav class="ed-themes" aria-label="Themen der Startseite"><span>Thema</span>
-        ${all.map((b, i) => `<button type="button" class="${b.id === id ? 'on' : ''}" data-edtheme="${esc(b.id)}" title="${esc(b.title || 'Neues Thema')}" ${b.id === id ? 'aria-current="true"' : ''}>${String(i + 1).padStart(2, '0')}</button>`).join('')}
-        ${all.filter((b) => !b._new).length < MAX_HOME_FEATURES && !draft._new ? '<button type="button" class="ed-theme-add" data-edtheme="+" title="Neues Thema anlegen">+</button>' : ''}
-      </nav>`;
-    };
     const moreBox = (k, inner) => `<details class="ed-more" data-edmore="${k}" ${edMore[k] ? 'open' : ''}><summary>Mehr Gestaltung <small>freiwillig – ohne Änderung sieht alles gut aus</small></summary>${inner}</details>`;
-    const live = draft.type === 'feature';   // Themen: Seitenleiste mit Live-Vorschau
+    const albumOnly = draft.type === 'feature' && startTab === 'album';
+    const live = draft.type === 'feature' && !albumOnly;   // Themen: Seitenleiste mit Live-Vorschau
     const photoModule = ['gallery', 'collage'].includes(draft.type);
     const refreshPhotoPreview = () => {
       if (!photoModule) return;
@@ -2199,7 +2192,7 @@
         module.outerHTML = renderBlock(draft, editing, badge?.classList.contains('date-badge-accent'));
       } else ui().renderView();
     };
-    const label = editing==='aktuell'&&draft.type==='post'?'News-Artikel':(BLOCK_TYPES.find(([t]) => t === draft.type) || [0, 'Inhalt'])[1];
+    const label = albumOnly?'Fotokollage':editing==='aktuell'&&draft.type==='post'?'News-Artikel':(BLOCK_TYPES.find(([t]) => t === draft.type) || [0, 'Inhalt'])[1];
 
     const body = () => {
       switch (draft.type) {
@@ -2287,15 +2280,15 @@
             <label class="meet-check"><input type="checkbox" name="albumOriginal" data-rerender ${album.original ? 'checked' : ''}><span>Originalformate erhalten</span></label>
             <div class="field"><span>Fotos (${(album.images || []).length} / 100)</span><div class="gallery-edit">${(album.images || []).filter(shownImage).map((ref,i,list) => thumbEdit(ref, 'album', i, list.length, 'data-album-remove')).join('')}
             ${(album.images || []).length < 100 ? `<label class="gallery-add">${ui().icon.plus}<span>Fotos</span><input type="file" accept="image/*" multiple data-album-input hidden></label>` : ''}</div></div>`;
+          if(albumOnly)return albumPanel;
           return `
             <div class="ed-tabs" role="tablist">
               <button type="button" role="tab" class="${edTab === 'home' ? 'on' : ''}" data-edtab="home">Startseite</button>
               <button type="button" role="tab" class="${edTab === 'sub' ? 'on' : ''}" data-edtab="sub">Unterseite</button>
-              <button type="button" role="tab" class="${edTab === 'album' ? 'on' : ''}" data-edtab="album">Fotokollage</button>
             </div>
             <div class="ed-panel" data-panel="home" ${edTab === 'home' ? '' : 'hidden'}>${homePanel}</div>
             <div class="ed-panel" data-panel="sub" ${edTab === 'sub' ? '' : 'hidden'}>${subPanel}</div>
-            <div class="ed-panel" data-panel="album" ${edTab === 'album' ? '' : 'hidden'}>${albumPanel}</div>`;
+            `;
         }
         case 'heading': return field('Überschrift', 'title', draft.title);
         case 'text': return field('Überschrift', 'title', draft.title)
@@ -2352,14 +2345,13 @@
       openSheet(`
         <form class="editor ${live ? 'editor-live' : ''}" data-editor="block" novalidate>
           <h2>${isNew ? (live ? 'Neues Thema' : `${esc(label)} hinzufügen`) : live ? 'Thema bearbeiten' : `${esc(label)} bearbeiten`}</h2>
-          ${live ? themeNav() : ''}
           ${body()}
           <p class="form-error" role="alert"></p>
           <div class="ed-actions">
             <button type="submit" class="btn primary block">Speichern</button>
             ${live ? '<button type="button" class="btn block ed-peek" data-ed-peek>Vorschau ansehen</button>' : ''}
           </div>
-          <button type="button" class="btn block danger" data-delete>${live ? 'Thema löschen' : editing==='aktuell'?esc(label)+' löschen':'Baustein löschen'}</button>
+          ${albumOnly?'':`<button type="button" class="btn block danger" data-delete>${live ? 'Thema löschen' : editing==='aktuell'?esc(label)+' löschen':'Baustein löschen'}</button>`}
         </form>`);
       const form = document.querySelector('[data-editor=block]');
       bindRichFields(form, draft, draft.more?.sections);
@@ -2469,29 +2461,6 @@
         if (isSectionsClick(e) && draft.more) {
           collect(form);
           if (sectionsClick(e, draft.more.sections)) { Object.assign(draft.more, sectionsDerived(draft.more.sections)); render(); if (live) schedulePreview(); }
-          return;
-        }
-        const th = e.target.closest('[data-edtheme]');
-        if (th) {
-          if (th.dataset.edtheme === id) return;
-          collect(form);
-          if (draft._new && !draft.title && th.dataset.edtheme !== '+') { dropUnsaved(); endLive(); openBlockEditor(th.dataset.edtheme, false, edTab); return; }
-          if (!draft.title) { form.querySelector('.form-error').textContent = 'Bitte zuerst eine Überschrift eingeben – dann wird gespeichert und gewechselt.'; form.querySelector('[name=title]')?.focus(); return; }
-          delete draft._new;
-          const list = blocksOf();
-          markColors(list.find((b) => b.id === id), draft);
-          list[list.findIndex((b) => b.id === id)] = draft;
-          dropUnsaved();
-          try { site = await ui().api.saveSite(site); } catch (err) { ui().toast(err.message); return; }
-          endLive();
-          ui().toast('Gespeichert', true);
-          if (th.dataset.edtheme === '+') {
-            const block = { ...newBlock('feature'), _new: true };
-            const blocks = blocksOf();
-            const lastFeature = blocks.map((b) => b.type).lastIndexOf('feature');
-            blocks.splice(lastFeature + 1, 0, block);
-            openBlockEditor(block.id, true, 'home');
-          } else openBlockEditor(th.dataset.edtheme, false, edTab);
           return;
         }
         const factMove = e.target.closest('[data-fact-move]');
@@ -3250,6 +3219,7 @@
       b.album.order = mainFirst ? 0 : 1;
       return commit('Links sortiert');
     },
+    'block-album-edit': el => openBlockEditor(el.dataset.id, false, 'album'),
     'album-edit': (el) => { editing = 'home'; detailEditing = true; openBlockEditor(el.dataset.id, false, 'album'); },
     'feature-edit': (el) => { editing = el.dataset.page || 'home'; detailEditing = true; openBlockEditor(el.dataset.id, false, 'sub'); },
     'aktuell-tab': (el) => {
