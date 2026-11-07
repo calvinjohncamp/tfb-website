@@ -28,7 +28,7 @@
 .newsroom-more{margin-top:16px;font-size:.8rem;color:var(--muted)}
 .newsroom-more summary{cursor:pointer;width:fit-content}
 .newsroom-more p{margin:12px 0 8px}
-.newsroom-source{border-top:1px solid var(--line);margin-top:24px;padding-top:16px}
+.newsroom-source{display:grid;gap:8px;border-top:1px solid var(--line);margin-top:24px;padding-top:22px}
 .site-page[data-page="aktuell"] .block-edit{min-width:0}
 .site-page[data-page="aktuell"] .block-tools{justify-content:flex-end}
 @media(max-width:700px){.newsroom-tools{padding:14px}.newsroom-create{display:grid;grid-template-columns:1fr 1fr}.newsroom-create>.btn{font-size:.78rem;padding:8px 10px;white-space:normal}}
@@ -52,8 +52,17 @@ body.hm-zoom-open{overflow:hidden}
 .hm-zoom-orbit .hm-footer{left:max(30px,env(safe-area-inset-left));right:max(30px,env(safe-area-inset-right));bottom:max(22px,env(safe-area-inset-bottom))}
 .hm-zoom-orbit .hm-card,.hm-zoom-orbit .hm-ghost-card{top:48%}
 @media(max-width:700px){.hm-footer{left:18px;right:18px;bottom:12px;gap:12px}.hm-zoom-orbit .hm-footer{left:18px;right:18px}.hm-zoom-button{width:36px}}
-.newsroom-transfer-actions{display:flex;flex-wrap:wrap;gap:10px}
-.newsroom-transfer-actions>.btn{border:1px solid var(--signal);border-radius:8px;background:transparent;color:#171717;font-size:.86rem}
+.newsroom-transfer-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:8px}
+.newsroom-transfer-actions>.btn{width:100%;min-height:46px;padding:12px 14px;border:1px solid var(--signal);border-radius:8px;background:transparent;color:#171717;font-size:.86rem;line-height:1.4;white-space:normal}
 .hm-pause[hidden]{display:none!important}
 
 .block-tools:has([data-action="media-transfer"]){flex-wrap:wrap}
+
+/* A calm reading order and ample space before transfer actions, also in admin. */
+.newsroom-transfer>h2{padding-right:32px}
+.newsroom-transfer>p{line-height:1.55}
+.newsroom-source h3{font-size:1rem;font-weight:700;line-height:1.35;letter-spacing:0;text-transform:none;margin:0 0 2px}
+.newsroom-source>p{margin:0;line-height:1.5}
+.newsroom-transfer .newsroom-source>.field{margin:8px 0 0}
+.newsroom-transfer-actions>.btn:hover{background:rgba(196,85,58,.07)}
+@media(max-width:520px){.newsroom-transfer-actions{grid-template-columns:1fr;gap:10px}}
