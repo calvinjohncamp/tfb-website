@@ -1,8 +1,9 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
+import {webcrypto} from 'node:crypto';
 import {readFileSync} from 'node:fs';
-const c={TFB:{},structuredClone};vm.createContext(c);vm.runInContext(readFileSync(new URL('../assets/js/newsroom.js',import.meta.url),'utf8'),c);
+const c={TFB:{},structuredClone,crypto:webcrypto};vm.createContext(c);vm.runInContext(readFileSync(new URL('../assets/js/newsroom.js',import.meta.url),'utf8'),c);
 const {ordered,transfer}=c.TFB.newsroom;
 const plain=x=>JSON.parse(JSON.stringify(x));
 test('Mixed editorial content sorts news newest first and dates earliest first without moving structural headings',()=>{
@@ -22,3 +23,20 @@ test('Transfer refuses missing sources, duplicate targets, and invalid dates',()
 });
 
 test('New items lead on equal dates without changing headings or unrelated content',()=>{const blocks=[{type:'heading',id:'News'},{type:'post',id:'old',date:'2026-11-07'}];c.TFB.newsroom.insert(blocks,{type:'post',id:'new',date:'2026-11-07'});assert.deepEqual(plain(ordered(blocks)).map(b=>b.id),['News','new','old']);});
+
+test('News can move back to Home as the first feature, retaining media, dates and stable archive origin',()=>{
+ const b={id:'news',type:'post',title:'News',date:'2026-11-07',mediaSingle:true,mediaCollection:{entries:[{id:'e',title:'Detail',images:['cms:a'],format:'4:5'}]}};
+ const input={pages:{home:{blocks:[{id:'first',type:'feature'}]},aktuell:{blocks:[b]}}};
+ const next=plain(transfer(input,'news',undefined,{from:'aktuell'}));assert.equal(next.pages.aktuell.blocks.length,0);const back=next.pages.home.blocks[0];assert.equal(back.type,'feature');assert.equal(back.id,'news');assert.equal(back.archivePage,'aktuell');assert.equal(back.navigation,'detail');assert.deepEqual(back.mediaCollection,b.mediaCollection);assert.equal(back.mediaSingle,undefined);
+ const roundTrip=plain(transfer(next,'news','2026-11-07'));assert.equal(roundTrip.pages.aktuell.blocks[0].archivePage,'aktuell');
+});
+test('Copies in both directions have unique identities, shared immutable files, and independently editable content',()=>{
+ const b={id:'home',type:'feature',title:'Original',mediaCollection:{entries:[{id:'e',title:'Detail',images:['cms:a','cms:b']}]}};
+ const input={pages:{home:{blocks:[b]},aktuell:{blocks:[]}}};const copied=transfer(input,'home','2026-11-07',{mode:'copy'});assert.equal(copied.pages.home.blocks.length,1);const article=copied.pages.aktuell.blocks[0];assert.notEqual(article.id,'home');assert.deepEqual(plain(article.mediaCollection),b.mediaCollection);
+ article.title='Unabhängiger Titel';article.mediaCollection.entries[0].images.reverse();assert.equal(copied.pages.home.blocks[0].title,'Original');assert.deepEqual(plain(copied.pages.home.blocks[0].mediaCollection.entries[0].images),['cms:a','cms:b']);
+ const second=plain(transfer(copied,article.id,undefined,{from:'aktuell',mode:'copy'}));assert.equal(second.pages.aktuell.blocks.length,1);assert.equal(second.pages.home.blocks.length,2);assert.notEqual(second.pages.home.blocks[0].id,article.id);assert.equal(second.pages.home.blocks[0].archivePage,'home');
+});
+test('Full Home rejects both copy and move without altering either page',()=>{
+ const input={pages:{home:{blocks:Array.from({length:10},(_,i)=>({id:'h'+i,type:'feature'}))},aktuell:{blocks:[{id:'news',mediaCollection:{entries:[]}}]}}},before=structuredClone(input);
+ for(const mode of ['move','copy'])assert.throws(()=>transfer(input,'news',undefined,{from:'aktuell',mode}),/höchstens 10/);assert.deepEqual(input,before);
+});

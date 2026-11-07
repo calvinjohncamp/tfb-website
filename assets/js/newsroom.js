@@ -1,4 +1,4 @@
-// Editorial ordering and lossless Home → Aktuell transfer; no persistence side effects.
+// Editorial ordering and lossless media moves/copies; no persistence side effects.
 (function () {
   const newsTypes = new Set(['post','gallery','collage','feature']);
   const dateOf = block => block.date || block.mediaCollection?.entries?.[0]?.date || '';
@@ -16,14 +16,24 @@
     blocks.splice(index<0?blocks.length:index,0,block);
   }
   const validDate=value=>/^\d{4}-\d{2}-\d{2}$/.test(value||'')&&Number.isFinite(Date.parse(value+'T12:00:00Z'))&&new Date(value+'T12:00:00Z').toISOString().slice(0,10)===value;
-  function transfer(input,id,date) {
-    if(!validDate(date))throw Error('Bitte ein gültiges Veröffentlichungsdatum wählen.');
-    const next=structuredClone(input),source=next.pages.home.blocks.find(b=>b.id===id&&!b._new&&b.mediaCollection);
-    if(!source)throw Error('Dieses Home-Karussell ist nicht mehr verfügbar. Bitte die Seite neu laden.');
-    if(next.pages.aktuell.blocks.some(b=>b.id===id))throw Error('Dieser Beitrag ist bereits in Aktuell vorhanden.');
-    const moved={...source,type:'post',date,sourceHomeId:id};
-    next.pages.home.blocks=next.pages.home.blocks.filter(b=>b.id!==id);
-    insert(next.pages.aktuell.blocks,moved);
+  function transfer(input,id,date,{from='home',mode='move',maxHome=10}={}) {
+    if(!['home','aktuell'].includes(from)||!['move','copy'].includes(mode))throw Error('Ungültige Übernahme.');
+    const to=from==='home'?'aktuell':'home';
+    if(to==='aktuell'&&!validDate(date))throw Error('Bitte ein gültiges Veröffentlichungsdatum wählen.');
+    const next=structuredClone(input),source=next.pages[from].blocks.find(b=>b.id===id&&!b._new&&b.mediaCollection);
+    if(!source)throw Error('Dieses Karussell ist nicht mehr verfügbar. Bitte die Seite neu laden.');
+    const target=next.pages[to].blocks;
+    if(mode==='move'&&target.some(b=>b.id===id))throw Error('Dieser Beitrag ist bereits auf der Zielseite vorhanden.');
+    if(to==='home'&&target.filter(b=>b.type==='feature'&&!b._new).length>=maxHome)throw Error(`Home zeigt höchstens ${maxHome} Themen. Bitte zuerst Platz schaffen.`);
+    const item={...structuredClone(source),type:to==='home'?'feature':'post'};
+    if(mode==='copy'){item.id='b-'+crypto.randomUUID();item.archivePage=to;}
+    else if(from==='aktuell'&&!item.sourceHomeId&&!item.archivePage)item.archivePage='aktuell';
+    if(to==='aktuell')Object.assign(item,{date,sourceHomeId:source.sourceHomeId||source.id});
+    else Object.assign(item,{layout:source.layout||'wide',navigation:'detail'});
+    // Home's summary and detail may subsequently be edited independently.
+    delete item.mediaSingle;
+    if(mode==='move')next.pages[from].blocks=next.pages[from].blocks.filter(b=>b.id!==id);
+    if(to==='home')target.unshift(item);else insert(target,item);
     return next;
   }
   TFB.newsroom={ordered,dateOf,validDate,insert,transfer};

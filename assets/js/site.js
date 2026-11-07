@@ -433,8 +433,8 @@
   }
 
   function newsroomTools() {
-    const hasHome=site.pages.home.blocks.some(b=>!b._new&&b.mediaCollection);
-    return `<section class="newsroom-tools" aria-label="Aktuell verwalten"><div class="newsroom-create"><button class="btn" data-action="aktuell-new" data-kind="event">Termin hinzufügen</button><button class="btn" data-action="aktuell-new" data-kind="post">News hinzufügen</button><button class="btn" data-action="aktuell-new" data-kind="media">Karussell hinzufügen</button>${hasHome?'<button class="btn" data-action="aktuell-transfer">Home-Karussell übernehmen</button>':''}</div><details class="newsroom-more"><summary>Weitere Inhalte</summary><p>Galerien, einzelne Fotos und zusätzliche Texte bleiben verfügbar.</p><button class="link" data-action="aktuell-more">Weitere Inhalte hinzufügen</button></details></section>`;
+    const hasHome=['home','aktuell'].some(page=>site.pages[page].blocks.some(b=>!b._new&&b.mediaCollection));
+    return `<section class="newsroom-tools" aria-label="Aktuell verwalten"><div class="newsroom-create"><button class="btn" data-action="aktuell-new" data-kind="event">Termin hinzufügen</button><button class="btn" data-action="aktuell-new" data-kind="post">News hinzufügen</button><button class="btn" data-action="aktuell-new" data-kind="media">Karussell hinzufügen</button>${hasHome?'<button class="btn" data-action="aktuell-transfer">Karussell kopieren / verschieben</button>':''}</div><details class="newsroom-more"><summary>Weitere Inhalte</summary><p>Galerien, einzelne Fotos und zusätzliche Texte bleiben verfügbar.</p><button class="link" data-action="aktuell-more">Weitere Inhalte hinzufügen</button></details></section>`;
   }
   async function newNewsroomItem(kind) {
     await ensure();if(!ui().state.member?.isAdmin||!['event','post','media'].includes(kind))return;
@@ -443,14 +443,18 @@
     if(kind==='media')Object.assign(block,{kicker:'',subtitle:'',mediaButtonLabel:'Beitrag ansehen',mediaSingle:true,mediaCollection:{entries:[{id:crypto.randomUUID(),title:'',subtitle:'',kicker:'',date:block.date,text:'',format:'4:5',images:[],instagramUrl:''}]}});
     TFB.newsroom.insert(blocksOf(),block);openBlockEditor(block.id,true);
   }
-  async function openHomeTransfer() {
+  async function openHomeTransfer({from,id}={}) {
     await ensure();if(!ui().state.member?.isAdmin)return;
-    const sources=site.pages.home.blocks.filter(b=>!b._new&&b.mediaCollection);
-    ui().openSheet(`<section class="editor newsroom-transfer"><h2>Home-Karussell nach Aktuell verschieben</h2><p>Der Beitrag wird von Home entfernt und mit allen Bildern und Texten in Aktuell übernommen. Das Veröffentlichungsdatum bestimmt seine Position. Er bleibt auch im Clubarchiv auffindbar.</p>${sources.map(b=>`<section class="newsroom-source"><h3>${esc(b.title)}</h3><p class="muted small">${b.mediaCollection.entries.reduce((n,e)=>n+e.images.length,0)} Bildseiten · ${b.mediaCollection.entries.length} Beiträge</p><label class="field"><span>Veröffentlichungsdatum</span><input type="date" data-transfer-date="${esc(b.id)}" value="${esc(TFB.newsroom.dateOf(b)||today())}"></label><button class="btn" data-transfer-home="${esc(b.id)}">Nach Aktuell verschieben</button></section>`).join('')||'<p>Auf Home gibt es derzeit kein Karussell zum Verschieben.</p>'}<p class="form-error" role="alert"></p></section>`);
+    const pages=from?[from]:['aktuell','home'];
+    const sources=pages.flatMap(page=>site.pages[page].blocks.filter(b=>!b._new&&b.mediaCollection&&(!id||b.id===id)).map(b=>({b,page})));
+    ui().openSheet(`<section class="editor newsroom-transfer"><h2>Karussell kopieren oder verschieben</h2><p>Verschieben entfernt den Beitrag von der bisherigen Seite. Kopieren lässt ihn dort stehen und erstellt einen unabhängig bearbeitbaren Beitrag. Die Bilddateien werden in beiden Fällen wiederverwendet.</p>${sources.map(({b,page})=>{
+      const target=page==='home'?'Aktuell':'Home';
+      return `<section class="newsroom-source" data-transfer-source="${esc(b.id)}" data-transfer-from="${page}"><p class="muted small">${page==='home'?'Home':'Aktuell'} → ${target}</p><h3>${esc(b.title)}</h3><p class="muted small">${b.mediaCollection.entries.reduce((n,e)=>n+e.images.length,0)} Bildseiten · ${b.mediaCollection.entries.length} Beiträge</p>${page==='home'?`<label class="field"><span>Veröffentlichungsdatum in Aktuell</span><input type="date" data-transfer-date="${esc(b.id)}" value="${esc(TFB.newsroom.dateOf(b)||today())}"></label>`:'<p class="muted small">Auf Home erscheint der Beitrag als erstes Thema.</p>'}<div class="newsroom-transfer-actions"><button class="btn" data-transfer-mode="move"${page==='home'?` data-transfer-home="${esc(b.id)}"`:''}>Nach ${target} verschieben</button><button class="btn" data-transfer-mode="copy">Nach ${target} kopieren</button></div></section>`;
+    }).join('')||'<p>Derzeit gibt es keine Karussells zum Übernehmen.</p>'}<p class="form-error" role="alert"></p></section>`);
     const panel=document.querySelector('.newsroom-transfer');let busy=false;
-    panel.addEventListener('click',async e=>{const button=e.target.closest('[data-transfer-home]');if(!button||busy)return;busy=true;panel.querySelectorAll('button').forEach(b=>b.disabled=true);
-      try{const id=button.dataset.transferHome,date=[...panel.querySelectorAll('[data-transfer-date]')].find(el=>el.dataset.transferDate===id).value;
-        const fresh=await ui().api.site(),next=TFB.newsroom.transfer(fresh,id,date);site=await ui().api.saveSite(next);editing=null;detailEditing=false;ui().closeSheet();aktuellTab='news';await ui().renderView();ui().toast('Von Home nach Aktuell verschoben',true);
+    panel.addEventListener('click',async e=>{const button=e.target.closest('[data-transfer-mode]');if(!button||busy)return;busy=true;panel.querySelectorAll('button').forEach(b=>b.disabled=true);
+      try{const row=button.closest('[data-transfer-source]'),id=row.dataset.transferSource,from=row.dataset.transferFrom,mode=button.dataset.transferMode,date=row.querySelector('[data-transfer-date]')?.value;
+        const fresh=await ui().api.site(),next=TFB.newsroom.transfer(fresh,id,date,{from,mode,maxHome:MAX_HOME_FEATURES});site=await ui().api.saveSite(next);editing=null;detailEditing=false;ui().closeSheet();aktuellTab='news';await ui().renderView();ui().toast(mode==='copy'?'Karussell kopiert':'Karussell verschoben',true);
       }catch(err){panel.querySelector('.form-error').textContent=err.message;busy=false;panel.querySelectorAll('button').forEach(b=>b.disabled=false);}
     });
   }
@@ -926,6 +930,7 @@
       const id=section==='beitrag'?location.hash.split('/')[2]:section;
       const media=site.pages.aktuell.blocks.find(b=>b.id===decodeURIComponent(id||'')&&b.mediaCollection);
       if(media)return mediaDetail(media);
+      const moved=homeBlocks().find(b=>b.id===decodeURIComponent(id||'')&&b.mediaCollection);if(moved)return mediaDetail(moved,'home');
     }
     if (key === 'home' && preview?.tab === 'album') return albumDetail(preview.id);
     if (key === 'home' && preview && preview.tab === 'sub') return featureDetail(preview.id);
@@ -1078,7 +1083,7 @@
       ? `<p class="muted small add-limit">Die Startseite zeigt höchstens ${MAX_HOME_FEATURES} Themen. Für ein neues Thema bitte zuerst eines löschen.</p>`
       : `<button type="button" class="btn block add-section add-feature" data-action="block-add" data-type="feature">${ui().icon.plus} Neues Thema <small>${n} von ${MAX_HOME_FEATURES}</small></button>`;
     const photoButtons = ['collage', 'gallery'].map(type => `<button type="button" class="btn block add-section" data-action="block-add" data-type="${type}">${ui().icon.camera} ${type === 'gallery' ? 'Galerie' : 'Collage'} hinzufügen</button>`).join('');
-    return `<div class="home-editor-add">${feature}${n < MAX_HOME_FEATURES ? `<button type="button" class="btn block add-section" data-action="block-add" data-type="feature" data-media-collection> ${ui().icon.camera} Medien-Collage hinzufügen</button>` : ''}${photoButtons}</div>`;
+    return `<div class="home-editor-add">${feature}${n < MAX_HOME_FEATURES ? `<button type="button" class="btn block add-section" data-action="block-add" data-type="feature" data-media-collection> ${ui().icon.camera} Medien-Collage hinzufügen</button>` : ''}${photoButtons}${site.pages.aktuell.blocks.some(b=>b.mediaCollection&&!b._new)?'<button type="button" class="btn block add-section" data-action="aktuell-transfer">Karussell aus Aktuell übernehmen</button>':''}</div>`;
   }
   let requestedHomeLook = null;
   let savingHomeLook = false;
@@ -1216,6 +1221,7 @@
           <span class="block-type">${esc(label)}</span>
           ${editing!=='aktuell'?`<button type="button" data-action="block-move" data-id="${esc(b.id)}" data-dir="-1" ${i === 0 ? 'disabled' : ''} aria-label="Nach oben">${icon.up}</button>
           <button type="button" data-action="block-move" data-id="${esc(b.id)}" data-dir="1" ${i === total - 1 ? 'disabled' : ''} aria-label="Nach unten">${icon.down}</button>`:''}
+          ${b.mediaCollection?`<button type="button" class="link small" data-action="media-transfer" data-page="${esc(editing)}" data-id="${esc(b.id)}">Kopieren / verschieben</button>`:''}
           <button type="button" data-action="block-edit" data-id="${esc(b.id)}" aria-label="Bearbeiten">${icon.pencil}</button>
         </div>
         ${inner || `<p class="muted small empty-hint">${esc(label)} – noch leer</p>`}
@@ -3198,6 +3204,7 @@
     'block-new': () => openBlockPicker(),
     'aktuell-new': el=>newNewsroomItem(el.dataset.kind),
     'aktuell-transfer': ()=>openHomeTransfer(),
+    'media-transfer': el=>openHomeTransfer({from:el.dataset.page,id:el.dataset.id}),
     'aktuell-more': ()=>{editing='aktuell';openBlockPicker();},
     'block-add': (el) => {
       if (editing === 'home' && el.dataset.type === 'feature' && blocksOf().filter((b) => b.type === 'feature' && !b._new).length >= MAX_HOME_FEATURES) { ui().toast(`Höchstens ${MAX_HOME_FEATURES} Themen auf der Startseite.`); return; }

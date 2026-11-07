@@ -192,7 +192,7 @@
       .map(link => `<p><a class="more-link" href="${esc(link.url)}">${esc(link.label || 'Mehr erfahren')}</a></p>`).join('') : '';
     const body = (text ? render.paragraphs(text) : '') + links;
     const summary = text.replace(/\{\/?[a-z]+\}|\*\*/g, '').replace(/\s+/g, ' ').trim();
-    return { id: prior?.id || `${b.sourceHomeId?'home':page}-${b.id}`, ...(b.mediaCollection?{mediaBlock:b,mediaPage:page}:{}), title, date: b.date || b.mediaCollection?.entries?.[0]?.date || '', year, sortYear, gallery, photos, topics,
+    return { id: prior?.id || `${b.archivePage||(b.sourceHomeId?'home':page)}-${b.id}`, ...(b.mediaCollection?{mediaBlock:b,mediaPage:page}:{}), title, date: b.date || b.mediaCollection?.entries?.[0]?.date || '', year, sortYear, gallery, photos, topics,
       body, fullBody: body, source: prior?.source, search: normalize(`${title} ${text} ${mediaText} ${topics.join(' ')} ${year}`),
       summary: summary.length > 180 ? summary.slice(0, 180).replace(/\s+\S*$/, '') + ' …' : summary };
   }

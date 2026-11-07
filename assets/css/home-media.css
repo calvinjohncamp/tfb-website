@@ -35,3 +35,25 @@
 
 .media-news .post-body .post-date{font-size:.74rem;color:var(--muted)}
 .media-news .post-body h3{font-size:1.55rem;line-height:1.15;margin:10px 0 12px}
+
+/* A shared footer keeps the magnifier centered and the title and pause apart. */
+.hm-footer{position:absolute;left:26px;right:26px;bottom:16px;z-index:210;display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:16px}
+.hm-footer .hm-caption{position:static;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.hm-footer .hm-pause{position:static;justify-self:end;grid-column:3}
+.hm-zoom-button{display:grid;place-items:center;width:38px;height:32px;border:0;border-radius:8px;background:transparent;color:#fff;cursor:pointer}
+.hm-zoom-button svg{display:block;width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round}
+.hm-zoom-button:hover{background:#ffffff14}
+.hm-zoom-button:focus-visible,.hm-zoom-close:focus-visible{outline:2px solid #fff;outline-offset:3px}
+body.hm-zoom-open{overflow:hidden}
+.hm-zoom-dialog{position:fixed;inset:0;width:100vw;max-width:none;height:100vh;height:100dvh;max-height:none;margin:0;padding:0;border:0;background:#252321;color:#fff;overflow:hidden}
+.hm-zoom-dialog::backdrop{background:#252321}
+.hm-zoom-dialog .hm-zoom-orbit{width:100%;height:100%;min-height:0!important;aspect-ratio:auto!important;border-radius:0}
+.hm-zoom-close{position:absolute;top:max(18px,env(safe-area-inset-top));right:max(22px,env(safe-area-inset-right));z-index:250;display:grid;place-items:center;width:40px;height:40px;border:1px solid #ffffff70;border-radius:8px;background:#25232180;color:#fff;font:300 30px/1 var(--font);cursor:pointer}
+.hm-zoom-orbit .hm-footer{left:max(30px,env(safe-area-inset-left));right:max(30px,env(safe-area-inset-right));bottom:max(22px,env(safe-area-inset-bottom))}
+.hm-zoom-orbit .hm-card,.hm-zoom-orbit .hm-ghost-card{top:48%}
+@media(max-width:700px){.hm-footer{left:18px;right:18px;bottom:12px;gap:12px}.hm-zoom-orbit .hm-footer{left:18px;right:18px}.hm-zoom-button{width:36px}}
+.newsroom-transfer-actions{display:flex;flex-wrap:wrap;gap:10px}
+.newsroom-transfer-actions>.btn{border:1px solid var(--signal);border-radius:8px;background:transparent;color:#171717;font-size:.86rem}
+.hm-pause[hidden]{display:none!important}
+
+.block-tools:has([data-action="media-transfer"]){flex-wrap:wrap}
