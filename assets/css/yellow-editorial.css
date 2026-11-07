@@ -131,3 +131,32 @@ body .site-page[data-page="verein"] .story-teaser .more-link > span { display: n
   color: var(--tfb-signature-red); background: none; text-decoration: none;
   padding: 0; margin: 0;
 }
+
+/* Gelbe Menülinie: Abstand zur Textzeile statt zur variablen Linkbox.
+   8.6 px entsprechen rund 80 % des bisherigen iPad-Hochformat-Abstands. */
+:root.tfb-logo-midnight-amber body .app .topbar .topnav .tab.active::after {
+  top: calc(50% + .65em + 8.6px); bottom: auto;
+}
+/* In Rot tragen alle Datumsfelder dieselbe vollständig weiße Beschriftung. */
+:root:not(.tfb-logo-midnight-amber) body .view[data-view] .date-badge {
+  background: #171717; color: #fff;
+}
+:root:not(.tfb-logo-midnight-amber) body .view[data-view] .date-badge > :is(small, b) {
+  color: #fff; opacity: 1;
+}
+/* Karussell-Überschriften unter Aktuell sind keine unterstrichenen Textlinks. */
+.view[data-view="aktuell"] .media-news .post-title-link {
+  color: var(--ink); text-decoration: none; font-weight: inherit;
+}
+:root:not(.tfb-logo-midnight-amber) .view[data-view="aktuell"] .media-news .post-title-link {
+  color: var(--tfb-signature-red);
+}
+/* Aktiver Menüpunkt in beiden Welten ohne Pill; Tastatur-Fokusringe bleiben. */
+body .app .topbar .topnav .tab.active::before {
+  content: none; background: none; border: 0;
+}
+/* Rotes Hochformat übernimmt den bisherigen Desktop-Abstand von rund 5 px. */
+:root:not(.tfb-logo-midnight-amber) body .app .topbar .topnav .tab.active::after {
+  left: 0; right: .2em; height: 2px;
+  top: calc(50% + .65em + 4.95px); bottom: auto;
+}

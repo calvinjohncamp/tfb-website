@@ -26,3 +26,18 @@ Validierung: 24 Inhaltstests bestanden. Isolierter Browser-Test in WebKit und
 Chromium: Rahmen-/Textfarben, History in 390/834 px ohne Überlauf, beide Mail-
 Varianten, Editor auf Home/Aktuell, unabhängiges Ein-/Ausschalten von Fett,
 Speichern des Markups und ältere rote Markierungen geprüft. Service Worker v306.
+
+Zusätzliches Menü-/Aktuell-Finetuning aus derselben Freigabe:
+- Gelbe Menülinie: ca. 8,6 px Abstand zur Textzeile in Hoch-/Querformat und am
+  Desktop; rund 20 % weniger als der frühere gelbe iPad-Hochformat-Abstand.
+- Beide aktiven Menüpunkte ohne Pill-Fläche oder Rahmen. Rot übernimmt in allen
+  Ausrichtungen den bisherigen Desktop-Abstand von ca. 5 px. Klickflächen und
+  Tastatur-Fokusringe bleiben erhalten.
+- In Rot alle Datumsfelder schwarz (#171717) mit Weiß bei Zahl, Wochentag und
+  Monat, ohne reduzierte Deckkraft. Gelbe Datumsfelder bleiben gelb/blau.
+- Aktuell-Karussellüberschriften ohne Unterstreichung, auch bei Hover. In Rot
+  Signature-Rot, in Gelb fett schwarz. Keine redaktionellen Texte geändert.
+
+WebKit-Regressionsprüfung bei 390, 834, 1024, 1194, 1366 und 1440 px mit echten
+Touch-/Ausrichtungs-Medienabfragen: Abstand, Pill-Entfall, Schrift-/Rahmenfarben,
+Datumsfarben und Karussellüberschriften bestanden.
