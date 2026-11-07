@@ -1,5 +1,6 @@
 /* Gelbe Farbwelt: bestehende Magazin-Typografie, Akzente als Freihand-Markierung.
    Chat und Verabreden verwenden weiterhin ihre bisherigen Regeln. */
+span.signature-highlight { font: inherit; color: inherit; letter-spacing: inherit; }
 .tx-highlight {
   text-decoration-line: underline;
   text-decoration-color: var(--signal);
