@@ -1349,7 +1349,7 @@
     if (may.reason === 'parents') return openParentConsent(post.scope, resume);
     if (may.reason === 'rules') return openRules(post.scope, resume);
     if (!may.ok) return toast('Hier kommentieren die Spieler dieser Mannschaft.');
-    openSheet(`<form data-comment-form="${esc(post.id)}" class="editor comment-form">
+    openSheet(`<form data-comment-form="${esc(post.id)}" class="editor comment-form" novalidate>
       <h2>Dein Kommentar</h2>
       <textarea name="text" rows="4" maxlength="2000" aria-label="Dein Kommentar" placeholder="Dein Kommentar …"></textarea>
       ${emojiPicker()}<div data-comment-attachments>${commentAttachments([])}</div>
@@ -1398,18 +1398,46 @@
     const button = form.querySelector('[type="submit"]'); button.disabled = true;
     try {
       const refs = commentImages.get(form) || [];
-      if (refs.length && !form.elements.commentPhotoOk?.checked) throw Error('Bitte bestätigen, dass die abgebildeten Personen einverstanden sind.');
+      if (refs.length) validatePhotoConsent(form, 'commentPhoto');
       await ui().api.addComment(form.dataset.commentForm, form.elements.text.value, { images: refs });
       ui().closeSheet();
       await ui().renderView();
     } catch (error) { form.querySelector('.form-error').textContent = error.message; button.disabled = false; }
+  });
+  function photoConsent(name, people = '', agreed = false) {
+    return `<div data-photo-consent>
+      <label class="field"><span>Sind Personen erkennbar abgebildet?</span>
+        <select name="${name}People" data-photo-people="${name}" required>
+          <option value=""${!people ? ' selected' : ''}>Bitte auswählen</option>
+          <option value="no"${people === 'no' ? ' selected' : ''}>Nein</option>
+          <option value="yes"${people === 'yes' ? ' selected' : ''}>Ja</option>
+        </select>
+      </label>
+      <div data-photo-agreement>${people === 'yes' ? photoAgreement(name, agreed) : ''}</div>
+    </div>`;
+  }
+  function photoAgreement(name, agreed = false) {
+    return `<label class="meet-check"><input type="checkbox" name="${name}Ok" required${agreed ? ' checked' : ''}><span>Die abgebildeten Personen sind mit der Veröffentlichung einverstanden.</span></label>`;
+  }
+  function validatePhotoConsent(form, name) {
+    const people = form.elements[`${name}People`]?.value;
+    if (people !== 'yes' && people !== 'no') throw Error('Bitte angeben, ob Personen erkennbar abgebildet sind.');
+    if (people === 'yes' && !form.elements[`${name}Ok`]?.checked) throw Error('Bitte bestätigen, dass die abgebildeten Personen einverstanden sind.');
+  }
+  document.addEventListener('change', e => {
+    const select = e.target.closest('[data-photo-people]');
+    if (!select) return;
+    select.closest('[data-photo-consent]').querySelector('[data-photo-agreement]').innerHTML =
+      select.value === 'yes' ? photoAgreement(select.dataset.photoPeople) : '';
+    const error = select.closest('form')?.querySelector('.form-error');
+    if (error) error.textContent = '';
   });
   const commentImages = new WeakMap();
   function commentAttachments(refs) {
     return `<div class="comment-photo-picker">${refs.map((ref, index) => `<div class="gallery-thumb">${picture(ref, ref, '')}<button type="button" data-comment-remove="${index}" aria-label="Foto entfernen">×</button></div>`).join('')}
       ${refs.length < 3 ? `<label class="gallery-add">${ui().icon.camera}<span>Fotos hinzufügen</span><input type="file" accept="image/*" multiple data-comment-upload hidden></label>` : ''}</div>
       <p class="small muted">Bis zu 3 Fotos oder Bilder.</p>
-      ${refs.length ? '<label class="meet-check"><input type="checkbox" name="commentPhotoOk"><span>Die abgebildeten Personen sind mit der Veröffentlichung einverstanden.</span></label>' : ''}`;
+      ${refs.length ? photoConsent('commentPhoto') : ''}`;
   }
   document.addEventListener('click', e => {
     const button = e.target.closest('[data-comment-remove]');
@@ -1598,6 +1626,7 @@
       dots: existing?.dots || 'bottom', designed: Boolean(existing?.designs?.length),
       photoView: existing?.photoView || 'collage',
       slideshowLayers: structuredClone(existing?.slideshowLayers || []),
+      photoPeople: '', photoAgreed: false,
       media: existing?.designs?.length
         ? existing.designs.map(design => ({ref:design.ref,design:structuredClone(design)}))
         : (existing?.images || []).filter(shownImage).map(ref => ({ref})),
@@ -1629,7 +1658,7 @@
             <select name="photoView"><option value="collage"${draft.photoView === 'collage' ? ' selected' : ''}>Collage</option><option value="slideshow"${draft.photoView === 'slideshow' ? ' selected' : ''}>Diashow</option><option value="carousel"${draft.photoView === 'carousel' ? ' selected' : ''}>Karussell</option></select></label>
             ${draft.photoView === 'carousel' ? '<p class="small muted">Bilder vollständig anzeigen und selbst durchblättern.</p>' : ''}</div>` : ''}
           <p class="small muted">${scope === 'club' ? 'Bis zu 6 Fotos oder Videos. Clips bis 30 Sekunden werden bei Bedarf automatisch verkleinert.' : 'Bis zu 6 Fotos.'}</p>
-          ${draft.media.length ? '<label class="meet-check"><input type="checkbox" name="photoOk" required><span>Die abgebildeten Personen sind mit der Veröffentlichung einverstanden.</span></label>' : ''}
+          ${draft.media.length ? photoConsent('photo', draft.photoPeople, draft.photoAgreed) : ''}
           ${scope === 'club' ? `<div class="compose-teams"><p class="small muted">${myTeams.length > 1 ? 'Auch in meinen Mannschaften anzeigen' : 'Auch in meiner Mannschaft anzeigen'}</p>
             ${myTeams.map(k => `<label class="meet-check"><input type="checkbox" name="alsoTeam" value="${esc(k)}" ${draft.alsoTeams.includes(k) ? 'checked' : ''}><span>${esc(teamLabel(k))}</span></label>`).join('')}
             ${myTeams.length ? '' : '<p class="small muted">Deinem Konto ist noch keine Mannschaft zugeordnet.</p>'}
@@ -1643,6 +1672,8 @@
       const keep = () => {
         draft.title = form.elements.title.value.trim();
         draft.text = form.elements.text.value;
+        draft.photoPeople = form.elements.photoPeople?.value || '';
+        draft.photoAgreed = Boolean(form.elements.photoOk?.checked);
         if (form.elements.photoView) draft.photoView = form.elements.photoView.value;
         draft.alsoTeams = [...draft.alsoTeams.filter(k => !myTeams.includes(k)), ...[...form.querySelectorAll('[name=alsoTeam]:checked')].map(input => input.value)];
       };
@@ -1672,6 +1703,7 @@
         if (!e.target.matches('[data-cphoto]') || !e.target.files.length || busy) return;
         keep();
         const files = [...e.target.files];
+        const previousMediaCount = draft.media.length;
         if (files.length + draft.media.length > 6) { toast('Pro Beitrag sind höchstens 6 Medien möglich.'); e.target.value = ''; return; }
         setBusy(true);
         const controller = new AbortController();
@@ -1711,7 +1743,11 @@
         finally {
           disconnect.disconnect();
           setBusy(false);
-          if (form.isConnected) { keep(); render(); }
+          if (form.isConnected) {
+            keep();
+            if (draft.media.length !== previousMediaCount) { draft.photoPeople = ''; draft.photoAgreed = false; }
+            render();
+          }
         }
       });
       form.addEventListener('submit', async e => {
@@ -1719,7 +1755,8 @@
         if (busy) return;
         keep();
         const err = form.querySelector('.form-error');
-        if (draft.media.length && !form.elements.photoOk.checked) { err.textContent = 'Bitte bestätigen, dass die Abgebildeten einverstanden sind.'; return; }
+        try { if (draft.media.length) validatePhotoConsent(form, 'photo'); }
+        catch (error) { err.textContent = error.message; return; }
         setBusy(true);
         try {
           for (const media of draft.media) {
@@ -3150,14 +3187,14 @@
       const { api, openSheet, closeSheet, toast } = ui();
       const comment = (await api.comments(el.dataset.post)).find(c => c.id === el.dataset.id && c.mine);
       if (!comment) return;
-      openSheet(`<form class="editor comment-edit-form" data-comment-edit><h2>Kommentar bearbeiten</h2><label class="field"><span>Dein Kommentar</span><textarea name="text" rows="4" maxlength="2000">${esc(comment.text)}</textarea></label>${emojiPicker()}<div data-comment-attachments>${commentAttachments(comment.images || [])}</div><p class="form-error" role="alert"></p><button type="submit" class="btn signal block">Speichern</button></form>`);
+      openSheet(`<form class="editor comment-edit-form" data-comment-edit novalidate><h2>Kommentar bearbeiten</h2><label class="field"><span>Dein Kommentar</span><textarea name="text" rows="4" maxlength="2000">${esc(comment.text)}</textarea></label>${emojiPicker()}<div data-comment-attachments>${commentAttachments(comment.images || [])}</div><p class="form-error" role="alert"></p><button type="submit" class="btn signal block">Speichern</button></form>`);
       const form = document.querySelector('[data-comment-edit]');
       commentImages.set(form, (comment.images || []).slice());
       form.addEventListener('submit', async e => {
         e.preventDefault(); const button = form.querySelector('[type="submit"]'); button.disabled = true;
         try {
           const refs = commentImages.get(form) || [];
-          if (refs.length && !form.elements.commentPhotoOk?.checked) throw Error('Bitte bestätigen, dass die abgebildeten Personen einverstanden sind.');
+          if (refs.length) validatePhotoConsent(form, 'commentPhoto');
           await api.editComment(comment.id, form.elements.text.value, { images: refs }); closeSheet(); await ui().renderView(); toast('Kommentar gespeichert', true);
         }
         catch (error) { form.querySelector('.form-error').textContent = error.message; button.disabled = false; }
