@@ -26,7 +26,7 @@ for name in tracked:
         name.startswith('assets/') and (
             path.suffix.lower() in ASSET_TYPES
             or name == 'assets/clubarchiv/bestand.json'
-            or name == 'assets/docs/tfb-mitgliedsanmeldung-muster.html'
+            or name in {'assets/docs/tfb-mitgliedsanmeldung-muster.html', 'assets/docs/tfb-mitgliedsanmeldung-muster-gelb.html'}
             or (name.startswith('assets/clubarchiv/medien/')
                 and path.suffix.lower() in {'.mp4', '.mp3', '.pptx', '.docx', '.xlsx'})
         )

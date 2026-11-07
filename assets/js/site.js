@@ -180,7 +180,7 @@
   //   ## Text (Zeilenanfang) Zwischenüberschrift
   const SPANS = { hervorheben: 'tx-highlight', rot: 'tx-red', grau: 'tx-gray', marker: 'tx-mark', sehrklein: 'tx-xs', klein: 'tx-s', gross: 'tx-l', sehrgross: 'tx-xl' };
   // Gruppen schließen sich aus: eine neue Farbe ersetzt die alte, eine neue Größe die alte
-  const SPAN_GROUPS = { color: ['tx-red', 'tx-gray'], size: ['tx-xs', 'tx-s', 'tx-l', 'tx-xl'] };
+  const SPAN_GROUPS = { color: ['tx-red', 'tx-highlight', 'tx-mark', 'tx-gray'], size: ['tx-xs', 'tx-s', 'tx-l', 'tx-xl'] };
   function inline(raw) {
     const links = [];
     let h = esc(raw).replace(/\[([^\]]+)\]\(((?:https?:\/\/|#)[^\s)]+)\)/g, (_, label, url) => {
@@ -276,7 +276,7 @@
         <div class="sec-bar"><span>${SECTION_LABELS[x.type]}</span>
           ${x.type === 'h' || x.type === 'quote' ? `<select class="sec-color" name="sec_${i}_color" aria-label="Hervorhebung für ${SECTION_LABELS[x.type]}">
             <option value="black">Schwarz</option>
-            <option value="signature" ${x.color === 'signature' ? 'selected' : ''}>${document.documentElement?.classList.contains('tfb-logo-midnight-amber') ? 'Freihand-Markierung' : 'Signaturfarbe'}</option>
+            <option value="signature" ${x.color === 'signature' ? 'selected' : ''}>${document.documentElement?.classList.contains('tfb-logo-midnight-amber') ? 'Textmarker' : 'Signature-Rot'}</option>
           </select>` : ''}
           <button type="button" data-secmove="-1" data-sec-i="${i}" ${i === 0 ? 'disabled' : ''} aria-label="Nach oben">${icon.up}</button>
           <button type="button" data-secmove="1" data-sec-i="${i}" ${i === list.length - 1 ? 'disabled' : ''} aria-label="Nach unten">${icon.down}</button>
@@ -2071,27 +2071,26 @@
   </svg>`;
   function field(label, name, value, opts = {}) {
     const v = esc(value == null ? '' : value);
+    const yellowBrand = document.documentElement?.classList.contains('tfb-logo-midnight-amber');
+    const emphasisLabel = yellowBrand ? 'Mit Textmarker hervorheben' : 'In Signature-Rot hervorheben';
     if (opts.area && opts.rich) return `<div class="field rich-field"><span>${label}</span>
       <div class="rich-tools" role="toolbar" aria-label="Text gestalten">${opts.simple ? `
         <span class="rich-group" role="group" aria-label="Schrift">
-          <button type="button" data-rich="bold" title="Fett"><b>F</b></button>
+          <button type="button" data-rich="bold" aria-label="Fett umschalten" title="Fett (unabhängig von der Hervorhebung)"><b>F</b></button>
           <button type="button" data-rich="italic" title="Kursiv"><i>K</i></button>
-          <button type="button" data-rich="hervorheben" aria-label="Freihand hervorheben" title="Freihand hervorheben"><span class="highlight-sample">M</span></button>
-          <button type="button" data-rich="rot" title="Rot"><span class="sw sw-red"></span></button>
+          <button type="button" data-rich="hervorheben" aria-label="${emphasisLabel}" title="${emphasisLabel}"><span class="highlight-sample">${yellowBrand ? 'M' : 'R'}</span> ${yellowBrand ? 'Textmarker' : 'Rot'}</button>
         </span>
         <span class="rich-group" role="group" aria-label="Verlinkung">
           <button type="button" data-rich="link" title="Link"><svg class="link-arrow" viewBox="0 0 806 1000" aria-hidden="true" focusable="false"><path transform="translate(0 755) scale(1 -1)" d="M528 -14 448 66 546 164 587 189 581 206 533 198H50V312H533L581 304L587 321L546 346L448 444L528 524L756 296V214Z"/></svg> Link</button>
         </span>` : `
         <span class="rich-group" role="group" aria-label="Schrift">
-          <button type="button" data-rich="bold" title="Fett"><b>F</b></button>
+          <button type="button" data-rich="bold" aria-label="Fett umschalten" title="Fett (unabhängig von der Hervorhebung)"><b>F</b></button>
           <button type="button" data-rich="italic" title="Kursiv"><i>K</i></button>
-          <button type="button" data-rich="hervorheben" aria-label="Freihand hervorheben" title="Freihand hervorheben"><span class="highlight-sample">M</span></button>
+          <button type="button" data-rich="hervorheben" aria-label="${emphasisLabel}" title="${emphasisLabel}"><span class="highlight-sample">${yellowBrand ? 'M' : 'R'}</span> ${yellowBrand ? 'Textmarker' : 'Rot'}</button>
           <button type="button" data-rich="underline" title="Unterstrichen"><u>U</u></button>
         </span>
         <span class="rich-group" role="group" aria-label="Farbe">
-          <button type="button" data-rich="rot" title="Rot"><span class="sw sw-red"></span></button>
           <button type="button" data-rich="grau" title="Grau"><span class="sw sw-gray"></span></button>
-          <button type="button" data-rich="marker" title="Textmarker"><span class="sw sw-mark"></span></button>
           <button type="button" data-rich="nocolor" title="Farbe entfernen (wieder schwarz)"><span class="sw sw-ink"></span></button>
         </span>
         <span class="rich-group" role="group" aria-label="Größe">
@@ -3149,9 +3148,10 @@
     'chat-text-edit': editChatText,
     'membership-mail-preview': (el, event) => {
       event.preventDefault();
+      const sample = document.documentElement.classList.contains('tfb-logo-midnight-amber') ? 'tfb-mitgliedsanmeldung-muster-gelb.html' : 'tfb-mitgliedsanmeldung-muster.html';
       ui().openSheet(`<section class="membership-mail-dialog" aria-labelledby="membership-mail-title">
         <h2 id="membership-mail-title">E-Mail-Bestätigung · Muster</h2>
-        <iframe src="assets/docs/tfb-mitgliedsanmeldung-muster.html" sandbox="allow-same-origin" title="Beispiel der E-Mail zur Mitgliedsanmeldung"></iframe>
+        <iframe src="assets/docs/${sample}" sandbox="allow-same-origin" title="Beispiel der E-Mail zur Mitgliedsanmeldung"></iframe>
       </section>`);
       const dialog = document.querySelector('.membership-mail-dialog').closest('[role="dialog"]');
       dialog.setAttribute('aria-labelledby', 'membership-mail-title');
@@ -3539,7 +3539,7 @@
     const range = sel.getRangeAt(0);
     // Gleiche Gestaltung nochmal = wieder entfernen
     const anchor = sel.anchorNode.nodeType === 1 ? sel.anchorNode : sel.anchorNode.parentElement;
-    const inside = anchor?.closest(`span.${className}`);
+    const inside = anchor?.closest(className === 'tx-highlight' ? 'span.tx-highlight, span.tx-red, span.tx-mark' : `span.${className}`);
     if (inside && area.contains(inside)) { inside.replaceWith(...inside.childNodes); return; }
     const group = Object.values(SPAN_GROUPS).find((g) => g.includes(className));
     // Markierung deckt eine vorhandene Farbe/Größe derselben Gruppe ganz ab → nur austauschen
@@ -3573,7 +3573,7 @@
     const inSpan = (cls) => Boolean(node.closest(`span.${cls}`) && area.contains(node.closest(`span.${cls}`)));
     tools.querySelectorAll('[data-rich]').forEach((b) => {
       const c = b.dataset.rich;
-      const on = ['bold', 'italic', 'underline'].includes(c) ? state(c) : SPANS[c] ? inSpan(SPANS[c]) : false;
+      const on = ['bold', 'italic', 'underline'].includes(c) ? state(c) : c === 'hervorheben' ? ['tx-highlight', 'tx-red', 'tx-mark'].some(inSpan) : SPANS[c] ? inSpan(SPANS[c]) : false;
       b.classList.toggle('on', on);
     });
   });
