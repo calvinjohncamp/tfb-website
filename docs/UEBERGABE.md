@@ -94,7 +94,12 @@ ist GitHub main. Für weitere Releases davon sauber auschecken und nur beauftrag
 ist keine dauerhafte Quelle. Gestaltungsdateien, Tests und diese Dokumente werden
 in die Dropbox-Arbeitskopie zurückgespiegelt. Letzter vorheriger Live-Stand v306:
 `f9fa7133f0b8abfac65c7e3e2a0f7557ae2a69a0`, Pages-Lauf `42408618034`.
-Veröffentlichungsnachweis v307 wird nach erfolgreichem Lauf ergänzt.
+v307 ist live: Commit `8cda1c095c94b99d2f7c6f43b52a1ff66a06b629`, erfolgreicher Pages-Lauf
+[`42409923819`](https://github.com/calvinjohncamp/tfb-website/actions/runs/42409923819).
+Am 07.11.2026 um 20:12 UTC wurden CSS, site.js, beide Mail-Vorschauen und sw.js
+per SHA-256 mit dem Release-Paket verglichen: identisch. Nachweis in der
+Dropbox-Arbeitskopie `.private/release-v307/live-proof.json`. Diese Dokumentation
+wird anschließend separat gesichert; dafür ist kein weiterer Pages-Lauf nötig.
 
 ---
 
