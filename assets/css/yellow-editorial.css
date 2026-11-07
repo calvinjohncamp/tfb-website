@@ -1,0 +1,79 @@
+/* Gelbe Farbwelt: bestehende Magazin-Typografie, Akzente als Unterstreichung.
+   Chat und Verabreden verwenden weiterhin ihre bisherigen Regeln. */
+.tx-highlight {
+  text-decoration-line: underline;
+  text-decoration-color: var(--signal);
+  text-decoration-thickness: 2px;
+  text-underline-offset: .18em;
+  text-decoration-skip-ink: auto;
+}
+:root.tfb-logo-midnight-amber :is(.site-page, .story, .post, .event, .rich-area) :is(.tx-red, .tx-highlight, u),
+:root.tfb-logo-midnight-amber :is(.story-lead, .story-h.is-signature, .story-quote.is-signature p),
+:root.tfb-logo-midnight-amber .story-head .feature-sub,
+:root.tfb-logo-midnight-amber .story .more-link:not(.back),
+:root.tfb-logo-midnight-amber .site-page .link-card-body em {
+  color: inherit;
+  font-weight: inherit;
+  text-decoration-line: underline;
+  text-decoration-color: var(--tfb-signature-yellow);
+  text-decoration-thickness: 2px;
+  text-underline-offset: .18em;
+  text-decoration-skip-ink: auto;
+}
+/* Ältere Inhalte speichern Fett und Signaturfarbe in beiden Verschachtelungen. */
+:root.tfb-logo-midnight-amber :is(.site-page, .story, .post, .event, .rich-area) :is(.tx-red, .tx-highlight) :is(strong, b),
+:root.tfb-logo-midnight-amber :is(.site-page, .story, .post, .event, .rich-area) :is(strong, b):has(.tx-red, .tx-highlight) {
+  font-weight: inherit;
+}
+:root.tfb-logo-midnight-amber :is(.site-page, .story, .post, .event) .inline-link:hover,
+:root.tfb-logo-midnight-amber :is(.site-page, .story, .post, .event) .inline-ext {
+  color: inherit;
+}
+:root.tfb-logo-midnight-amber .story-quote.is-signature { --quote-mark: var(--ink); }
+:root.tfb-logo-midnight-amber .story-quote.is-signature p::before,
+:root.tfb-logo-midnight-amber .story-quote.is-signature p::after { color: inherit; }
+/* Initialen und die Home-Nummern bleiben in der Signaturfarbe. */
+:root.tfb-logo-midnight-amber .story .lead-letters { color: var(--tfb-signature-yellow); }
+:root.tfb-logo-midnight-amber .view[data-view="team"] :is(.page-kicker, .story-head .feature-kicker) {
+  color: var(--ink); text-decoration: none;
+}
+:root.tfb-logo-midnight-amber .story-head .feature-kicker > span { color: inherit; }
+:root.tfb-logo-midnight-amber .tfb-splash h1,
+:root.tfb-logo-midnight-amber .tfb-splash h1 em { color: var(--tfb-midnight-blue); }
+:root.tfb-logo-midnight-amber .tfb-splash-enter {
+  background: var(--tfb-signature-yellow); border-color: var(--tfb-signature-yellow); color: var(--tfb-midnight-blue);
+}
+/* News und Termine: beide Spalten nutzen dasselbe Datumsfeld. */
+:root.tfb-logo-midnight-amber body .view[data-view="aktuell"] .date-badge {
+  background: var(--tfb-signature-yellow); color: var(--tfb-midnight-blue);
+}
+:root.tfb-logo-midnight-amber body .view[data-view="aktuell"] .date-badge > :is(small, b) {
+  color: var(--tfb-midnight-blue); opacity: 1;
+}
+:root.tfb-logo-midnight-amber body .membership-actions .membership-fees-button,
+:root.tfb-logo-midnight-amber body .btn.club-archive-link {
+  background: var(--tfb-midnight-blue); border-color: var(--tfb-midnight-blue); color: #fff;
+}
+:root.tfb-logo-midnight-amber .club-archive-link > span { display: none; }
+/* Derselbe Akzent ist im Editor direkt sichtbar. */
+:root.tfb-logo-midnight-amber .sec:has(.sec-color option[value="signature"]:checked) :is(.sec-h-input, .sec-q-input) {
+  color: var(--ink); text-decoration: underline var(--tfb-signature-yellow) 2px; text-underline-offset: .18em;
+}
+.rich-tools [data-rich="hervorheben"] .highlight-sample {
+  text-decoration: underline var(--signal) 2px; text-underline-offset: 3px;
+}
+/* Auch Datumsmarken und Medien-Unterseiten auf Home bleiben ohne gelbe Schrift. */
+:root.tfb-logo-midnight-amber body .view[data-view="home"] .date-badge {
+  background: var(--tfb-signature-yellow); color: var(--tfb-midnight-blue);
+}
+:root.tfb-logo-midnight-amber body .view[data-view="home"] .date-badge > :is(small, b) {
+  color: var(--tfb-midnight-blue); opacity: 1;
+}
+:root.tfb-logo-midnight-amber .site-page .post-date,
+:root.tfb-logo-midnight-amber .site-page[data-page="verein"] .more-link,
+:root.tfb-logo-midnight-amber .view[data-view="home"] :is(.hm-entry-intro, .hm-entry-kicker),
+:root.tfb-logo-midnight-amber .view[data-view="aktuell"] :is(.media-news-kicker, .media-news-subtitle, .hm-entry-intro, .hm-entry-kicker) {
+  color: inherit; font-weight: inherit;
+  text-decoration: underline var(--tfb-signature-yellow) 2px;
+  text-underline-offset: .18em; text-decoration-skip-ink: auto;
+}

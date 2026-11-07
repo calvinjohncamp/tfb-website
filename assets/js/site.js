@@ -176,9 +176,9 @@
   // Fließtext mit Auszeichnungen. Im Editor gestaltet man direkt (WYSIWYG); gespeichert wird als
   // schlichter Text mit Zeichen – so bleibt alles klein, sicher und übertragbar:
   //   [Text](https://… | #seite)  Link       **Text** fett     *Text* kursiv    __Text__ unterstrichen
-  //   {rot}…{/rot} {grau}…{/grau} {marker}…{/marker} Farbe   {sehrklein} {klein} {gross} {sehrgross} … {/…} Größe
+  //   {hervorheben}…{/hervorheben} Unterstreichung   {rot}…{/rot} {grau}…{/grau} {marker}…{/marker} Farbe   {sehrklein} {klein} {gross} {sehrgross} … {/…} Größe
   //   ## Text (Zeilenanfang) Zwischenüberschrift
-  const SPANS = { rot: 'tx-red', grau: 'tx-gray', marker: 'tx-mark', sehrklein: 'tx-xs', klein: 'tx-s', gross: 'tx-l', sehrgross: 'tx-xl' };
+  const SPANS = { hervorheben: 'tx-highlight', rot: 'tx-red', grau: 'tx-gray', marker: 'tx-mark', sehrklein: 'tx-xs', klein: 'tx-s', gross: 'tx-l', sehrgross: 'tx-xl' };
   // Gruppen schließen sich aus: eine neue Farbe ersetzt die alte, eine neue Größe die alte
   const SPAN_GROUPS = { color: ['tx-red', 'tx-gray'], size: ['tx-xs', 'tx-s', 'tx-l', 'tx-xl'] };
   function inline(raw) {
@@ -191,7 +191,7 @@
       .replace(/__([\s\S]+?)__/g, '<u>$1</u>')
       .replace(/(^|[^*])\*([^*\s][\s\S]*?)\*(?!\*)/g, '$1<em>$2</em>');
     for (let i = 0; i < 3; i++) {   // verschachtelte Farben/Größen
-      h = h.replace(/\{(rot|grau|marker|sehrklein|klein|gross|sehrgross)\}([\s\S]*?)\{\/\1\}/g, (_, k, t) => `<span class="${SPANS[k]}">${t}</span>`);
+      h = h.replace(/\{(hervorheben|rot|grau|marker|sehrklein|klein|gross|sehrgross)\}([\s\S]*?)\{\/\1\}/g, (_, k, t) => `<span class="${SPANS[k]}">${t}</span>`);
     }
     h = h.replace(/\u0000(\d+)\u0000/g, (_, i) => {
       const [label, url] = links[Number(i)];
@@ -273,9 +273,9 @@
     return `<div class="secs">${list.map((x, i) => `${inserter(i)}
       <div class="sec sec-${x.type}" data-sec="${x.type}">
         <div class="sec-bar"><span>${SECTION_LABELS[x.type]}</span>
-          ${x.type === 'h' || x.type === 'quote' ? `<select class="sec-color" name="sec_${i}_color" aria-label="Textfarbe für ${SECTION_LABELS[x.type]}">
+          ${x.type === 'h' || x.type === 'quote' ? `<select class="sec-color" name="sec_${i}_color" aria-label="Hervorhebung für ${SECTION_LABELS[x.type]}">
             <option value="black">Schwarz</option>
-            <option value="signature" ${x.color === 'signature' ? 'selected' : ''}>Signaturfarbe</option>
+            <option value="signature" ${x.color === 'signature' ? 'selected' : ''}>${document.documentElement?.classList.contains('tfb-logo-midnight-amber') ? 'Gelb unterstreichen' : 'Signaturfarbe'}</option>
           </select>` : ''}
           <button type="button" data-secmove="-1" data-sec-i="${i}" ${i === 0 ? 'disabled' : ''} aria-label="Nach oben">${icon.up}</button>
           <button type="button" data-secmove="1" data-sec-i="${i}" ${i === list.length - 1 ? 'disabled' : ''} aria-label="Nach unten">${icon.down}</button>
@@ -2075,6 +2075,7 @@
         <span class="rich-group" role="group" aria-label="Schrift">
           <button type="button" data-rich="bold" title="Fett"><b>F</b></button>
           <button type="button" data-rich="italic" title="Kursiv"><i>K</i></button>
+          <button type="button" data-rich="hervorheben" aria-label="Unterstreichen / hervorheben" title="Unterstreichen / hervorheben"><span class="highlight-sample">U</span></button>
           <button type="button" data-rich="rot" title="Rot"><span class="sw sw-red"></span></button>
         </span>
         <span class="rich-group" role="group" aria-label="Verlinkung">
@@ -2083,6 +2084,7 @@
         <span class="rich-group" role="group" aria-label="Schrift">
           <button type="button" data-rich="bold" title="Fett"><b>F</b></button>
           <button type="button" data-rich="italic" title="Kursiv"><i>K</i></button>
+          <button type="button" data-rich="hervorheben" aria-label="Unterstreichen / hervorheben" title="Unterstreichen / hervorheben"><span class="highlight-sample">U</span></button>
           <button type="button" data-rich="underline" title="Unterstrichen"><u>U</u></button>
         </span>
         <span class="rich-group" role="group" aria-label="Farbe">

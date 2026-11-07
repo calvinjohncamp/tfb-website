@@ -600,3 +600,15 @@ test('Save the Date shows published image and PDF attachments without browser up
   assert.match(html, /data-filename="Oktoberfest.jpg"/);
   assert.match(html, /data-filename="Weihnachtsfeier.pdf"/);
 });
+
+test('explicit underlined emphasis survives safe markup rendering beside legacy signature emphasis', async () => {
+  const { context, api } = await setup();
+  const site = await api.site();
+  site.pages.home.blocks = [{ id: 'highlight', type: 'feature', title: 'Hervorhebung', text: 'Normal {hervorheben}Unterstrichen{/hervorheben} und {rot}**bestehender Akzent**{/rot}. {hervorheben}<script>alert(1)</script>{/hervorheben}' }];
+  await api.saveSite(site);
+  const html = await context.TFB.views.home();
+  assert.match(html, /<span class="tx-highlight">Unterstrichen<\/span>/);
+  assert.match(html, /<span class="tx-red"><strong>bestehender Akzent<\/strong><\/span>/);
+  assert.match(html, /<span class="tx-highlight">&lt;script(?:&gt;|>)alert\(1\)&lt;\/script(?:&gt;|>)<\/span>/);
+  assert.doesNotMatch(html, /<script>alert/);
+});
