@@ -28,7 +28,10 @@ Archivdetail, Termin-Badges erhalten); WebKit
 `tools/test-browser-navigation-dates.mjs` auf sechs Größen inklusive iPad
 hoch/quer und Mobil prüft nun explizit Badges nur rechts. Alle Schreibprüfungen
 verwenden isolierte lokale Testdaten. Keine CMS-/Worker-Änderung. Cache v310.
-Veröffentlichungsnachweis folgt nach erfolgreichem Pages-Lauf.
+Live-Commit `65114c6d0e3ed339aadbf248e3cb2cc076248fc6`; erfolgreicher
+[Pages-Lauf 42412288074](https://github.com/calvinjohncamp/tfb-website/actions/runs/42412288074).
+Live-JavaScript und Service Worker per SHA-256 mit dem Paket verglichen:
+identisch. Nachweis in der Dropbox-Arbeitskopie `.private/release-v310/live-proof.json`.
 
 ---
 
