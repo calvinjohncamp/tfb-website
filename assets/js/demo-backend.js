@@ -461,7 +461,7 @@
     const acc = author ? accountOf(author.id) : null;
     const me = sessionMemberId();
     const meM = db.members.find((m) => m.id === me);
-    return { ...clone(p), commentCount: (db.community.comments || []).filter(c => c.postId === p.id).length, author: displayName(author), avatar: author && photoAllowed(author, meM && meM.active ? 'members' : 'public') ? (acc && acc.avatar) || null : null,
+    return { ...clone(p), commentCount: (db.community.comments || []).filter(c => c.postId === p.id).length, author: p.authorMode==='tfb'?'Tennisfreunde Bielstein':displayName(author), avatar: p.authorMode==='tfb'?'assets/icons/icon-512.png':author && photoAllowed(author, meM && meM.active ? 'members' : 'public') ? (acc && acc.avatar) || null : null,
       mine: p.authorId === me, canModerate: Boolean(meM && meM.isAdmin), team: teamOf(p.scope) };
   }
 
@@ -972,8 +972,9 @@
       if (!data) throw Error('Video nicht gefunden.');
       return (await fetch(data)).blob();
     },
-    async addPost({ scope, title = '', text, images = [], alsoTeams = [], designs = [], dots = 'bottom', slideshowLayers = [], photoView }) {
+    async addPost({ scope, authorMode = 'personal', title = '', text, images = [], alsoTeams = [], designs = [], dots = 'bottom', slideshowLayers = [], photoView }) {
       const member = requireMember();
+      if(authorMode==='tfb'&&(!member.isAdmin||scope!=='club'))throw Error('Nur Admins dürfen im Chat als TFB veröffentlichen.');
       const allowed = mayWrite(member, scope);
       if (!allowed.ok) throw new Error(allowed.reason === 'team' ? 'Insider News schreiben die Spieler dieser Mannschaft.' : 'Bitte zuerst die Hinweise bestätigen.');
       const t = String(text || '').trim();
@@ -981,6 +982,7 @@
       if (!Array.isArray(images) || images.length > 6) throw new Error('Pro Beitrag sind höchstens 6 Fotos möglich.');
       const mine = alsoTeams.filter((k) => member.isAdmin || inTeam(member, k));
       const post = { id: 'p-' + uid(), scope, authorId: member.id, createdAt: new Date().toISOString(), ...(String(title || '').trim() ? { title: String(title).trim().slice(0, 90) } : {}), text: t.slice(0, 2000), images: images.slice(0, 6), ...(designs.length ? {designs:clone(designs), dots} : {}), ...(scope === 'club' && mine.length ? { alsoTeams: mine } : {}) };
+      if(authorMode==='tfb')post.authorMode='tfb';
       if (slideshowLayers.length) post.slideshowLayers = clone(slideshowLayers);
       if (['slideshow', 'carousel'].includes(photoView)) post.photoView = photoView;
       db.community.posts.push(post);
@@ -988,10 +990,12 @@
       document.dispatchEvent(new Event('tfb-chat-updated'));
       return publicPost(post);
     },
-    async editPost(id, { title = '', text, images, alsoTeams, designs, dots, slideshowLayers, photoView }) {
+    async editPost(id, { authorMode, title = '', text, images, alsoTeams, designs, dots, slideshowLayers, photoView }) {
       const member = requireMember();
       const p = db.community.posts.find((x) => x.id === id);
       if (!p || (p.authorId !== member.id && !member.isAdmin)) throw new Error('Diesen Beitrag kannst du nicht ändern.');
+      if((authorMode==='tfb'||p.authorMode==='tfb')&&(!member.isAdmin||p.scope!=='club'))throw Error('Nur Admins dürfen offizielle TFB-Beiträge bearbeiten.');
+      if(authorMode!==undefined)p.authorMode=authorMode==='tfb'?'tfb':'personal';
       if (images && (!Array.isArray(images) || images.length > 6)) throw new Error('Pro Beitrag sind höchstens 6 Fotos möglich.');
       Object.assign(p, { text: String(text || '').trim().slice(0, 2000), images: (images || []).slice(0, 6), editedAt: new Date().toISOString() });
       if (String(title || '').trim()) p.title = String(title).trim().slice(0, 90); else delete p.title;

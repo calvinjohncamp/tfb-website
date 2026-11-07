@@ -1317,7 +1317,7 @@
     return `
       <article class="fpost ${p.hidden ? 'is-hidden' : ''} ${p.teaser ? 'is-teaser' : ''}" data-post="${esc(p.id)}">
         <header class="fpost-head">
-          <span class="fpost-avatar">${p.avatar ? `<img src="${esc(p.avatar)}" alt="">` : esc(initialsOf(p.author))}</span>
+          <span class="fpost-avatar${p.authorMode==='tfb'?' tfb-sender-avatar':''}">${p.avatar ? `<img src="${esc(p.avatar)}" alt="">` : esc(initialsOf(p.author))}</span>
           <span class="fpost-who"><b>${esc(p.author)}</b>
             <small>${esc(whenText(p.createdAt))}${p.editedAt ? ' · bearbeitet' : ''}${p.fromClub ? ' · auch im Clubgeflüster' : ''}${p.teaser ? ` · <a href="#team/${esc(p.team)}">Insider News · ${esc(teamLabel(p.team))}</a>` : ''}${p.hidden ? ' · <em>ausgeblendet</em>' : ''}</small></span>
         </header>
@@ -1579,7 +1579,7 @@
           data-author="${esc(p.author.toLowerCase())}" data-text="${esc(`${p.title || ''} ${p.text || ''}`.toLowerCase())}"
           data-teams="${esc(teams.join(' '))}" data-where="${p.team ? 'team' : 'club'}" data-photos="${imgs.length}" data-at="${esc(p.createdAt)}">
           ${imgs.length ? `<span class="message-collage n${imgs.length}">${imgs.map(ref => `<span class="message-photo">${picture(ref, ref, '')}</span>`).join('')}</span>` : ''}
-          <span class="mini-head"><span class="fpost-avatar">${p.avatar ? `<img src="${esc(p.avatar)}" alt="">` : esc(initialsOf(p.author))}</span>
+          <span class="mini-head"><span class="fpost-avatar${p.authorMode==='tfb'?' tfb-sender-avatar':''}">${p.avatar ? `<img src="${esc(p.avatar)}" alt="">` : esc(initialsOf(p.author))}</span>
             <span><b>${esc(p.author)}</b><small>${esc(whenText(p.createdAt))}</small></span></span>
           <span class="mini-where${p.title ? '' : ' is-excerpt'}">${p.title ? esc(p.title) : p.text ? esc(p.text.slice(0, 140)) + (p.text.length > 140 ? '…' : '') : p.team ? `${esc(copy.teamLabel)} · ${esc(teamLabel(p.team))}` : esc(copy.feedTitle)}</span>
           ${p.title && p.text ? `<span class="mini-text">${esc(p.text)}</span>` : ''}
@@ -1681,7 +1681,7 @@
     if (!editId && may.reason === 'rules') return openRules(scope);
     const existing = editId ? postCache[editId] : null;
     const draft = {
-      title: existing?.title || '', text: existing?.text || '',
+      title: existing?.title || '', text: existing?.text || '', authorMode:existing?.authorMode||'personal',
       alsoTeams: existing?.alsoTeams || [],
       dots: existing?.dots || 'bottom', designed: Boolean(existing?.designs?.length),
       photoView: existing?.photoView || 'collage',
@@ -1708,6 +1708,7 @@
       openSheet(`
         <form class="editor compose" data-compose novalidate>
           <h2>${existing ? 'Beitrag bearbeiten' : isTeam ? `${esc(chatText().teamLabel)} · ${esc(teamLabel(scope.slice(5)))}` : esc(chatText().feedTitle)}</h2>
+          ${scope==='club'&&ui().isAdmin()?`<fieldset class="chat-options compose-sender"><legend>Veröffentlichen als</legend><div class="chat-option-list">${[['personal',`${state.member.firstName} ${state.member.lastName}`,state.member.avatar],['tfb','TFB','assets/icons/icon-512.png']].map(([value,name,avatar])=>`<label class="meet-check compose-sender-option"><input type="radio" name="postAs" value="${value}"${draft.authorMode===value?' checked':''}><span class="fpost-avatar${value==='tfb'?' tfb-sender-avatar':''}">${avatar?`<img src="${esc(avatar)}" alt="">`:esc(initialsOf(name))}</span><span>${esc(name)}</span></label>`).join('')}</div></fieldset>`:''}
           <textarea name="text" rows="5" maxlength="2000" placeholder="${isTeam ? 'Wie lief das Spiel? Was war los bei der Tour?' : 'Was gibt’s Neues im Club?'}">${esc(draft.text)}</textarea>
           <label class="field compose-heading"><span>Überschrift (freiwillig)</span><input class="compose-title" name="title" maxlength="90" value="${esc(draft.title)}" placeholder="z. B. ${isTeam ? 'Auswärtssieg in Hennef' : 'Grillabend am Mittwoch'}"></label>
           <div class="compose-photos">
@@ -1730,10 +1731,11 @@
           <p class="small muted" role="status" data-video-progress hidden></p>
           <p class="form-error" role="alert"></p>
           <button type="submit" class="btn signal block big">${existing ? 'Speichern' : 'Veröffentlichen'}</button>
-          <p class="fineprint">Öffentlich sichtbar mit deinem Namen${state.member.isMinor ? ' (Vorname und Anfangsbuchstabe)' : ''}.</p>
+          <p class="fineprint">${draft.authorMode==='tfb'?'Öffentlich als Tennisfreunde Bielstein':'Öffentlich sichtbar mit deinem Namen'}${draft.authorMode!=='tfb'&&state.member.isMinor ? ' (Vorname und Anfangsbuchstabe)' : ''}.</p>
         </form>`);
       const form = document.querySelector('[data-compose]');
       const keep = () => {
+        if(form.elements.postAs)draft.authorMode=form.elements.postAs.value;
         draft.title = form.elements.title.value.trim();
         draft.text = form.elements.text.value;
         draft.photoPeople = form.elements.photoPeople?.value || '';
@@ -1763,6 +1765,7 @@
         }
       });
       form.addEventListener('change', async e => {
+        if(e.target.name==='postAs'){keep();render();document.querySelector('[data-compose] [name=postAs]:checked')?.focus();return;}
         if (e.target.name === 'photoView') {
           keep(); render();
           document.querySelector('[data-compose] [name=photoView]:checked')?.focus();
@@ -1835,7 +1838,7 @@
           }
           const slideshowLayers = hasSlideshow() ? draft.slideshowLayers : [];
           const studio = draft.designed || slideshowLayers.length ? await import('./chat-media.js') : null;
-          const payload = {title:draft.title,text:draft.text,alsoTeams:draft.alsoTeams,dots:draft.dots,
+          const payload = {title:draft.title,text:draft.text,authorMode:draft.authorMode,alsoTeams:draft.alsoTeams,dots:draft.dots,
             images:draft.media.filter(media => !media.ref.startsWith('vid:')).map(media => media.ref),
             designs:studio ? draft.media.map(media => media.design || studio.mediaDesign(media.ref,16,9)) : [],
             slideshowLayers, photoView:hasVideo() ? 'carousel' : hasSlideshow() ? draft.photoView : 'collage'};

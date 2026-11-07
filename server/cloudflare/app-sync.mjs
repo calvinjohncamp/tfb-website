@@ -92,7 +92,7 @@ async function records(env, filter = () => true) {
   return meta.map(r=>({...r,value:JSON.parse(payload.get(r.payload_id)||'null')}));
 }
 // Guest projection contains published posts only, never accounts or invitation records.
-const guestFields=['id','authorId','scope','title','text','images','createdAt','editedAt','alsoTeams','designs','dots','slideshowLayers','photoView','postId'];
+const guestFields=['id','authorId','scope','title','text','images','createdAt','editedAt','alsoTeams','designs','dots','slideshowLayers','photoView','postId','authorMode'];
 async function publicRows(env) {
   const rows=await records(env,r=>!r.deleted&&['post','comment','catalog'].includes(r.kind));
   const posts=rows.filter(r=>r.kind==='post'&&!r.value.hidden);
@@ -105,7 +105,7 @@ function guestRefs(rows) {
 export async function publicCommunity(env) {
   const {rows,posts,comments}=await publicRows(env);
   const names=new Map((await env.DB.prepare('SELECT id,first_name,last_name FROM members WHERE active=1').all()).results.map(m=>[m.id,`${m.first_name} ${m.last_name}`.trim()]));
-  const present=r=>({...Object.fromEntries(guestFields.filter(k=>r.value[k]!==undefined).map(k=>[k,r.value[k]])),author:names.get(r.owner_id)||'Mitglied',avatar:null,mine:false,canModerate:false,team:r.scope.startsWith('team:')?r.scope.slice(5):null});
+  const present=r=>({...Object.fromEntries(guestFields.filter(k=>r.value[k]!==undefined).map(k=>[k,r.value[k]])),author:r.kind==='post'&&r.value.authorMode==='tfb'?'Tennisfreunde Bielstein':names.get(r.owner_id)||'Mitglied',avatar:r.kind==='post'&&r.value.authorMode==='tfb'?'assets/icons/icon-512.png':null,mine:false,canModerate:false,team:r.scope.startsWith('team:')?r.scope.slice(5):null});
   return {posts:posts.map(r=>({...present(r),commentCount:comments.filter(c=>c.value.postId===r.id).length})),comments:comments.map(present),images:[...guestRefs([...posts,...comments])].filter(r=>r.startsWith('img:')),catalog:rows.find(r=>r.kind==='catalog'&&r.id==='club')?.value||catalog};
 }
 export async function publicChatMedia(env,ref,postId) {
@@ -224,9 +224,13 @@ async function validate(env,member,c,op,all,importing) {
     if(!account?.feedRules)fail(403,'Bitte zuerst die Chat-Hinweise bestätigen.');
     if(op.kind==='post') {
       scope=old?.scope||text(v.scope,100); if(!c.canScope(scope))fail(403,'Keine Berechtigung für diese Mannschaft.');
+      const authorMode=v.authorMode??old?.value.authorMode??'personal';
+      if(!['personal','tfb'].includes(authorMode))fail(400,'Ungültiger Absender.');
+      if((authorMode==='tfb'||old?.value.authorMode==='tfb')&&(!member.is_admin||scope!=='club'))fail(403,'Nur Admins dürfen offizielle TFB-Beiträge veröffentlichen oder bearbeiten.');
       const alsoTeams=v.alsoTeams||[];
       if(!Array.isArray(alsoTeams)||alsoTeams.length>30||alsoTeams.some(t=>typeof t!=='string'||(!member.is_admin&&!c.teams.has(t))))fail(403,'Mannschaftsberechtigung prüfen.');
       value={id:op.id,authorId:owner,scope,title:text(v.title||'',90),text:text(v.text||''),alsoTeams,images:v.images||[],createdAt:old?.value.createdAt||(importing?timestamp(v.createdAt):now)};
+      if(authorMode==='tfb')value.authorMode='tfb';
       if (v.designs !== undefined) {
         if (!Array.isArray(v.designs) || v.designs.length > 6) fail(400, 'Pro Beitrag sind höchstens sechs Medien möglich.');
         if (v.designs.length) {
@@ -247,7 +251,7 @@ async function validate(env,member,c,op,all,importing) {
       }
       const slideshowLayers = v.slideshowLayers ?? old?.value.slideshowLayers;
       const photoView = v.photoView ?? old?.value.photoView;
-      if (['slideshow','carousel'].includes(photoView) && value.images.length > 1 && !value.designs?.some(slide => videoRef(slide.ref))) {
+      if (photoView==='carousel' && (value.images.length>1 || value.designs?.some(slide=>videoRef(slide.ref))) || photoView==='slideshow' && value.images.length>1 && !value.designs?.some(slide=>videoRef(slide.ref))) {
         value.photoView = photoView;
       }
       if (slideshowLayers && value.designs?.length > 1 && value.designs.every(slide => !videoRef(slide.ref))) {
