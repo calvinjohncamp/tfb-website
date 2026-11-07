@@ -17,7 +17,11 @@ iPhone und Desktop, berechnete Deckkraft/Position, Pixelvergleich mit sichtbarem
 bzw. verborgenem grellem Inhalt unter der Fläche. Die Inset-Höhen sind im lokalen
 WebKit explizit simuliert; eine echte iOS-Systemleiste lässt sich damit nicht
 prüfen. Abschließende Sichtprüfung auf dem iPad durch den Nutzer bleibt sinnvoll.
-Veröffentlichungsnachweis folgt nach erfolgreichem Pages-Lauf.
+Live-Commit `6073382498d8933f7e944f8a2a272e7e206fb176`; erfolgreicher
+[Pages-Lauf 42411944289](https://github.com/calvinjohncamp/tfb-website/actions/runs/42411944289).
+HTML, CSS, Manifest und Service Worker am 07.11.2026 um 20:37 UTC per SHA-256
+mit dem Paket verglichen: identisch. Nachweis in der Dropbox-Arbeitskopie
+`.private/release-v309/live-proof.json`.
 
 ---
 
