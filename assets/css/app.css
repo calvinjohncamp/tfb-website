@@ -39,16 +39,20 @@
 
 * { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; background: #EFEFEF; }
-/* Paint behind the iOS status bar even when page content scrolls underneath.
-   The inset is zero on desktop; never intercept touches or alter page layout. */
-body::before {
-  content: "";
-  position: fixed;
-  top: 0; left: 0; right: 0;
-  height: var(--safe-top);
-  background: var(--bg);
-  z-index: 2147483647;
-  pointer-events: none;
+/* A real fixed element lets iOS sample an opaque top-edge background.
+   Some iPad standalone versions report a zero safe inset. Keep >10px there
+   so WebKit does not discard the surface as a thin border. No layout shift. */
+.tfb-statusbar-shield { display: none; }
+@media (hover: none) and (pointer: coarse) {
+  .tfb-statusbar-shield {
+    display: block;
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: max(12px, var(--safe-top));
+    background: var(--bg);
+    z-index: 2147483647;
+    pointer-events: none;
+  }
 }
 body {
   margin: 0;

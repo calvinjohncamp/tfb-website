@@ -1,5 +1,40 @@
 # TFB-Kiosk – Projektgedächtnis und Übergabe
 
+## iPad-Statuszeile: v309 auf echtem Gerät widerlegt, Korrektur v311 – 07.11.2026
+
+Nutzer-Screenshot IMG_2762.PNG zeigt unter Uhrzeit/WLAN/Batterie weiterhin
+verschwommene Seiteninhalte. **v309 war auf dem iPad nicht wirksam.** Der alte
+lokale Pixeltest bewies nur eine CSS-Fläche bei manuell gesetztem positiven
+Inset, nicht die native iOS-Statusleiste. Diesen Nachweis nicht als Gerätefreigabe
+interpretieren; keine Vermutung, es sei allein ein Cacheproblem.
+
+v311 ersetzt `body::before` durch ein echtes, dauerhaft außerhalb des neu
+gerenderten App-Inhalts liegendes DOM-Element `.tfb-statusbar-shield` in index.html.
+Auf Touch-Geräten mit grobem Zeiger ist es über die volle Viewportbreite fest bei
+top:0, deckend in der aktuellen Seitenfarbe, ohne Pointer-Ereignisse. Höhe
+`max(12px, var(--safe-top))`: Ein von iOS gemeldeter Null-Inset darf die Fläche
+nicht mehr verschwinden lassen. Auf Desktop ausgeblendet. Kein zusätzlicher
+Layoutabstand; kein Umbau der Scrollcontainer oder JavaScript-Scrollumleitung.
+Meta-/Manifestfarbe und Apple-Statusstil aus v309 bleiben erhalten. Cache v311.
+
+Begründung/Arbeitsannahme anhand des [WebKit-Quellcodes](https://github.com/WebKit/WebKit/blob/main/Source/WebCore/page/LocalFrameView.cpp):
+`fixedContainerEdges` ermittelt feste Container über Hit-Tests am Rand und deren
+Renderer. `primaryBackgroundColorForRenderer` verwirft Flächen bis 10px Höhe;
+[PageColorSampler.h](https://github.com/WebKit/WebKit/blob/main/Source/WebCore/page/PageColorSampler.h)
+setzt den Rand-Abtastabstand auf 4px. Ein echtes Element mit mindestens 12px Höhe
+und voller Breite adressiert diese Erkennung auch bei Null-Inset. Das ist eine
+begründete Korrektur, keine direkt auf dem Nutzergerät bestätigte Ursachenmessung.
+
+`tools/test-browser-status-area.mjs` wurde entsprechend erweitert und bestanden:
+echter DOM-Knoten/ARIA, WebKit für Touch und Desktop, beide Farbwelten, iPad
+hoch/quer, iPhone, explizit Null-Inset und positive Insets; feste Geometrie,
+Rand-Hit-Test und identische Pixel mit/ohne grellen Inhalt darunter nach Scrollen.
+Native iPad-Systemleiste bleibt lokal nicht prüfbar (kein iOS-Simulator installiert).
+**Gerätebestätigung durch Nutzer steht noch aus.**
+Veröffentlichungsnachweis folgt nach erfolgreichem Pages-Lauf.
+
+---
+
 ## Ruhige News-Datierung und fester Home-Look v310 – 07.11.2026
 
 Unter Aktuell, Club und Clubarchiv entfallen die quadratischen Datums-Badges bei
