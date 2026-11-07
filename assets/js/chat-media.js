@@ -222,7 +222,9 @@ function playClip(video, restart = false) {
 }
 function mediaStyle(slide) {
   if (slide.kind === 'slideshow') return '';
-  return `object-position:${slide.x}% ${slide.y}%;transform-origin:${slide.x}% ${slide.y}%;transform:scale(${slide.zoom})`;
+  const plain = slide.x === 50 && slide.y === 50 && slide.zoom === 1 &&
+    !slide.logo && !slide.layers?.some(layer => layer.text?.trim()) && !slide.top?.strength && !slide.bottom?.strength;
+  return `${plain ? 'object-fit:contain;' : ''}object-position:${slide.x}% ${slide.y}%;transform-origin:${slide.x}% ${slide.y}%;transform:scale(${slide.zoom})`;
 }
 function design(slide, editing) {
   const logo = logos[slide.logo];

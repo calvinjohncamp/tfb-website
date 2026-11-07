@@ -1619,15 +1619,15 @@
           <textarea name="text" rows="5" maxlength="2000" placeholder="${isTeam ? 'Wie lief das Spiel? Was war los bei der Tour?' : 'Was gibt’s Neues im Club?'}">${esc(draft.text)}</textarea>
           <label class="field compose-heading"><span>Überschrift (freiwillig)</span><input class="compose-title" name="title" maxlength="90" value="${esc(draft.title)}" placeholder="z. B. ${isTeam ? 'Auswärtssieg in Hennef' : 'Grillabend am Mittwoch'}"></label>
           <div class="compose-photos">
-            ${draft.media.map(({ref}, i) => `<div class="compose-medium"><div class="gallery-thumb">${ref.startsWith('vid:') ? '<span class="compose-video">▶ Video</span>' : picture(ref, ref)}${scope !== 'club' && !ref.startsWith('vid:') ? frameButton(ref, true) : ''}
+            ${draft.media.map(({ref}, i) => `<div class="compose-medium"><div class="gallery-thumb">${ref.startsWith('vid:') ? '<span class="compose-video">▶ Video</span>' : picture(ref, ref)}
               <button type="button" data-cremove="${i}" aria-label="Medium entfernen">×</button>
               <span class="thumb-move"><button type="button" data-cmove="${i}" data-dir="-1" ${i === 0 ? 'disabled' : ''} aria-label="Nach vorne">‹</button><button type="button" data-cmove="${i}" data-dir="1" ${i === draft.media.length - 1 ? 'disabled' : ''} aria-label="Nach hinten">›</button></span></div>
-              ${scope === 'club' ? `<button type="button" class="btn small" data-cdesign="${i}">Gestalten</button>` : ''}</div>`).join('')}
+              </div>`).join('')}
             ${draft.media.length < 6 ? `<label class="gallery-add">${ui().icon.camera}<span>${scope === 'club' ? 'Medien hinzufügen' : 'Fotos'}</span><input type="file" accept="${scope === 'club' ? 'image/*,video/*,.mov,.mp4,.m4v,.webm' : 'image/*'}" multiple data-cphoto hidden></label>` : ''}
           </div>
           ${hasSlideshow() ? `<div class="compose-photo-view"><label class="field"><span>Bilder anzeigen als</span>
             <select name="photoView"><option value="collage"${draft.photoView === 'collage' ? ' selected' : ''}>Collage</option><option value="slideshow"${draft.photoView === 'slideshow' ? ' selected' : ''}>Diashow</option><option value="carousel"${draft.photoView === 'carousel' ? ' selected' : ''}>Karussell</option></select></label>
-            ${draft.photoView === 'carousel' ? '<p class="small muted">Bilder vollständig anzeigen und selbst durchblättern.</p>' : '<button type="button" class="btn small" data-cslideshow>Text für alle Bilder</button>'}</div>` : ''}
+            ${draft.photoView === 'carousel' ? '<p class="small muted">Bilder vollständig anzeigen und selbst durchblättern.</p>' : ''}</div>` : ''}
           <p class="small muted">${scope === 'club' ? 'Bis zu 6 Fotos oder Videos. Clips bis 30 Sekunden werden bei Bedarf automatisch verkleinert.' : 'Bis zu 6 Fotos.'}</p>
           ${draft.media.length ? '<label class="meet-check"><input type="checkbox" name="photoOk" required><span>Die abgebildeten Personen sind mit der Veröffentlichung einverstanden.</span></label>' : ''}
           ${scope === 'club' ? `<div class="compose-teams"><p class="small muted">${myTeams.length > 1 ? 'Auch in meinen Mannschaften anzeigen' : 'Auch in meiner Mannschaft anzeigen'}</p>
@@ -1666,29 +1666,6 @@
           render();
           return;
         }
-        const designButton = e.target.closest('[data-cdesign]');
-        const slideshowButton = e.target.closest('[data-cslideshow]');
-        if (!designButton && !slideshowButton) return;
-        keep();
-        setBusy(true);
-        try {
-          const media = draft.media[designButton ? Number(designButton.dataset.cdesign) : 0];
-          const studio = await import('./chat-media.js');
-          const source = media.file || (media.ref.startsWith('vid:') ? await api.getMemberVideo(existing.id,media.ref) : images[media.ref] || media.ref);
-          if (!form.isConnected) return;
-          if (slideshowButton) {
-            studio.openSlideshowEditor(media.design || studio.mediaDesign(media.ref,16,9), source, draft.slideshowLayers, draft.media.length, layers => {
-              draft.slideshowLayers = layers;
-            });
-            return;
-          }
-          studio.openLiveMediaEditor(media.design || studio.mediaDesign(media.ref,16,9),source,draft.dots,(design,dots) => {
-            media.design = design;
-            draft.dots = dots;
-            draft.designed = true;
-          });
-        } catch (error) { toast(error.message); }
-        finally { setBusy(false); }
       });
       form.addEventListener('change', async e => {
         if (e.target.name === 'photoView') { keep(); render(); return; }

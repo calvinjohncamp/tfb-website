@@ -172,27 +172,39 @@ try {
   await page.getByRole('heading', { name: 'Freiwillige Überschrift', exact: true }).waitFor();
   assert.deepEqual(await page.evaluate(async () => (await TFB.api.posts('club')).find(p => p.title === 'Freiwillige Überschrift').alsoTeams), ['herren-55-1']);
   await page.locator('[data-action="post-new"]').first().click();
-  await compose.locator('[name="title"]').fill('Gestaltetes Hochformat');
+  await compose.locator('[name="title"]').fill('Einfaches Hochformat');
   const portrait = await page.evaluate(() => {
     const canvas = document.createElement('canvas'); canvas.width = 80; canvas.height = 100;
     canvas.getContext('2d').fillRect(0,0,80,100);
     return canvas.toDataURL().split(',')[1];
   });
   await compose.locator('[data-cphoto]').setInputFiles({name:'hochformat.png', mimeType:'image/png', buffer:Buffer.from(portrait,'base64')});
-  await compose.getByRole('button',{name:'Gestalten',exact:true}).click();
-  const editor = page.getByRole('dialog',{name:'Chat-Beitrag gestalten'});
-  await editor.getByRole('textbox',{name:'Überschrift',exact:true}).fill('Text auf dem Foto');
-  await editor.getByRole('textbox',{name:'Unterüberschrift',exact:true}).fill('Zweite Zeile');
-  await editor.locator('[name=hex]').fill('#ffaa30');
-  await editor.getByRole('checkbox',{name:'Kursiv',exact:true}).check();
-  await editor.getByRole('checkbox',{name:'Unterstrichen',exact:true}).check();
-  await editor.getByRole('slider',{name:'Buchstabenabstand'}).fill('12');
-  await editor.getByText('Logo',{exact:true}).click();
-  await editor.getByLabel('Logo auf dieser Seite').selectOption('padel');
-  await editor.getByRole('button',{name:'Übernehmen',exact:true}).click();
+  await page.waitForFunction(() => document.querySelectorAll('[data-compose] .compose-medium').length === 1 && !document.querySelector('[data-compose] [type="submit"]').disabled);
+  assert.equal(await compose.locator('[data-cdesign], [data-cslideshow], [data-photo-frame]').count(),0);
   await compose.locator('[name="photoOk"]').check();
   await compose.locator('[type="submit"]').click();
+  const plain = page.locator('.chat-post-row').filter({hasText:'Einfaches Hochformat'});
+  await plain.waitFor();
+  assert.equal(await plain.locator('.cs-media img').evaluate(img => getComputedStyle(img).objectFit),'contain');
+  // Historical designs remain readable and survive ordinary caption editing.
+  await page.evaluate(async portrait => {
+    const ref = await TFB.api.putMemberImage('data:image/png;base64,'+portrait);
+    const studio = await import('/assets/js/chat-media.js');
+    const design = studio.mediaDesign(ref,80,100);
+    design.logo='padel';
+    design.layers=[
+      {text:'Text auf dem Foto',font:'title',size:8,opacity:100,color:'#fff',x:94,y:82,align:'right',spacing:0},
+      {text:'Zweite Zeile',font:'body',size:5,opacity:100,color:'#ffaa30',x:94,y:90,align:'right',spacing:12,italic:true,underline:true},
+    ];
+    await TFB.api.addPost({scope:'club',title:'Gestaltetes Hochformat',text:'Bestehender gestalteter Beitrag',images:[ref],designs:[design]});
+    await TFB.refreshSite(true);
+  },portrait);
   const designed = page.locator('.chat-post-row.has-designed-media').filter({hasText:'Gestaltetes Hochformat'});
+  await designed.locator('[data-action="post-edit"]').click();
+  assert.equal(await compose.locator('[data-cdesign], [data-cslideshow]').count(),0);
+  await compose.locator('[name="text"]').fill('Bestehenden Beitrag ergänzt');
+  await compose.locator('[name="photoOk"]').check();
+  await compose.locator('[type="submit"]').click();
   await designed.getByText('Text auf dem Foto',{exact:true}).waitFor();
   const styled = designed.getByText('Zweite Zeile',{exact:true});
   assert.deepEqual(await styled.evaluate(el => [el.style.color,el.style.fontStyle,el.style.textDecoration,el.style.letterSpacing]), ['rgb(255, 170, 48)','italic','underline','0.12em']);

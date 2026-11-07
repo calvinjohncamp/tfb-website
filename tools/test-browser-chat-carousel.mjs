@@ -46,6 +46,7 @@ try {
   await page.locator('[data-compose] [name="title"]').fill('Karussell-Prüfung');
   await page.locator('[data-cphoto]').setInputFiles(files.map((data,index) => ({name:`slide-${index+1}.png`,mimeType:'image/png',buffer:Buffer.from(data,'base64')})));
   await page.waitForFunction(() => document.querySelectorAll('[data-compose] .compose-medium').length === 4 && !document.querySelector('[data-compose] [type="submit"]').disabled);
+  assert.equal(await page.locator('[data-cdesign], [data-cslideshow]').count(),0,'No media editor in the simplified composer');
   await page.locator('[name="photoView"]').selectOption('carousel');
   assert.equal(await page.locator('[data-cslideshow]').count(),0);
   await page.locator('[name="photoOk"]').check();
@@ -56,6 +57,9 @@ try {
   const current = (where = gallery()) => where.locator('[data-cs-published-page]:not([hidden])');
   const index = async (where = gallery()) => Number(await current(where).getAttribute('data-cs-published-page'));
   await gallery().scrollIntoViewIfNeeded();
+  const buttonSizes = await gallery().locator('[data-cs-step="1"]').evaluate(button => ({target:button.getBoundingClientRect().width,visible:parseFloat(getComputedStyle(button,'::before').width)}));
+  assert.equal(buttonSizes.target,44,'Touch target remains usable');
+  assert.equal(buttonSizes.visible,22,'Visible arrow circle is half the previous size');
   assert.equal(await gallery().getAttribute('data-cs-auto'),null);
   assert.equal(await gallery().locator('[data-cs-slideshow]').count(),0);
   assert.equal(await gallery().locator('[data-cs-step="-1"]').isDisabled(),false);
