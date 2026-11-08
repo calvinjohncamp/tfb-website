@@ -440,8 +440,7 @@
     try {
       if (KIOSK_AREA.includes(view)) {
         if (!state.member && view !== 'kiosk') { $view.innerHTML = viewHead(view==='strichliste'?'Strichliste':'Abrechnungen','Deine persönlichen Kioskdaten findest du nach der Anmeldung.',false)+'<button class="btn primary" data-action="login">Anmelden</button>'; return; }
-        if (state.member && !state.member.hasConsent) { $view.innerHTML = consentMarkup(); return; }
-        const body = view === 'kiosk' ? await kioskView() : view === 'strichliste' ? await tallyView() : await statementsView();
+        const body = state.member && !state.member.hasConsent ? consentMarkup() : view === 'kiosk' ? await kioskView() : view === 'strichliste' ? await tallyView() : await statementsView();
         if(request!==viewRender)return;
         $view.innerHTML = body;
       } else if (TFB.views && TFB.views[view]) {
@@ -450,15 +449,14 @@
         $view.innerHTML=body;
       }
       if (state.member?.isAdmin) {
-        const editHome = view === 'home' && $view.querySelector('.site-page[data-page="home"]')
-          ? '<button type="button" class="btn small" data-action="site-edit" data-page="home">Home bearbeiten</button>' : '';
+        const editHome = '<button type="button" class="btn small" data-action="site-edit" data-page="home">Home bearbeiten</button>';
         $view.insertAdjacentHTML('afterbegin', `<div class="tfb-admin-design">${TFB.designPreview.buttons()}
           <div class="tfb-admin-links"><button type="button" class="btn small" data-action="splash-edit">Splash bearbeiten</button>${editHome}<a class="btn small" href="#partner">Partner verwalten</a>
             <button type="button" class="btn small" data-action="members-manage">Mitglieder verwalten</button>
             <a class="btn small" href="#clubstatistik">Clubstatistik</a>
             <button type="button" class="btn small" data-install-help>App-Anleitung</button>
             <button type="button" class="btn small" data-action="admin-backup">Sicherungen</button></div></div>`);
-        const homeEditShortcut = editHome && !$view.querySelector('.editing-page')
+        const homeEditShortcut = view === 'home' && $view.querySelector('.site-page[data-page="home"]') && !$view.querySelector('.editing-page')
           ? $view.querySelector('.tfb-admin-links [data-action="site-edit"]') : null;
         const edit = homeEditShortcut || $view.querySelector('.view-close[data-action="site-edit"], .view-close[data-action="edit-start"], .view-close[data-action="feature-edit"], .view-close[data-action="album-edit"], .view-close[data-action="portrait-edit"], .view-close[data-action="chat-text-edit"]');
         if (edit) {
