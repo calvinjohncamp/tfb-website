@@ -22,3 +22,6 @@ dunkelblaue Monatsbeträge, Kalendergeometrie und bestehende Abrechnungsabläufe
 Keine Backendänderung, Migration, Datenlöschung, Zahlung oder Mail.
 Service Worker v344.
 
+Veröffentlicht: Commit b752671, Pages-Workflow 42514809422 erfolgreich.
+Live-Dateien für Profilkreise, Suchfeld, Monatsbeträge und Service Worker v344
+auf joern-kaemper.de bestätigt.
