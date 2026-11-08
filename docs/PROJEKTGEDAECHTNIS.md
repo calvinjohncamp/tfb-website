@@ -1,5 +1,48 @@
 # TFB-Kiosk – Projektgedächtnis und Übergabe
 
+## Verbindlicher aktueller Stand – 08.11.2026 · Abschluss v330
+
+Dieser Überblick hat Vorrang vor älteren Release-Notizen weiter unten.
+Insbesondere sind frühere Angaben zum Ausschluss von Admins aus der Statistik
+und zum ausgeblendeten Account-Installationsbutton inzwischen überholt.
+
+- Live-Website: https://joern-kaemper.de/ · Service Worker `tfb-kiosk-v330`.
+  Frontend-Funktionsstand `01c9d17`, erfolgreicher Pages-Lauf `42470589926`.
+  Worker `1bd4f53e-f079-4aee-8b9e-3a5efc1bef84`; Dokumentationsstand vor
+  diesem Abschluss `99ec29e`. Die letzten Umsetzungen sind vom Nutzer positiv bestätigt.
+- Kommentare: „Antworten“ steht für angemeldete Mitglieder zuerst in der
+  Aktionszeile. Bezug im Composer entfernbar, veröffentlichte Antwort mit
+  kompaktem Zitat und Sprung zum Original. Flache Liste bleibt erhalten.
+  Nur `replyTo` speichern, keine Zitatkopien; ausgeblendete/gelöschte Originale
+  werden im Zitat nicht weitergegeben. Klingelhinweis auch bei Antworten auf
+  eigene Kommentare unter fremden Beiträgen. Erster Kommentar mit 14px Abstand
+  unter der Trennlinie. Details: RELEASE-v329.md und RELEASE-v330.md.
+- Clubstatistik unter `#clubstatistik`: Besucher (Browser), Besuche, Seiten pro
+  Besuch, Seitenaufrufe, aktive Mitglieder, App-Anteil; Heute/Monat, Verlauf,
+  Seitenrangfolge und CSV. Admins werden ausdrücklich wie alle anderen gezählt,
+  auch bei ausgeblendeten Werkzeugen. Freiwillige Freigabe, DNT/GPC und übrige
+  Schutzregeln gelten weiter. Freigabe im damaligen Testbrowser aktiviert und
+  echter Live-Test mit zwei Admin-Aufrufen nachgewiesen; das ist keine globale
+  Freigabe für andere Geräte/Besucher. Keine rückwirkenden Zahlen erfinden.
+  Partnerstatistik bleibt ausgeschaltet. Details: RELEASE-v326.md / RELEASE-v328.md.
+- App-Anleitung: nach mobiler Anmeldung über die ausblendbare Karte „Dein Club.
+  Ein Fingertipp.“, dauerhaft im Account und direkt in den Admin-Werkzeugen.
+  Alle drei Zugänge öffnen denselben Apple-/Android-Dialog. Auch in der bereits
+  installierten App bleibt der manuelle Account-Aufruf sichtbar; nur die
+  automatische Karte ist dort ausgeblendet. Account-Button so breit wie
+  „Speichern“, Blau/Gelb bzw. Rot/Weiß. Details: RELEASE-v327.md.
+- Präsentationsbilder aus dem echten Dialog:
+  `praesentation/app-installation/TFB-App-Apple-iPhone-iPad-HD.png` (1950 × 2935px)
+  und `praesentation/app-installation/TFB-App-Android-HD.png` (1950 × 2825px).
+  Erneuter Export: `node tools/export-install-guide.mjs`.
+
+Validierung des letzten Funktionsstands: 18 gezielte Servertests, neue
+Chromium-/WebKit-Prüfungen für Antworten, Bezug entfernen, Farben, Sprung,
+Klingel/Lesestatus, Gast-/Mitglieder-/Adminrechte und versteckte/gelöschte Zitate;
+320/390/834/1440px ohne Überlauf. Bestehende umfangreiche Kommentar-/Foto-
+Browserprüfung und Worker-Dry-Run ebenfalls erfolgreich. Keine produktiven
+Testkommentare, E-Mails oder künstlichen Benachrichtigungen erzeugt.
+
 ## Antworten auf Kommentare – 08.11.2026 · v330
 
 „Antworten“ als erste Kommentaraktion für Mitglieder. Composer und veröffentlichte
