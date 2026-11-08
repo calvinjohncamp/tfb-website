@@ -163,10 +163,11 @@
     if (s === 'email') {
       body = `
         <h2>Anmelden</h2>
-        <p class="muted">${api.secureDirectory ? 'Mit deiner beim Verein hinterlegten E-Mail oder deiner Mitgliedsnummer.' : 'Mit der E-Mail-Adresse, die der Verein von dir hat.'}</p>
+        <p class="muted">${api.secureDirectory ? 'Nur für aktive TFB-Mitglieder: Melde dich mit deiner beim Verein hinterlegten E-Mail-Adresse oder deiner Mitgliedsnummer an.' : 'Mit der E-Mail-Adresse, die der Verein von dir hat.'}</p>
         <label class="field"><span>${api.secureDirectory ? 'E-Mail oder Mitgliedsnummer' : 'E-Mail'}</span>
           <input name="email" type="${api.secureDirectory ? 'text' : 'email'}" inputmode="${api.secureDirectory ? 'text' : 'email'}" autocomplete="username" required value="${esc(state.authEmail)}" placeholder="${api.secureDirectory ? 'E-Mail oder Mitgliedsnummer' : 'name@beispiel.de'}">
         </label>
+        ${api.secureDirectory ? '<p class="muted small">Für deinen ersten Zugang brauchst du einen persönlichen Freischaltcode vom Vorstand. Damit legst du dein Passwort fest. Bei einer gemeinsamen Familien-E-Mail verwende bitte deine Mitgliedsnummer.</p>' : ''}
         <button class="btn primary block" type="submit">Weiter</button>`;
     } else if (s === 'password') {
       body = `

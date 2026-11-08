@@ -137,3 +137,24 @@ test('opening the app renews a valid remembered session, but never an expired on
   assert.equal((await f.call('/auth/session', undefined, f.admin)).status, 401);
   assert.equal(expiration(), 0);
 });
+
+test('unknown email cannot log in or activate using a real member activation code',async()=>{
+  const f=await fixture();await f.call('/admin/import',{rows:people,apply:true},f.admin);
+  const row=f.env.DB.sqlite.prepare('SELECT id FROM members WHERE member_no=?').get('2');
+  const code=await f.call('/admin/activation',{memberId:row.id},f.admin);
+  assert.equal((await f.call('/auth/login',{identifier:'external@example.invalid',password})).status,401);
+  assert.equal((await f.call('/auth/activate',{identifier:'external@example.invalid',password,code:code.body.code})).status,401);
+  assert.equal((await f.call('/auth/activate',{identifier:'member@example.invalid',password,code:code.body.code})).status,200);
+  assert.equal(f.env.DB.sqlite.prepare('SELECT COUNT(*) n FROM members').get().n,3);
+});
+test('imported secondary email works; shared family email requires the unique membership number',async()=>{
+  const f=await fixture();const rows=people.map(p=>({...p,...(p.memberNo==='2'?{email2:'secondary@example.invalid'}:{})}));
+  await f.call('/admin/import',{rows,apply:true},f.admin);
+  const row=f.env.DB.sqlite.prepare('SELECT id FROM members WHERE member_no=?').get('2');
+  let code=await f.call('/admin/activation',{memberId:row.id},f.admin);
+  assert.equal((await f.call('/auth/activate',{identifier:' SECONDARY@EXAMPLE.INVALID ',password,code:code.body.code})).status,200);
+  assert.equal((await f.call('/auth/login',{identifier:' MEMBER@EXAMPLE.INVALID ',password})).status,200);
+  await f.call('/admin/import',{rows:rows.map(p=>p.memberNo==='3'?{...p,email:'member@example.invalid'}:p),apply:true},f.admin);
+  assert.equal((await f.call('/auth/login',{identifier:'member@example.invalid',password})).status,401);
+  assert.equal((await f.call('/auth/login',{identifier:'2',password})).status,200);
+});

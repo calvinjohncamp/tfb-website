@@ -31,3 +31,21 @@ test('Assigned members change only their team content, never Home/Aktuell or ano
  const media=await f.call('/app/team-media',{data:png},f.otherToken);assert.equal(media.status,200);
  assert.equal((await change('own','photo',media.body.ref,2)).status,200);
 });
+
+test('guests, forged sessions and deactivated members cannot submit posts, comments or uploads',async()=>{
+ const f=await fixture();f.env.CMS_BUCKET=new Bucket();
+ assert.equal((await f.commit([{kind:'post',id:'readable',revision:0,value:{scope:'club',text:'Public content',images:[]}}])).status,200);
+ const before=f.env.DB.sqlite.prepare('SELECT COUNT(*) n FROM app_records').get().n;
+ f.env.DB.sqlite.prepare('UPDATE members SET active=0 WHERE id=?').run(f.otherId);
+ for(const token of [undefined,'f'.repeat(64),f.otherToken]){
+  for(const operation of [
+   {kind:'post',id:'blocked-post',revision:0,value:{scope:'club',text:'Not allowed',images:[]}},
+   {kind:'comment',id:'blocked-comment',revision:0,value:{postId:'readable',text:'Not allowed',images:[]}}
+  ])assert.equal((await f.call('/app/commit',{id:crypto.randomUUID(),operations:[operation]},token)).status,401);
+  assert.equal((await f.call('/app/team-media',{data:png},token)).status,401);
+  assert.equal((await f.call('/app/chat-video',{data:'invalid'},token)).status,401);
+  assert.equal((await f.call('/admin/site/commit',{id:crypto.randomUUID(),changes:[]},token)).status,401);
+ }
+ assert.equal(f.env.DB.sqlite.prepare('SELECT COUNT(*) n FROM app_records').get().n,before);
+ assert.equal((await f.call('/public/community')).body.posts[0].text,'Public content');
+});

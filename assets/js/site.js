@@ -1268,13 +1268,13 @@
             <small>${esc(whenText(p.createdAt))}${p.editedAt ? ' · bearbeitet' : ''}${p.fromClub ? ' · auch im Clubgeflüster' : ''}${p.teaser ? ` · <a href="#team/${esc(p.team)}">Insider News · ${esc(teamLabel(p.team))}</a>` : ''}${p.hidden ? ' · <em>ausgeblendet</em>' : ''}</small></span>
         </header>
         ${options.chat ? `<div class="fpost-heading">${p.title ? `<h3 class="fpost-title">${esc(p.title)}</h3>` : '<span></span>'}
-          ${p.hidden ? '' : `<button type="button" class="btn small chat-comment-button" data-action="comment-unlock" data-id="${esc(p.id)}">Dein Kommentar</button>`}</div>`
+          ${p.hidden ? '' : `<button type="button" class="btn small chat-comment-button" data-action="comment-unlock" data-id="${esc(p.id)}">${loggedIn ? 'Dein Kommentar' : 'Zum Kommentieren anmelden'}</button>`}</div>`
           : p.title ? `<h3 class="fpost-title">${esc(p.title)}</h3>` : ''}
         ${p.text ? `<div class="fpost-text">${postText(p.text)}</div>` : ''}
         ${options.media ?? postCollage(p, imgs)}
         ${options.actions ?? (options.chat ? '' : `<a class="post-comments-link" href="#chat/beitrag/${encodeURIComponent(p.id)}" data-action="post-comments" data-id="${esc(p.id)}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H5l-3 3V11.5A7.5 7.5 0 0 1 9.5 4h3a7.5 7.5 0 0 1 7.5 7.5Z"/></svg>${p.commentCount ? `${p.commentCount} ${p.commentCount === 1 ? 'Kommentar' : 'Kommentare'}` : 'Kommentieren'}</a>`)}
         ${loggedIn || options.chat ? `<footer class="fpost-tools">
-          ${options.chat && !p.hidden ? `<button type="button" class="chat-mobile-comment" data-action="comment-unlock" data-id="${esc(p.id)}">Kommentare schreiben</button>` : ''}
+          ${options.chat && !p.hidden ? `<button type="button" class="chat-mobile-comment" data-action="comment-unlock" data-id="${esc(p.id)}">${loggedIn ? 'Kommentare schreiben' : 'Zum Kommentieren anmelden'}</button>` : ''}
           ${loggedIn ? `${p.mine || (p.canModerate && options.editSlideshow) ? `<button type="button" data-action="post-edit" data-id="${esc(p.id)}">Bearbeiten</button>` : ''}
           ${p.mine && !p.fromClub ? `<button type="button" data-action="post-delete" data-id="${esc(p.id)}">Löschen</button>` : ''}
           ${p.fromClub && (p.mine || p.canModerate) ? `<button type="button" data-action="post-unteam" data-id="${esc(p.id)}" data-team="${esc(p.shownIn)}">Aus dieser Mannschaft entfernen</button>` : ''}
