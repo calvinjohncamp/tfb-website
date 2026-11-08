@@ -19,3 +19,7 @@ Keine Backendänderung, Migration, Datenlöschung oder echte Abbuchung.
 Service-Worker v339. Chromium/WebKit prüfen Navigation, Rollen, Monatsliste,
 Preis-Historie, Korrekturen, Monatsversionen und CSV sowie 320–1440px Breite.
 
+
+Veröffentlicht: Commit a802ef2, Pages-Workflow 42506419090 erfolgreich.
+Live-Dateien kiosk-billing.js und sw.js auf joern-kaemper.de geprüft.
+Backend und Vorführdaten unverändert.
