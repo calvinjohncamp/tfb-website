@@ -30,3 +30,6 @@ vorhandener historischer Kauf, Rückkehr zum aktuellen Jahr, Kalenderfarben,
 Geometrie, Mitgliedsfilter, Profilbilder, CSV und Korrekturen geprüft.
 Keine Backend-/Datenänderung oder Zahlungsaktion. Service Worker v345.
 
+Veröffentlicht: Commit a52dc9c, Pages-Workflow 42515227876 erfolgreich.
+Live-Dateien mit Jahres-Pills, Null-Platzhaltern und Service Worker v345
+auf joern-kaemper.de bestätigt.
