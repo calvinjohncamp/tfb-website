@@ -449,14 +449,13 @@
         $view.innerHTML=body;
       }
       if (state.member?.isAdmin) {
-        const editHome = '<button type="button" class="btn small" data-action="site-edit" data-page="home">Home bearbeiten</button>';
+        const editHome = '<button type="button" class="btn small" data-action="site-edit" data-page="home">Home</button>';
         $view.insertAdjacentHTML('afterbegin', `<div class="tfb-admin-design">${TFB.designPreview.buttons()}
-          <div class="tfb-admin-links"><button type="button" class="btn small" data-action="splash-edit">Splash bearbeiten</button>${editHome}<a class="btn small" href="#partner">Partner verwalten</a>
-            <button type="button" class="btn small" data-action="members-manage">Mitglieder verwalten</button>
-            <a class="btn small" href="#clubstatistik">Clubstatistik</a>
-            <a class="btn small" href="#kioskabrechnung">Kiosk-Abrechnung</a>
-            <button type="button" class="btn small" data-install-help>App-Anleitung</button>
-            <button type="button" class="btn small" data-action="admin-backup">Sicherungen</button></div></div>`);
+          <div class="tfb-admin-links"><button type="button" class="btn small" data-action="splash-edit">Splash</button>${editHome}<a class="btn small" href="#partner">Partner</a>
+            <button type="button" class="btn small" data-action="members-manage">Mitglieder</button>
+            <a class="btn small" href="#clubstatistik">Statistik</a>
+            <a class="btn small" href="#kioskabrechnung">Kiosk</a>
+            <button type="button" class="btn small tfb-backup-icon" data-action="admin-backup" aria-label="Datensicherung" title="Datensicherung"><svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M4 3h13l4 4v14H3V3Z"/><path d="M7 3v7h10V3M7 21v-8h10v8M14 5v3"/></svg></button></div></div>`);
         const homeEditShortcut = view === 'home' && $view.querySelector('.site-page[data-page="home"]') && !$view.querySelector('.editing-page')
           ? $view.querySelector('.tfb-admin-links [data-action="site-edit"]') : null;
         const edit = homeEditShortcut || $view.querySelector('.view-close[data-action="site-edit"], .view-close[data-action="edit-start"], .view-close[data-action="feature-edit"], .view-close[data-action="album-edit"], .view-close[data-action="portrait-edit"], .view-close[data-action="chat-text-edit"]');
@@ -548,7 +547,7 @@
         </aside>
         <div class="kiosk-main">
           ${!edit && state.member?.isAdmin ? `<div class="kiosk-tools"><button type="button" class="view-close" data-action="edit-start" aria-label="Kiosk bearbeiten" title="Kiosk bearbeiten">${icon.pencil}</button></div>` : ''}
-          ${state.member?.isAdmin?`<div class="kiosk-preparation-tools"><button type="button" class="btn small" data-action="kiosk-billing">Kiosk-Abrechnung</button><button type="button" class="btn small" data-action="kiosk-product-archive">Archivierte Artikel</button></div>`:''}
+
           ${cat.sections.map((section, index) => sectionMarkup(section, index, cat, edit)).join('')}
           ${edit ? `<button type="button" class="btn block add-section" data-action="section-new">${icon.plus} Neuer Bereich</button>` : ''}
         </div>

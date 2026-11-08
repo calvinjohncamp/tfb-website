@@ -129,7 +129,7 @@
     const filter=document.querySelector('[data-member-filter]')?.value||'all';
     const rows=snapshot.members.filter(m=>`${m.firstName} ${m.lastName} ${m.email} ${m.email2} ${m.memberNo}`.toLocaleLowerCase('de').includes(query))
       .filter(m=>filter==='all'||(filter==='online'&&m.online)||(filter==='activated'&&m.activated)||(filter==='pending'&&!m.activated)||(filter==='noemail'&&!m.email&&!m.email2));
-    const collator=new Intl.Collator('de',{sensitivity:'base',numeric:true});
+    const collator=new Intl.Collator('de-DE-u-co-phonebk',{sensitivity:'base',numeric:true});
     rows.sort((a,b)=>collator.compare(a.lastName,b.lastName)||collator.compare(a.firstName,b.firstName)||collator.compare(a.memberNo,b.memberNo));
     document.querySelector('[data-member-count]').textContent=`${rows.length} von ${snapshot.members.length} Mitgliedern`;
     const group=(key,title,items)=>items.length?`<section class="memberhub-group" data-member-group="${key}"><h3>${title}<span>${items.length}</span></h3>${items.map(m=>`<article class="memberhub-person"><span class="memberhub-avatar" aria-hidden="true">${esc((m.firstName[0]||'')+(m.lastName[0]||''))}</span><div class="memberhub-person-main"><strong>${esc(m.firstName)} ${esc(m.lastName)}${m.isAdmin?' <small class="memberhub-admin">Admin</small>':''}</strong><span>${esc(m.email||m.email2||'Keine E-Mail hinterlegt')} · Nr. ${esc(m.memberNo||'–')}</span><small>Letzte Anmeldung: ${esc(when(m.lastLoginAt))}</small>${m.lastSeenAt?`<small>Zuletzt aktiv: ${esc(when(m.lastSeenAt))}</small>`:''}</div><span class="memberhub-status ${m.online?'online':m.activated?'ready':'pending'}">${m.online?'Aktiv':m.activated?'Zugang bereit':'Noch nicht gestartet'}</span></article>`).join('')}</section>`:'';

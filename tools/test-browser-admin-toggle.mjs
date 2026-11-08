@@ -40,7 +40,7 @@ try {
   await pencil.click();
 
   await page.locator('[data-action="site-edit"]').first().waitFor();
-  const expected = ['Splash bearbeiten','Home bearbeiten','Partner verwalten','Mitglieder verwalten','Clubstatistik','Kiosk-Abrechnung','App-Anleitung','Sicherungen'];
+  const expected = ['Splash','Home','Partner','Mitglieder','Statistik','Kiosk',''];
   for (const view of ['home','kiosk','chat','aktuell','sport','club','treffen']) {
     await page.evaluate(async view => { location.hash = '#'+view; await TFB.ui.renderView(view); }, view);
     await page.locator('.tfb-admin-links').waitFor();
@@ -49,9 +49,9 @@ try {
       await page.setViewportSize({width,height:1000});
       const layout = await page.evaluate(() => {
         const world=document.querySelector('.tfb-admin-design .world-switch').getBoundingClientRect(),links=document.querySelector('.tfb-admin-links').getBoundingClientRect(),first=document.querySelector('.tfb-admin-links > *').getBoundingClientRect();
-        return {below:links.top>=world.bottom,left:Math.abs(first.left-world.left)<1,overflow:document.documentElement.scrollWidth>innerWidth};
+        return {inline:innerWidth<1000||Math.abs(first.top-world.top)<3,compact:world.height<=30,overflow:document.documentElement.scrollWidth>innerWidth};
       });
-      assert.equal(layout.below,true,view);assert.equal(layout.left,true,view);assert.equal(layout.overflow,false,view);
+      assert.equal(layout.inline,true,view);assert.equal(layout.compact,true,view);assert.equal(layout.overflow,false,view);
     }
   }
   await page.locator('.tfb-admin-links a[href="#kioskabrechnung"]').click();

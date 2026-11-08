@@ -125,3 +125,6 @@
   .editorial-preview-active .meet-new-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .editorial-preview-active .meet-kind-tile { min-height: 92px; }
 }
+
+/* Compact global administration, one row whenever space permits. */
+.tfb-admin-design{flex-direction:row;align-items:center;gap:6px;padding:6px 0 12px}.tfb-admin-links{width:auto;flex:0 1 auto;gap:4px}.tfb-admin-links .btn.small{min-height:30px;padding:5px 9px;border-radius:7px;font-size:.73rem;line-height:1.2}.tfb-admin-design .world-switch{flex:0 0 auto;border-radius:6px;flex-wrap:nowrap}.tfb-admin-design .world-switch button{min-height:28px;padding:0 7px;font-size:.67rem}.tfb-admin-links .tfb-backup-icon{display:inline-flex;align-items:center;justify-content:center;width:31px;padding:5px}.tfb-backup-icon svg{display:block}
