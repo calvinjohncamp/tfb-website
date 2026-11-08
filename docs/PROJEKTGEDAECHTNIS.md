@@ -1,5 +1,47 @@
 # TFB-Kiosk – Projektgedächtnis und Übergabe
 
+## Verbindlicher Sitzungsabschluss – 08.11.2026 · v320
+
+Nutzerfreigabe: „Alles super“. Alle Aufträge dieser Sitzung abgeschlossen und
+live; keine daraus offenen Aufgaben. Dieser Abschnitt hat Vorrang vor den
+historischen Abschlussständen und Gestaltungsversuchen weiter unten.
+Aktuelle Zusammenfassung: [Projektupdate](PROJEKTUPDATE.md).
+
+Live: v320 / `tfb-kiosk-v320`, Code `81b0a6d08cbd684019ca86c244e149fe69db3096`,
+[Pages-Lauf 42457537738](https://github.com/calvinjohncamp/tfb-website/actions/runs/42457537738) erfolgreich. CSS und Service Worker live bytegleich geprüft.
+
+Verbindliche Regeln:
+
+- Aktuell-Datumsfelder in der gelben Welt: Signature-Blau #001D3D mit
+  Signature-Gelb #FFC300. In der roten Welt: Signature-Rot #C4553A mit Weiß.
+  Wochentag, Zahl und Monat jeweils vollständig deckend. Die zwischenzeitliche
+  schwarze Schrift auf roten Datumsfeldern ist ausdrücklich verworfen.
+- Bierdeckel: unten dezent und zentriert Vor-/Nachname, bisherige Größe und
+  Abstände beibehalten. Name in Gelb Signature-Blau, in Rot Schwarz #171717.
+  In Rot sind ALLE Texte schwarz, auch Betrag und Abrechnungshinweis; dessen
+  Deckkraft ist dort 1. Nur Ball und Striche sind rot. In Gelb bleiben beide gelb.
+- Karussellpfeile: transparente Kreisfläche mit dezenter gelber/roter Kontur;
+  aktive Seitenpunkte bleiben gelb/rot.
+- TFB-Absenderzeichen: in Gelb Signature-Blau, in Rot Signature-Rot. Gilt für
+  Beiträge, Kommentare, Übersichten und Absenderauswahl, auch beim Weltwechsel.
+- Clubarchiv ohne Save the Date, Terminspalte und mobile Termin-Tabs;
+  einspaltiger Beitragsstrom. Historische Termin-Detailadressen bleiben erhalten.
+- Defibrillator-Bericht vollständig inklusive Foto archiviert, Kennung
+  `start-defibrillator`, Einordnung 28.10.2026 aus Upload-/Änderungsdatum der
+  Quellstartseite, nicht aus einem separat belegten Beitragsdatum. Nutzer hat
+  das Erscheinen bestätigt. Archiv-JSON wird versioniert und revalidiert.
+- Veröffentlichung: fertige beauftragte Website-Änderungen direkt deployen,
+  ohne zusätzliches OK. Isolierte Releases auf aktuellem origin/main;
+  unabhängige lokale Änderungen nicht pauschal übernehmen.
+
+Gezielte Chromium-/WebKit-Prüfungen und Live-Dateivergleiche bestanden;
+keine neue vollständige npm-test-Gesamtprüfung. Keine Worker-/D1-Änderungen oder
+CMS-Schreiboperationen. Die bestehende, am Nutzer-iPad bestätigte Statuszeilen-
+korrektur bleibt erhalten. Details und Grenzen: [Projektupdate](PROJEKTUPDATE.md),
+[Übergabe](UEBERGABE.md), Release-Dateien v312–v320.
+
+---
+
 ## Sitzungsabschluss und iPad-Freigabe – 07.11.2026
 
 Der Nutzer bestätigt zur veröffentlichten Korrektur v311 ausdrücklich:
@@ -3883,3 +3925,8 @@ Nur Konzept dokumentiert, keine echte aktuelle Desktop-Sicherung erstellt und ke
 neue Migration, Automation, Dienstanmeldung, Messung oder Mailversand aktiviert.
 Live bleibt v231. Erste notwendige Quelle bei Umsetzung: neuester Desktop-Browser-
 stand einschließlich Bilder/Anhänge/Look, nicht bloß veröffentlichter Startbestand.
+
+
+## 08.11.2026 · Direkte Veröffentlichung
+
+Nutzerwunsch: Fertige Website-Änderungen immer direkt deployen, ohne zusätzliche OK-Abfrage. Veröffentlichungen weiter isoliert auf dem aktuellen Live-Quellstand vorbereiten.

@@ -1,5 +1,60 @@
 # TFB – Übergabe für die nächste Sitzung
 
+## Aktuelle Übergabe – 08.11.2026 · Nutzerfreigabe v320
+
+Der Nutzer bestätigt: „Alles super“. Alle Aufträge dieser Sitzung sind erledigt
+und veröffentlicht. Keine daraus offene Umsetzung. Dieser Abschnitt ist der
+aktuelle Stand; die darunterliegenden älteren Sitzungsberichte sind Historie.
+
+### Live-Nachweis
+
+Website [joern-kaemper.de](https://joern-kaemper.de/), Cache `tfb-kiosk-v320`,
+Code `81b0a6d08cbd684019ca86c244e149fe69db3096`, [Pages-Lauf 42457537738](https://github.com/calvinjohncamp/tfb-website/actions/runs/42457537738) erfolgreich.
+CSS und Service Worker bytegleich zum geprüften Paket. Diese Dokumentation
+löst keinen neuen Website-Release aus; der Live-Stand bleibt v320.
+
+### Bei der nächsten Sitzung beibehalten
+
+| Element | Endgültige Entscheidung |
+| --- | --- |
+| Aktuell-Datumsfelder, gelbe Welt | Dunkelblau #001D3D mit Gelb #FFC300 |
+| Aktuell-Datumsfelder, rote Welt | Signature-Rot #C4553A mit Weiß, nicht Schwarz |
+| Bierdeckel, rote Welt | Alle Texte Schwarz #171717; nur Ball und Striche rot |
+| Bierdeckelname, gelbe Welt | Signature-Blau, klein und unten zentriert |
+| Karussellpfeile | Transparente Kreise mit gelber/roter Linie; Seitenpunkte weiter gelb/rot |
+| TFB-Chatabsenderlogo | Blau in Gelb, Rot in Rot; sofortiger Wechsel auch bei bestehenden Kommentaren |
+| Clubarchiv | Einspaltig, ohne Save the Date und Terminumschalter |
+
+Defibrillator-Bericht mit Bild vorhanden und vom Nutzer inzwischen gefunden:
+[Direktlink](https://joern-kaemper.de/#club/archiv/beitrag/start-defibrillator).
+Datum 28.10.2026 anhand Bild-Upload/Startseitenänderung hergeleitet. Archivdatei
+`assets/clubarchiv/bestand.json`, Foto
+`assets/clubarchiv/defibrillator-2026-10.webp`. Bestehende historische Einträge
+und direkte Terminadressen erhalten. Versionsparameter und Revalidierung des
+Archivbestands beibehalten; ein Cacheproblem auf dem Nutzergerät ist nicht
+bewiesen, die spätere Sichtbarkeit wurde jedoch bestätigt.
+
+### Arbeitsweise und Prüfung
+
+Fertige beauftragte Website-Änderungen ohne erneute OK-Abfrage direkt deployen.
+Weiter auf aktuellem `origin/main` isoliert arbeiten: Die Dropbox-Arbeitskopie
+enthält zahlreiche unabhängige Änderungen, nicht pauschal committen/deployen.
+Vor dem nächsten Eingriff Remote-Stand prüfen. Keine offenen Aufträge aus
+v312–v320 erfinden oder überholte Farbversuche wiederherstellen.
+
+Gezielte Chromium-/WebKit-Prüfungen bestanden: Farbwelten, mobile und große
+Ansichten, lange Bierdeckelnamen, viele Striche, Archivbild, Wegfall der
+Terminspalte, mobile Aktuell-Tabs und TFB-Absenderwechsel. Live-Dateivergleiche
+bestanden. Kein neuer vollständiger npm-test-Lauf; keine native erneute
+Geräteprüfung dieser Sitzung. Bestehende iPad-Statuszeilenfreigabe bleibt gültig.
+Keine Worker-/D1-Migration oder CMS-Schreiboperation dieser Sitzung.
+
+Ausführliche Übersicht: [Projektupdate](PROJEKTUPDATE.md).
+Dauerhafte Entscheidungen: [Projektgedächtnis](PROJEKTGEDAECHTNIS.md).
+Technische Einzelheiten: Release-Dateien v312–v320.
+
+---
+
 ## Sitzungsabschluss und iPad-Freigabe – 07.11.2026
 
 Der Nutzer bestätigt zur veröffentlichten Korrektur v311 ausdrücklich:
