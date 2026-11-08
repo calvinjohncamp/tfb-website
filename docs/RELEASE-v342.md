@@ -30,3 +30,5 @@ Jahreszahl innerhalb der Kopfbegrenzung bei Handy/Tablet/Desktop, aktives Menü
 in beiden Farbwelten sowie Korrekturen, CSV und Archive erfolgreich geprüft.
 Keine Backend-/Datenänderung oder echte Zahlung. Service Worker v342.
 
+Veröffentlicht: Commit 103b3e1, Pages-Workflow 42512307860 erfolgreich.
+Live-JavaScript und Service Worker v342 mit den neuen Funktionen bestätigt.
