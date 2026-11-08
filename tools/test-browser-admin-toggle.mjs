@@ -49,9 +49,9 @@ try {
       await page.setViewportSize({width,height:1000});
       const layout = await page.evaluate(() => {
         const world=document.querySelector('.tfb-admin-design .world-switch').getBoundingClientRect(),links=document.querySelector('.tfb-admin-links').getBoundingClientRect(),first=document.querySelector('.tfb-admin-links > *').getBoundingClientRect();
-        return {inline:innerWidth<1000||Math.abs(first.top-world.top)<3,compact:world.height<=30,overflow:document.documentElement.scrollWidth>innerWidth};
+        return {inline:innerWidth<1000||Math.abs(first.top-world.top)<3,separated:Math.abs(parseFloat(getComputedStyle(document.querySelector('.tfb-admin-design')).columnGap)-3*parseFloat(getComputedStyle(document.querySelector('.tfb-admin-links')).columnGap))<1,compact:world.height<=30,overflow:document.documentElement.scrollWidth>innerWidth};
       });
-      assert.equal(layout.inline,true,view);assert.equal(layout.compact,true,view);assert.equal(layout.overflow,false,view);
+      assert.equal(layout.inline,true,view);assert.equal(layout.compact,true,view);assert.equal(layout.separated,true,view);assert.equal(layout.overflow,false,view);
     }
   }
   await page.locator('.tfb-admin-links a[href="#kioskabrechnung"]').click();

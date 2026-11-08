@@ -131,3 +131,5 @@
 
 .tfb-admin-links .btn[aria-current="page"]{background:var(--tfb-signature-red,#C4553A);border-color:var(--tfb-signature-red,#C4553A);color:#fff}
 html.tfb-logo-midnight-amber .tfb-admin-links .btn[aria-current="page"]{background:#001D3D;border-color:#001D3D;color:#FFC300}
+
+.tfb-admin-design{column-gap:12px}
