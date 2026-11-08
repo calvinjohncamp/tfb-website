@@ -1263,7 +1263,7 @@
     return `
       <article class="fpost ${p.hidden ? 'is-hidden' : ''} ${p.teaser ? 'is-teaser' : ''}" data-post="${esc(p.id)}">
         <header class="fpost-head">
-          <span class="fpost-avatar${p.authorMode==='tfb'?' tfb-sender-avatar':''}">${p.avatar ? `<img src="${esc(p.avatar)}" alt="">` : esc(initialsOf(p.author))}</span>
+          <span class="fpost-avatar${p.authorMode==='tfb'?' tfb-sender-avatar':''}">${senderAvatar(p.author, p.avatar, p.authorMode)}</span>
           <span class="fpost-who"><b>${esc(p.author)}</b>
             <small>${esc(whenText(p.createdAt))}${p.editedAt ? ' · bearbeitet' : ''}${p.fromClub ? ' · auch im Clubgeflüster' : ''}${p.teaser ? ` · <a href="#team/${esc(p.team)}">Insider News · ${esc(teamLabel(p.team))}</a>` : ''}${p.hidden ? ' · <em>ausgeblendet</em>' : ''}</small></span>
         </header>
@@ -1283,10 +1283,15 @@
         </footer>` : ''}
       </article>`;
   }
+  function senderAvatar(name, avatar, mode) {
+    if (mode === 'tfb') return '<span class="tfb-sender-mark" aria-hidden="true"><span></span></span>';
+    return avatar ? `<img src="${esc(avatar)}" alt="">` : esc(initialsOf(name));
+  }
+
   function senderPicker(selected='personal',scope='club') {
     if(scope!=='club'||!ui().isAdmin())return '';
     const member=ui().state.member;
-    return `<fieldset class="chat-options compose-sender"><legend>Veröffentlichen als</legend><div class="chat-option-list">${[['personal',`${member.firstName} ${member.lastName}`,member.avatar],['tfb','TFB','assets/icons/icon-512.png']].map(([value,name,avatar])=>`<label class="meet-check compose-sender-option"><input type="radio" name="postAs" value="${value}"${selected===value?' checked':''}><span class="fpost-avatar${value==='tfb'?' tfb-sender-avatar':''}">${avatar?`<img src="${esc(avatar)}" alt="">`:esc(initialsOf(name))}</span><span>${esc(name)}</span></label>`).join('')}</div></fieldset>`;
+    return `<fieldset class="chat-options compose-sender"><legend>Veröffentlichen als</legend><div class="chat-option-list">${[['personal',`${member.firstName} ${member.lastName}`,member.avatar],['tfb','TFB','assets/icons/icon-512.png']].map(([value,name,avatar])=>`<label class="meet-check compose-sender-option"><input type="radio" name="postAs" value="${value}"${selected===value?' checked':''}><span class="fpost-avatar${value==='tfb'?' tfb-sender-avatar':''}">${senderAvatar(name, avatar, value)}</span><span>${esc(name)}</span></label>`).join('')}</div></fieldset>`;
   }
   async function commentsMarkup(post) {
     const { api, state } = ui();
@@ -1294,7 +1299,7 @@
     if (!comments.length) return '';
     return `<aside class="chat-replies" aria-label="Kommentare" tabindex="0">
       ${comments.length ? `<div class="comment-list">${comments.map(c => `<article class="comment" data-comment="${esc(c.id)}">
-        <span class="fpost-avatar${c.authorMode==='tfb'?' tfb-sender-avatar':''}">${c.avatar ? `<img src="${esc(c.avatar)}" alt="">` : esc(initialsOf(c.author))}</span><div class="chat-reply-body"><header><b>${esc(c.author)}</b><small>${esc(whenText(c.createdAt))}${c.editedAt ? ' · bearbeitet' : ''}</small></header>
+        <span class="fpost-avatar${c.authorMode==='tfb'?' tfb-sender-avatar':''}">${senderAvatar(c.author, c.avatar, c.authorMode)}</span><div class="chat-reply-body"><header><b>${esc(c.author)}</b><small>${esc(whenText(c.createdAt))}${c.editedAt ? ' · bearbeitet' : ''}</small></header>
         ${c.hidden ? '<p class="comment-moderated">Dieser Kommentar wurde von den Tennisfreunden Bielstein ausgeblendet.</p>' : c.text ? `<div class="comment-text">${postText(c.text)}</div>` : ''}
         ${!c.hidden && (c.images || []).length ? `<div class="message-collage n${c.images.length}">${c.images.map((ref, index) => `<button type="button" class="message-photo" data-action="comment-gallery" data-post="${esc(post.id)}" data-id="${esc(c.id)}" data-index="${index}" aria-label="Foto ${index + 1} von ${c.images.length} ansehen">${picture(ref, ref, '')}</button>`).join('')}</div>` : ''}
         ${c.mine || (c.canModerate && ui().isAdmin()) ? `<footer>${c.mine&&!c.hidden ? `<button type="button" data-action="comment-edit" data-id="${esc(c.id)}" data-post="${esc(post.id)}">Bearbeiten</button>` : ''}${c.mine?`<button type="button" data-action="comment-delete" data-id="${esc(c.id)}">Löschen</button>`:''}${c.canModerate&&ui().isAdmin()?`<button type="button" data-action="comment-hide" data-id="${esc(c.id)}" data-hidden="${c.hidden?'0':'1'}">${c.hidden?'Wieder anzeigen':'Ausblenden'}</button>`:''}</footer>` : ''}
@@ -1530,7 +1535,7 @@
           data-author="${esc(p.author.toLowerCase())}" data-text="${esc(`${p.title || ''} ${p.text || ''}`.toLowerCase())}"
           data-teams="${esc(teams.join(' '))}" data-where="${p.team ? 'team' : 'club'}" data-photos="${imgs.length}" data-at="${esc(p.createdAt)}">
           ${imgs.length ? `<span class="message-collage n${imgs.length}">${imgs.map(ref => `<span class="message-photo">${picture(ref, ref, '')}</span>`).join('')}</span>` : ''}
-          <span class="mini-head"><span class="fpost-avatar${p.authorMode==='tfb'?' tfb-sender-avatar':''}">${p.avatar ? `<img src="${esc(p.avatar)}" alt="">` : esc(initialsOf(p.author))}</span>
+          <span class="mini-head"><span class="fpost-avatar${p.authorMode==='tfb'?' tfb-sender-avatar':''}">${senderAvatar(p.author, p.avatar, p.authorMode)}</span>
             <span><b>${esc(p.author)}</b><small>${esc(whenText(p.createdAt))}</small></span></span>
           <span class="mini-where${p.title ? '' : ' is-excerpt'}">${p.title ? esc(p.title) : p.text ? esc(p.text.slice(0, 140)) + (p.text.length > 140 ? '…' : '') : p.team ? `${esc(copy.teamLabel)} · ${esc(teamLabel(p.team))}` : esc(copy.feedTitle)}</span>
           ${p.title && p.text ? `<span class="mini-text">${esc(p.text)}</span>` : ''}

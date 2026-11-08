@@ -207,6 +207,10 @@ body:has(.cs-mobile-video[open]) { overflow: hidden; }
 
 .fpost-avatar.tfb-sender-avatar { border: 1px solid #171717; background: #efefef; border-radius: 50%; box-sizing: border-box; overflow: hidden; }
 .fpost-avatar.tfb-sender-avatar img { width: 84%; height: 84%; object-fit: contain; margin: 8%; border-radius: 0; }
+/* Same original letter crop as the app icon; color follows the active world. */
+.tfb-sender-mark { position: relative; display: block; width: 76.4%; aspect-ratio: 1524 / 664; overflow: hidden; color: var(--tfb-signature-red); }
+.tfb-sender-mark > span { position: absolute; left: calc(-92 / 1524 * 100%); top: calc(-78 / 664 * 100%); width: calc(2000 / 1524 * 100%); height: calc(1000 / 664 * 100%); background: currentColor; -webkit-mask: url('../brand/tfb-logo-original.png') 0 0 / 100% 100% no-repeat; mask: url('../brand/tfb-logo-original.png') 0 0 / 100% 100% no-repeat; mask-mode: alpha; }
+html.tfb-logo-midnight-amber .tfb-sender-mark { color: var(--tfb-midnight-blue); }
 .compose-sender { margin: 0 0 18px; }
 .compose-sender .chat-option-list { gap: 10px; flex-wrap: wrap; }
 .compose-sender-option { padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; gap: 9px; }
