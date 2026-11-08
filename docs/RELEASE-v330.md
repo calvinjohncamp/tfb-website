@@ -36,3 +36,8 @@ Kommentarautor/Lesestatus, Rollen, versteckte/gelöschte Zitate, Gäste und Brei
 320/390/834/1440. Vorhandene umfangreiche Kommentar-/Foto-/Moderations-/Klingel-
 Browserprüfung ebenfalls bestanden. Worker-Dry-Run erfolgreich. Service Worker v330.
 Keine Live-Testkommentare oder Nachrichten erzeugt, keine Migration.
+
+Veröffentlicht: Quellstand 01c9d17, Pages-Lauf 42470589926 erfolgreich,
+Worker 1bd4f53e-f079-4aee-8b9e-3a5efc1bef84. Live-Service-Worker v330,
+Antworten-Aktion, Zitatfunktion und Klingeltext in ausgelieferten Dateien bestätigt.
+Keine produktiven Testkommentare oder Benachrichtigungen erzeugt.

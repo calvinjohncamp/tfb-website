@@ -10,6 +10,8 @@ Sichtbarkeit und unveränderlichen Bezug. Klingelhinweis auch für Kommentarauto
 unter fremden Beiträgen, vorhandener Lesestatus synchronisiert. Keine E-Mails.
 18 Servertests, neue Chromium-/WebKit-Prüfungen und bestehende Kommentarprüfung
 bestanden, Worker-Dry-Run erfolgreich. Details RELEASE-v330.md. Keine Migration.
+Live: 01c9d17, Pages-Lauf 42470589926 erfolgreich, Worker
+1bd4f53e-f079-4aee-8b9e-3a5efc1bef84, Service Worker v330.
 
 ## Chat-Kommentare: Abstand zur Linie – 08.11.2026 · v329
 
