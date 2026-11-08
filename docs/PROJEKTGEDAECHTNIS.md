@@ -9,6 +9,7 @@ zuverlässig aus einem normalen Safari-Tab. Dann sind Banner und Profilbutton
 absichtlich ausgeblendet. Nur ausgeblendetes Banner: Profilhilfe bleibt verfügbar.
 Aktuelle Code-Mail enthält bereits das feste gelb-blaue Logo; Nutzerbild war die
 ältere Vorlage. Details und Prüfungen: RELEASE-v325.md.
+Live: Quellstand 59763c3, Pages-Lauf 42464428176 erfolgreich, Service Worker v325.
 
 ## Mitgliederzuordnung und Übersicht – 08.11.2026 · v324
 

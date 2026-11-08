@@ -27,3 +27,6 @@ v324-Stand 8ed65887-0de0-4db8-bb27-0f5cc8235cee; kein erneuter Codeversand nöti
 Prüfung: 9 gezielte Tests (Installationsverhalten und Mailzugang) bestanden.
 Browserprüfung Chromium/WebKit umfasst beide Buttonfarben und vorausgewählte
 Geräteanleitung sowie Anmeldung, Profil/Kommentare, Mitgliederübersicht und Rollen.
+
+Veröffentlicht: Quellstand 59763c3, Pages-Lauf 42464428176 erfolgreich,
+live ausgelieferter Service Worker tfb-kiosk-v325 bestätigt.
