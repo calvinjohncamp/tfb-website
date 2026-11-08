@@ -1,6 +1,6 @@
 import {accessMailHtml} from './access-mail.mjs';
 const enc=new TextEncoder();
-const norm=s=>String(s||'').trim().toLowerCase().normalize('NFC');
+const norm=s=>String(s||'').trim().toLowerCase().normalize('NFC').replace(/[;,]+$/,'');
 const digest=async s=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',enc.encode(s))),n=>n.toString(16).padStart(2,'0')).join('');
 const same=(a,b)=>{if(a.length!==b.length)return false;let n=0;for(let i=0;i<a.length;i++)n|=a.charCodeAt(i)^b.charCodeAt(i);return n===0;};
 const fail=(status,message)=>{throw Object.assign(Error(message),{status});};
@@ -18,7 +18,7 @@ export async function memberAccessOverview(env){
  a.first_login_at,a.last_login_at,a.last_seen_at FROM members m LEFT JOIN member_access a ON a.member_id=m.id
  WHERE m.active=1 ORDER BY m.last_name COLLATE NOCASE,m.first_name COLLATE NOCASE`).all()).results;
  const now=Date.now();
- const members=rows.map(m=>({id:m.id,memberNo:m.member_no,firstName:m.first_name,lastName:m.last_name,email:m.email,email2:m.email2,isAdmin:Boolean(m.is_admin),
+ const members=rows.map(m=>({id:m.id,memberNo:m.member_no,firstName:m.first_name,lastName:m.last_name,email:norm(m.email),email2:norm(m.email2),isAdmin:Boolean(m.is_admin),
  activated:Boolean(m.has_password),firstLoginAt:m.first_login_at||null,lastLoginAt:m.last_login_at||null,lastSeenAt:m.last_seen_at||null,
  online:Boolean(m.last_seen_at&&m.last_seen_at>now-5*60000)}));
  return {at:now,members,summary:{total:members.length,online:members.filter(m=>m.online).length,activated:members.filter(m=>m.activated).length,withoutEmail:members.filter(m=>!m.email&&!m.email2).length}};
@@ -26,10 +26,10 @@ export async function memberAccessOverview(env){
 export async function requestEmailCode(env,data){
  if(!emailAccessReady(env))fail(503,'Der automatische Mailversand wird noch eingerichtet. Bitte später erneut versuchen.');
  const email=norm(data.email),memberNo=String(data.memberNo||'').trim();
- if(email.length>160||!/^\S+@[^\s@]+\.[^\s@]+$/.test(email)||memberNo.length>160)fail(400,'Bitte deine beim Verein hinterlegte E-Mail-Adresse eingeben.');
+ if(email.length>160||!/^[^\s@;,<>]+@[^\s@;,<>]+\.[^\s@;,<>]+$/.test(email)||memberNo.length>160)fail(400,'Bitte deine beim Verein hinterlegte E-Mail-Adresse eingeben.');
  const now=Date.now();
  await env.DB.prepare('DELETE FROM member_login_challenges WHERE expires_at<?').bind(now-86400000).run();
- const rows=(await env.DB.prepare(`SELECT id FROM members WHERE active=1 AND (lower(email)=? OR lower(email2)=?) AND (?='' OR member_no=?) LIMIT 2`).bind(email,email,memberNo,memberNo).all()).results;
+ const rows=(await env.DB.prepare(`SELECT id FROM members WHERE active=1 AND (rtrim(lower(email),';, ')=? OR rtrim(lower(email2),';, ')=?) AND (?='' OR member_no=?) LIMIT 2`).bind(email,email,memberNo,memberNo).all()).results;
  const memberId=rows.length===1?rows[0].id:null;
  const previous=await env.DB.prepare('SELECT id,expires_at FROM member_login_challenges WHERE email=? AND member_id IS ? AND created_at>? AND consumed_at IS NULL ORDER BY created_at DESC LIMIT 1').bind(email,memberId,now-60000).first();
  if(previous)return {challengeId:previous.id,expiresAt:previous.expires_at,retryAfter:60};
@@ -59,7 +59,7 @@ export async function claimEmailCode(env,data){
  const row=await env.DB.prepare('UPDATE member_login_challenges SET attempts=attempts+1 WHERE id=? AND consumed_at IS NULL AND expires_at>? AND attempts<5 RETURNING *').bind(id,now).first();
  const actual=await digest(`${env.PASSWORD_PEPPER}:${id}:${code}`);
  if(!row||!row.member_id||!same(row.code_hash,actual))fail(401,'Der Code ist ungültig oder abgelaufen. Bitte erneut prüfen oder einen neuen Code anfordern.');
- const member=await env.DB.prepare('SELECT * FROM members WHERE id=? AND active=1 AND (lower(email)=? OR lower(email2)=?)').bind(row.member_id,row.email,row.email).first();
+ const member=await env.DB.prepare(`SELECT * FROM members WHERE id=? AND active=1 AND (rtrim(lower(email),';, ')=? OR rtrim(lower(email2),';, ')=?)`).bind(row.member_id,row.email,row.email).first();
  if(!member)fail(401,'Der Zugang ist nicht mehr freigeschaltet. Bitte beim Verein die hinterlegte Adresse prüfen lassen.');
  const claimed=await env.DB.prepare('UPDATE member_login_challenges SET consumed_at=? WHERE id=? AND consumed_at IS NULL AND expires_at>? AND attempts<=5 RETURNING id').bind(now,id,now).first();
  if(!claimed)fail(401,'Dieser Code wurde bereits verwendet. Bitte einen neuen Code anfordern.');

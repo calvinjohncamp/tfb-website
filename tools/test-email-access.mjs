@@ -31,3 +31,10 @@ test('member dashboard and presence require server roles; timestamps never inven
  await f.call('/auth/presence',{},f.otherToken);const m=(await f.call('/admin/members',undefined,f.adminToken)).body.members.find(m=>m.id===f.otherId);assert(m.online);assert.equal(m.lastLoginAt,null);
  f.env.DB.sqlite.prepare('UPDATE member_access SET last_seen_at=? WHERE member_id=?').run(Date.now()-6*60000,f.otherId);assert.equal((await f.call('/admin/members',undefined,f.adminToken)).body.members.find(m=>m.id===f.otherId).online,false);
 });
+
+test('existing imported trailing separators still accept the clean email for code and confirmation',async()=>{
+ const f=await setup();f.env.DB.sqlite.prepare('UPDATE members SET email=? WHERE id=?').run('other@example.invalid;',f.otherId);
+ const r=await f.request();assert.equal(r.status,200);assert.equal(f.mail.length,1);assert.deepEqual(f.mail[0].to,['other@example.invalid']);
+ assert.match(f.mail[0].html,/<font color="#001D3D">\d{6}<\/font>/);assert.match(f.mail[0].html,/width="200"/);assert.match(f.mail[0].html,/text-align:left;-webkit-text-fill-color:#001D3D/);
+ assert.equal((await f.activate(r.body.challengeId,f.code())).status,200);
+});

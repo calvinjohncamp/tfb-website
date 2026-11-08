@@ -158,3 +158,24 @@ test('imported secondary email works; shared family email requires the unique me
   assert.equal((await f.call('/auth/login',{identifier:'member@example.invalid',password})).status,401);
   assert.equal((await f.call('/auth/login',{identifier:'2',password})).status,200);
 });
+
+test('missing membership number and trailing mail separators reuse the existing person and keep access',async()=>{
+ const f=await fixture(),user=await activated(f);
+ const rows=people.map(r=>r.memberNo==='2'?{...r,memberNo:'',email:r.email+';'}:r);
+ assert.equal((await f.call('/admin/import',{rows,apply:true},f.admin)).status,200);
+ const stored=f.env.DB.sqlite.prepare('SELECT id,member_no,email FROM members WHERE id=?').get(user.member.id);
+ assert.equal(stored.member_no,'2');assert.equal(stored.email,'member@example.invalid');
+ assert.equal(f.env.DB.sqlite.prepare('SELECT COUNT(*) n FROM members').get().n,3);
+ assert.equal((await f.call('/auth/session',undefined,user.token)).status,200);
+ f.env.DB.sqlite.prepare('UPDATE members SET email=? WHERE id=?').run('member@example.invalid;',user.member.id);
+ assert.equal((await f.call('/auth/login',{identifier:'member@example.invalid',password})).status,200);
+ assert.equal((await f.call('/admin/import',{rows:people,apply:true},f.admin)).status,200);
+ assert.equal((await f.call('/auth/session',undefined,user.token)).status,200,'format cleanup never resets the real password or sessions');
+});
+test('shared mail with different people and no numbers never collapses household members',async()=>{
+ const f=await fixture();const rows=[people[0],{firstName:'Anna',lastName:'Familie',email:'family@example.invalid;'},{firstName:'Tom',lastName:'Familie',email:'family@example.invalid'}];
+ assert.equal((await f.call('/admin/import',{rows,apply:true},f.admin)).status,200);
+ assert.equal((await f.call('/admin/import',{rows,apply:true},f.admin)).status,200);
+ assert.equal(f.env.DB.sqlite.prepare('SELECT COUNT(*) n FROM members').get().n,3);
+ assert.equal(f.env.DB.sqlite.prepare('SELECT COUNT(*) n FROM members WHERE email=?').get('family@example.invalid').n,2);
+});

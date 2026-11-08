@@ -1,5 +1,18 @@
 # TFB – Übergabe für die nächste Sitzung
 
+## Mitgliederzuordnung und Übersicht – 08.11.2026 · v324
+
+Eingerichtete Zugänge stehen jetzt separat oben, noch nicht gestartete Mitglieder
+darunter; beide Gruppen alphabetisch nach Nachnamen/Vornamen. Der unbenutzte
+Doppeleintrag des Admins wurde reversibel deaktiviert und die Mitgliedsdaten dem
+bestehenden Konto zugeordnet. Ursache war ein Semikolon hinter der Import-Mail.
+Import und Anmeldung bereinigen solche Trennzeichen. Eindeutiger Name plus
+hinterlegte Mail verknüpfen dieselbe Person auch ohne Mitgliedsnummer; gemeinsame
+Familienadressen verschiedener Personen bleiben getrennt.
+
+Mail-Codefeld jetzt kompakt (200 × 55px), linksbündig, fest Signature-Blau auf Gelb.
+32 Servertests und Chromium-/WebKit-Prüfungen bestanden. Details: RELEASE-v324.md.
+
 ## Freischaltmail: verbindlich Gelb-Blau – 08.11.2026 · Mail-Release v323
 
 Die tatsächliche Freischaltmail verwendet jetzt den bereits entwickelten Look

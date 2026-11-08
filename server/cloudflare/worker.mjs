@@ -17,6 +17,7 @@ const hex = bytes => [...new Uint8Array(bytes)].map(n => n.toString(16).padStart
 const unhex = text => Uint8Array.from(text.match(/../g) || [], s => parseInt(s, 16));
 const random = () => hex(crypto.getRandomValues(new Uint8Array(32)));
 const norm = s => String(s || '').trim().toLowerCase().normalize('NFC');
+const mailOf = s => norm(s).replace(/[;,]+$/, '');
 const clean = s => String(s ?? '').replace(/\s+/g, ' ').trim().normalize('NFC');
 const hash = async s => hex(await crypto.subtle.digest('SHA-256', encoder.encode(s)));
 function fail(status, message) { throw Object.assign(new Error(message), { status }); }
@@ -37,7 +38,7 @@ export async function passwordHash(password, salt, pepper) {
 async function publicMember(env, m) {
   const teams = (await env.DB.prepare('SELECT team_key FROM member_teams WHERE member_id=? ORDER BY team_key').bind(m.id).all()).results.map(row => row.team_key);
   return { id: m.id, memberNo: m.member_no, firstName: m.first_name, lastName: m.last_name,
-    email: m.email, isAdmin: Boolean(m.is_admin), active: true, teams };
+    email: mailOf(m.email), isAdmin: Boolean(m.is_admin), active: true, teams };
 }
 async function body(request, maxBytes = 1024 * 1024) {
   if (!/^application\/json(?:;|$)/i.test(request.headers.get('Content-Type') || '')) fail(415, 'Bitte JSON-Daten senden.');
@@ -66,10 +67,10 @@ async function rate(env, request, tag, limit) {
   if (row.attempts > limit) fail(429, 'Zu viele Versuche. Bitte in 15 Minuten erneut versuchen.');
 }
 async function memberForIdentifier(env, identifier) {
-  const value = norm(identifier);
+  const value = String(identifier||'').includes('@') ? mailOf(identifier) : norm(identifier);
   if (!value || value.length > 160) return null;
   const result = await env.DB.prepare(`SELECT * FROM members WHERE active=1
-    AND (lower(email)=? OR lower(email2)=? OR member_no=?) LIMIT 2`).bind(value, value, value).all();
+    AND (rtrim(lower(email),';, ')=? OR rtrim(lower(email2),';, ')=? OR member_no=?) LIMIT 2`).bind(value, value, value).all();
   // Shared household mail addresses need the unambiguous membership number.
   return result.results.length === 1 ? result.results[0] : null;
 }
@@ -109,10 +110,10 @@ export function normalizeImport(rows) {
   return nonempty.map(r => {
     if (!r || typeof r !== 'object') fail(400, 'Ungültige Mitgliederzeile.');
     const memberNo = clean(r.memberNo), firstName = clean(r.firstName), lastName = clean(r.lastName);
-    const email = norm(r.email), email2 = norm(r.email2);
+    const email = mailOf(r.email), email2 = mailOf(r.email2);
     if (!firstName || !lastName || [memberNo, firstName, lastName, email, email2].some(s => s.length > 160)) fail(400, 'Mitgliedsnummer und Namen prüfen.');
-    if ([email,email2].some(s => s && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s))) fail(400, 'E-Mail-Adresse in der Liste prüfen.');
-    const key = memberNo ? `no:${memberNo}` : email ? `mail:${email}` : `name:${norm(firstName+' '+lastName)}`;
+    if ([email,email2].some(s => s && !/^[^\s@;,<>]+@[^\s@;,<>]+\.[^\s@;,<>]+$/.test(s))) fail(400, 'E-Mail-Adresse in der Liste prüfen.');
+    const key = memberNo ? `no:${memberNo}` : email ? `mail:${email}:name:${norm(firstName+' '+lastName)}` : `name:${norm(firstName+' '+lastName)}`;
     if (seen.has(key)) fail(400, 'Doppelte Mitgliedsnummer oder nicht eindeutig zuordenbare Zeilen.');
     seen.add(key);
     return { key, memberNo, firstName, lastName, email, email2 };
@@ -123,10 +124,17 @@ async function importMembers(env, data) {
   const previous = (await env.DB.prepare('SELECT * FROM members').all()).results;
   const used = new Set(); const statements = [];
   const plan = { neu: [], geaendert: [], gleich: 0, weg: [], ohneMail: 0, zeilen: list.length, beispiele: 0 };
-  for (const r of list) {
-    // Bootstrap admin is linked only by an exact unique email, never a name.
-    const candidates = previous.filter(m => m.is_admin && !m.imported && r.email && m.email === r.email);
-    const old = previous.find(m => m.external_key === r.key) || (candidates.length === 1 ? candidates[0] : null);
+  for (const imported of list) {
+    const r={...imported};
+    // A missing number does not create a new person. Match a unique name +
+    // listed email pair; shared household email alone never merges members.
+    const direct = previous.find(m => m.external_key === r.key);
+    const incomingMails=[r.email,r.email2].filter(Boolean);
+    const candidates=previous.filter(m=>m.active && norm(m.first_name)===norm(r.firstName) && norm(m.last_name)===norm(r.lastName)
+      && incomingMails.some(email=>[mailOf(m.email),mailOf(m.email2)].includes(email)));
+    if(!direct && candidates.length>1)fail(400,'Mehrere Konten passen zu diesem Mitglied. Bitte die Zuordnung vor dem Import prüfen.');
+    const old = direct || (candidates.length===1?candidates[0]:null);
+    if(old && !r.memberNo && old.member_no){r.memberNo=old.member_no;r.key=old.external_key||`no:${old.member_no}`;}
     if (old && used.has(old.id)) fail(400, 'Die Liste enthält eine mehrdeutige Kontozuordnung.');
     if (old) used.add(old.id);
     const name = `${r.firstName} ${r.lastName}`;
@@ -138,8 +146,8 @@ async function importMembers(env, data) {
     } else {
       const changed = !old.active || old.member_no !== r.memberNo || old.first_name !== r.firstName || old.last_name !== r.lastName || old.email !== r.email || old.email2 !== r.email2;
       if (changed) plan.geaendert.push(name); else plan.gleich++;
-      if (changed || !old.imported) {
-        const emailChanged = old.email !== r.email || old.email2 !== r.email2;
+      if (changed || !old.imported || old.external_key !== r.key) {
+        const emailChanged = mailOf(old.email) !== r.email || mailOf(old.email2) !== r.email2;
         // A changed login address invalidates sessions, codes and the old password.
         if (emailChanged) statements.push(env.DB.prepare('DELETE FROM sessions WHERE member_id=?').bind(old.id));
         statements.push(env.DB.prepare(`UPDATE members SET member_no=?,external_key=?,first_name=?,last_name=?,email=?,email2=?,search_text=?,active=1,imported=1,
