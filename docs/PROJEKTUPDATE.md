@@ -1,5 +1,58 @@
 # TFB – Projektupdate vom 08.11.2026
 
+## Automatische Freischaltung und Mitgliederverwaltung – 08.11.2026 · v322
+
+Aktueller Live-Stand: `tfb-kiosk-v322`, Website-Code
+`9b1901b9ca18eef1b7713689f9fe6b0bd4716b28`, erfolgreicher
+[Pages-Lauf 42462633281](https://github.com/calvinjohncamp/tfb-website/actions/runs/42462633281).
+Worker `tfb-api`: `d8352047-7169-48fa-a1de-2a33997ca6c2`. Dieser Abschnitt ersetzt
+die vorherige Beschreibung der manuellen Erstfreischaltung aus v321.
+Alle zuvor bestätigten Farb-/Archiv-/Bierdeckelregeln bleiben bestehen.
+
+Verbindlicher Nutzerablauf: E-Mail aus aktiver TFB-Liste eingeben → App versendet
+automatisch einen sechsstelligen Code → Code bestätigen und ein Passwort mit
+mindestens zwölf Zeichen setzen → angemeldet. Danach E-Mail/Mitgliedsnummer und
+Passwort. Passwort vergessen nutzt ebenfalls den automatischen Mailweg.
+Keine Vorstandsgenehmigung und keine manuelle Codeanforderung nötig.
+Code zehn Minuten/einmalig/fünf Versuche, Versandpause 60 Sekunden. Haupt-/Zweitmail
+zulässig; bei Familienadresse zusätzliche Mitgliedsnummer. Unbekannte Adressen
+bekommen keine Mail und können kein Konto eröffnen. 13 Mitglieder ohne Mail müssen
+ihre Adresse über die Vereinsliste ergänzen lassen.
+
+Resend: bestehender persönlicher Account auf ausdrücklichen Nutzerwunsch.
+Separater Schlüssel `tfb-website-auth`, ausschließlich Sending access für
+`padel-bielstein.de`, nach ausdrücklicher Aktionserlaubnis erzeugt und nur als
+Worker-Secret gespeichert. Absender „Tennisfreunde Bielstein <tfb@padel-bielstein.de>“.
+Padel-Anwendung, deren Schlüssel, Tarif und DNS unverändert. Eine echte Mail an
+den eindeutig bestätigten eigenen Adminaccount wurde als Delivered verifiziert;
+kein Passwort und keine Sitzung des Nutzers durch diesen Versand geändert.
+
+Adminbereich jetzt in „Mitglieder & Zugänge“ und „Liste importieren“ getrennt.
+Kennzahlen, Suche, Filter, Sortierung, Zugang eingerichtet/noch nicht gestartet,
+letzter Login und letzte Aktivität. Aktiv heißt Aktion/Rückmeldung innerhalb von
+fünf Minuten; Verwaltung aktualisiert alle 30 Sekunden. Früher nicht erfasste
+Loginzeiten bleiben unbekannt. Produktiv mit bestehender Adminsitzung geprüft:
+308 aktive Konten inkl. Verwaltung, ein Zugang eingerichtet, 307 noch nicht
+aktiviert. Nicht als historische Dauerstatistik interpretieren.
+
+Mobile App-Hilfe: kleine ausblendbare Karte nach Anmeldung, dauerhafter Link im
+Profil; getrennte iPhone/iPad- und Android-Schritte. Installierte Standalone-App
+zeigt keine Einladung. Normale Mitglieder können eigenes Profilbild, Chats,
+Kommentare und Kiosk nutzen; Verwaltungsrechte bleiben Admins vorbehalten.
+
+Additive Migration 0009 angelegt: nur neue Tabellen für Codes und Zugangszeiten.
+Vorheriger serverseitiger D1-Wiederherstellungspunkt privat dokumentiert.
+Automatischer Review lehnte lokalen Mitgliederexport ab; kein Export ausgeführt,
+keine privaten Bestandsdaten oder Geheimnisse ins Repository übernommen.
+29 Servertests und vollständige Chromium-/WebKit-Browserläufe mit synthetischen
+Daten erfolgreich, inklusive Code+Passwort, Profilbild, Kommentar, Übersicht,
+Importvorschau und App-Hilfe. Paket 276 öffentliche Dateien, sechs geänderte
+Webdateien live bytegleich, automatische Registrierung und Adminübersicht live
+geprüft. Keine vollständige neue npm-test-Gesamtprüfung oder native Handyinstallation.
+Anleitung [Mitgliederzugang](MITGLIEDERZUGANG.md), Details [v322](RELEASE-v322.md).
+
+---
+
 ## Mitgliederzugang geprüft und erläutert – 08.11.2026 · v321
 
 Aktuell live: `tfb-kiosk-v321`, Code `380bc3d5ffa3a6159bbd5dfe9128d791c19edf74`,

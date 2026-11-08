@@ -1,5 +1,21 @@
 # Geschütztes Mitgliederverzeichnis ohne Supabase
 
+## Aktueller Zugangsbetrieb – 08.11.2026 · v322
+
+Automatische Erstfreischaltung per Resend-Mail, anschließend Passwort mit mindestens
+zwölf Zeichen. Keine persönliche Codeanforderung beim Vorstand mehr notwendig.
+Siehe [Mitgliederzugang](../../docs/MITGLIEDERZUGANG.md) und
+[Release v322](../../docs/RELEASE-v322.md). Die älteren Einrichtungsabschnitte unten
+sind historisch; Setup, Schema und Mitgliederimport nicht neu starten.
+
+Worker d8352047-7169-48fa-a1de-2a33997ca6c2. Additive Migration 0009 für
+member_access und member_login_challenges. Servergeheimnis RESEND_API_KEY;
+öffentliche Worker-Variable AUTH_EMAIL_FROM mit verifizierter Versanddomain.
+API-Schlüssel niemals in Repository, Frontend oder Logs übernehmen.
+Die geschützte Adminübersicht liegt unter GET /admin/members; aktive Clients
+melden Präsenz bei sichtbarer App. Keine historische Rückfüllung von Logindaten.
+
+---
 
 ## Aktueller Betriebsstand – 17.10.2026 · Website v222
 

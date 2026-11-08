@@ -41,3 +41,5 @@ Ablauf/Replay/Rate/Fehlversuche, Mailfehler, Rollen, Profilbild und Kommentar,
 Adminstatus/Suche/Importvorschau, Installationshilfe/Ausblenden/Profil und responsive
 Breiten 390/834/1440px. Worker-Dry-Run und Syntax-/Diffchecks erfolgreich. Keine
 vollständige neue npm-test-Gesamtprüfung. Frontend-Service-Worker v322.
+
+Live abgeschlossen: Code 9b1901b9ca18eef1b7713689f9fe6b0bd4716b28, Pages-Lauf 42462633281 erfolgreich. Worker d8352047-7169-48fa-a1de-2a33997ca6c2. Sechs Webdateien live bytegleich; Registrierung, Adminübersicht und echte Resend-Zustellung (Delivered) geprüft. Kein Nutzerpasswort geändert.
