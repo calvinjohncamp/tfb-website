@@ -34,13 +34,6 @@ span.signature-highlight { font: inherit; color: inherit; letter-spacing: inheri
 :root.tfb-logo-midnight-amber .tfb-splash-enter {
   background: var(--tfb-signature-yellow); border-color: var(--tfb-signature-yellow); color: var(--tfb-midnight-blue);
 }
-/* Aktuell: dunkle Datumsfelder mit klarer weißer Beschriftung in beiden Spalten. */
-:root.tfb-logo-midnight-amber body .view[data-view="aktuell"] .date-badge {
-  background: #171717; color: #fff;
-}
-:root.tfb-logo-midnight-amber body .view[data-view="aktuell"] .date-badge > :is(small, b) {
-  color: #fff; opacity: 1;
-}
 :root.tfb-logo-midnight-amber body .membership-actions .membership-fees-button,
 :root.tfb-logo-midnight-amber body .btn.club-archive-link {
   background: var(--tfb-midnight-blue); border-color: var(--tfb-midnight-blue); color: #fff;
@@ -166,4 +159,14 @@ body .app .topbar .topnav .tab.active::before {
 }
 :root:not(.tfb-logo-midnight-amber) body .view[data-view="sport"] .team-seasons button.on {
   background: #171717; border-color: #171717; color: #fff;
+}
+
+/* Aktuell: Signature-Blau mit Signature-Gelb für News und Termine. */
+:root.tfb-logo-midnight-amber body .view[data-view="aktuell"] .date-badge,
+:root:not(.tfb-logo-midnight-amber) body .view[data-view="aktuell"] .date-badge {
+  background: var(--tfb-midnight-blue, #001D3D); color: var(--tfb-signature-yellow);
+}
+:root.tfb-logo-midnight-amber body .view[data-view="aktuell"] .date-badge > :is(small, b),
+:root:not(.tfb-logo-midnight-amber) body .view[data-view="aktuell"] .date-badge > :is(small, b) {
+  color: var(--tfb-signature-yellow); opacity: 1;
 }
