@@ -73,11 +73,19 @@ export async function editorialMedia(env,ref,admin=false){
  if(!row)fail(404,'Datei nicht freigegeben.');const object=await env.CMS_BUCKET.get(row.object_key);if(!object)fail(503,'Die Datei ist vorübergehend nicht verfügbar.');
  return new Response(object.body,{headers:{'Content-Type':row.mime,'Cache-Control':admin?'no-store':'private, max-age=3600','X-Content-Type-Options':'nosniff'}});
 }
+// One SQLite read captures all anonymous statistics consistently. No account,
+// network/session hashes or event keys belong in a portable content package.
+export async function statisticsSnapshot(env){
+ const columns={usage_meta:['key','value'],usage_nc_totals:['period','views','visitors','visits','members','app_views','member_views','guest_visitors','member_visits','member_app_views','unclassified_visits','unclassified_app_views'],usage_nc_pages:['day','page','views','member_views'],usage_nc_page_months:['month','page','views','member_views'],usage_nc_page_years:['year','page','views','member_views'],usage_totals:['period','views','visitors','visits','members','app_views'],usage_pages:['day','page','views']};
+ const parts=Object.entries(columns).map(([table,fields])=>`'${table}',json((SELECT json_group_array(json_object(${fields.map(f=>`'${f}',${f}`).join(',')})) FROM (SELECT * FROM ${table} ORDER BY 1,2)))`);
+ const row=await env.DB.prepare(`SELECT json_object(${parts.join(',')}) data`).first();
+ return {format:'tfb-usage-snapshot',version:1,createdAt:new Date().toISOString(),tables:JSON.parse(row.data)};
+}
 async function snapshotObject(env,state,extra){
  ready(env);const id=crypto.randomUUID(),at=new Date().toISOString(),objectKey='editorial/history/'+id+'.json';
  const releases=(await env.DB.prepare('SELECT commit_id,object_key,sha256,size FROM cms_releases ORDER BY created_at DESC LIMIT 1').all()).results;
  const used=mediaRefs(joinSite(state.documents));
- const manifest={format:'tfb-website-snapshot',version:1,schemaVersion:6,project:'tfb',id,createdAt:at,revision:state.revision,documents:state.documents,media:state.media.filter(m=>used.has(m.ref)),release:releases[0]||null,...extra};
+ const manifest={format:'tfb-website-snapshot',version:1,schemaVersion:6,project:'tfb',id,createdAt:at,revision:state.revision,documents:state.documents,media:state.media.filter(m=>used.has(m.ref)),release:releases[0]||null,...extra,...(!['edit','restore'].includes(extra.kind)?{statistics:await statisticsSnapshot(env)}:{})};
  await env.CMS_BUCKET.put(objectKey,JSON.stringify(manifest),{httpMetadata:{contentType:'application/json'}});
  return {id,at,objectKey,manifest};
 }
@@ -135,7 +143,7 @@ export async function editorialRestore(env,member,data){
 }
 export async function editorialExport(env,id,inline=false){
  const snapshot=id?await readSnapshot(env,id):{...(await editorialState(env,true)),format:'tfb-website-snapshot',version:1,schemaVersion:6,project:'tfb',createdAt:new Date().toISOString()};
- if(!id){snapshot.release=await env.DB.prepare('SELECT commit_id,object_key,sha256,size FROM cms_releases ORDER BY created_at DESC LIMIT 1').first();const used=mediaRefs(joinSite(snapshot.documents));snapshot.media=snapshot.media.filter(m=>used.has(m.ref));delete snapshot.backup;delete snapshot.boardPeople;}
+ if(!id){snapshot.statistics=await statisticsSnapshot(env);snapshot.release=await env.DB.prepare('SELECT commit_id,object_key,sha256,size FROM cms_releases ORDER BY created_at DESC LIMIT 1').first();const used=mediaRefs(joinSite(snapshot.documents));snapshot.media=snapshot.media.filter(m=>used.has(m.ref));delete snapshot.backup;delete snapshot.boardPeople;}
  if(!inline)return snapshot;
  const images={};for(const ref of mediaRefs(joinSite(snapshot.documents))){const row=await env.DB.prepare('SELECT * FROM cms_media WHERE ref=?').bind(ref).first();if(!row)fail(503,'Eine Mediendatei fehlt.');const object=await env.CMS_BUCKET.get(row.object_key);if(!object)fail(503,'Eine Mediendatei fehlt.');const bytes=new Uint8Array(await object.arrayBuffer());if(await digest(bytes)!==row.hash)fail(503,'Die Medien-Prüfsumme stimmt nicht.');let binary='';for(let i=0;i<bytes.length;i+=16384)binary+=String.fromCharCode(...bytes.subarray(i,i+16384));images[ref]='data:'+row.mime+';base64,'+btoa(binary);}
  return {...snapshot,images};

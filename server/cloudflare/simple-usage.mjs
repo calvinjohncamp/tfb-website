@@ -78,7 +78,7 @@ export async function simpleUsageHistory(env,now=Date.now()){
  for(const t of sets[4].results)records.push({series:'Archiv freiwillige Messung vor v331',period:t.period,order:0,row:['Archiv freiwillige Messung vor v331',level(t.period),t.period,'Gesamt',t.views,'','',t.visitors,t.members,'',t.visits,'','','',t.visits?String(t.views/t.visits).replace('.',','):'',t.app_views,...Array(6).fill(''),'Alte Messmethode, separat archiviert, nicht mit automatischer Reihe addieren']});
  for(const t of sets[5].results)records.push({series:'Archiv freiwillige Messung vor v331',period:t.day,order:1,row:['Archiv freiwillige Messung vor v331','Tag / Bereich',t.day,t.page,t.views,...Array(17).fill(''),'Alte Messmethode, separat archiviert']});
  records.sort((a,b)=>a.series.localeCompare(b.series)||a.period.localeCompare(b.period)||a.order-b.order||String(a.row[3]).localeCompare(String(b.row[3])));rows.push(...records.map(r=>r.row));
- for(const m of sets[6].results.filter(m=>['simple_enabled_at','splash_started_at','audience_split_started_at','enabled_at'].includes(m.key)))rows.push(['Information','Messbeginn',m.value,m.key,...Array(18).fill(''),'Zeitstempel, keine Zaehlzeile']);
+ for(const m of sets[6].results.filter(m=>['simple_enabled_at','splash_started_at','audience_split_started_at','enabled_at','reset_at'].includes(m.key)))rows.push(['Information','Messbeginn',m.value,m.key,...Array(18).fill(''),'Zeitstempel, keine Zaehlzeile']);
  const cell=v=>'"'+String(v??'').replace(/^[=+@-]/,"'$&").replace(/"/g,'""')+'"';
  return {filename:'TFB-Clubstatistik-Gesamthistorie-'+simpleDay(now)+'.csv',csv:'\ufeff'+rows.map(row=>row.map(cell).join(';')).join('\r\n')};
 }

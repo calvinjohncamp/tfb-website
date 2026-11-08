@@ -7,6 +7,8 @@ import {Bucket} from './editorial-fixture.mjs';
 import {decryptSystemBackup,restoreDatabase} from './editorial-recovery.mjs';
 import {mkdtempSync,rmSync} from 'node:fs';
 import {DatabaseSync} from 'node:sqlite';
+import {collectSimpleUsage} from '../server/cloudflare/simple-usage.mjs';
+import {readFileSync} from 'node:fs';
 const png='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aQWQAAAAASUVORK5CYII=';
 async function setup(){const f=await fixture();f.env.CMS_BUCKET=new Bucket();f.env.CMS_BACKUP_KEY='ab'.repeat(32);return f;}
 const change=(key,expected,value)=>({key,expected,value});
@@ -79,4 +81,31 @@ test('Home-to-Aktuell media transfer commits both pages or neither on a revision
  let state=(await f.call('/public/site')).body;assert.equal(state.documents['page:home'].value.blocks[0].id,'signature');assert.equal(state.documents['page:aktuell'].value.blocks.length,0);
  const success=await save(f,[change('page:home',1,{blocks:[]}),change('page:aktuell',1,{blocks:[moved]})]);assert.equal(success.status,200);
  state=(await f.call('/public/site')).body;assert.equal(state.documents['page:home'].value.blocks.length,0);assert.deepEqual(state.documents['page:aktuell'].value.blocks[0].mediaCollection,source.mediaCollection);
+});
+
+
+test('manual and downloaded backups preserve all usage aggregates; encrypted database restore preserves them too',async()=>{
+ const f=await setup();await save(f,[change('page:home',0,{title:'Home'})]);
+ const event=page=>({id:crypto.randomUUID(),page,app:true});await collectSimpleUsage(f.env,event('splash'),f.admin,'192.0.2.1');await collectSimpleUsage(f.env,event('home'),f.admin,'192.0.2.1');
+ const named=await f.call('/admin/site/checkpoint',{label:'Statistik inklusive'},f.adminToken);assert.equal(named.status,200);
+ const snapshot=(await f.call('/admin/site/export?id='+named.body.id,undefined,f.adminToken)).body;
+ const live=(await f.call('/admin/site/export',undefined,f.adminToken)).body;
+ for(const value of[snapshot,live]){assert.equal(value.statistics.format,'tfb-usage-snapshot');assert.equal(value.statistics.tables.usage_nc_totals.find(t=>t.period.length===10).views,1);assert.equal(value.statistics.tables.usage_nc_pages.find(t=>t.page==='splash').views,1);assert(!('usage_nc_uniques' in value.statistics.tables));assert(!JSON.stringify(value.statistics).includes(f.admin.id));}
+ const result=await backupEditorialSystem(f.env),obj=await f.env.CMS_BUCKET.get(result.key),decoded=await decryptSystemBackup(new Uint8Array(await obj.arrayBuffer()),f.env.CMS_BACKUP_KEY);
+ const tmp=mkdtempSync('/private/tmp/tfb-usage-restore-');try{const target=tmp+'/restore.sqlite';restoreDatabase(decoded,target);const db=new DatabaseSync(target);assert.equal(db.prepare("SELECT views FROM usage_nc_totals WHERE length(period)=10").get().views,1);assert.equal(db.prepare("SELECT views FROM usage_nc_pages WHERE page='splash'").get().views,1);db.close();}finally{rmSync(tmp,{recursive:true});}
+ // An older content restore must never roll back live traffic counts.
+ await save(f,[change('page:home',1,{title:'New Home'})]);await collectSimpleUsage(f.env,event('home'),f.admin,'192.0.2.1');
+ const request={snapshot:named.body.id},plan=(await f.call('/admin/site/preview',request,f.adminToken)).body;
+ const restored=await f.call('/admin/site/restore',{...request,id:crypto.randomUUID(),token:plan.token},f.adminToken);assert.equal(restored.status,200);
+ assert.equal(f.env.DB.sqlite.prepare('SELECT views FROM usage_nc_totals WHERE length(period)=10').get().views,2);
+});
+
+test('one-time reset clears only club statistics and starts Home and Splash at the same time',async()=>{
+ const f=await setup();await save(f,[change('page:home',0,{title:'Home'})]);await collectSimpleUsage(f.env,{id:crypto.randomUUID(),page:'home',app:false},f.admin,'192.0.2.1');
+ f.env.DB.sqlite.exec(readFileSync(new URL('../server/cloudflare/operations/reset-usage-2026-11-08.sql',import.meta.url),'utf8'));
+ for(const table of['usage_nc_totals','usage_nc_pages','usage_nc_page_months','usage_nc_page_years','usage_nc_uniques','usage_nc_events','usage_nc_sessions','usage_totals','usage_pages','usage_uniques','usage_events'])assert.equal(f.env.DB.sqlite.prepare('SELECT COUNT(*) n FROM '+table).get().n,0);
+ assert.equal(f.env.DB.sqlite.prepare('SELECT COUNT(*) n FROM members').get().n,2);assert.equal(f.env.DB.sqlite.prepare('SELECT COUNT(*) n FROM cms_documents').get().n,1);
+ const meta=f.env.DB.sqlite.prepare('SELECT value FROM usage_meta').all();assert.equal(meta.length,4);assert.equal(new Set(meta.map(m=>m.value)).size,1);
+ await collectSimpleUsage(f.env,{id:crypto.randomUUID(),page:'splash',app:false},f.admin,'192.0.2.1');await collectSimpleUsage(f.env,{id:crypto.randomUUID(),page:'home',app:false},f.admin,'192.0.2.1');
+ assert.equal(f.env.DB.sqlite.prepare("SELECT views FROM usage_nc_pages WHERE page='splash'").get().views,1);assert.equal(f.env.DB.sqlite.prepare("SELECT views FROM usage_nc_pages WHERE page='home'").get().views,1);
 });
