@@ -332,7 +332,7 @@ body.tfb-starting { background: #EFEFEF; transition: none; }
 .coaster-strokes .bundle { height: 30px; width: auto !important; stroke: var(--stroke-color); stroke-width: 2.8; }
 .coaster-strokes em { font-family: var(--hand); font-style: normal; font-size: 1.05rem; }
 .coaster-note { font-size: .74rem; opacity: .85; }
-.coaster-owner { max-width: 100%; color: var(--muted); font-size: .68rem; font-weight: 500; line-height: 1.3; letter-spacing: .035em; overflow-wrap: anywhere; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
+.coaster-owner { max-width: 100%; color: var(--tfb-midnight-blue, #001D3D); font-size: .68rem; font-weight: 500; line-height: 1.3; letter-spacing: .035em; overflow-wrap: anywhere; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
 
 .deckel::before {
   content: ""; position: absolute; inset: 0; z-index: 0; border-radius: 14px;
