@@ -313,7 +313,7 @@ body.tfb-starting { background: #EFEFEF; transition: none; }
 .deckel {
   --size: min(74vw, 268px);
   --deckel-ink: var(--ink);
-  --stroke-color: var(--clay);
+  --stroke-color: var(--signal);
   position: relative; display: block; width: var(--size); aspect-ratio: 1;
   margin: 10px auto 8px; text-decoration: none; color: var(--deckel-ink);
   transition: transform .15s ease;
@@ -324,7 +324,7 @@ body.tfb-starting { background: #EFEFEF; transition: none; }
   padding: 22px;
 }
 .deckel-top { display: grid; justify-items: center; gap: 4px; }
-.deckel-ball { width: 24px; color: currentColor; opacity: .85; }
+.deckel-ball { width: 24px; color: var(--signal); }
 .coaster-kicker { font-size: .7rem; font-weight: 800; text-transform: uppercase; letter-spacing: .14em; }
 .deckel-month { font-family: var(--hand); font-size: 1.05rem; line-height: 1; }
 .coaster-amount { font-family: var(--serif); font-size: 2.4rem; line-height: 1; letter-spacing: -.02em; color: var(--brand); }
@@ -332,6 +332,7 @@ body.tfb-starting { background: #EFEFEF; transition: none; }
 .coaster-strokes .bundle { height: 30px; width: auto !important; stroke: var(--stroke-color); stroke-width: 2.8; }
 .coaster-strokes em { font-family: var(--hand); font-style: normal; font-size: 1.05rem; }
 .coaster-note { font-size: .74rem; opacity: .85; }
+.coaster-owner { max-width: 100%; color: var(--muted); font-size: .68rem; font-weight: 500; line-height: 1.3; letter-spacing: .035em; overflow-wrap: anywhere; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
 
 .deckel::before {
   content: ""; position: absolute; inset: 0; z-index: 0; border-radius: 14px;
@@ -1009,7 +1010,7 @@ button.shop-card { border: 0; text-align: left; font: inherit; }
 .kiosk-hero .kiosk-link svg { width: 22px; height: 22px; }
 .kiosk-hero .kiosk-link span { white-space: normal; overflow: visible; }
 /* Inhalt des Deckels wächst mit der Deckelgröße mit */
-.kiosk-hero .deckel-face { padding: calc(var(--size) * .08) calc(var(--size) * .06); gap: calc(var(--size) * .028); }
+.kiosk-hero .deckel-face { padding: calc(var(--size) * .08) calc(var(--size) * .06); gap: calc(var(--size) * .024); }
 .kiosk-hero .deckel-ball { width: calc(var(--size) * .085); }
 .kiosk-hero .coaster-kicker { font-size: calc(var(--size) * .036); }
 .kiosk-hero .deckel-month { font-size: calc(var(--size) * .064); }
@@ -1018,6 +1019,7 @@ button.shop-card { border: 0; text-align: left; font: inherit; }
 .kiosk-hero .coaster-strokes .bundle { height: calc(var(--size) * .12); }
 .kiosk-hero .coaster-strokes em { font-size: calc(var(--size) * .06); }
 .kiosk-hero .coaster-note { font-size: calc(var(--size) * .043); }
+.kiosk-hero .coaster-owner { font-size: calc(var(--size) * .038); margin-top: calc(var(--size) * .008); }
 /* ---------- Kiosk-Kopf 3: Deckel ~12 % kleiner, quadratische Knöpfe rechtsbündig ---------- */
 .kiosk-hero { --size: calc((min(100vw, 560px) - 32px) * .615 - 5px); }
 .kiosk-hero .kiosk-links { justify-items: end; gap: 12px; }

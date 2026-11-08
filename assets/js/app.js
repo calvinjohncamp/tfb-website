@@ -474,7 +474,8 @@
       ? TFB.strokes(Math.min(count, 25), state.member.id + today) + (count > 25 ? `<em>+${count - 25}</em>` : '')
       : '<em>Noch leer</em>';
     const dateLabel = new Date().toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'long', timeZone: cfg.timeZone });
-    const label = `Mein Bierdeckel heute: ${euro(totalToday)}. ${monthName(open.month, false)} gesamt ${euro(open.totalCents)}.`;
+    const ownerName = [state.member.firstName, state.member.lastName].filter(Boolean).join(' ').trim();
+    const label = `Mein Bierdeckel heute: ${euro(totalToday)}. ${monthName(open.month, false)} gesamt ${euro(open.totalCents)}.${ownerName ? ` Für ${ownerName}.` : ''}`;
     const storno = state.lastAdd && state.lastAdd.until > Date.now() ? state.lastAdd : null;
     return `
       <div class="deckel-wrap">
@@ -488,6 +489,7 @@
           <strong class="coaster-amount">${euro(totalToday)}</strong>
           <div class="coaster-strokes">${strokes}</div>
           <span class="coaster-note">${esc(monthName(open.month, false))} gesamt <b>${euro(open.totalCents)}</b><br>Einzug am ${esc(nextMonthDebit(open.month))}</span>
+          ${ownerName ? `<span class="coaster-owner" title="${esc(ownerName)}">${esc(ownerName)}</span>` : ''}
         </div>
       </a>
       </div>`;
