@@ -19,6 +19,8 @@ Widerruf, Besuchsgrenzen, Adminschutz, CSV und Mobilbreiten sowie Neuanmeldung,
 Profil/Kommentar und Installationshilfe erfolgreich.
 Live: Worker 98f5c3de-5367-4ad8-bc3d-15b9b3a485ff, Pages-Lauf 42466162529,
 Messbeginn 08.11.2026, 10:12 Uhr Berlin. Echte Admin-Ansicht geprüft.
+Finales Frontend 16f3db4 / Pages-Lauf 42466428986 erfolgreich; Direktlink
+#clubstatistik nach Reload ohne Splash verifiziert.
 
 ## App-Installation: farbiger Profilbutton – 08.11.2026 · v325
 

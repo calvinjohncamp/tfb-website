@@ -65,3 +65,8 @@ Quellstand c4c4f63. Messbeginn serverseitig 2026-11-08T09:12:02Z.
 Echte Admin-Ansicht im angemeldeten Browser geprüft: alle neuen Kennzahlen
 verfügbar, anfangs null Aufrufe/Besucher/Besuche, Durchschnitt ohne Nenner „–“.
 Direktlink #clubstatistik wird zusätzlich ohne Splash geöffnet.
+
+Finaler Frontend-Lauf 42466428986 erfolgreich (Quellstand 16f3db4).
+Direktlink im echten angemeldeten Chrome nach Neuladen geprüft: #clubstatistik
+bleibt erhalten, keine Splash, sechs Kennzahlen sichtbar. Anonymer Statistikabruf
+401; nicht freigegebenes Ereignis 400. Keine künstlichen Live-Besucher erzeugt.
