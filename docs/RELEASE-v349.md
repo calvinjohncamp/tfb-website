@@ -34,3 +34,6 @@ großer Betrag in beiden Welten, responsive Kachelbegrenzungen 320–1440px,
 Jahresabschluss-Download mit Auswahl/Übersicht/Gesamtsumme und bisherige
 Abrechnungsabläufe erfolgreich. Service Worker v349.
 
+Veröffentlicht: Commit 5517800, Pages-Workflow 42517049131 erfolgreich.
+Live-Dateien mit Jahresabschluss-Kachel, CSV-Monatsübersicht und Service Worker
+v349 auf joern-kaemper.de bestätigt. Nutzerkorrektur Gelb/Rot enthalten.
