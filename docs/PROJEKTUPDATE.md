@@ -19,6 +19,11 @@ kein horizontaler Überlauf. Home-Editor von Dating 2.0 aus tatsächlich geöffn
 Ein-/Ausblenden, Rolle nach Session-Refresh, Reload und gewöhnliches Mitglied
 geprüft. Service Worker v335. Details RELEASE-v335.md.
 
+Live veröffentlicht: Quellstand a5df1fa, Pages-Lauf 42475809621 erfolgreich,
+Service Worker v335. Öffentlich ausgelieferte app.js, design-preview.css und
+sw.js geprüft. Auch der bestehende Projektordner besteht den erweiterten
+Admin-Test; dessen bereits angepasste lokale Fixture-Integration bleibt erhalten.
+
 ## Splash in der Bereichstabelle und historische Diagrammjahre – 08.11.2026 · v334
 
 Splash steht als erste Zeile in der gemeinsamen Tabelle „Was interessiert die
