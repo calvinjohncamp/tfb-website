@@ -27,3 +27,6 @@ Profilbild/Initialen, Suchtreffer, langer Monatsname und ausreichender Abstand
 zur Monatssumme bei 390/834/1440px sowie bestehende Abrechnungsabläufe geprüft.
 Keine Backend-/Datenänderung, Migration oder Zahlungsaktion. Service Worker v346.
 
+Veröffentlicht: Commit 46c550a, Pages-Workflow 42515469042 erfolgreich.
+Live-Dateien mit Profilbild-Vergrößerung, ausgeschriebenem Monatsnamen und
+Service Worker v346 auf joern-kaemper.de bestätigt.
