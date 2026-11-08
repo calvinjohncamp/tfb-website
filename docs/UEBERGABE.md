@@ -59,6 +59,20 @@ CSV/Beleg, Rückfrage sowie 320/390/834/1440 px bestanden. Worker-Dry-Run bestan
 Migration zuerst, Worker danach, erneute idempotente Übernahme zum Schließen des
 Deploy-Zeitfensters. Service Worker v337. Details RELEASE-v337.md.
 
+Live veröffentlicht: Quellstand 25c12fb, Pages-Lauf 42479337447 erfolgreich,
+Worker 2d83e402-b772-4348-bedd-4f34699b7d5f, Service Worker v337.
+Vorführdaten lesend abgeglichen: weiterhin 308 Mitglieder, 147 App-Datensätze,
+48 ursprüngliche Einzelpositionen. Neues Journal: ebenfalls 48 Positionen mit
+16.550 Cent ursprünglichem Gesamtwert, vier bereits bestehende Rücknahmen.
+Keine live-Einträge, keine künstlichen Vorführmonatsstände oder Fragen angelegt.
+Zweite additive Migration schrieb null Zeilen: keine Doppelübernahme.
+Öffentlich ausgelieferte Kiosk-JS/CSS, App, Freigabetext und Cacheversion geprüft.
+Keine Live-Testkäufe, Korrekturen, Produktänderungen oder echten Mails ausgelöst.
+Benutzerbrowser war nicht als Browser-Verbindung verfügbar; die vollständige
+UI-Abnahme erfolgte mit echten lokalen Worker-Fixtures in Chromium/WebKit.
+Bestehender Projektordner mit gezieltem Patch aktualisiert; dessen zusätzliche
+Index-/Corporate-Einbindungen und sonstige unveröffentlichte Änderungen erhalten.
+
 ## Statistik-Neustart und Sicherung der Zähler – 08.11.2026 · v336
 
 Auf ausdrücklichen Nutzerwunsch einmaliger Neustart der gesamten Clubstatistik.
