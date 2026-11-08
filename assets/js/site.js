@@ -1293,16 +1293,25 @@
     const member=ui().state.member;
     return `<fieldset class="chat-options compose-sender"><legend>Veröffentlichen als</legend><div class="chat-option-list">${[['personal',`${member.firstName} ${member.lastName}`,member.avatar],['tfb','TFB','assets/icons/icon-512.png']].map(([value,name,avatar])=>`<label class="meet-check compose-sender-option"><input type="radio" name="postAs" value="${value}"${selected===value?' checked':''}><span class="fpost-avatar${value==='tfb'?' tfb-sender-avatar':''}">${senderAvatar(name, avatar, value)}</span><span>${esc(name)}</span></label>`).join('')}</div></fieldset>`;
   }
+  const replyExcerpt = comment => Array.from(String(comment.text || (comment.images?.length ? 'Foto-Kommentar' : 'Kommentar')).replace(/\s+/g, ' ').trim()).slice(0, 160).join('') + (Array.from(String(comment.text || '')).length > 160 ? ' …' : '');
+  function replyQuote(comment, target) {
+    if (!target || target.hidden) return `<div class="comment-reply-quote is-unavailable"><span>Antwort auf einen ${target?.hidden ? 'ausgeblendeten' : 'nicht mehr verfügbaren'} Kommentar</span></div>`;
+    return `<button type="button" class="comment-reply-quote" data-action="comment-jump" data-id="${esc(target.id)}" data-post="${esc(comment.postId)}"><span>Antwort auf <b>${esc(target.author)}</b></span><span>${esc(replyExcerpt(target))}</span></button>`;
+  }
+  function replyPreview(target) {
+    return `<div class="comment-reply-preview" data-comment-reply-preview><div><span>Antwort auf <b>${esc(target.author)}</b></span><p>${esc(replyExcerpt(target))}</p></div><button type="button" data-action="comment-reply-clear" aria-label="Antwortbezug entfernen">×</button></div>`;
+  }
   async function commentsMarkup(post) {
     const { api, state } = ui();
     const comments = (await api.comments(post.id)).slice().reverse();
     if (!comments.length) return '';
     return `<aside class="chat-replies" aria-label="Kommentare" tabindex="0">
-      ${comments.length ? `<div class="comment-list">${comments.map(c => `<article class="comment" data-comment="${esc(c.id)}">
+      ${comments.length ? `<div class="comment-list">${comments.map(c => `<article class="comment" data-comment="${esc(c.id)}" tabindex="-1">
         <span class="fpost-avatar${c.authorMode==='tfb'?' tfb-sender-avatar':''}">${senderAvatar(c.author, c.avatar, c.authorMode)}</span><div class="chat-reply-body"><header><b>${esc(c.author)}</b><small>${esc(whenText(c.createdAt))}${c.editedAt ? ' · bearbeitet' : ''}</small></header>
+        ${!c.hidden && c.replyTo ? replyQuote(c, comments.find(target => target.id === c.replyTo)) : ''}
         ${c.hidden ? '<p class="comment-moderated">Dieser Kommentar wurde von den Tennisfreunden Bielstein ausgeblendet.</p>' : c.text ? `<div class="comment-text">${postText(c.text)}</div>` : ''}
         ${!c.hidden && (c.images || []).length ? `<div class="message-collage n${c.images.length}">${c.images.map((ref, index) => `<button type="button" class="message-photo" data-action="comment-gallery" data-post="${esc(post.id)}" data-id="${esc(c.id)}" data-index="${index}" aria-label="Foto ${index + 1} von ${c.images.length} ansehen">${picture(ref, ref, '')}</button>`).join('')}</div>` : ''}
-        ${c.mine || (c.canModerate && ui().isAdmin()) ? `<footer>${c.mine&&!c.hidden ? `<button type="button" data-action="comment-edit" data-id="${esc(c.id)}" data-post="${esc(post.id)}">Bearbeiten</button>` : ''}${c.mine?`<button type="button" data-action="comment-delete" data-id="${esc(c.id)}">Löschen</button>`:''}${c.canModerate&&ui().isAdmin()?`<button type="button" data-action="comment-hide" data-id="${esc(c.id)}" data-hidden="${c.hidden?'0':'1'}">${c.hidden?'Wieder anzeigen':'Ausblenden'}</button>`:''}</footer>` : ''}
+        ${state.member && !post.hidden && !c.hidden || c.mine || (c.canModerate && ui().isAdmin()) ? `<footer>${state.member && !post.hidden && !c.hidden ? `<button type="button" data-action="comment-reply" data-id="${esc(c.id)}" data-post="${esc(post.id)}">Antworten</button>` : ''}${c.mine&&!c.hidden ? `<button type="button" data-action="comment-edit" data-id="${esc(c.id)}" data-post="${esc(post.id)}">Bearbeiten</button>` : ''}${c.mine?`<button type="button" data-action="comment-delete" data-id="${esc(c.id)}">Löschen</button>`:''}${c.canModerate&&ui().isAdmin()?`<button type="button" data-action="comment-hide" data-id="${esc(c.id)}" data-hidden="${c.hidden?'0':'1'}">${c.hidden?'Wieder anzeigen':'Ausblenden'}</button>`:''}</footer>` : ''}
       </div></article>`).join('')}</div>` : ''}
     </aside>`;
   }
@@ -1359,17 +1368,19 @@
     input.setRangeText(insertion,selectionStart,selectionEnd,'end');
   });
 
-  async function openComment(post) {
+  async function openComment(post, replyId = '') {
     const { api, state, openSheet, toast } = ui();
     if (!post || post.hidden) return;
     if (!state.member) { document.querySelector('.top-actions [data-action="login"]')?.click(); return; }
     const may = await api.canWrite(post.scope);
-    const resume = () => openComment(post);
+    const resume = () => openComment(post, replyId);
     if (may.reason === 'parents') return openParentConsent(post.scope, resume);
     if (may.reason === 'rules') return openRules(post.scope, resume);
     if (!may.ok) return toast('Hier kommentieren die Spieler dieser Mannschaft.');
-    openSheet(`<form data-comment-form="${esc(post.id)}" class="editor comment-form" novalidate>
-      <h2>Dein Kommentar</h2>${senderPicker('personal',post.scope)}
+    const target = replyId ? (await api.comments(post.id)).find(c => c.id === replyId && !c.hidden) : null;
+    if (replyId && !target) return toast('Dieser Kommentar ist nicht mehr verfügbar.');
+    openSheet(`<form data-comment-form="${esc(post.id)}" data-reply-to="${esc(target?.id || '')}" class="editor comment-form" novalidate>
+      <h2>${target ? 'Deine Antwort' : 'Dein Kommentar'}</h2>${target ? replyPreview(target) : ''}${senderPicker('personal',post.scope)}
       <textarea name="text" rows="4" maxlength="2000" aria-label="Dein Kommentar" placeholder="Dein Kommentar …"></textarea>
       ${emojiPicker()}<div data-comment-attachments>${commentAttachments([])}</div>
       <p class="form-error" role="alert"></p><button type="submit" class="btn signal">Senden</button></form>`);
@@ -1418,7 +1429,7 @@
     try {
       const refs = commentImages.get(form) || [];
       if (refs.length) validatePhotoConsent(form, 'commentPhoto');
-      await ui().api.addComment(form.dataset.commentForm, form.elements.text.value, { images: refs, authorMode:form.elements.postAs?.value||'personal' });
+      await ui().api.addComment(form.dataset.commentForm, form.elements.text.value, { images: refs, authorMode:form.elements.postAs?.value||'personal', replyTo:form.dataset.replyTo||'' });
       ui().closeSheet();
       await ui().renderView();
     } catch (error) { form.querySelector('.form-error').textContent = error.message; button.disabled = false; }
@@ -3202,6 +3213,16 @@
     'post-new': (el) => openCompose(el.dataset.scope),
     'post-comments': (el) => openPost(el.dataset.id),
     'comment-unlock': (el) => openComment(postCache[el.dataset.id]),
+    'comment-reply': el => openComment(postCache[el.dataset.post], el.dataset.id),
+    'comment-reply-clear': el => {
+      const form=el.closest('[data-comment-form]');if(!form)return;
+      form.dataset.replyTo='';form.querySelector('[data-comment-reply-preview]')?.remove();form.querySelector('h2').textContent='Dein Kommentar';form.elements.text.focus();
+    },
+    'comment-jump': el => {
+      const target=[...el.closest('.chat-replies').querySelectorAll('[data-comment]')].find(row=>row.dataset.comment===el.dataset.id);
+      if(!target)return ui().toast('Dieser Kommentar ist nicht mehr verfügbar.');
+      target.scrollIntoView({block:'center',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});target.focus({preventScroll:true});target.classList.add('is-reply-target');setTimeout(()=>target.classList.remove('is-reply-target'),1800);
+    },
     'comment-edit': async (el) => {
       const { api, openSheet, closeSheet, toast } = ui();
       const comment = (await api.comments(el.dataset.post)).find(c => c.id === el.dataset.id && c.mine);

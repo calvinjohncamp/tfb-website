@@ -96,7 +96,7 @@ function publicCommentValue(value) {
   return Object.fromEntries(['id','postId','authorId','createdAt','authorMode','moderatedAt'].filter(k=>value[k]!==undefined).map(k=>[k,value[k]]).concat([['text',''],['images',[]],['hidden',true]]));
 }
 // Guest projection contains published posts only, never accounts or invitation records.
-const guestFields=['id','authorId','scope','title','text','images','createdAt','editedAt','alsoTeams','designs','dots','slideshowLayers','photoView','postId','authorMode','hidden','moderatedAt'];
+const guestFields=['id','authorId','scope','title','text','images','createdAt','editedAt','alsoTeams','designs','dots','slideshowLayers','photoView','postId','replyTo','authorMode','hidden','moderatedAt'];
 async function publicRows(env) {
   const rows=await records(env,r=>!r.deleted&&['post','comment','catalog'].includes(r.kind));
   const posts=rows.filter(r=>r.kind==='post'&&!r.value.hidden);
@@ -278,6 +278,14 @@ async function validate(env,member,c,op,all,importing) {
       if(!parent||parent.deleted||!c.canScope(parentScope)||parent.value?.hidden)fail(403,'Beitrag nicht verfügbar.');
       scope=parentScope;
       value={id:op.id,postId:text(v.postId,120),authorId:owner,text:text(v.text||''),images:v.images||[],createdAt:old?.value.createdAt||(importing?timestamp(v.createdAt):now)};
+      if(old&&old.value.postId!==v.postId)fail(400,'Der Beitrag eines Kommentars kann nicht geändert werden.');
+      const replyTo=v.replyTo??old?.value.replyTo??'';
+      if(typeof replyTo!=='string'||replyTo&&!/^[\w:.-]{1,120}$/.test(replyTo))fail(400,'Ungültiger Antwortbezug.');
+      if(old&&replyTo!==(old.value.replyTo||''))fail(400,'Der Antwortbezug kann nachträglich nicht geändert werden.');
+      if(replyTo){
+        if(!old){const target=c.map.get('comment:'+replyTo),pending=all.find(r=>r.kind==='comment'&&r.id===replyTo);if(replyTo===op.id||!target||target.deleted||target.value.hidden||target.value.postId!==v.postId||pending?.deleted||pending?.value?.hidden)fail(400,'Dieser Kommentar ist als Antwortbezug nicht mehr verfügbar.');}
+        value.replyTo=replyTo;
+      }
       const authorMode=v.authorMode??old?.value.authorMode??'personal';
       if(!['personal','tfb'].includes(authorMode))fail(400,'Ungültiger Absender.');
       if((authorMode==='tfb'||old?.value.authorMode==='tfb')&&(!member.is_admin||scope!=='club'))fail(403,'Nur Admins dürfen im Clubchat als TFB antworten.');

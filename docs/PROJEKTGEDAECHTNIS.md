@@ -1,5 +1,16 @@
 # TFB-Kiosk – Projektgedächtnis und Übergabe
 
+## Antworten auf Kommentare – 08.11.2026 · v330
+
+„Antworten“ als erste Kommentaraktion für Mitglieder. Composer und veröffentlichte
+Antwort zeigen einen kompakten Zitatbezug; Tipp springt zum Original. Flache Liste
+bleibt erhalten. Gespeichert wird nur die Original-ID; ausgeblendete/gelöschte
+Quelltexte erscheinen nicht weiter im Zitat. Server prüft selben Beitrag,
+Sichtbarkeit und unveränderlichen Bezug. Klingelhinweis auch für Kommentarautoren
+unter fremden Beiträgen, vorhandener Lesestatus synchronisiert. Keine E-Mails.
+18 Servertests, neue Chromium-/WebKit-Prüfungen und bestehende Kommentarprüfung
+bestanden, Worker-Dry-Run erfolgreich. Details RELEASE-v330.md. Keine Migration.
+
 ## Chat-Kommentare: Abstand zur Linie – 08.11.2026 · v329
 
 Erster Kommentar erhält 14px oberen Innenabstand. Avatar/TFB-Symbol und Name

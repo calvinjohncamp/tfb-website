@@ -830,7 +830,7 @@
       'group-complete': `<b>Alle haben bestätigt:</b> „${esc(n.snap.title)}“ ist komplett`,
       'group-joined': `<b>Du bist jetzt Mitglied</b> der Gruppe „${esc(n.snap.title)}“`,
       chat: `<b>${esc(who(n))}</b> · ${n.count === 1 ? 'Neuer Chat-Beitrag' : `${n.count} neue Chat-Beiträge`}`,
-      comment: `<b>${n.count === 1 ? 'Neuer Kommentar' : `${n.count} neue Kommentare`}</b> zu deinem Beitrag`,
+      comment: n.replyOnly ? `<b>${n.count === 1 ? 'Neue Antwort' : `${n.count} neue Antworten`}</b> auf deinen Kommentar` : `<b>${n.count === 1 ? 'Neuer Kommentar' : `${n.count} neue Kommentare`}</b> zu deinem Beitrag`,
     }[n.type] || esc(n.snap.title));
     const pending = (n) => {
       if (n.type === 'group-invite') { const g = group(n.groupId); return Boolean(g && (g.pending || []).includes(me().id)); }

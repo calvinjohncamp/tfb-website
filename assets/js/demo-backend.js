@@ -796,23 +796,26 @@
       if (!member) return [];
       const seen = new Set(accountOf(member.id)?.commentRead || []);
       const own = new Map(db.community.posts.filter(p => p.authorId === member.id && !p.hidden).map(p => [p.id, p]));
+      const posts=new Map(db.community.posts.filter(p=>!p.hidden).map(p=>[p.id,p]));
+      const mine=new Set((db.community.comments||[]).filter(c=>c.authorId===member.id&&!c.hidden).map(c=>c.id));
       const grouped = new Map();
-      (db.community.comments || []).filter(c => !c.hidden && own.has(c.postId) && c.authorId !== member.id && !seen.has(c.id)
+      (db.community.comments || []).filter(c => !c.hidden && posts.has(c.postId) && (own.has(c.postId)||mine.has(c.replyTo)) && c.authorId !== member.id && !seen.has(c.id)
         && Date.parse(c.createdAt) >= Date.now() - 7 * DAY).sort((a, b) => b.createdAt.localeCompare(a.createdAt)).forEach(c => {
           if (!grouped.has(c.postId)) grouped.set(c.postId, []);
           grouped.get(c.postId).push(c);
         });
       return [...grouped].map(([postId, comments]) => ({ id: 'comments-' + postId, type: 'comment', postId,
-        from: comments[0].authorId, count: comments.length, snap: { title: own.get(postId).title || own.get(postId).text.slice(0, 80) || 'Dein Beitrag' },
+        from: comments[0].authorId, count: comments.length, replyOnly:!own.has(postId), snap: { title: posts.get(postId).title || posts.get(postId).text.slice(0, 80) || 'Chat-Beitrag' },
         extra: {}, at: Date.parse(comments[0].createdAt), read: false }));
     },
     readCommentPosts(postIds) {
       const member = requireMember();
       const own = new Set(db.community.posts.filter(p => p.authorId === member.id && postIds.includes(p.id)).map(p => p.id));
       const comments = db.community.comments || [];
+      const mine=new Set(comments.filter(c=>c.authorId===member.id&&!c.hidden).map(c=>c.id));
       const existing = new Set(comments.map(c => c.id));
       const acc = accountOf(member.id);
-      acc.commentRead = [...new Set([...(acc.commentRead || []), ...comments.filter(c => own.has(c.postId)).map(c => c.id)])].filter(id => existing.has(id));
+      acc.commentRead = [...new Set([...(acc.commentRead || []), ...comments.filter(c => postIds.includes(c.postId)&&(own.has(c.postId)||mine.has(c.replyTo))).map(c => c.id)])].filter(id => existing.has(id));
       if (!save(db)) throw Error('Speichern nicht möglich.');
     },
     async comments(postId) {
@@ -827,7 +830,7 @@
         })(), mine: c.authorId === member?.id, canModerate: Boolean(member?.isAdmin),
       }));
     },
-    async addComment(postId, text, { images = [], authorMode = 'personal' } = {}) {
+    async addComment(postId, text, { images = [], authorMode = 'personal', replyTo = '' } = {}) {
       const member = requireMember();
       const post = db.community.posts.find(p => p.id === postId && !p.hidden);
       if (!post) throw Error('Dieser Beitrag ist nicht mehr verfügbar.');
@@ -836,8 +839,9 @@
       const value = String(text || '').trim();
       if (!Array.isArray(images) || images.length > 3 || images.some(ref => typeof ref !== 'string' || !/^img:.+/.test(ref))) throw Error('Pro Kommentar sind höchstens 3 Fotos möglich.');
       if ((!value && !images.length) || value.length > 2000) throw Error('Bitte einen Kommentar oder ein Foto hinzufügen (höchstens 2000 Zeichen).');
+      if(replyTo&&(!(db.community.comments||[]).some(c=>c.id===replyTo&&c.postId===postId&&!c.hidden)||typeof replyTo!=='string'))throw Error('Dieser Kommentar ist als Antwortbezug nicht mehr verfügbar.');
       const next = clone(db);
-      next.community.comments = [...(next.community.comments || []), { id: 'c-' + uid(), postId, authorId: member.id, ...(authorMode==='tfb'?{authorMode:'tfb'}:{}), text: value, images: images.slice(), createdAt: new Date().toISOString() }];
+      next.community.comments = [...(next.community.comments || []), { id: 'c-' + uid(), postId, ...(replyTo?{replyTo}:{}), authorId: member.id, ...(authorMode==='tfb'?{authorMode:'tfb'}:{}), text: value, images: images.slice(), createdAt: new Date().toISOString() }];
       if (!save(next)) throw Error('Der Kommentar konnte nicht gespeichert werden.');
       db = next; document.dispatchEvent(new Event('tfb-chat-updated'));
     },
