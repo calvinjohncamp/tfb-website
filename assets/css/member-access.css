@@ -15,3 +15,6 @@
 
 .memberhub-group + .memberhub-group{margin-top:28px}.memberhub-group h3{display:flex;justify-content:space-between;align-items:center;font-size:.82rem;letter-spacing:0;text-transform:none;color:var(--ink);padding:11px 0 9px;border-bottom:1px solid var(--line)}.memberhub-group h3>span{font-size:.7rem;font-weight:500;color:var(--muted)}.memberhub-filters{grid-template-columns:minmax(0,1.5fr) minmax(0,1fr)}
 @media(max-width:639px){.memberhub-filters{grid-template-columns:minmax(0,1fr)}}
+/* Keep the account's installation invitation visible in both brand worlds. */
+.btn.tfb-install-profile { background: var(--tfb-signature-red); border-color: var(--tfb-signature-red); color: #fff; }
+:root.tfb-logo-midnight-amber .btn.tfb-install-profile { background: #001D3D; border-color: #001D3D; color: var(--tfb-signature-yellow); }

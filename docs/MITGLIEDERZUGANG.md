@@ -78,3 +78,14 @@ Familienadressen verschiedener Personen bleiben getrennt.
 Mail-Codefeld jetzt kompakt (200 × 55px), linksbündig, fest Signature-Blau auf Gelb.
 32 Servertests und Chromium-/WebKit-Prüfungen bestanden. Details: RELEASE-v324.md.
 
+
+## App-Installation: farbiger Profilbutton – 08.11.2026 · v325
+
+Account-Button jetzt Rot/Weiß in der roten Welt und Signature-Blau/Gelb in der
+gelben Welt. Apple-/Android-Anleitungen und Erkennung des App-Modus geprüft.
+Wichtig: Eine Installation wird beim Start als eigenständige App erkannt, nicht
+zuverlässig aus einem normalen Safari-Tab. Dann sind Banner und Profilbutton
+absichtlich ausgeblendet. Nur ausgeblendetes Banner: Profilhilfe bleibt verfügbar.
+Aktuelle Code-Mail enthält bereits das feste gelb-blaue Logo; Nutzerbild war die
+ältere Vorlage. Details und Prüfungen: RELEASE-v325.md.
+

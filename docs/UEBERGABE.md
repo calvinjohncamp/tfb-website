@@ -1,5 +1,15 @@
 # TFB – Übergabe für die nächste Sitzung
 
+## App-Installation: farbiger Profilbutton – 08.11.2026 · v325
+
+Account-Button jetzt Rot/Weiß in der roten Welt und Signature-Blau/Gelb in der
+gelben Welt. Apple-/Android-Anleitungen und Erkennung des App-Modus geprüft.
+Wichtig: Eine Installation wird beim Start als eigenständige App erkannt, nicht
+zuverlässig aus einem normalen Safari-Tab. Dann sind Banner und Profilbutton
+absichtlich ausgeblendet. Nur ausgeblendetes Banner: Profilhilfe bleibt verfügbar.
+Aktuelle Code-Mail enthält bereits das feste gelb-blaue Logo; Nutzerbild war die
+ältere Vorlage. Details und Prüfungen: RELEASE-v325.md.
+
 ## Mitgliederzuordnung und Übersicht – 08.11.2026 · v324
 
 Eingerichtete Zugänge stehen jetzt separat oben, noch nicht gestartete Mitglieder
