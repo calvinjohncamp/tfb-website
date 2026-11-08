@@ -1,5 +1,39 @@
 # TFB – Projektupdate vom 08.11.2026
 
+## Mitgliederzugang geprüft und erläutert – 08.11.2026 · v321
+
+Aktuell live: `tfb-kiosk-v321`, Code `380bc3d5ffa3a6159bbd5dfe9128d791c19edf74`,
+[Pages-Lauf 42460748569](https://github.com/calvinjohncamp/tfb-website/actions/runs/42460748569)
+erfolgreich. Drei Webdateien live bytegleich und Anmeldehinweise im mobilen
+Live-Browser geprüft. Dieser Stand ergänzt die bestätigten Gestaltungsregeln
+von v320; an den Farbentscheidungen ändert sich nichts.
+
+Produktive Datenbank ausschließlich aggregiert gelesen: 307 aktive importierte
+Mitglieder plus Verwaltungskonto; 13 importierte Mitglieder ohne E-Mail. Null
+importierte Mitgliederkonten aktiviert, ein Verwaltungskonto aktiviert.
+Eine beim TFB hinterlegte E-Mail ermöglicht die Anmeldung, ersetzt jedoch nicht
+den persönlichen Erst-Freischaltcode vom Vorstand. Erst danach wird ein eigenes
+Passwort gesetzt. Bei gemeinsamer Familienadresse ist die Mitgliedsnummer nötig;
+ohne E-Mail funktioniert ebenfalls Mitgliedsnummer plus persönlicher Code.
+Keine automatische Code-Mail und keine freie Registrierung.
+
+Serverseitiger Schutz war bereits vorhanden und ist geprüft: Gäste dürfen die
+öffentlichen Inhalte lesen, aber keine Beiträge/Kommentare/Medien speichern.
+Aktive Mitgliedschaft und gültige Sitzung werden für geschützte Aufrufe geprüft;
+deaktivierte oder gefälschte Sitzungen und externe E-Mails scheitern. Keine
+Serveränderung, Migration, Mitgliederdatenänderung, echte Codeerzeugung oder
+Nachrichtenversendung dieser Prüfung. Oberfläche erklärt die Beschränkung und
+den ersten Zugang jetzt ausdrücklich; Gast-Kommentarknöpfe verweisen auf Anmeldung.
+
+13 Servertests und vollständiger Chromium-/WebKit-Durchlauf mit synthetischen
+Daten bestanden, einschließlich Erstaktivierung, Kommentar, Reload und Entzug
+der Mitgliedschaft. Öffentliche API live 200; private/Schreibaufrufe ohne Token
+und ungültige Login-/Aktivierungsversuche live 401. Keine Vollprüfung aller
+Anwendungsfunktionen dieses Releases. Anleitung für den Vorstand:
+[Mitgliederzugang](MITGLIEDERZUGANG.md), Nachweise [v321](RELEASE-v321.md).
+
+---
+
 Der Nutzer bestätigt den Abschluss mit „Alles super“. Alle in dieser Sitzung
 beauftragten Website-Änderungen sind veröffentlicht. Es sind daraus keine offenen
 Umsetzungsaufgaben bekannt. Die folgenden Angaben beschreiben den Endstand und

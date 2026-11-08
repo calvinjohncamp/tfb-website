@@ -27,3 +27,5 @@ Berechtigungsprüfungen ohne produktive Konto- oder Inhaltsänderung. Diff-/Synt
 prüfung und Paket mit 274 öffentlichen Dateien erfolgreich.
 
 Betriebsanleitung: [Mitgliederzugang](MITGLIEDERZUGANG.md).
+
+Live: 380bc3d5ffa3a6159bbd5dfe9128d791c19edf74; Pages-Lauf https://github.com/calvinjohncamp/tfb-website/actions/runs/42460748569 erfolgreich. Drei Webdateien bytegleich, mobile Anmeldehinweise live geprüft.
