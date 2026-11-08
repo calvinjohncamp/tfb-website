@@ -1,5 +1,19 @@
 # TFB-Kiosk – Projektgedächtnis und Übergabe
 
+## App-Anleitung dauerhaft erreichbar und HD-Bilder – 08.11.2026 · v327
+
+Account-App-Button bleibt jetzt auch im installierten App-Modus sichtbar. Die
+unveränderte Apple-/Android-Anleitung ist zusätzlich direkt über „App-Anleitung“
+in den Admin-Werkzeugen erreichbar. Alle Zugänge öffnen dieselbe help()-Funktion.
+Nur die automatische Installationskarte wird in der installierten App ausgeblendet.
+HD-Präsentationsbilder aus der echten Oberfläche (1950px breit) liegen unter
+praesentation/app-installation/. Exporttool: tools/export-install-guide.mjs.
+
+Statistik zählt Admins absichtlich nicht; dieser Hinweis steht nun zusätzlich oben
+in der Übersicht. Andere Besucher werden nur nach „Statistik erlauben“ gezählt.
+Sechs gezielte Tests sowie Chromium-/WebKit-Prüfungen einschließlich direktem
+Admin-Aufruf und simuliertem installierten App-Modus bestanden. Details RELEASE-v327.md.
+
 ## Clubstatistik und App-Einstieg – 08.11.2026 · v326
 
 Neue Admin-Ansicht #clubstatistik mit Heute/Monat, Besucher-Browsern, Besuchen,

@@ -12,5 +12,5 @@
  window.addEventListener('appinstalled',()=>{deferred=null;dismiss();TFB.ui?.closeSheet();});
  document.addEventListener('click',async e=>{if(e.target.closest('[data-install-help]'))help();if(e.target.closest('[data-install-dismiss]'))dismiss();const tab=e.target.closest('[data-install-platform]');if(tab)help(tab.dataset.installPlatform);if(e.target.closest('[data-install-native]')&&deferred){const prompt=deferred;deferred=null;await prompt.prompt();const choice=await prompt.userChoice;if(choice.outcome==='accepted'){dismiss();TFB.ui.closeSheet();}}});
  new MutationObserver(()=>{if(!pending){pending=true;requestAnimationFrame(mount);}}).observe(document.getElementById('app'),{childList:true,subtree:true});
- TFB.installApp={help,profileButton:()=>standalone()?'':'<button type="button" class="btn block tfb-install-profile" data-install-help>TFB als App auf dem Startbildschirm</button>'};
+ TFB.installApp={help,profileButton:()=>'<button type="button" class="btn block tfb-install-profile" data-install-help>TFB als App auf dem Startbildschirm</button>'};
 })();

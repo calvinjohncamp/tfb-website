@@ -456,6 +456,7 @@
           <div class="tfb-admin-links"><button type="button" class="btn small" data-action="splash-edit">Splash bearbeiten</button>${editHome}<a class="btn small" href="#partner">Partner verwalten</a>
             <button type="button" class="btn small" data-action="members-manage">Mitglieder verwalten</button>
             <a class="btn small" href="#clubstatistik">Clubstatistik</a>
+            <button type="button" class="btn small" data-install-help>App-Anleitung</button>
             <button type="button" class="btn small" data-action="admin-backup">Sicherungen</button></div></div>`);
         const homeEditShortcut = editHome && !$view.querySelector('.editing-page')
           ? $view.querySelector('.tfb-admin-links [data-action="site-edit"]') : null;
