@@ -22,6 +22,13 @@ Mitglieder-HMAC-Sets nur aktueller Tag/Monat/Jahr, keine Browserkennungen.
 und fehlende Vorjahresdaten bestanden; Worker-Dry-Run erfolgreich. Details:
 RELEASE-v332.md. Service Worker v332.
 
+Live veröffentlicht: Quellstand bf1b5ac, Pages-Lauf 42473335424 erfolgreich,
+Worker 7da0046a-5ec1-4f9a-9c17-81705c3762ee, Service Worker v332.
+Echte angemeldete Browserprüfung: Heute und Jahr zeigen 10 Seitenaufrufe,
+1 Besucher (1 Mitglied, 0 Externe), 1 Mitgliedsbesuch, 10 Seiten pro Besuch.
+Monatsdiagramm: zwölf Felder; Vorjahr: keine Messdaten und Striche statt Nullen.
+Keine künstlichen Live-Ereignisse, Testkonten oder Kommentare erzeugt.
+
 ## Automatische Statistik und getrennte Mitglieder-/Gastaufrufe – 08.11.2026 · v331
 
 Neue, verbindliche Festlegung: Statistik-Zustimmungsabfragen und Account-Eintrag
