@@ -456,6 +456,8 @@
             <a class="btn small" href="#clubstatistik">Statistik</a>
             <a class="btn small" href="#kioskabrechnung">Kiosk</a>
             <button type="button" class="btn small tfb-backup-icon" data-action="admin-backup" aria-label="Datensicherung" title="Datensicherung"><svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M4 3h13l4 4v14H3V3Z"/><path d="M7 3v7h10V3M7 21v-8h10v8M14 5v3"/></svg></button></div></div>`);
+        const activeAdmin = $view.querySelector(`.tfb-admin-links a[href="#${view}"]`);
+        if(activeAdmin) activeAdmin.setAttribute('aria-current','page');
         const homeEditShortcut = view === 'home' && $view.querySelector('.site-page[data-page="home"]') && !$view.querySelector('.editing-page')
           ? $view.querySelector('.tfb-admin-links [data-action="site-edit"]') : null;
         const edit = homeEditShortcut || $view.querySelector('.view-close[data-action="site-edit"], .view-close[data-action="edit-start"], .view-close[data-action="feature-edit"], .view-close[data-action="album-edit"], .view-close[data-action="portrait-edit"], .view-close[data-action="chat-text-edit"]');

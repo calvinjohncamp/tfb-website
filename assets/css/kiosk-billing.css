@@ -30,3 +30,12 @@ html.tfb-logo-midnight-amber .kb-panel{--kb-brand:#001D3D;--kb-accent:#FFC300}
 @media(min-width:1000px){.kb-calendar-head,.kb-day-picker-head{height:124px;flex-basis:124px}}
 @media(max-width:760px){.kb-calendar-head,.kb-day-picker-head{height:95px;flex-basis:95px}}
 @media(max-width:350px){.kb-calendar-head,.kb-day-picker-head{height:80px;flex-basis:80px}}
+
+/* A visible year label avoids clipping in native select rendering. */
+.kb-calendar-head .kb-year-control{position:relative;flex:0 0 auto;min-width:0;overflow:visible}
+.kb-year-value{display:flex;align-items:center;gap:6px;font-size:3.4rem;line-height:1.18;font-weight:800;letter-spacing:-.065em;color:var(--kb-accent);white-space:nowrap;text-transform:none}
+.kb-year-value i{font-size:1rem;font-style:normal;letter-spacing:0}
+.kb-calendar-head .kb-year-control select{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;padding:0;min-height:0;font-size:1rem}
+.kb-year-control:focus-within{outline:2px solid var(--kb-accent);outline-offset:4px;border-radius:3px}
+@media(max-width:999px){.kb-year-value{font-size:2.7rem}}
+@media(max-width:350px){.kb-year-value{font-size:2.2rem}}
