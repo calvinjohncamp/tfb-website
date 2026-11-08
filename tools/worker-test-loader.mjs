@@ -3,6 +3,7 @@ import {readFileSync} from 'node:fs';
 const root=new URL('../server/cloudflare/',import.meta.url);
 const data=source=>'data:text/javascript;base64,'+Buffer.from(source).toString('base64');
 let sync=readFileSync(new URL('app-sync.mjs',root),'utf8').replace("import catalog from './demo-catalog.json';",'const catalog='+readFileSync(new URL('demo-catalog.json',root),'utf8')+';');
+sync=sync.replace("from './kiosk-billing.mjs'",'from '+JSON.stringify(data(readFileSync(new URL('kiosk-billing.mjs',root),'utf8'))));
 sync=sync.replace("from './meet-sync.mjs'",'from '+JSON.stringify(data(readFileSync(new URL('meet-sync.mjs',root),'utf8'))));
 const visibility=readFileSync(new URL('partner-visibility.mjs',root),'utf8').replace("import partners from './partner-catalog.json';",'const partners='+readFileSync(new URL('partner-catalog.json',root),'utf8')+';');
 const editorial=readFileSync(new URL('editorial.mjs',root),'utf8');
@@ -10,6 +11,7 @@ const backup=readFileSync(new URL('editorial-backup.mjs',root),'utf8').replace("
 const mail=readFileSync(new URL('access-mail.mjs',root),'utf8').replace("import template from './templates/access-mail.html';",'const template='+JSON.stringify(readFileSync(new URL('templates/access-mail.html',root),'utf8'))+';');
 const email=readFileSync(new URL('email-auth.mjs',root),'utf8').replace("from './access-mail.mjs'",'from '+JSON.stringify(data(mail)));
 let source=readFileSync(new URL('worker.mjs',root),'utf8')
+  .replace("from './kiosk-billing.mjs'",'from '+JSON.stringify(data(readFileSync(new URL('kiosk-billing.mjs',root),'utf8'))))
   .replace("from './simple-usage.mjs'",'from '+JSON.stringify(data(readFileSync(new URL('simple-usage.mjs',root),'utf8'))))
   .replace("from './club-usage.mjs'",'from '+JSON.stringify(data(readFileSync(new URL('club-usage.mjs',root),'utf8'))))
   .replace("from './email-auth.mjs'",'from '+JSON.stringify(data(email)))

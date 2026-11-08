@@ -1,3 +1,4 @@
+import {kioskReport,kioskArchiveMonth,kioskStatement,kioskCredit,kioskMessage} from './kiosk-billing.mjs';
 import {collectSimpleUsage,simpleUsageReport,simpleUsageHistory,cleanSimpleUsage} from './simple-usage.mjs';
 import {collectUsage,usageReport,cleanUsage} from './club-usage.mjs';
 import {emailAccessReady,recordAccess,memberAccessOverview,requestEmailCode,claimEmailCode} from './email-auth.mjs';
@@ -268,6 +269,15 @@ async function route(request, env, url) {
     const teams={...(doc?.value||{})};teams[team]={...(teams[team]||{posts:[]}),[field]:data.value};
     return editorialCommit(env,member,{id:data.id,label:'Mannschaft aktualisiert',changes:[{key:'global:teams',expected:data.expected,value:teams}]});
   }
+  if (request.method === 'POST' && path === '/app/kiosk/question') return kioskMessage(env,member,await body(request,4096));
+  if (request.method === 'POST' && path === '/admin/kiosk/reply') return kioskMessage(env,member,await body(request,4096),true);
+  if (request.method === 'GET' && path === '/app/kiosk/report') return kioskReport(env,member,url.searchParams);
+  if (request.method === 'GET' && path === '/app/kiosk/statement') return kioskStatement(env,member,url.searchParams.get('id'));
+  if (request.method === 'GET' && path === '/admin/kiosk/catalog-history') return {rows:(await env.DB.prepare("SELECT h.*,COALESCE(m.first_name||' '||m.last_name,'System / frühere Verwaltung') actor_name FROM kiosk_catalog_history h LEFT JOIN members m ON m.id=h.actor_id ORDER BY h.created_at DESC,h.id DESC LIMIT 50").all()).results};
+  if (request.method === 'GET' && path === '/admin/kiosk/report') return kioskReport(env,member,url.searchParams,true);
+  if (request.method === 'POST' && path === '/admin/kiosk/archive') return kioskArchiveMonth(env,member,await body(request,2048));
+  if (request.method === 'POST' && path === '/admin/kiosk/credit') return kioskCredit(env,member,await body(request,2048));
+  if (path === '/admin/kiosk/collection') fail(409,'Echte Abbuchungen sind gesperrt. Zahlungsweg, Mandate und Einzugstermin sind noch nicht freigegeben.');
   if (request.method === 'GET' && path === '/admin/site') return editorialState(env,true);
   if (request.method === 'GET' && path === '/admin/site/history') return editorialHistory(env);
   if (request.method === 'GET' && path === '/admin/site/export') return editorialExport(env,url.searchParams.get('id'));

@@ -1,5 +1,6 @@
 // Authenticated, revision-checked demo data. No payment or SEPA processing.
 import catalog from './demo-catalog.json';
+import {kioskCommitStatements} from './kiosk-billing.mjs';
 import {meetingKinds,meetingProjection,validateMeetingOperation,materializeMeetings,berlinDay} from './meet-sync.mjs';
 const fail = (status, message) => { throw Object.assign(Error(message), {status}); };
 const digest = async value => [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value)))].map(b=>b.toString(16).padStart(2,'0')).join('');
@@ -131,13 +132,14 @@ async function context(env, member) {
   const teams=new Set((await env.DB.prepare('SELECT team_key FROM member_teams WHERE member_id=?').bind(member.id).all()).results.map(r=>r.team_key));
   const canScope=scope=>scope==='club'||(typeof scope==='string'&&scope.startsWith('team:')&&(member.is_admin||teams.has(scope.slice(5))));
   const canPost=r=>r&&!r.deleted&&canScope(r.scope)&&(!r.value.hidden||r.owner_id===member.id||member.is_admin);
-  return {rows,map,teams,canScope,canPost};
+  return {rows,map,teams,canScope,canPost,catalog:map.get('catalog:club')?.value||catalog};
 }
 export async function syncRevision(env,member) {
   const row=await env.DB.prepare('SELECT COUNT(*) n,COALESCE(SUM(revision),0) total FROM app_records').first();
   const members=await env.DB.prepare('SELECT COUNT(*) n,SUM(active) active,MAX(updated_at) updated FROM members').first();
   const teams=(await env.DB.prepare('SELECT team_key FROM member_teams WHERE member_id=? ORDER BY team_key').bind(member.id).all()).results.map(r=>r.team_key);
-  return `${row.n}:${row.total}:${member.updated_at}:${members.n}:${members.active}:${members.updated}:${teams.join(',')}:${berlinDay()}:tally3`;
+  const credits=await env.DB.prepare('SELECT COUNT(*) n,COALESCE(SUM(amount_cents),0) total FROM kiosk_adjustments').first();
+  return `${credits.n}:${credits.total}:${row.n}:${row.total}:${member.updated_at}:${members.n}:${members.active}:${members.updated}:${teams.join(',')}:${berlinDay()}:tally3`;
 }
 export async function syncFaces(env,member,ids) {
   if(!Array.isArray(ids)||ids.length>100||ids.some(id=>typeof id!=='string'||id.length>120))fail(400,'Ungültige Profilabfrage.');
@@ -175,7 +177,9 @@ export async function syncState(env, member) {
   const postIds=new Set(posts.map(r=>r.id));
   const comments=c.rows.filter(r=>r.kind==='comment'&&!r.deleted&&postIds.has(r.value.postId)).map(r=>member.is_admin?r:{...r,value:publicCommentValue(r.value)});
   const mediaIds=new Set([...posts,...comments].flatMap(r=>r.value.images||[]));
-  const own=c.rows.filter(r=>r.kind==='catalog'||r.owner_id===member.id&&(['account','item','media'].includes(r.kind)||r.deleted&&['post','comment'].includes(r.kind)));
+  const credits=(await env.DB.prepare('SELECT a.entry_id,SUM(a.amount_cents) cents FROM kiosk_adjustments a JOIN kiosk_entries e ON e.id=a.entry_id WHERE e.member_id=? GROUP BY a.entry_id').bind(member.id).all()).results;
+  const creditMap=new Map(credits.map(r=>[r.entry_id,r.cents]));
+  const own=c.rows.filter(r=>r.kind==='catalog'||r.owner_id===member.id&&(['account','item','media'].includes(r.kind)||r.deleted&&['post','comment'].includes(r.kind))).map(r=>r.kind==='item'?{...r,value:{...r.value,creditCents:creditMap.get(r.id)||0}}:r);
   const media=c.rows.filter(r=>r.kind==='media'&&!r.deleted&&mediaIds.has(r.id)&&r.owner_id!==member.id);
   const people=(await env.DB.prepare('SELECT id,first_name,last_name FROM members WHERE active=1').all()).results;
   const visibleIds=new Set([member.id,...planning.memberIds,...posts.map(r=>r.owner_id),...comments.map(r=>r.owner_id)]);
@@ -225,8 +229,12 @@ async function validate(env,member,c,op,all,importing) {
     if(!member.is_admin||op.id!=='club')fail(403,'Nur die Verwaltung kann das Sortiment ändern.');
     if(!Array.isArray(v.sections)||!Array.isArray(v.products)||v.sections.length>30||v.products.length>300)fail(400,'Ungültiges Sortiment.');
     const sections=v.sections.map(x=>({id:text(x.id,80),title:text(x.title,40),note:text(x.note||'',120),status:x.status==='soon'?'soon':'open'}));
-    const products=v.products.map(p=>{if(!Number.isSafeInteger(p.price)||p.price<0||p.price>50000||!sections.some(x=>x.id===p.section))fail(400,'Ungültiger Artikelpreis.');return {id:text(p.id,100),section:p.section,name:text(p.name,40),detail:text(p.detail||'',80),price:p.price,art:text(p.art||'bottle',80),color:/^#[0-9a-f]{6}$/i.test(p.color)?p.color:'#C4553A',active:p.active!==false};});
+    let products=v.products.map(p=>{if(!Number.isSafeInteger(p.price)||p.price<0||p.price>50000||!sections.some(x=>x.id===p.section))fail(400,'Ungültiger Artikelpreis.');return {id:text(p.id,100),section:p.section,name:text(p.name,40),detail:text(p.detail||'',80),price:p.price,art:text(p.art||'bottle',80),color:/^#[0-9a-f]{6}$/i.test(p.color)?p.color:'#C4553A',active:p.active!==false&&!p.archived,archived:Boolean(p.archived),unit:text(p.unit||'Stück',40),kind:p.kind==='rental'?'rental':'sale'};});
     if(new Set(products.map(p=>p.id)).size!==products.length||new Set(sections.map(s=>s.id)).size!==sections.length)fail(400,'Doppelte Artikelkennung.');
+    const prior=c.map.get('catalog:club')?.value||catalog;
+    const used=new Set(c.rows.filter(r=>r.kind==='item').map(r=>r.value.productId));
+    for(const p of prior?.products||[])if(used.has(p.id)&&!products.some(x=>x.id===p.id))products.push({...p,active:false,archived:true});
+    for(const section of prior?.sections||[])if(!sections.some(x=>x.id===section.id)&&products.some(p=>p.section===section.id))sections.push({...section,status:'soon'});
     value={sections,products};
   }
   if(!op.deleted&&op.kind==='media') {value={data:image(v.data,1800000)};if(!op.id.startsWith('img:'))fail(400,'Ungültige Fotokennung.');if(old&&JSON.stringify(old.value)!==JSON.stringify(value))fail(409,'Fotos können nur als neue Datei hochgeladen werden.');}
@@ -303,14 +311,15 @@ async function validate(env,member,c,op,all,importing) {
   if(!op.deleted&&op.kind==='item') {
     if(old) {
       value={...old.value};
+      if(v.status==='cancelled'&&v.status!==old.value.status&&(await env.DB.prepare('SELECT COUNT(*) n FROM kiosk_adjustments WHERE entry_id=?').bind(op.id).first()).n)fail(409,'Diese Buchung wurde bereits korrigiert. Bitte die Abrechnung prüfen.');
       if(v.status!==old.value.status){if(v.status!=='cancelled'||old.value.status!=='open'||Date.parse(old.value.createdAt)<Date.now()-30000)fail(409,'Die Rücknahme ist nicht mehr möglich.');value.status='cancelled';}
     } else {
       const menu=all.find(r=>r.kind==='catalog')?.value||c.map.get('catalog:club')?.value||catalog;
       const p=menu.products.find(p=>p.id===v.productId&&p.active);
       if(!importing&&(!p||!menu.sections.some(s=>s.id===p.section&&s.status==='open')))fail(400,'Artikel nicht verfügbar.');
       const account=all.find(r=>r.kind==='account'&&r.id===member.id)?.value||c.map.get('account:'+member.id)?.value;
-      if(!account?.consentedAt||account.consentVersion!=='tfb-kiosk-v3')fail(403,'Bitte zuerst der Kioskordnung zustimmen.');
-      value={id:op.id,memberId:member.id,productId:importing?text(v.productId,100):p.id,productName:importing?text(v.productName||p?.name||'Vorführartikel',100):p.name,priceCents:p?.price||0,createdAt:importing?timestamp(v.createdAt):now,status:'open',demo:true};
+      if(!account?.consentedAt||!['tfb-kiosk-v3','tfb-kiosk-preparation-v1'].includes(account.consentVersion))fail(403,'Bitte zuerst der Kioskordnung zustimmen.');
+      value={id:op.id,memberId:member.id,productId:importing?text(v.productId,100):p.id,productName:importing?text(v.productName||p?.name||'Vorführartikel',100):p.name,priceCents:p?.price||0,createdAt:importing?timestamp(v.createdAt):now,status:'open',demo:true,imported:Boolean(importing),detail:p?.detail||'',sectionId:p?.section||'',sectionName:menu.sections.find(s=>s.id===p?.section)?.title||'',unit:p?.unit||'Stück',kind:p?.kind||'sale'};
       if(importing){if(!Number.isSafeInteger(v.priceCents)||v.priceCents<0||v.priceCents>50000||!['open','cancelled','closed'].includes(v.status))fail(400,'Ungültiger Vorführ-Strich.');value.priceCents=v.priceCents;value.status=v.status;}
     }
   }
@@ -336,7 +345,8 @@ export async function syncCommit(env,member,data) {
     // Superseded data includes old photos; delete it atomically after pointer swap.
     statements.push(env.DB.prepare('DELETE FROM app_payloads WHERE payload_id=? AND NOT EXISTS(SELECT 1 FROM app_records WHERE payload_id=?)').bind(c.map.get(key(o))?.payload_id||'',c.map.get(key(o))?.payload_id||''));
   }
-  const result=await env.DB.batch(statements);
+  statements.push(...kioskCommitStatements(env,member,ops,c,data.id,signature));
+  let result;try{result=await env.DB.batch(statements);}catch(e){if(String(e.message).includes('KIOSK_CREDIT_EXCEEDS_PURCHASE'))fail(409,'Diese Buchung wurde inzwischen korrigiert. Bitte die Abrechnung neu laden.');throw e;}
   if(!result[0].meta.changes)fail(409,'Die Daten wurden auf einem anderen Gerät geändert. Bitte neu laden.');
   return {ok:true};
 }

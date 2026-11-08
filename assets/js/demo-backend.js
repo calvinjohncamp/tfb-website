@@ -674,7 +674,7 @@
       isAdmin: Boolean(member.isAdmin),
       avatar: (account && account.avatar) || null,
       avatarLarge: (account && (account.avatarLarge || account.avatar)) || null,
-      hasConsent: Boolean(account && account.consentVersion === cfg.consentVersion),
+      hasConsent: Boolean(account && [cfg.consentVersion,'tfb-kiosk-v3'].includes(account.consentVersion)),
       consentedAt: (account && account.consentedAt) || null,
       phone: (account && account.phone) || '',
       infoMails: !(account && account.infoMails === false),
@@ -1432,7 +1432,7 @@
       const products = (catalog.products || []).map((p) => ({
         id: String(p.id), section: String(p.section), name: String(p.name || '').trim().slice(0, 40),
         detail: String(p.detail || '').trim().slice(0, 80), price: Math.round(Number(p.price)),
-        art: String(p.art || 'bottle'), color: /^#[0-9a-f]{6}$/i.test(p.color) ? p.color : '#C4553A', active: p.active !== false,
+        archived:Boolean(p.archived),unit:String(p.unit||'Stück').slice(0,40),kind:p.kind==='rental'?'rental':'sale',art: String(p.art || 'bottle'), color: /^#[0-9a-f]{6}$/i.test(p.color) ? p.color : '#C4553A', active: p.active !== false,
       }));
       for (const p of products) {
         if (!p.name) throw new Error('Jeder Artikel braucht einen Namen.');
@@ -1482,6 +1482,7 @@
       const key = monthKey(new Date());
       const items = db.items
         .filter((i) => i.memberId === member.id && i.status === 'open' && monthKey(new Date(i.createdAt)) === key)
+        .map(i=>({...i,originalPriceCents:i.priceCents,priceCents:Math.max(0,i.priceCents-(i.creditCents||0))})).filter(i=>i.priceCents>0||i.originalPriceCents===0)
         .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
       return {
         month: key,

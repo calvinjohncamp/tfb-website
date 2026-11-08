@@ -97,6 +97,7 @@
   });
   api.disconnectSync=()=>{generation++;guest=null;guestAt=0;if(state){api.clearSyncedData?.();TFB.meet?.applySynced?.({groups:[],meets:[],series:[],inbox:[],noSampleGroups:true});}member=null;state=null;publicMember=null;pending=null;last=0;photoOwners.clear();knownFaces.clear();};
   api.centralSync=true;
+  api.refreshKiosk=()=>serial(()=>refresh(true));
   for(const name of writeNames)api[name]=(...args)=>serial(async()=>{
     if(!member)throw Error('Bitte zuerst anmelden.');
     if(pending)throw Error('Die letzte Speicherung ist noch offen. Bitte die App neu öffnen.');
@@ -287,8 +288,8 @@
     try {const changed=await serial(async()=>{
       const revision=await call('/app/revision');
       if(state?.revision===revision.revision)return false;
-      const old=state?.records.map(r=>[r.kind,r.id,r.revision]).join('|');await refresh(true);
-      const changed=old!==state.records.map(r=>[r.kind,r.id,r.revision]).join('|');
+      const old=state?.records.map(r=>[r.kind,r.id,r.revision,r.value?.creditCents||0]).join('|');await refresh(true);
+      const changed=old!==state.records.map(r=>[r.kind,r.id,r.revision,r.value?.creditCents||0]).join('|');
       if(changed){document.dispatchEvent(new Event('tfb-chat-updated'));
         return true;}
     });if(changed&&!document.querySelector('#sheet-root:not(:empty), .editor, .lightbox')&&TFB.ui)await TFB.ui.renderView();

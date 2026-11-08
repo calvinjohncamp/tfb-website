@@ -513,7 +513,7 @@
           <div class="deckel-top">${logo('ball', 'deckel-ball')}<span class="coaster-kicker">Mein Bierdeckel</span><span class="deckel-month">${esc(dateLabel)}</span></div>
           <strong class="coaster-amount">${euro(totalToday)}</strong>
           <div class="coaster-strokes">${strokes}</div>
-          <span class="coaster-note">${esc(monthName(open.month, false))} gesamt <b>${euro(open.totalCents)}</b><br>Einzug am ${esc(nextMonthDebit(open.month))}</span>
+          <span class="coaster-note">${esc(monthName(open.month, false))} gesamt <b>${euro(open.totalCents)}</b><br>Vorführung · keine Abbuchung</span>
           ${ownerName ? `<span class="coaster-owner" title="${esc(ownerName)}">${esc(ownerName)}</span>` : ''}
         </div>
       </a>
@@ -547,6 +547,7 @@
         </aside>
         <div class="kiosk-main">
           ${!edit && state.member?.isAdmin ? `<div class="kiosk-tools"><button type="button" class="view-close" data-action="edit-start" aria-label="Kiosk bearbeiten" title="Kiosk bearbeiten">${icon.pencil}</button></div>` : ''}
+          ${state.member?.isAdmin?`<div class="kiosk-preparation-tools"><button type="button" class="btn small" data-action="kiosk-billing">Kiosk-Abrechnung</button><button type="button" class="btn small" data-action="kiosk-product-archive">Archivierte Artikel</button></div>`:''}
           ${cat.sections.map((section, index) => sectionMarkup(section, index, cat, edit)).join('')}
           ${edit ? `<button type="button" class="btn block add-section" data-action="section-new">${icon.plus} Neuer Bereich</button>` : ''}
         </div>
@@ -555,7 +556,7 @@
   }
 
   function sectionMarkup(section, index, cat, edit) {
-    const items = cat.products.filter((p) => p.section === section.id && (edit || p.active));
+    const items = cat.products.filter((p) => p.section === section.id && !p.archived && (edit || p.active));
     if (!items.length && !edit) return '';
     const soon = section.status === 'soon';
     const tools = edit ? `
@@ -640,7 +641,7 @@
         <button type="button" class="btn primary block big" data-confirm>
           Auf meinen Bierdeckel · <span data-total>${euro(p.price)}</span>
         </button>
-        <p class="fineprint">Abrechnung am Monatsende per Lastschrift</p>
+        <p class="fineprint">Vorführbetrieb · keine echten Forderungen oder Abbuchungen</p>
       </div>`);
     update();
     $sheet.querySelectorAll('[data-step]').forEach((b) => b.addEventListener('click', () => {
@@ -702,6 +703,7 @@
 
   // ---------- Abrechnungen ----------
   async function statementsView() {
+    if(api.centralSync&&TFB.kioskBilling)return TFB.kioskBilling.memberView();
     const [open, closed] = await Promise.all([api.myOpenMonth(), api.myStatements()]);
     const groups = new Map();
     // Eine Runde (gleicher Artikel, gleicher Zeitpunkt) erscheint als eine Zeile.
@@ -728,7 +730,7 @@
           <span class="muted">${esc(monthName(open.month))}</span>
         </div>
         <strong class="month-amount">${euro(open.totalCents)}</strong>
-        <p class="muted">Einzug am ${esc(nextMonthDebit(open.month))}</p>
+        <p class="muted">Vorführbetrieb · keine Abbuchung</p>
         ${groups.size ? [...groups.values()].map((g) => `
           <div class="day">
             <h3>${esc(g.label)}</h3>
@@ -753,12 +755,12 @@
             <div class="statement-right">
               <b>${euro(s.totalCents)}</b>
               ${s.status === 'collected'
-                ? '<span class="pill ok">eingezogen</span>'
-                : `<span class="pill soon">Einzug am ${esc(nextMonthDebit(s.month))}</span>`}
+                ? '<span class="pill soon">Vorführbetrag</span>'
+                : '<span class="pill soon">Vorführbetrag</span>'}
             </div>
           </div>`).join('')}</div>` : '<p class="empty">Noch keine abgeschlossenen Monate.</p>'}
       </section>
-      <p class="fineprint">Der Verein zieht den Betrag eines Monats zum ${cfg.debitDayOfMonth}. des Folgemonats über dein bestehendes SEPA-Mandat ein.</p>
+      <p class="fineprint">Zahlungsweg und Einzugstermin sind noch nicht festgelegt. Es erfolgen keine echten Abbuchungen.</p>
       ${partnerSlot('abrechnungen', 'Deine Abrechnung wird dir präsentiert von')}`;
   }
 
@@ -805,7 +807,7 @@
     const original = state.catalog.products.find((x) => x.id === id);
     const draft = original
       ? { ...original }
-      : { id: 'p-' + Date.now().toString(36), section: sectionId, name: '', detail: '', price: 200, art: 'bottle', color: '#C4553A', active: true };
+      : { id: 'p-' + Date.now().toString(36), section: sectionId, name: '', detail: '', price: 200, art: 'bottle', color: '#C4553A', active: true,archived:false,unit:'Stück',kind:'sale' };
     const sections = state.catalog.sections;
     openSheet(`
       <form class="editor" data-editor="product" novalidate>
@@ -825,6 +827,8 @@
             <select name="section">${sections.map((x) => `<option value="${esc(x.id)}" ${x.id === draft.section ? 'selected' : ''}>${esc(x.title)}</option>`).join('')}</select>
           </label>
         </div>
+        <div class="field-row"><label class="field"><span>Abrechnungseinheit</span><input name="unit" maxlength="40" value="${esc(draft.unit||'Stück')}" placeholder="z. B. pro Nutzung / pro Satz"></label><label class="field"><span>Artikelart</span><select name="kind"><option value="sale"${draft.kind!=='rental'?' selected':''}>Verkauf</option><option value="rental"${draft.kind==='rental'?' selected':''}>Verleih</option></select></label></div>
+        <p class="fineprint">Änderungen gelten für neue Buchungen. Frühere Namen und Preise bleiben erhalten.</p>
         <div class="field"><span>Symbol</span>
           <div class="symbol-grid">
             ${TFB.artKinds.map(([kind, label]) => `<button type="button" class="symbol ${kind === draft.art ? 'on' : ''}" data-art="${kind}" title="${label}" aria-label="${label}">${TFB.art(kind, draft.color)}</button>`).join('')}
@@ -839,7 +843,7 @@
         <label class="agree"><input type="checkbox" name="active" ${draft.active ? 'checked' : ''}><span>Im Kiosk sichtbar</span></label>
         <p class="form-error" role="alert"></p>
         <button type="submit" class="btn primary block">Speichern</button>
-        ${original ? '<button type="button" class="btn block danger" data-delete>Artikel löschen</button>' : ''}
+        ${original ? '<button type="button" class="btn block danger" data-delete>Aus Sortiment entfernen</button>' : ''}
       </form>`);
 
     const form = $sheet.querySelector('[data-editor]');
@@ -854,13 +858,14 @@
     preview();
     form.addEventListener('input', (e) => {
       const t = e.target;
-      if (t.name === 'name' || t.name === 'detail') draft[t.name] = t.value;
+      if (t.name === 'name' || t.name === 'detail' || t.name === 'unit') draft[t.name] = t.value;
       if (t.name === 'price') { const c = parsePrice(t.value); if (Number.isFinite(c)) draft.price = c; }
       if (t.matches('[data-color-picker]')) draft.color = t.value;
       preview();
     });
     form.addEventListener('change', (e) => {
       if (e.target.name === 'section') draft.section = e.target.value;
+      if (e.target.name === 'kind') draft.kind = e.target.value;
       if (e.target.name === 'active') draft.active = e.target.checked;
     });
     form.addEventListener('click', (e) => {
@@ -870,11 +875,11 @@
       if (col) { draft.color = col.dataset.color; preview(); }
       const del = e.target.closest('[data-delete]');
       if (del) {
-        if (!del.dataset.armed) { del.dataset.armed = '1'; del.textContent = 'Wirklich löschen? Nochmal tippen'; return; }
+        if (!del.dataset.armed) { del.dataset.armed = '1'; del.textContent = 'Entfernen? Frühere Buchungen bleiben erhalten'; return; }
         const next = JSON.parse(JSON.stringify(state.catalog));
         next.products = next.products.filter((x) => x.id !== draft.id);
         closeSheet();
-        commitCatalog(next, `„${draft.name}“ gelöscht`);
+        commitCatalog(next, `„${draft.name}“ aus dem Sortiment genommen`);
       }
     });
     form.addEventListener('submit', (e) => {
@@ -926,7 +931,7 @@
       }
       const del = e.target.closest('[data-delete]');
       if (del) {
-        if (!del.dataset.armed) { del.dataset.armed = '1'; del.textContent = 'Wirklich löschen? Nochmal tippen'; return; }
+        if (!del.dataset.armed) { del.dataset.armed = '1'; del.textContent = 'Entfernen? Frühere Buchungen bleiben erhalten'; return; }
         const next = JSON.parse(JSON.stringify(state.catalog));
         next.sections = next.sections.filter((x) => x.id !== id);
         closeSheet();
@@ -981,8 +986,8 @@
 
         <section class="acct-card">
           ${row(true, `Mitglied der ${esc(cfg.clubName)}`, 'Erkannt über deine E-Mail-Adresse aus der Mitgliederliste – du musst nichts eintragen.')}
-          ${row(m.hasConsent, 'Kiosk &amp; Lastschrift', m.hasConsent
-            ? `Freigeschaltet am ${esc(consentDate)} · Einzug zum ${cfg.debitDayOfMonth}. des Folgemonats`
+          ${row(m.hasConsent, 'Kiosk · Vorführbetrieb', m.hasConsent
+            ? `Freigeschaltet am ${esc(consentDate)} · keine Abbuchungen`
             : 'Noch nicht freigeschaltet – beim ersten Besuch im Kiosk einmal zustimmen.')}
         </section>
 
@@ -1000,7 +1005,7 @@
           <div class="acct-stats">
           <a href="#kiosk" data-action="close-sheet"><small>Heute</small><b>${euro(todayCents)}</b></a>
           <a href="#abrechnungen" data-action="close-sheet"><small>${esc(monthName(open.month, false))}</small><b>${euro(open.totalCents)}</b></a>
-          <a href="#abrechnungen" data-action="close-sheet"><small>Einzug</small><b>${esc(nextMonthDebit(open.month).replace(/(\d+)\. (\w{3})\w*/, '$1. $2'))}</b></a>
+          <a href="#abrechnungen" data-action="close-sheet"><small>Zahlung</small><b>Noch nicht aktiv</b></a>
           </div>
           <a class="acct-details" href="#abrechnungen" data-action="close-sheet">Details ansehen <span aria-hidden="true"><svg class="link-arrow" viewBox="0 0 806 1000" aria-hidden="true" focusable="false"><path transform="translate(0 755) scale(1 -1)" d="M528 -14 448 66 546 164 587 189 581 206 533 198H50V312H533L581 304L587 321L546 346L448 444L528 524L756 296V214Z"/></svg></span></a>
         </section>` : ''}
