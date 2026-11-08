@@ -28,6 +28,17 @@ unabhängiger DB-Wiederherstellung und unbeeinflusster Zähler bei Inhalts-Resto
 bestanden; Browser-CMS-Test mit ZIP-Export/Import inklusive Statistik bestanden.
 Worker-Dry-Run erfolgreich. Service Worker v336. Details RELEASE-v336.md.
 
+Live veröffentlicht: Quellstand 8fa13cc, Pages-Lauf 42476465818 erfolgreich,
+Worker 7a6ec5bc-c923-41b4-ab3b-442c683c9e21, Service Worker v336.
+Einmaliger Reset am 2026-11-08T11:36:33.765Z = 08.11.2026, 12:36:33 Berlin.
+Reset-Bookmark: 00000124-00000006-0000511d-cfaf7d763af4d5175d5e46b67d94fc8b.
+Lesende Live-Kontrolle bestätigt alle elf Statistik-/Dedup-Tabellen leer und
+sämtliche Startmarken identisch. Vorher/nachher unverändert: 308 Mitglieder,
+147 App-Datensätze, 16 CMS-Dokumente. Kein Live-Testaufruf nach dem Nullsetzen.
+Öffentliche Dateien für Sicherungshinweis, genaue Startzeit und v336 bestätigt.
+Die erste Kontrollabfrage nutzte zu viele UNION-Terme für D1; nach erfolgreichem
+Reset nur lesend korrigiert geprüft, den Reset ausdrücklich nicht wiederholt.
+
 ## Einheitliche Admin-Leiste auf allen Seiten – 08.11.2026 · v335
 
 Bei eingeblendeten Admin-Werkzeugen steht die Farbwelt-Auswahl immer in der ersten
