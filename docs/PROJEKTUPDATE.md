@@ -42,6 +42,13 @@ Keine echten Forderungen, Abbuchungen, Abrechnungsmails, Mandatsaktivierung oder
 Reset. Offene Entscheidungen aus der Finanzwart-Abstimmung und das geplante
 Startdatum April 2027 bleiben unverändert. PDF-Abstimmungsvorlage weiterhin gültig.
 
+Live veröffentlicht: Quellstand 632e44e, Pages-Lauf 42486845376 erfolgreich,
+Worker a26f8324-a658-4956-bb57-d964ff44304e, Service Worker v338.
+Öffentlich ausgelieferte Hierarchie-JS, CSS und Cacheversion geprüft. Keine
+Migration oder Datenänderung erforderlich; keine Live-Testbuchungen erzeugt.
+Lokaler Projektordner durch gezielten Patch aktualisiert; übrige Änderungen
+und die PDF-Abstimmungsvorlage erhalten.
+
 ## Tagesabschluss und nächster Einstieg - 08.11.2026
 
 **Verbindlicher Abschlussstand:** Die Sitzung ist beendet. Kiosk und Abrechnung
