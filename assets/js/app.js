@@ -329,7 +329,7 @@
       </header>
       <main class="view" id="view" data-view="${view}"><div class="loading"></div></main>
       <footer class="site-footer">
-        <nav aria-label="Vereinsinformationen"><a href="#impressum">Impressum</a><a href="#satzung">Satzung</a><button type="button" class="link" data-usage-settings>Nutzungsstatistik</button></nav>
+        <nav aria-label="Vereinsinformationen"><a href="#impressum">Impressum</a><a href="#satzung">Satzung</a><button type="button" class="link" data-usage-info>Datenschutz zur Statistik</button></nav>
         <p>© ${new Date().getFullYear()} Tennisfreunde Bielstein e.V. · Inhalte, Gestaltung &amp; App-Konzept. Alle Rechte vorbehalten.</p>
       </footer>`;
     alignHeader();
@@ -1041,7 +1041,6 @@
         </form>
 
         ${TFB.installApp?.profileButton?.()||''}
-        <button type="button" class="link usage-privacy-link" data-usage-settings>Freiwillige Nutzungsstatistik</button>
         ${rawMember?.isAdmin ? '<button type="button" class="link" data-action="splash-open">Einstiegsseite ansehen</button>' : ''}
         <button type="button" class="btn block acct-logout" data-action="logout">Abmelden</button>
 

@@ -1,3 +1,4 @@
+import {collectSimpleUsage,simpleUsageReport,cleanSimpleUsage} from './simple-usage.mjs';
 import {collectUsage,usageReport,cleanUsage} from './club-usage.mjs';
 import {emailAccessReady,recordAccess,memberAccessOverview,requestEmailCode,claimEmailCode} from './email-auth.mjs';
 // TFB: protected member directory. Invitations/Kiosk remain a local simulation.
@@ -238,13 +239,14 @@ async function route(request, env, url) {
     await rate(env, request, 'partner-events', 900);
     return collectVisibility(env, await body(request, 16384));
   }
-  if (request.method === 'POST' && path === '/public/usage') {
+  if (request.method === 'POST' && path === '/public/usage') return {ok:true,ignored:true}; // Discard old identifier payloads; updated clients use the identifier-free endpoint.
+  if (request.method === 'POST' && path === '/public/usage-count') {
     if(env.USAGE_MEASUREMENT_ENABLED!=='1')return {ok:true,ignored:true};
     if(!ORIGINS.has(request.headers.get('Origin')))fail(403,'Diese Website ist nicht freigegeben.');
     if(request.headers.get('DNT')==='1'||request.headers.get('Sec-GPC')==='1'||/bot|crawler|spider|headless|lighthouse/i.test(request.headers.get('User-Agent')||''))return {ok:true,ignored:true};
     const m=request.headers.has('Authorization')?(await authenticated(request,env)).member:null;
     await rate(env,request,'usage',300);
-    return collectUsage(env,await body(request,2048),m);
+    return collectSimpleUsage(env,await body(request,1024),m,request.headers.get('CF-Connecting-IP')||'');
   }
   const { member, tokenHash } = await authenticated(request, env, path.startsWith('/admin/'));
   await rate(env, request, 'directory', member.is_admin ? 3000 : 1800);
@@ -324,7 +326,8 @@ async function route(request, env, url) {
     const rows = await env.DB.prepare(`SELECT id,first_name,last_name FROM members WHERE active=1 AND id IN (${ids.map(()=>'?').join(',')})`).bind(...ids).all();
     return Object.fromEntries(rows.results.map(m=>[m.id,`${m.first_name} ${m.last_name}`]));
   }
-  if (request.method === 'GET' && path === '/admin/usage') return usageReport(env,url.searchParams.get('month'));
+  if (request.method === 'GET' && path === '/admin/usage') return simpleUsageReport(env,url.searchParams.get('month'));
+  if (request.method === 'GET' && path === '/admin/usage-legacy') return usageReport(env,url.searchParams.get('month'));
   if (request.method === 'GET' && path === '/admin/members') return memberAccessOverview(env);
   if (request.method === 'POST' && path === '/auth/presence') return {ok:true};
   if (request.method === 'GET' && path === '/admin/info') {
@@ -345,7 +348,7 @@ async function route(request, env, url) {
 }
 
 export default {
-  async scheduled(controller,env,ctx){ctx.waitUntil((async()=>{await editorialScheduled(env);await backupEditorialSystem(env);if(env.USAGE_MEASUREMENT_ENABLED==='1')await cleanUsage(env);})());},
+  async scheduled(controller,env,ctx){ctx.waitUntil((async()=>{await editorialScheduled(env);await backupEditorialSystem(env);if(env.USAGE_MEASUREMENT_ENABLED==='1'){await cleanUsage(env);await cleanSimpleUsage(env);}})());},
   async fetch(request, env) {
     const url = new URL(request.url); const origin = request.headers.get('Origin');
     const sameOrigin = origin === url.origin;

@@ -1,5 +1,20 @@
 # TFB-Kiosk – Projektgedächtnis und Übergabe
 
+## Automatische Statistik und getrennte Mitglieder-/Gastaufrufe – 08.11.2026 · v331
+
+Neue, verbindliche Festlegung: Statistik-Zustimmungsabfragen und Account-Eintrag
+entfernt. Neue Reichweitenzählung automatisch ohne persistente Browserkennungen.
+Tägliche serverseitige Besucherschätzung; Monatskarte „Besucher-Tage“, keine
+personenbezogene Monatsreichweite vortäuschen. Seitenaufrufe bleiben die Kernzahl.
+Eigene Admins werden mitgezählt. DNT/GPC und frühere ausdrückliche Ablehnungen
+bleiben respektiert. Reine Datenschutzinformation im Footer, keine neue Abfrage.
+Mitglieder-/Gastaufteilung nach verifizierter Anmeldung: Anzahl/Anteil, pro Seite
+und CSV. „Ohne Anmeldung“ enthält auch Mitglieder ohne Login. Keine beliebigen
+Button-/Chat-/Kiosk-Klicks erfassen. Alte freiwillige Reihe separat archiviert.
+Migration 0011 additiv, keine bisherigen Nutzerdaten überschrieben. Details:
+RELEASE-v331.md und STATISTIK-DATENMINIMIERUNG-v331.md. 27 Servertests plus
+Chromium/WebKit-Prüfungen und Worker-Dry-Run bestanden; Service Worker v331.
+
 ## Verbindlicher aktueller Stand – 08.11.2026 · Abschluss v330
 
 Dieser Überblick hat Vorrang vor älteren Release-Notizen weiter unten.

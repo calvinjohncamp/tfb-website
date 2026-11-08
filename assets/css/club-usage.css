@@ -2,3 +2,7 @@
 @media(max-width:700px){.usage-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.usage-metric{padding:16px}.usage-metric>strong{font-size:2rem}.usage-consent{display:block}.usage-consent-actions{margin-top:14px}.usage-trend{padding:18px 12px}.usage-chart{gap:2px}.usage-chart-day{font-size:.62rem}.usage-chart-value{font-size:.6rem;overflow-wrap:anywhere}.usage-chart-track{height:100px}}
 @media(max-width:380px){.usage-metrics{grid-template-columns:1fr}.usage-chart-day{font-size:.58rem}.usage-chart-value{writing-mode:vertical-rl;margin:auto;height:40px}.usage-controls input{max-width:170px}}
 @media(min-width:381px) and (max-width:700px){.usage-chart-value{writing-mode:vertical-rl;margin:auto;height:40px}}
+
+.usage-information>p{font-size:.85rem;line-height:1.65;margin:16px 0}.usage-information h2{font-size:1.4rem}
+
+.usage-audience{margin:0 0 32px}.usage-audience>p{font-size:.8rem;color:var(--muted);margin:8px 0 18px}.usage-audience-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.usage-audience-grid>div{display:grid;gap:10px;background:var(--card);border-radius:10px;padding:22px}.usage-audience-grid span,.usage-audience-grid small{font-size:.78rem;color:var(--muted)}.usage-audience-grid strong{font-size:2rem;color:var(--ink);font-variant-numeric:tabular-nums}.usage-ranking th:not(:first-child),.usage-ranking td:not(:first-child){text-align:right}.usage-ranking th{padding-inline:4px}@media(max-width:500px){.usage-audience-grid{grid-template-columns:1fr}.usage-ranking table{font-size:.72rem}.usage-ranking th{font-size:.68rem}}
