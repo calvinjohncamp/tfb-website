@@ -1,5 +1,14 @@
 # TFB – Projektupdate vom 08.11.2026
 
+## Admin-Aufrufe zählen mit – 08.11.2026 · v328
+
+Explizite Nutzerkorrektur: Admins werden ab jetzt bei normalen Websiteaufrufen
+wie alle anderen mitgezählt, auch bei ausgeblendeten Werkzeugen. Frontend,
+Worker und Aggregation angepasst, irreführende Ausschlusstexte entfernt.
+Statistikfreigabe und übriger Datenschutz unverändert. Keine rückwirkenden Zahlen.
+Vier Servertests und Chromium-/WebKit-Prüfungen mit echten Admin-Zählern bestanden.
+Details RELEASE-v328.md. Keine Datenmigration, Service Worker v328.
+
 ## App-Anleitung dauerhaft erreichbar und HD-Bilder – 08.11.2026 · v327
 
 Account-App-Button bleibt jetzt auch im installierten App-Modus sichtbar. Die

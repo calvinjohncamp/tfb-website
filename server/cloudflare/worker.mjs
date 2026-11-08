@@ -243,7 +243,6 @@ async function route(request, env, url) {
     if(!ORIGINS.has(request.headers.get('Origin')))fail(403,'Diese Website ist nicht freigegeben.');
     if(request.headers.get('DNT')==='1'||request.headers.get('Sec-GPC')==='1'||/bot|crawler|spider|headless|lighthouse/i.test(request.headers.get('User-Agent')||''))return {ok:true,ignored:true};
     const m=request.headers.has('Authorization')?(await authenticated(request,env)).member:null;
-    if(m?.is_admin)return {ok:true,ignored:true};
     await rate(env,request,'usage',300);
     return collectUsage(env,await body(request,2048),m);
   }
