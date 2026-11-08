@@ -10,6 +10,7 @@ const backup=readFileSync(new URL('editorial-backup.mjs',root),'utf8').replace("
 const mail=readFileSync(new URL('access-mail.mjs',root),'utf8').replace("import template from './templates/access-mail.html';",'const template='+JSON.stringify(readFileSync(new URL('templates/access-mail.html',root),'utf8'))+';');
 const email=readFileSync(new URL('email-auth.mjs',root),'utf8').replace("from './access-mail.mjs'",'from '+JSON.stringify(data(mail)));
 let source=readFileSync(new URL('worker.mjs',root),'utf8')
+  .replace("from './club-usage.mjs'",'from '+JSON.stringify(data(readFileSync(new URL('club-usage.mjs',root),'utf8'))))
   .replace("from './email-auth.mjs'",'from '+JSON.stringify(data(email)))
   .replace("import schema from './schema.sql';",'const schema='+JSON.stringify(readFileSync(new URL('schema.sql',root),'utf8'))+';')
   .replace("from './editorial.mjs'",'from '+JSON.stringify(data(editorial)))

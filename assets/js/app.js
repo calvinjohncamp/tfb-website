@@ -8,7 +8,7 @@
   const $sheet = document.getElementById('sheet-root');
   const $toast = document.getElementById('toast-root');
 
-  const VIEWS = ['home', 'kiosk', 'strichliste', 'abrechnungen', 'chat', 'aktuell', 'gefluester', 'sport', 'team', 'club', 'treffen', 'verwaltung', 'impressum', 'satzung', 'partnerzahlen', 'partner'];
+  const VIEWS = ['home', 'kiosk', 'strichliste', 'abrechnungen', 'chat', 'aktuell', 'gefluester', 'sport', 'team', 'club', 'treffen', 'verwaltung', 'impressum', 'satzung', 'partnerzahlen', 'clubstatistik', 'partner'];
   const KIOSK_AREA = ['kiosk', 'strichliste', 'abrechnungen'];   // nur mit Anmeldung
   // Reiter unten: Kiosk zuerst, dann die Vereinsseiten, dann der Padel-Link.
   // Team-Seiten gehören zu „Sport“
@@ -114,13 +114,14 @@
     // Ausnahmen: Neu laden (bleibt auf der Seite) und direkte Links wie #treffen/<id>.
     const nav = (performance.getEntriesByType && performance.getEntriesByType('navigation')[0]) || {};
     const deepLink = location.hash.includes('/');
-    if (!location.hash || (nav.type !== 'reload' && !deepLink && !['#impressum','#satzung','#partnerzahlen','#partner'].includes(location.hash))) history.replaceState(null, '', '#home');
+    if (!location.hash || (nav.type !== 'reload' && !deepLink && !['#impressum','#satzung','#partnerzahlen','#partner','#clubstatistik'].includes(location.hash))) history.replaceState(null, '', '#home');
     // Decide on the splash before mounting the app shell to avoid exposing a
     // frame of the previous page during a reload.
     await splash;
     await render();
     document.body.classList.remove('tfb-starting');
     TFB.partnerVisibility?.ready();
+    TFB.usage?.ready();
   }
 
   function currentView() {
@@ -328,7 +329,7 @@
       </header>
       <main class="view" id="view" data-view="${view}"><div class="loading"></div></main>
       <footer class="site-footer">
-        <nav aria-label="Vereinsinformationen"><a href="#impressum">Impressum</a><a href="#satzung">Satzung</a></nav>
+        <nav aria-label="Vereinsinformationen"><a href="#impressum">Impressum</a><a href="#satzung">Satzung</a><button type="button" class="link" data-usage-settings>Nutzungsstatistik</button></nav>
         <p>© ${new Date().getFullYear()} Tennisfreunde Bielstein e.V. · Inhalte, Gestaltung &amp; App-Konzept. Alle Rechte vorbehalten.</p>
       </footer>`;
     alignHeader();
@@ -454,6 +455,7 @@
         $view.insertAdjacentHTML('afterbegin', `<div class="tfb-admin-design">${TFB.designPreview.buttons()}
           <div class="tfb-admin-links"><button type="button" class="btn small" data-action="splash-edit">Splash bearbeiten</button>${editHome}<a class="btn small" href="#partner">Partner verwalten</a>
             <button type="button" class="btn small" data-action="members-manage">Mitglieder verwalten</button>
+            <a class="btn small" href="#clubstatistik">Clubstatistik</a>
             <button type="button" class="btn small" data-action="admin-backup">Sicherungen</button></div></div>`);
         const homeEditShortcut = editHome && !$view.querySelector('.editing-page')
           ? $view.querySelector('.tfb-admin-links [data-action="site-edit"]') : null;
@@ -478,6 +480,7 @@
       if (view === 'club') TFB.clubArchive?.rendered();
       TFB.scrollToSiteContent?.();
       TFB.partnerVisibility?.rendered();
+      TFB.usage?.rendered();
     } catch (err) {
       if(request!==viewRender)return;
       $view.innerHTML = `<div class="card error-card"><h2>Das hat nicht geklappt</h2><p>${esc(err.message)}</p></div>`;
@@ -1037,6 +1040,7 @@
         </form>
 
         ${TFB.installApp?.profileButton?.()||''}
+        <button type="button" class="link usage-privacy-link" data-usage-settings>Freiwillige Nutzungsstatistik</button>
         ${rawMember?.isAdmin ? '<button type="button" class="link" data-action="splash-open">Einstiegsseite ansehen</button>' : ''}
         <button type="button" class="btn block acct-logout" data-action="logout">Abmelden</button>
 

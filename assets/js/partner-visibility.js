@@ -95,7 +95,7 @@
   }
   function hide(count=true) {
     if(!splash||splash.hidden)return;
-    stopObserver();active=null;splash.hidden=true;document.body.classList.remove('tfb-splash-open');document.getElementById('app').inert=false;markVisit();
+    stopObserver();active=null;splash.hidden=true;TFB.usage?.rendered();document.body.classList.remove('tfb-splash-open');document.getElementById('app').inert=false;markVisit();
     if(count)rendered();
   }
   async function start() {

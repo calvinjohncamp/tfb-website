@@ -1,5 +1,23 @@
 # TFB – Projektupdate vom 08.11.2026
 
+## Clubstatistik und App-Einstieg – 08.11.2026 · v326
+
+Neue Admin-Ansicht #clubstatistik mit Heute/Monat, Besucher-Browsern, Besuchen,
+Seiten pro Besuch, Aufrufen, unterschiedlichen Mitgliedern, App-Anteil, Tageskurve,
+Seitenrangfolge und CSV. Keine rückwirkenden Zahlen; fehlende Vergleichsdaten
+werden ausdrücklich benannt. Nur freiwillige Statistikfreigaben: keine IDs oder
+Übertragung vor Einwilligung, keine Namen/Mails/IPs/Klickverläufe in Statistikdaten.
+Monatliche Zufallskennung, 30-Minuten-Besuche, HMAC-Ableitung pro Tag/Monat,
+Widerruf in Footer und Account, DNT/GPC berücksichtigt. Details RELEASE-v326.md.
+Partnerstatistik bleibt deaktiviert. Migration 0010 nur neue Statistiktabellen.
+
+Account-App-Button exakt auf Speichern-Inhaltsbreite eingerückt. Mobile Mitglieder
+sehen nach Anmeldung die Installationskarte mit Apple-/Android-Anleitung;
+ausblendbar, später im Account erreichbar. Im installierten App-Modus ausgeblendet.
+38 Servertests bestanden; Chromium-/WebKit-Prüfungen für Statistikfreigabe,
+Widerruf, Besuchsgrenzen, Adminschutz, CSV und Mobilbreiten sowie Neuanmeldung,
+Profil/Kommentar und Installationshilfe erfolgreich.
+
 ## App-Installation: farbiger Profilbutton – 08.11.2026 · v325
 
 Account-Button jetzt Rot/Weiß in der roten Welt und Signature-Blau/Gelb in der
