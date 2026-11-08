@@ -44,3 +44,6 @@ Vorjahresabschluss, korrekte enthaltene/ausgeschlossene Buchungen, drei Buttons,
 Jahresabschluss vorzeitig gesperrt, keine Jahresliste, bestehende Abrechnungs-
 und Fotoabläufe geprüft. Vorführbuchungen vollständig erhalten.
 
+Veröffentlicht: Commit 692d832, Pages-Workflow 42516397251 erfolgreich.
+281 öffentliche Webdateien vorbereitet; neues Exportmodul, drei Exportbuttons
+und Service Worker v348 auf joern-kaemper.de live bestätigt.
