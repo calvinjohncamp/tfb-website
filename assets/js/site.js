@@ -3199,10 +3199,6 @@
       aktuellTab = el.dataset.tab;
       showNewsDatesTab(el);
     },
-    'archive-tab': (el) => {
-      TFB.clubArchive.selectTab(el.dataset.tab);
-      showNewsDatesTab(el);
-    },
     'post-new': (el) => openCompose(el.dataset.scope),
     'post-comments': (el) => openPost(el.dataset.id),
     'comment-unlock': (el) => openComment(postCache[el.dataset.id]),

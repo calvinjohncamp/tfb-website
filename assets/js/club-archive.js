@@ -16,7 +16,6 @@
   const collections = ['Bielstein Open', 'Fotogalerien', 'TFB-Life', 'Chronik', 'Mannschaften', 'Vereinsleben'];
   const older = 8;
   const batch = 24;
-  const datesBatch = 12;
   const esc = value => TFB.ui.esc(value ?? '');
   const detail = item => root + '/beitrag/' + encodeURIComponent(item.id);
   const date = value => new Intl.DateTimeFormat('de-DE', { dateStyle: 'long', timeZone: 'UTC' }).format(new Date(value));
@@ -28,12 +27,9 @@
   let render;
   let resultLimit = batch;
   let feedLimit = older;
-  let datesLimit = datesBatch;
-  let archiveTab = 'news';
-  let dates = [];
 
   async function loadArchive() {
-    loading ||= fetch('assets/clubarchiv/bestand.json').then(response => {
+    loading ||= fetch('assets/clubarchiv/bestand.json?v=315', { cache: 'no-cache' }).then(response => {
       if (!response.ok) throw new Error('Das Clubarchiv konnte nicht geladen werden.');
       return response.json();
     }).catch(error => { loading = undefined; throw error; });
@@ -63,13 +59,9 @@
       <div class="aktuell-column-head"><h2 class="block-heading">News</h2>${overviewLink}</div>
       <div class="run run-posts archive-feed" data-archive-feed>${entries.slice(0, feedLimit).map(item => article(item)).join('')}</div>
       <button class="btn" type="button" data-archive-feed-more ${entries.length <= feedLimit ? 'hidden' : ''}>Ältere Beiträge anzeigen</button>`;
-    const appointments = `
-      <h2 class="block-heading">Save the Date</h2>
-      <div class="archive-dates" data-archive-dates>${dates.slice(0, datesLimit).map(dateCard).join('')}</div>
-      <button class="btn" type="button" data-archive-dates-more ${dates.length <= datesLimit ? 'hidden' : ''}>Ältere Termine anzeigen</button>`;
     return `<section class="site-page club-archive archive-home">
       ${heading('#club', overviewLink)}
-      ${render.newsDatesLayout(news, appointments, archiveTab, 'archive-tab')}
+      <div class="page-grid single"><div class="page-main">${news}</div></div>
     </section>`;
   }
 
@@ -88,15 +80,10 @@
     return { ...item, attachments, text, place: meta, html: template.innerHTML };
   }
 
-  function dateCard(item) {
-    if (!item.attachments) return render.eventCard(item);
-    return render.eventCard(item, { attachments: item.attachments, href: detail(item) });
-  }
-
   function dateView(item) {
     return `<section class="site-page club-archive archive-reading">
       ${heading(root)}
-      <h2 class="block-heading">Save the Date</h2>
+      <h2 class="block-heading">Vergangener Termin</h2>
       ${render.eventCard({ ...item, place: '' }, { attachments: item.attachments, body: `<div class="archive-text">${item.html}</div>` })}
       ${item.source ? `<p class="archive-source"><a class="more-link" href="${esc(item.source)}" target="_blank" rel="noopener noreferrer">Quelle auf der alten Website</a></p>` : ''}
     </section>`;
@@ -265,12 +252,6 @@
       feedLimit += older;
       feedMore.hidden = entries.length <= feedLimit;
     }
-    const datesMore = event.target.closest('[data-archive-dates-more]');
-    if (datesMore) {
-      datesMore.previousElementSibling.insertAdjacentHTML('beforeend', dates.slice(datesLimit, datesLimit + datesBatch).map(dateCard).join(''));
-      datesLimit += datesBatch;
-      datesMore.hidden = dates.length <= datesLimit;
-    }
     const photo = event.target.closest('[data-archive-photo]');
     if (photo && !event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey) {
       event.preventDefault();
@@ -285,7 +266,6 @@
       const url = mediaUrl(ref);
       return url !== ref ? url + '?' + new URLSearchParams({ download: filename }) : url;
     },
-    selectTab: tab => { archiveTab = tab; },
     photoEntry: id => id.startsWith('archive-') ? byId.get(id.slice('archive-'.length)) : undefined,
     entryLink: () => `<a class="btn club-archive-link" href="${root}">Zum Archiv <span aria-hidden="true">→</span></a>`,
     async view(hash, toolkit) {
@@ -297,7 +277,6 @@
       byId = new Map(entries.flatMap(item => [item.id,...(item.archiveAliases||[])].map(id=>[id,item])));
       const historical = items.filter(item => item.event).map(historicalDate);
       const historicalById = new Map(historical.map(item => [item.id, item]));
-      dates = [...toolkit.blocks.filter(({ b }) => b.type === 'event').map(({ b }) => b), ...historical].sort(newestFirst);
       if (mode === 'beitrag') {
         const key = decodeURIComponent(id || '');
         return historicalById.has(key) ? dateView(historicalById.get(key)) : articleView(byId.get(key));
@@ -308,7 +287,6 @@
         return overview(years, new URLSearchParams(query));
       }
       feedLimit = older;
-      datesLimit = datesBatch;
       return feed();
     },
   };

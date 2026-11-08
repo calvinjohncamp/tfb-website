@@ -17,6 +17,8 @@
 .archive-head { align-items: center; }
 .archive-head .content-overview-tools { margin: 0; }
 .archive-home > .page-grid { margin-top: 16px; }
+.archive-home > .page-grid.single { max-width: 900px; }
+.archive-home .page-main .archive-feed { grid-template-columns: minmax(0, 1fr); }
 .archive-feed, .archive-dates { display: grid; gap: 14px; }
 .archive-home .col-news, .archive-home .col-dates { min-width: 0; }
 .archive-home .post-title-link { text-decoration: none; }

@@ -34,12 +34,12 @@ span.signature-highlight { font: inherit; color: inherit; letter-spacing: inheri
 :root.tfb-logo-midnight-amber .tfb-splash-enter {
   background: var(--tfb-signature-yellow); border-color: var(--tfb-signature-yellow); color: var(--tfb-midnight-blue);
 }
-/* News und Termine: beide Spalten nutzen dasselbe Datumsfeld. */
+/* Aktuell: dunkle Datumsfelder mit klarer weißer Beschriftung in beiden Spalten. */
 :root.tfb-logo-midnight-amber body .view[data-view="aktuell"] .date-badge {
-  background: var(--tfb-signature-yellow); color: var(--tfb-midnight-blue);
+  background: #171717; color: #fff;
 }
 :root.tfb-logo-midnight-amber body .view[data-view="aktuell"] .date-badge > :is(small, b) {
-  color: var(--tfb-midnight-blue); opacity: 1;
+  color: #fff; opacity: 1;
 }
 :root.tfb-logo-midnight-amber body .membership-actions .membership-fees-button,
 :root.tfb-logo-midnight-amber body .btn.club-archive-link {
