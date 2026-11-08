@@ -169,10 +169,10 @@ body .app .topbar .topnav .tab.active::before {
   color: var(--tfb-signature-yellow); opacity: 1;
 }
 :root:not(.tfb-logo-midnight-amber) body .view[data-view="aktuell"] .date-badge {
-  background: var(--tfb-signature-red); color: #171717;
+  background: var(--tfb-signature-red); color: #fff;
 }
 :root:not(.tfb-logo-midnight-amber) body .view[data-view="aktuell"] .date-badge > :is(small, b) {
-  color: #171717; opacity: 1;
+  color: #fff; opacity: 1;
 }
 
 /* Roter Bierdeckel: alle Texte schwarz, nur Ball und Striche in Signature-Rot. */
