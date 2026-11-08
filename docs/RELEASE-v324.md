@@ -26,3 +26,10 @@ Chromium und WebKit: automatische Anmeldung, Profil/Kommentar, Rollen, Import,
 Gruppierung/Alphabet, responsive Übersicht 390/834/1440px bestanden. Mail in
 320/390/760px geprüft und visuell kontrolliert. Worker-Dry-Run bestanden.
 Frontend-Service-Worker v324. Keine Schemaänderung.
+
+Veröffentlicht am 08.11.2026: Quellstand e5a382b, GitHub-Pages-Lauf 42464097341
+erfolgreich, Worker 8ed65887-0de0-4db8-bb27-0f5cc8235cee. Live-Adminübersicht
+bestätigt: 307 Mitglieder, 1 eingerichteter Zugang oben, 306 noch nicht gestartete
+darunter. Admin-Passwort vorhanden, 141 eigene Datensätze und 2 Teamzuordnungen
+erhalten; vorhandene Sitzungen und Inhalte weiter nutzbar. Der unbenutzte
+Doppeleintrag ist inaktiv und hatte keine Sitzungen, Inhalte oder Teamzuordnungen.

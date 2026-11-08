@@ -12,6 +12,9 @@ Familienadressen verschiedener Personen bleiben getrennt.
 
 Mail-Codefeld jetzt kompakt (200 × 55px), linksbündig, fest Signature-Blau auf Gelb.
 32 Servertests und Chromium-/WebKit-Prüfungen bestanden. Details: RELEASE-v324.md.
+Live bestätigt: 307 Mitglieder, davon 1 eingerichteter Zugang und 306 noch nicht
+gestartet. Pages-Lauf 42464097341 erfolgreich; Worker
+8ed65887-0de0-4db8-bb27-0f5cc8235cee; Quellstand e5a382b.
 
 ## Freischaltmail: verbindlich Gelb-Blau – 08.11.2026 · Mail-Release v323
 
