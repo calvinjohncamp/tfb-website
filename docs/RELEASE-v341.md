@@ -32,3 +32,7 @@ Korrekturen, CSV und Archive weiter erfolgreich. Keine Backendänderung,
 Migration, Datenbereinigung, echte Zahlung oder E-Mail in dieser Version.
 Service Worker v341.
 
+Veröffentlicht: Commit 9f3d4b6, Pages-Workflow 42511517522 erfolgreich.
+Live-Dateien für Admin-Menü, Kalenderpaar, Namenssortierung und Service Worker
+v341 auf joern-kaemper.de bestätigt. Mitglieder-/Account-Browsertest mit
+App-Anleitung im Account ebenfalls in Chromium und WebKit bestanden.
