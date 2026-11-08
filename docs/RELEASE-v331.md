@@ -50,3 +50,10 @@ und Admin-Aufrufe ohne Freigabe/Browser-ID, kein Neuzählen bei Neurendern, kein
 Statistikfeld im Account, reine Information, DNT, Tages-/Monatsansicht, Segmente,
 CSV und 320/390/834/1440px ohne Überlauf. Desktopansicht visuell geprüft.
 Worker-Dry-Run erfolgreich. Service Worker v331.
+
+Live veröffentlicht: Quellstand d9dafa9, Pages-Lauf 42471923925 erfolgreich,
+Worker a2643c7d-1421-40ec-ab71-eb91db8576db, Service Worker v331.
+Neue Messreihe startet 2026-11-08T10:33:23Z (11:33 Uhr Berlin); frühere
+Messreihe unverändert archiviert. Echte Browserprüfung ohne Zustimmungsfeld:
+Admin rief Aktuell und Home auf, Übersicht zeigte 2 Mitgliederaufrufe / 100 %
+und 0 Aufrufe ohne Anmeldung. Keine künstlichen Gastzähler oder Testkonten erzeugt.

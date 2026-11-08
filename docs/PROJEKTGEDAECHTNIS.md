@@ -14,12 +14,16 @@ Button-/Chat-/Kiosk-Klicks erfassen. Alte freiwillige Reihe separat archiviert.
 Migration 0011 additiv, keine bisherigen Nutzerdaten überschrieben. Details:
 RELEASE-v331.md und STATISTIK-DATENMINIMIERUNG-v331.md. 27 Servertests plus
 Chromium/WebKit-Prüfungen und Worker-Dry-Run bestanden; Service Worker v331.
+Live: d9dafa9, Pages-Lauf 42471923925 erfolgreich, Worker
+a2643c7d-1421-40ec-ab71-eb91db8576db. Beginn 08.11.2026, 11:33 Uhr Berlin.
+Echt geprüft: 2 automatische Mitgliederaufrufe, keine Statistikabfrage.
 
-## Verbindlicher aktueller Stand – 08.11.2026 · Abschluss v330
+## Archivierter Abschlussstand v330 – Statistik durch v331 ersetzt
 
-Dieser Überblick hat Vorrang vor älteren Release-Notizen weiter unten.
-Insbesondere sind frühere Angaben zum Ausschluss von Admins aus der Statistik
-und zum ausgeblendeten Account-Installationsbutton inzwischen überholt.
+Dieser Überblick beschreibt den damaligen Abschluss von v330. Für die Statistik
+gilt inzwischen v331 oben: automatische tägliche Schätzmessung ohne Freigabe-UI,
+mit getrennter Mitglieder-/Ohne-Anmeldung-Zählung. Die damalige Freigaberegel
+ist historisch; die übrigen Featurebeschreibungen bleiben als Verlauf erhalten.
 
 - Live-Website: https://joern-kaemper.de/ · Service Worker `tfb-kiosk-v330`.
   Frontend-Funktionsstand `01c9d17`, erfolgreicher Pages-Lauf `42470589926`.

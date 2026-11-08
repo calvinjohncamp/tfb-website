@@ -14,6 +14,9 @@ Button-/Chat-/Kiosk-Klicks erfassen. Alte freiwillige Reihe separat archiviert.
 Migration 0011 additiv, keine bisherigen Nutzerdaten überschrieben. Details:
 RELEASE-v331.md und STATISTIK-DATENMINIMIERUNG-v331.md. 27 Servertests plus
 Chromium/WebKit-Prüfungen und Worker-Dry-Run bestanden; Service Worker v331.
+Live: d9dafa9, Pages-Lauf 42471923925 erfolgreich, Worker
+a2643c7d-1421-40ec-ab71-eb91db8576db. Beginn 08.11.2026, 11:33 Uhr Berlin.
+Echt geprüft: 2 automatische Mitgliederaufrufe, keine Statistikabfrage.
 
 ## Antworten auf Kommentare – 08.11.2026 · v330
 
