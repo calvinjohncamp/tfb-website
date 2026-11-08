@@ -27,7 +27,7 @@ test('CSV includes original amounts, correction actor and net totals in chronolo
  const plan=exportPlan({kind:'closing',year:'2025',today}),entry=(id,at,price,adjustments=[])=>({id,created_at:at,display_name:'=FORMULA',product_name:'Wasser; "kalt"',unit:'Stück',price_cents:price,net_cents:price-adjustments.reduce((s,a)=>s+a.amount_cents,0),adjustments,basis:'server'});
  const csv=exportCsv([entry('a','2025-01-01T12:00:00Z',100,[{id:'credit',created_at:'2025-03-01T12:00:00Z',amount_cents:20,reason:'Prüfung',actor_name:'Finanzwart',source:'admin'}]),entry('b','2025-02-01T12:00:00Z',200)],{plan,generatedAt:'2026-11-08T12:00:00Z'});
  assert(csv.startsWith('\ufeff'));assert(csv.indexOf('"b"')<csv.indexOf('"credit"'));assert.match(csv,/Finanzwart/);assert.match(csv,/"'\=FORMULA"/);assert.match(csv,/"0,80"/);assert.match(csv,/2025-12-31/);
- assert.equal(exportCsv([],{plan,generatedAt:today}).split('\r\n').length,1);
+ const empty=exportCsv([],{plan,generatedAt:today});assert.match(empty,/Jahresabschluss 2025/);assert.match(empty,/"Januar";"0,00"/);assert.match(empty,/"Dezember";"0,00"/);assert.match(empty,/"Jahressumme";"0,00"/);assert(!empty.includes('"Buchung";'));assert(csv.indexOf('"Jahressumme";"2,80"')<csv.indexOf('"Einzelbuchungen"'));assert.match(csv,/"Januar";"0,80"/);assert.match(csv,/"Februar";"2,00"/);
 });
 test('a failed month fails the entire annual export instead of silently returning partial data',async()=>{
  const plan=exportPlan({kind:'cumulative',year:'2026',month:'2026-03',today});await assert.rejects(()=>collectExport(plan,async m=>{if(m==='2026-02')throw Error('Unavailable');return {entries:[]};}),/Unavailable/);

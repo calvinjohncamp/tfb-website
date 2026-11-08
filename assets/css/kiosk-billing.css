@@ -68,3 +68,9 @@ html.tfb-logo-midnight-amber .kb-calendar-head .kb-year-control{color:#fff}
 .kb-booking-ref{font-size:.72rem;color:var(--muted);margin:10px 0}.kb-booking-ref>summary{display:list-item;font-size:inherit;cursor:pointer}.kb-booking-ref code{overflow-wrap:anywhere}.kb-original{font-weight:600}
 
 .kb-exports{margin:16px 0}.kb-exports .kb-actions{margin-bottom:6px}.kb-exports p{margin:5px 0;font-size:.7rem;line-height:1.5}.kb-export-status{color:var(--kb-brand)}.kb-export-status:empty{display:none}
+
+/* Prior-year closing: clear title and a prominent black total on a light panel. */
+.kb-calendar-head .kb-year-control .kb-closing-label{display:block;font-size:.82rem;font-weight:800;line-height:1.2;letter-spacing:0;text-transform:none;margin-top:2px}.kb-calendar.is-closing .kb-calendar-head .kb-closing-total{background:var(--card);border-radius:9px;padding:9px 12px;gap:4px;min-width:0}.kb-calendar.is-closing .kb-calendar-head .kb-closing-total span{color:#171717;font-size:.65rem;opacity:1}.kb-calendar.is-closing .kb-calendar-head .kb-closing-total b{color:#171717;font-size:clamp(1.35rem,6cqi,2.2rem);line-height:1.15;letter-spacing:-.04em;white-space:nowrap}
+@media(max-width:350px){.kb-calendar-head .kb-year-control .kb-closing-label{font-size:.68rem}.kb-calendar.is-closing .kb-calendar-head .kb-closing-total{padding:7px 9px}}
+html.tfb-logo-midnight-amber .kb-calendar.is-closing .kb-calendar-head .kb-closing-total{background:transparent}html.tfb-logo-midnight-amber .kb-calendar.is-closing .kb-calendar-head .kb-closing-total :is(span,b){color:#FFC300}
+.kb-calendar.is-closing .kb-calendar-head .kb-closing-total{background:transparent;padding:0;gap:5px}
