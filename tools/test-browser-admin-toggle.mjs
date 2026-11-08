@@ -55,9 +55,9 @@ try {
     }
   }
   await page.locator('.tfb-admin-links a[href="#kioskabrechnung"]').click();
-  await page.locator('[data-kb-admin-view] .kb-period-grid').waitFor();
+  await page.locator('[data-kb-admin-view] .kb-calendar').waitFor();
   assert.equal(await page.locator('[data-kb-member]').inputValue(),'');
-  assert.match(await page.locator('.kb-scope').innerText(),/Clubweiter Überblick/);
+  assert.match(await page.locator('.kb-account-heading').innerText(),/Clubweite Abrechnung/);
   await page.locator('.tfb-admin-links [data-action="site-edit"]').click();
   await page.locator('.site-page[data-page="home"].editing-page').waitFor();
   assert.equal(await page.evaluate(()=>location.hash),'#home');
