@@ -62,3 +62,5 @@ html.tfb-logo-midnight-amber .kb-calendar-head .kb-year-control{color:#fff}
 .kb-calendar-head .kb-year-control .kb-year-value{font-size:3.4rem;line-height:1.18;font-weight:800;opacity:1}
 @media(max-width:999px){.kb-calendar-head .kb-year-control .kb-year-value{font-size:2.7rem}}
 @media(max-width:350px){.kb-calendar-head .kb-year-control .kb-year-value{font-size:2.2rem}}
+
+.kb-person-face[data-kb-photo]{padding:0;cursor:zoom-in;appearance:none}.kb-person-face[data-kb-photo]:hover{border-color:var(--signal)}.kb-search-result{display:flex;align-items:center;gap:8px;padding:2px 4px}.kb-search-result>[data-kb-pick-member]{flex:1;min-width:0}.kb-search-results button.kb-person-face{display:inline-flex;width:30px;height:30px;flex:0 0 30px;padding:0;border:1px solid var(--line);border-radius:50%;justify-content:center}.kb-day-picker{container-type:inline-size}.kb-month-title{min-width:0}.kb-day-picker .kb-month-title strong{font-size:clamp(1.15rem,8cqi,2.7rem);letter-spacing:-.055em;white-space:nowrap}
