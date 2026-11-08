@@ -161,12 +161,16 @@ body .app .topbar .topnav .tab.active::before {
   background: #171717; border-color: #171717; color: #fff;
 }
 
-/* Aktuell: Signature-Blau mit Signature-Gelb für News und Termine. */
-:root.tfb-logo-midnight-amber body .view[data-view="aktuell"] .date-badge,
-:root:not(.tfb-logo-midnight-amber) body .view[data-view="aktuell"] .date-badge {
+/* Aktuell: Datumsfelder folgen der Farbwelt, für News und Termine. */
+:root.tfb-logo-midnight-amber body .view[data-view="aktuell"] .date-badge {
   background: var(--tfb-midnight-blue, #001D3D); color: var(--tfb-signature-yellow);
 }
-:root.tfb-logo-midnight-amber body .view[data-view="aktuell"] .date-badge > :is(small, b),
-:root:not(.tfb-logo-midnight-amber) body .view[data-view="aktuell"] .date-badge > :is(small, b) {
+:root.tfb-logo-midnight-amber body .view[data-view="aktuell"] .date-badge > :is(small, b) {
   color: var(--tfb-signature-yellow); opacity: 1;
+}
+:root:not(.tfb-logo-midnight-amber) body .view[data-view="aktuell"] .date-badge {
+  background: var(--tfb-signature-red); color: #fff;
+}
+:root:not(.tfb-logo-midnight-amber) body .view[data-view="aktuell"] .date-badge > :is(small, b) {
+  color: #fff; opacity: 1;
 }
