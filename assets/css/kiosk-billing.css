@@ -53,3 +53,12 @@ html:not(.tfb-logo-midnight-amber) .kb-calendar-head>div span,html:not(.tfb-logo
 html.tfb-logo-midnight-amber .kb-calendar-head label,html.tfb-logo-midnight-amber .kb-year-value,html.tfb-logo-midnight-amber .kb-month-title,html.tfb-logo-midnight-amber .kb-month-title>span{color:#fff}
 html.tfb-logo-midnight-amber .kb-calendar-head>div span,html.tfb-logo-midnight-amber .kb-calendar-head>div b,html.tfb-logo-midnight-amber .kb-month-sum>span,html.tfb-logo-midnight-amber .kb-month-sum>b{color:#FFC300}
 html.tfb-logo-midnight-amber .kb-month b{color:#001D3D}
+
+/* Visible year history above the left calendar, no hidden selector. */
+.kb-calendar-toolbar{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}.kb-calendar-toolbar .kb-breadcrumb{display:flex;flex-wrap:wrap;min-width:0;gap:10px;align-items:center;grid-column:1;margin:0 0 14px}.kb-calendar-toolbar .kb-breadcrumb>span{font-size:.72rem}.kb-history-years{display:flex;gap:6px;margin-left:auto;padding-left:12px;flex-wrap:wrap;justify-content:flex-end}.kb-breadcrumb .kb-year-pill{border:1px solid var(--signal);background:transparent;color:#171717;border-radius:20px;padding:6px 9px;font-size:.7rem;font-weight:600;line-height:1.2}.kb-breadcrumb .kb-year-pill[aria-pressed=true]{background:color-mix(in srgb,var(--signal) 15%,var(--card));box-shadow:inset 0 0 0 1px var(--signal)}.kb-calendar-head .kb-year-control{display:block;position:static;flex:0 0 auto;margin:0;padding:0;text-align:left;letter-spacing:.12em;font-size:.6rem;color:#171717}.kb-calendar-head .kb-year-value{letter-spacing:-.065em}
+html.tfb-logo-midnight-amber .kb-calendar-head .kb-year-control{color:#fff}
+@media(max-width:760px){.kb-calendar-toolbar{grid-template-columns:minmax(0,1fr);max-width:520px}.kb-calendar-toolbar .kb-breadcrumb{gap:8px}.kb-history-years{padding-left:4px}}
+.kb-calendar-head .kb-year-control .kb-year-value{color:#171717}html.tfb-logo-midnight-amber .kb-calendar-head .kb-year-control .kb-year-value{color:#fff}
+.kb-calendar-head .kb-year-control .kb-year-value{font-size:3.4rem;line-height:1.18;font-weight:800;opacity:1}
+@media(max-width:999px){.kb-calendar-head .kb-year-control .kb-year-value{font-size:2.7rem}}
+@media(max-width:350px){.kb-calendar-head .kb-year-control .kb-year-value{font-size:2.2rem}}
