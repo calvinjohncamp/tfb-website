@@ -1,5 +1,73 @@
 # TFB-Kiosk – Projektgedächtnis und Übergabe
 
+## Verbindlicher Stand nach Nutzerfreigabe · 08.11.2026 · v349
+
+Der Nutzer ist mit dem Zwischenstand sehr zufrieden. Kalender, Menü und
+Abrechnungslogik als abgestimmt behandeln; künftig gezielt darauf aufbauen.
+Diese Zusammenfassung hat Vorrang vor überholten Varianten in älteren Logs.
+
+### Festgelegte Darstellung und Bedeutung
+
+Admin-Menü: Welt-Auswahl klein; 12px Gruppenabstand gegenüber 4px zwischen
+Verwaltungsbuttons. Reihenfolge Splash, Home, Partner, Mitglieder, Statistik,
+Kiosk, Sicherungssymbol. Kiosk ist clubweite Abrechnung, Clubstatistik bleibt
+Website-Nutzung. App-Anleitung im Account. Berechtigung bleibt serverseitig.
+
+Kiosk: gleiche Jahr-/Monat-/Tag-Logik für Verein und Einzelmitglied. Jahresblatt
+links, Monatskalender rechts, gleich große Quadrate; mobil untereinander.
+Aktueller Monat direkt sichtbar; historische Jahre über Pills. Platzhalter
+2025/2024/2023 können Nullübersichten zeigen, aber erzeugen keine Daten. Echte
+historische Buchungsjahre bleiben erhalten und verdrängen Platzhalter.
+Vorjahresansicht: Jahresabschluss fett unter der Jahreszahl, kein Heute und
+kein Monatskalender bis zur gezielten Monatswahl. Jahresbetrag größer:
+**rote Welt schwarz; gelbe Welt gelb** (ausdrückliche Nutzerkorrektur).
+
+Rote Kalenderköpfe links schwarz/rechts weiß, blaue links weiß/rechts gelb;
+Jahresabschlussbetrag ist die eben genannte Ausnahme. Monatsnamen/Positionen
+im hellen Raster schwarz, Monatsbeträge in gelber Welt Signature-Blau und
+in roter Welt rot. Umsatz-Tage behalten Signature-Zahl und Unterstrich.
+Profilfotos bzw. Initialenkreise vor Namen, Foto vergrößerbar. Suchfeld leer;
+Umlaute erhalten (Kä ist nicht Ka), Mailabgleich, Telefonbuch-Kollation.
+
+Buchungen chronologisch aufsteigend. Originalpreis/-name bleiben erhalten.
+Rücknahmen innerhalb 30 Sekunden und spätere Admin-Korrekturen sind getrennte
+Gegenbuchungen mit Akteur und Grund. Keine erfundenen historischen Kategorien.
+Ursprünglicher Betrag nur bei Korrekturen; technische Daten nicht im normalen
+Mitgliederfluss. Die leer gebliebene inaktive Kämper-Dublette wurde gezielt
+entfernt; keine Buchungen des aktiven Kontos gelöscht.
+
+### Exporte und offene Finanzentscheidungen
+
+CSV: Monat, kumuliertes Jahr bis gewähltes Monatsende (laufender Monat bis
+heute), Jahresabschluss 01.01.–31.12. ab 31.12. des Jahres. Filter gilt überall.
+Abschluss-CSV hat zuerst zwölf korrigierte Monatswerte und Jahressumme,
+danach chronologische Details. Übersicht und Detailwerte nicht doppelt addieren.
+Export entspricht aktuellem Korrekturstand, keiner endgültigen buchhalterischen
+Festschreibung. Monats-/Jahreswerte bilden denselben bereinigten Datenbestand ab.
+
+**Weiterhin Vorführbetrieb.** Keine echte Forderung, SEPA-Aktivierung,
+Abbuchung oder Abrechnungsmail freigegeben. Vorstand/Finanzwart klären Bank-/
+Vereinssoftware, Export-/Einreichungsformat, verantwortliche Freigabe, Mandate,
+Einzugstermin, Vorankündigung und Zahlungsabgleich. Geplanter Echtstart April
+2027. Die App-Zustimmung allein löst keinen Bankeinzug aus. Buchhalter kann mit
+Adminzugang Monate vergleichen/CSV ziehen, hätte damit aber sämtliche
+Adminrechte. Kein Buchhalterkonto oder besondere Finanzrolle angelegt.
+
+Vorführdaten bleiben bis zu einem später ausdrücklich bestimmten Stichtag X
+bestehen. Kein Termin, automatischer Reset oder Finanzdatenreset beauftragt.
+Vorher Sortiment bereinigen; Reset später kontrolliert mit Sicherung und ohne
+verwaiste Journal-/Korrektur-/Archivdaten. Padel-Übernahme des Looks/der Logik
+bleibt Ziel; Stripe oder Lastschrift dort noch offen.
+
+Vorgemerkt: Bei mehreren echten Umsatzjahren grafischer Vergleich der von
+Januar bis Dezember kumulierten Jahresumsätze, jede Jahreskurve beginnt bei
+null. Noch nicht implementieren, solange nur die vorgemerkte Erweiterung gilt.
+
+Nachweise: [Release v349](RELEASE-v349.md), Code `5517800`, Service Worker v349,
+Pages-Lauf `42517049131`. Direkte Deployments fertiger beauftragter Änderungen
+bleiben autorisiert. Diese Dokumentationspflege benötigt keinen Website-Rollout.
+
+
 ## Vorjahre als Jahresabschluss mit Monatsübersicht im CSV · v349 · 08.11.2026
 
 Vorjahres-Pill öffnet weiterhin nur die Jahreskachel: rechter Monats-/Tages-

@@ -1,5 +1,67 @@
 # TFB – Übergabe für die nächste Sitzung
 
+## Sofortiger Einstieg für die nächste Sitzung · 08.11.2026 · v349
+
+**Nutzer hat den Zwischenstand bestätigt.** Zuletzt nur Abschlussdokumentation
+angefordert. Es gibt keinen offenen Programmierauftrag und keine Freigabe für
+echten Einzug oder Kiosk-Reset. Die älteren Abschnitte darunter sind Verlauf;
+bei Widersprüchen gilt dieser Einstieg samt aktuellem Projektgedächtnis.
+
+### Bestätigter Live-Stand
+
+- Website: https://joern-kaemper.de/; Club-Abrechnung: `#kioskabrechnung`.
+- Letzter Code: `5517800`; Live-Nachweis-Dokumentation: `6a2d4fc`.
+- GitHub-Pages-Lauf `42517049131` erfolgreich; Service Worker
+  `tfb-kiosk-v349`. Kein Worker-/D1-Deployment seit den UI-/Exportänderungen.
+- Schlankes Admin-Menü und aktiver Kiosk-Link; zwei Kalender, direkte aktuelle
+  Monatsansicht, sichtbare Jahres-Pills; Vorjahre als Jahresabschluss.
+- Fotos/Initialen und Foto-Lightbox; Umlaut-/Mail-Suche und Telefonbuch-Sortierung.
+- Chronologische Buchungen, klar zugeordnete Korrekturen, vereinfachte Details.
+- Drei CSV-Exporte, Jahresabschluss mit zwölf Monatswerten/Jahressumme vor Details.
+- Neueste Farbkorrektur unbedingt erhalten: großer Jahresabschlussbetrag in
+  roter Welt schwarz, in gelber Welt gelb auf Signature-Blau.
+
+### Nächster sachlicher Schritt – erst nach Rückmeldung
+
+Finanzwart/Buchhalter und zweiter Admin sollen den vorgesehenen Ablauf abstimmen.
+Vorliegende einseitige PDF bleibt lokal verfügbar:
+`01 Software/output/pdf/TFB-Kiosk-Abrechnung-Abstimmung.pdf`.
+Benötigt: heutiger Einzugsweg/Banksoftware und Importformat, Mandatsumfang und
+Zuordnung, Einzugstag/Vorankündigung, verantwortliche Freigabe und Abgleich.
+Danach erst konkrete echte Zahlungslogik testen und separat aktivieren.
+Bis dahin Vorführdaten und Preise/Historie erhalten; keine echten Forderungen,
+Abrechnungsmails, SEPA-Dateien oder automatischen Abbuchungen erzeugen.
+Geplanter Echtstart April 2027. Stichtag-X-Bereinigung noch nicht terminiert
+oder beauftragt. Kein zusätzlicher Adminzugang für den Buchhalter angelegt.
+Künftiger kumulierter Jahresvergleich bleibt vorgemerkt, nicht als aktueller
+Umsetzungsauftrag behandeln. Padel-Zahlungsweg ebenfalls offen.
+
+### Technischer Wiedereinstieg
+
+Wesentliche Dateien: `assets/js/kiosk-billing.js`, `assets/css/kiosk-billing.css`,
+`assets/js/kiosk-export.js`, `server/cloudflare/kiosk-billing.mjs`.
+Admin-Leiste in `assets/js/app.js`/`assets/css/design-preview.css`.
+Export liest bestehende geschützte Monatsberichte in Zweiergruppen; keine neue
+Jahres-API. Originaljournal, Gegenbuchungen und gesicherte Abrechnungen bleiben
+unveränderlich. Jahresabschluss-CSV ist ein Bericht zum aktuellen Korrekturstand,
+keine buchhalterische Sperre. Übersichtsteil beim Import von Details trennen.
+
+Prüfungen der jüngsten Version: `node --test tools/test-kiosk-export.mjs`
+(vier Tests) und `node tools/test-browser-kiosk-billing.mjs` (Chromium/WebKit),
+inklusive Downloads, Jahressummen, Mitgliedsrechten und 320–1440px. Nur erneut
+prüfen, wenn neue Änderungen dies rechtfertigen; Dokumentationspflege ohne
+Codeänderung erfordert keinen erneuten vollständigen Testlauf.
+
+Arbeitskopie `01 Software` ist umfangreich lokal verändert und im Git-Verlauf
+älter als der veröffentlichte Stand. Nicht pauschal committen/pushen. In dieser
+Sitzung isoliert auf aktuellem main unter `/private/tmp/tfb-v326-analytics`
+gearbeitet, geprüfte Patches gezielt in die Dropbox-Kopie zurückgespielt.
+Für neue Arbeit zuerst origin/main abgleichen und isolierten aktuellen Checkout
+verwenden. Nur beauftragte Dateien veröffentlichen; vorhandene andere lokale
+Änderungen erhalten. Fertige Website-Änderungen direkt deployen, kein weiteres
+OK anfordern. Reine Dokumentationspflege nur dokumentieren/synchronisieren.
+
+
 ## Vorjahre als Jahresabschluss mit Monatsübersicht im CSV · v349 · 08.11.2026
 
 Vorjahres-Pill öffnet weiterhin nur die Jahreskachel: rechter Monats-/Tages-

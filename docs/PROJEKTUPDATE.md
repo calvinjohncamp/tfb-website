@@ -1,5 +1,47 @@
 # TFB – Projektupdate vom 08.11.2026
 
+## Abgestimmter Zwischenstand · 08.11.2026 · live v349
+
+Der Nutzer hat den aktuellen Zwischenstand ausdrücklich bestätigt. Maßgeblich
+ist diese Zusammenfassung; die folgenden Release-Abschnitte dokumentieren den
+Weg dorthin und enthalten teilweise inzwischen ersetzte Darstellungen.
+
+- Schlanke, überall gleiche Admin-Leiste: kleine Welt-Auswahl, dreifacher
+  Gruppenabstand, Splash, Home, Partner, Mitglieder, Statistik, Kiosk und
+  Sicherungssymbol. Aktiver Bereich in Signature-Farben. App-Anleitung bleibt
+  im Account; doppelte Kiosk-Verwaltungsbuttons sind entfernt.
+- Clubweite Kiosk-Abrechnung direkt über Admin → Kiosk; persönliche Abrechnung
+  getrennt im Account. Alle Mitglieder vorausgewählt, exakte Umlautsuche,
+  E-Mail-Suche und deutsche Telefonbuch-Sortierung. Leere Kämper-Dublette
+  entfernt, aktiver Zugang und Buchungen erhalten.
+- Profilbilder/Initialen vor Namen; vorhandene Bilder per Klick oder Tastatur
+  vergrößerbar. Suchfeld ohne Beispieltext.
+- Zwei gleich große Kalender: links Jahr und zwölf Monatsbeträge, rechts der
+  ausgewählte Monat mit vollem Namen und Tagesraster. Laufender Monat öffnet
+  direkt; mobil untereinander. Umsatz-Tage sind farbig unterstrichen.
+- Kompakte Buchungszeilen, älteste Buchung zuerst. Rücknahmen/Korrekturen zeigen
+  Buchungsperson, handelnde Person, Zeitpunkt und Grund. Technische Metadaten
+  sind im Admin separat aufklappbar; fehlende alte Kategorien werden nicht
+  als Warnung dargestellt oder aus heutigen Produktdaten rekonstruiert.
+- Sichtbare Vorjahres-Pills. Vorjahr öffnet Jahresabschluss mit zwölf Monaten,
+  ohne Heute und ohne rechten Monatskalender; Monat bleibt gezielt anwählbar.
+  Großer Jahresbetrag in der roten Welt schwarz, in der gelben Welt gelb.
+- Drei CSV-Wege: Monat, Jahr kumuliert bis gewähltes Monatsende/heute,
+  Jahresabschluss ab 31.12. Jahresabschluss-CSV: Auswahl/Datenstand, zwölf
+  Monatswerte, Jahressumme, danach chronologische Buchungen/Korrekturen.
+
+Live-Stand: Code-Commit `5517800`, Dokumentationsnachweis `6a2d4fc`,
+Service Worker `tfb-kiosk-v349`, Veröffentlichung [42517049131](https://github.com/calvinjohncamp/tfb-website/actions/runs/42517049131)
+erfolgreich und Live-Dateien bestätigt. Chromium/WebKit und vier gezielte
+Exportprüfungen erfolgreich. Es gab keine Aktivierung von Zahlungen oder
+Löschung von Vorführbuchungen. Diese Abschlussaktualisierung ändert nur die
+Dokumentation, nicht den bestätigten Live-Code.
+
+Offen bleiben die Finanzwart-/Vorstandsabstimmung zum echten Einzug, der später
+explizit festzulegende Stichtag X und ein künftiger kumulierter Mehrjahresvergleich.
+Details und Fortsetzungsregeln stehen am Anfang von Projektgedächtnis/Übergabe.
+
+
 ## Vorjahre als Jahresabschluss mit Monatsübersicht im CSV · v349 · 08.11.2026
 
 Vorjahres-Pill öffnet weiterhin nur die Jahreskachel: rechter Monats-/Tages-
