@@ -34,3 +34,6 @@ Korrekturen, CSV, Monatsarchive und 320–1440px geprüft. Admin-Rollenprüfung
 unverändert erfolgreich. Vorführbetrieb und alle Käufe bleiben erhalten.
 Service Worker v340.
 
+Veröffentlicht: Commit c4965aa; Pages-Workflow 42510053340 erfolgreich.
+Live-JavaScript mit Suche/Jahres-/Tageskalender und Service Worker v340
+auf joern-kaemper.de nach Veröffentlichung bestätigt.
