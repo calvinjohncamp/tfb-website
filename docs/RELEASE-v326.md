@@ -58,3 +58,10 @@ keine IDs vor Einwilligung, Besucher-/Besuchsdeduplizierung, kein Zählen bei
 Neurendern auch nach Inaktivität, Adminroute, Quotienten, Heute/Monat, CSV,
 320/390/834/1440px; Neuanmeldung, Apple/Android, Account-Buttonbreite, Rollen und
 Profil/Kommentare geprüft. Worker-Dry-Run bestanden.
+
+Live veröffentlicht am 08.11.2026: Backend-Version
+98f5c3de-5367-4ad8-bc3d-15b9b3a485ff, Pages-Lauf 42466162529 erfolgreich,
+Quellstand c4c4f63. Messbeginn serverseitig 2026-11-08T09:12:02Z.
+Echte Admin-Ansicht im angemeldeten Browser geprüft: alle neuen Kennzahlen
+verfügbar, anfangs null Aufrufe/Besucher/Besuche, Durchschnitt ohne Nenner „–“.
+Direktlink #clubstatistik wird zusätzlich ohne Splash geöffnet.
