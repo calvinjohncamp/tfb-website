@@ -1,5 +1,12 @@
 # TFB – Übergabe für die nächste Sitzung
 
+## Chat-Kommentare: Abstand zur Linie – 08.11.2026 · v329
+
+Erster Kommentar erhält 14px oberen Innenabstand. Avatar/TFB-Symbol und Name
+stehen damit unterhalb der Trennlinie mit derselben Luft wie weitere Kommentare.
+Chromium/WebKit bei 320/390/768/1440px visuell und geometrisch geprüft.
+Nur CSS und Service-Worker v329; keine Daten-/Backendänderung. RELEASE-v329.md.
+
 ## Admin-Aufrufe zählen mit – 08.11.2026 · v328
 
 Explizite Nutzerkorrektur: Admins werden ab jetzt bei normalen Websiteaufrufen

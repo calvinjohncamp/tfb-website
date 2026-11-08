@@ -146,6 +146,8 @@ body:has(.cs-mobile-video[open]) { overflow: hidden; }
 .chat-comment-button { flex: none; }
 .chat-replies { min-width: 0; overflow-y: auto; }
 .chat-replies .comment { display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 9px; }
+/* Give the first avatar the same breathing room as the following replies. */
+.chat-replies .comment:first-child { padding-top: 14px; }
 .chat-replies .comment header { margin-bottom: 4px; }
 .chat-replies .fpost-avatar { width: 34px; height: 34px; }
 .comment-emoji { margin-block: 8px 16px; }
