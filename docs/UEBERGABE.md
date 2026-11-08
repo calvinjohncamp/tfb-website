@@ -1,5 +1,80 @@
 # TFB – Übergabe für die nächste Sitzung
 
+## Tagesabschluss und nächster Einstieg - 08.11.2026
+
+**Verbindlicher Abschlussstand:** Die Sitzung ist beendet. Kiosk und Abrechnung
+laufen weiterhin ausschließlich als Vorführung. Keine echten Forderungen,
+Abbuchungen, Zahlungsaktivierung oder Abrechnungsmails. Kein weiterer Reset.
+
+### Erledigt und veröffentlicht
+
+- Letzter App-Stand v337: Produktarchiv, Preis-/Namensschutz alter Buchungen,
+  unveränderliches Journal, nachvollziehbare Rücknahmen/Gutschriften, gesicherte
+  Vorführmonate mit Versionen, persönliche Historie, CSV/druckbare HTML-Belege
+  und buchungsbezogene Fragen/Antworten. Zugang unter Kiosk im Admin-Modus.
+- Quelle 25c12fb, Pages-Lauf 42479337447 erfolgreich, Worker
+  2d83e402-b772-4348-bedd-4f34699b7d5f, Service Worker v337. Migration 0013
+  installiert. Technische Einzelheiten und Prüfungen: RELEASE-v337.md.
+- Letzter dokumentierter Erhaltungsabgleich: 48 vorhandene Vorführpositionen,
+  16.550 Cent ursprünglicher Gesamtwert, vier bestehende Rücknahmen; unverändert
+  übernommen. Dies ist ein Abnahmestand, kein laufender Live-Zähler.
+- Statistik wurde separat am 08.11.2026 um 12:36:33 Uhr Berlin auf null gesetzt.
+  Dies war KEIN Reset der Kiosk-/Abrechnungsdaten. Finanzdaten bleiben erhalten.
+
+### Einseitige Vorlage zur Abstimmung
+
+Fertiges, visuell geprüftes PDF: **TFB-Kiosk-Abrechnung-Abstimmung.pdf**.
+Lokaler Projektpfad (nicht als öffentliche Website-Datei veröffentlicht):
+`01 Software/output/pdf/TFB-Kiosk-Abrechnung-Abstimmung.pdf`.
+Genau eine DIN-A4-Seite; TFB-Logo in Blau/Gelb. Inhalt: heutiger Vorführbetrieb,
+Informationen für Mitglieder und Finanzverwaltung/Buchhalter, Schutz historischer
+Buchungen bei Sortimentspflege, vorgeschlagener Monatsablauf, offene Bank- und
+Mandatsfragen sowie der spätere kontrollierte Stichtag X. Nutzer will die Vorlage
+mit zweitem Admin und Buchhalter/Finanzwart besprechen. Kein Versand durch uns.
+Die App wurde für die PDF-Erstellung nicht geändert oder erneut deployed.
+
+### Vorläufiger Stopp bei der echten Abrechnung
+
+Nutzer will derzeit NICHT weiter ins Detail gehen oder den echten Bankeinzug
+programmieren lassen. Zuerst beschreibt Buchhalter/Finanzwart, wie der heutige
+Abbuchungsauftrag korrekt in die App übertragen werden soll. Dafür klären:
+
+1. Bisherige Bank/Vereinssoftware und Einreichungsweg; benötigtes Import-/Bankformat
+   und zuständige Person für Freigabe und Zahlungsabgleich.
+2. Verwendbare SEPA-Mandate einschließlich Reichweite für Kioskkäufe und nötige
+   Zahler-/Konten-/Mandatszuordnung. App-Zustimmung ist keine Bankanbindung.
+3. Einzugstag, vereinbarte Vorankündigungsfrist und zulässiger Informationsweg.
+   Die alte Anzeige „Einzug am 5.“ ist keine freigegebene Vorgabe mehr.
+4. Benötigte Monats-/Einzelpostenexporte, Kontierungen und Aufbewahrungsregeln.
+
+Erst nach diesen Angaben den echten Ablauf festlegen, gemeinsam testen und
+separat aktivieren. Keine stillschweigende Übernahme bisheriger Demodaten als
+Forderungen. Keine kostenpflichtige Zahlungs-/Mailanbindung ohne passende
+Entscheidung. Padel-Zahlungsweg (Stripe oder ggf. Lastschrift) weiterhin offen.
+
+### Späterer Stichtag X - noch nicht beauftragt
+
+Nutzer bereinigt bis dahin das gewünschte Produktsortiment. Anschließend sollen
+bisherige Vorführbuchungen und Vorführabrechnungen aus der aktiven App verschwinden,
+damit ein klarer Start mit null erfolgt. Konten, Einstellungen und das bereinigte
+Sortiment bleiben erhalten. Das umfasst auch abhängige Demo-Journal-/Korrektur-/
+Archiv-/Fragedaten; keinen verwaisten Zustand hinterlassen. Die gesonderte
+Statistik-Resetdatei ist hierfür ausdrücklich NICHT geeignet.
+
+Kein fester Termin, kein automatischer Job und kein Kiosk-Reset ausgeführt oder
+vorab freigegeben. Für die spätere Bereinigung ist ein gezielter, überprüfter
+Operatorablauf mit Sicherung und ausdrücklich benanntem Stichtag erforderlich;
+aktuelle Unveränderlichkeitssperren schützen das Journal. Frühere Sicherungen
+werden nicht beiläufig gelöscht. Geplanter App-Start bleibt April 2027.
+
+### Arbeitsstand für die Fortsetzung
+
+Die veröffentlichten Änderungen und Nachweise liegen in GitHub main. Der lokale
+Projektordner enthält zusätzlich ältere, unveröffentlichte Änderungen; nicht
+pauschal bereinigen, überschreiben oder pushen. Bisherige isolierte Arbeitskopie:
+`/private/tmp/tfb-v326-analytics`. Diese Tagesabschluss-Änderung betrifft nur
+Dokumentation; keine neue App-Version, Migration oder Veröffentlichung nötig.
+
 ## Produktarchiv und vorbereitete Kiosk-Abrechnung – 08.11.2026 · v337
 
 Nutzerfreigabe: Produktpflege und Abrechnung vorbereiten und direkt deployen.
