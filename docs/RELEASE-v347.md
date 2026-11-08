@@ -25,3 +25,7 @@ Texte, explizit aufklappbare Buchungsnummer im Admin, ursprünglicher Betrag
 nach Korrektur, persönliche Ansicht ohne Admin-Metadaten sowie bestehende
 Abrechnungsabläufe geprüft. Service Worker v347.
 
+Veröffentlicht: Commit 6995ded, Pages-Workflow 42515759209 erfolgreich.
+GitHub-Dispatch zunächst zweimal mit HTTP 500 fehlgeschlagen; direkter
+Workflow-Endpunkt erfolgreich. Live-Dateien ohne verwirrenden Kategoriehinweis
+und mit Service Worker v347 auf joern-kaemper.de bestätigt.
