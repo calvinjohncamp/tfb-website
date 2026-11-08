@@ -27,3 +27,7 @@ Admin-Schaltfläche, Account-Hilfe im simulierten installierten Modus, keine aut
 Installationskarte in diesem Modus; Profil-/Kommentar-/Mitgliederprüfungen weiter
 bestanden. Beide HD-PNGs visuell kontrolliert. Frontend-Service-Worker v327.
 Backend/Migration unverändert.
+
+Veröffentlicht: Quellstand a7c0ba8, Pages-Lauf 42468674037 erfolgreich.
+Live-Service-Worker tfb-kiosk-v327. Backend bleibt unverändert auf v326.
+HD-PNGs: Apple 1950 × 2935px, Android 1950 × 2825px.

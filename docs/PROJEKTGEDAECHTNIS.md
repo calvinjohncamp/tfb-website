@@ -13,6 +13,7 @@ Statistik zählt Admins absichtlich nicht; dieser Hinweis steht nun zusätzlich 
 in der Übersicht. Andere Besucher werden nur nach „Statistik erlauben“ gezählt.
 Sechs gezielte Tests sowie Chromium-/WebKit-Prüfungen einschließlich direktem
 Admin-Aufruf und simuliertem installierten App-Modus bestanden. Details RELEASE-v327.md.
+Live: a7c0ba8, Pages-Lauf 42468674037 erfolgreich, Service Worker v327.
 
 ## Clubstatistik und App-Einstieg – 08.11.2026 · v326
 
