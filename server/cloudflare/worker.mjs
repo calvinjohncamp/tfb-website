@@ -326,7 +326,7 @@ async function route(request, env, url) {
     const rows = await env.DB.prepare(`SELECT id,first_name,last_name FROM members WHERE active=1 AND id IN (${ids.map(()=>'?').join(',')})`).bind(...ids).all();
     return Object.fromEntries(rows.results.map(m=>[m.id,`${m.first_name} ${m.last_name}`]));
   }
-  if (request.method === 'GET' && path === '/admin/usage') return simpleUsageReport(env,url.searchParams.get('month'));
+  if (request.method === 'GET' && path === '/admin/usage') return simpleUsageReport(env,url.searchParams.get('month'),Date.now(),{period:url.searchParams.get('period')||'month',year:url.searchParams.get('year')||undefined,trend:url.searchParams.get('trend')||'30days'});
   if (request.method === 'GET' && path === '/admin/usage-legacy') return usageReport(env,url.searchParams.get('month'));
   if (request.method === 'GET' && path === '/admin/members') return memberAccessOverview(env);
   if (request.method === 'POST' && path === '/auth/presence') return {ok:true};
