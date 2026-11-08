@@ -1,4 +1,4 @@
-import {kioskReport,kioskArchiveMonth,kioskStatement,kioskCredit,kioskMessage} from './kiosk-billing.mjs';
+import {kioskReport,kioskArchiveMonth,kioskStatement,kioskCredit,kioskMessage,kioskOverview} from './kiosk-billing.mjs';
 import {collectSimpleUsage,simpleUsageReport,simpleUsageHistory,cleanSimpleUsage} from './simple-usage.mjs';
 import {collectUsage,usageReport,cleanUsage} from './club-usage.mjs';
 import {emailAccessReady,recordAccess,memberAccessOverview,requestEmailCode,claimEmailCode} from './email-auth.mjs';
@@ -271,6 +271,8 @@ async function route(request, env, url) {
   }
   if (request.method === 'POST' && path === '/app/kiosk/question') return kioskMessage(env,member,await body(request,4096));
   if (request.method === 'POST' && path === '/admin/kiosk/reply') return kioskMessage(env,member,await body(request,4096),true);
+  if (request.method === 'GET' && path === '/app/kiosk/overview') return kioskOverview(env,member,url.searchParams);
+  if (request.method === 'GET' && path === '/admin/kiosk/overview') return kioskOverview(env,member,url.searchParams,true);
   if (request.method === 'GET' && path === '/app/kiosk/report') return kioskReport(env,member,url.searchParams);
   if (request.method === 'GET' && path === '/app/kiosk/statement') return kioskStatement(env,member,url.searchParams.get('id'));
   if (request.method === 'GET' && path === '/admin/kiosk/catalog-history') return {rows:(await env.DB.prepare("SELECT h.*,COALESCE(m.first_name||' '||m.last_name,'System / frühere Verwaltung') actor_name FROM kiosk_catalog_history h LEFT JOIN members m ON m.id=h.actor_id ORDER BY h.created_at DESC,h.id DESC LIMIT 50").all()).results};

@@ -11,7 +11,8 @@ export function kioskCommitStatements(env,member,ops,c,commitId,signature){
 }
 function range(query){const month=query.get('month')||new Date().toLocaleDateString('sv-SE',{timeZone:'Europe/Berlin'}).slice(0,7);if(!/^20\d{2}-(0[1-9]|1[0-2])$/.test(month))fail(400,'Bitte einen gültigen Monat wählen.');const from=query.get('from')||month+'-01',last=new Date(Date.UTC(Number(month.slice(0,4)),Number(month.slice(5)),0)).toISOString().slice(0,10),to=query.get('to')||last;const valid=d=>/^20\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/.test(d)&&new Date(d+'T12:00:00Z').toISOString().slice(0,10)===d;if(!valid(from)||!valid(to)||from>to||Date.parse(to)-Date.parse(from)>732*86400000)fail(400,'Bitte einen gültigen Zeitraum bis maximal zwei Jahre wählen.');return {from,to};}
 
-const day=t=>new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Berlin',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(t));
+const berlinCalendar=new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Berlin',year:'numeric',month:'2-digit',day:'2-digit'});
+const day=t=>berlinCalendar.format(new Date(t));
 export async function kioskReport(env,member,query,admin=false){
  const {from,to}=range(query),owner=admin?query.get('member')||'':member.id;
  if(!owner&&Date.parse(to)-Date.parse(from)>93*86400000)fail(400,'Für alle Mitglieder bitte höchstens drei Monate wählen; für längere Zeiträume ein Mitglied auswählen.');
@@ -44,4 +45,13 @@ export async function kioskMessage(env,member,data,reply=false){
  if(reply){const parent=await env.DB.prepare("SELECT id FROM kiosk_messages WHERE id=? AND entry_id=? AND kind='question'").bind(data.parentId||'',data.entryId).first();if(!parent)fail(400,'Ursprüngliche Frage nicht gefunden.');}
  const old=await env.DB.prepare('SELECT * FROM kiosk_messages WHERE id=?').bind(data.id).first();if(old){if(old.author_id!==member.id||old.entry_id!==data.entryId||old.text!==data.text.trim())fail(409,'Diese Nachricht wurde bereits anders gespeichert.');return {ok:true};}
  await env.DB.prepare('INSERT INTO kiosk_messages VALUES (?,?,?,?,?,?,?,?)').bind(data.id,data.entryId,e.member_id,member.id,reply?data.parentId:null,reply?'reply':'question',data.text.trim(),new Date().toISOString()).run();return {ok:true};
+}
+
+// Overview returns only calendar aggregates, never a year's transaction list.
+export async function kioskOverview(env,member,query,admin=false,now=Date.now()){
+ const owner=admin?query.get('member')||'':member.id;
+ const rows=(await env.DB.prepare(`SELECT e.created_at,e.price_cents,COALESCE(a.cents,0) credit_cents FROM kiosk_entries e LEFT JOIN (SELECT entry_id,SUM(amount_cents) cents FROM kiosk_adjustments GROUP BY entry_id) a ON a.entry_id=e.id WHERE (?='' OR e.member_id=?) ORDER BY e.created_at`).bind(owner,owner).all()).results;
+ const days=new Map(),months=new Map(),years=new Map();
+ for(const e of rows){const d=day(e.created_at);for(const [map,key]of[[days,d],[months,d.slice(0,7)],[years,d.slice(0,4)]]){const value=map.get(key)||{period:key,totalCents:0,grossCents:0,creditCents:0,count:0};value.totalCents+=e.price_cents-e.credit_cents;value.grossCents+=e.price_cents;value.creditCents+=e.credit_cents;value.count++;map.set(key,value);}}
+ return {mode:'demo',collectionEnabled:false,today:day(now),currentMonth:day(now).slice(0,7),currentYear:day(now).slice(0,4),days:[...days.values()],months:[...months.values()],years:[...years.values()],members:admin?(await env.DB.prepare('SELECT id,first_name,last_name FROM members ORDER BY last_name,first_name').all()).results:[]};
 }
