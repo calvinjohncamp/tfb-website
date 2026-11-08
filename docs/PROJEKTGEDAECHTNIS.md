@@ -8,6 +8,9 @@ Worker und Aggregation angepasst, irreführende Ausschlusstexte entfernt.
 Statistikfreigabe und übriger Datenschutz unverändert. Keine rückwirkenden Zahlen.
 Vier Servertests und Chromium-/WebKit-Prüfungen mit echten Admin-Zählern bestanden.
 Details RELEASE-v328.md. Keine Datenmigration, Service Worker v328.
+Live geprüft: 2 echte Admin-Aufrufe, 1 Besucher, 1 Besuch, 2 Seiten/Besuch.
+Freigabe im aktuellen Nutzerbrowser aktiviert. Quellstand a870aee, Pages-Lauf
+42469035486, Worker 4be0e842-0142-4c9d-951a-73237d0ec54c.
 
 ## App-Anleitung dauerhaft erreichbar und HD-Bilder – 08.11.2026 · v327
 

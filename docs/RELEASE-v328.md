@@ -17,3 +17,10 @@ Vier gezielte Servertests sowie Chromium-/WebKit-Browserprüfungen bestanden:
 Admin tatsächlich als Seitenaufruf, Besucher/Besuch und aktives Mitglied gezählt,
 auch bei ausgeblendeten Werkzeugen. Bestehende Freigabe-/Widerrufs-, Quotienten-,
 CSV-, Rollen- und Mobilbreitentests erfolgreich. Worker-Dry-Run bestanden.
+
+Veröffentlicht am 08.11.2026: a870aee, Pages-Lauf 42469035486 erfolgreich,
+Worker 4be0e842-0142-4c9d-951a-73237d0ec54c, Service Worker v328.
+Auf ausdrücklichen Wunsch die Statistikfreigabe im aktuellen Nutzerbrowser über
+die sichtbare Oberfläche aktiviert. Echter angemeldeter Admin rief Aktuell und
+Home auf; Live-Übersicht bestätigte 2 Aufrufe, 1 Besucher, 1 Besuch, 2 Seiten pro
+Besuch und 1 aktives Mitglied. Keine direkten Testdatensätze eingefügt.
