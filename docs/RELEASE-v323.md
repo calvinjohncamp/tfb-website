@@ -24,3 +24,5 @@ für diese reine Mailgestaltung nötig.
 bei 320/390/760px geprüft: echtes Logo geladen, feste Blau-/Gelbfarben, vollständiger
 Inhalt ohne horizontalen Überlauf. Vorschau mit fiktivem Code 123456 visuell geprüft.
 Worker-Dry-Run erfolgreich einschließlich eingebundener HTML-Textvorlage.
+
+Veröffentlicht: Quellstand 20e0b80, Worker-Version 3ffef93a-98d8-44d6-bbe6-0d18ea1926c8. Frontend bleibt v322. Keine weitere echte Code-Mail oder Zugangsdatenänderung ausgelöst.

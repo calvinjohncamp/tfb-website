@@ -1,5 +1,23 @@
 # TFB – Projektupdate vom 08.11.2026
 
+## Freischaltmail: verbindlich Gelb-Blau – 08.11.2026 · Mail-Release v323
+
+Die tatsächliche Freischaltmail verwendet jetzt den bereits entwickelten Look
+der gelb-blauen Mitgliedsanmeldungs-Mail, einschließlich Original-Logo,
+Hintergrund, Typografie, gelber Linie, gelbem Codefeld mit blauen Ziffern sowie
+Info-/Fußbereich. Immer Gelb-Blau, unabhängig von der Website-Farbwelt.
+Keine Änderung am automatischen Zugang, Resend-Absender oder an Mitgliederdaten.
+
+Live-Worker `3ffef93a-98d8-44d6-bbe6-0d18ea1926c8`, Quellstand `20e0b80`.
+Website und Service Worker bleiben v322. Kein Pages-Deployment nötig.
+Vorlage: `server/cloudflare/templates/access-mail.html`, abgeleitet aus dem
+bestehenden Muster über `node tools/build-access-mail.mjs`. 19 relevante Tests,
+Chromium-/WebKit-Sichtprüfung bei 320/390/760px und Worker-Dry-Run erfolgreich.
+Keine zusätzliche echte Code-Mail für diesen reinen Gestaltungswechsel ausgelöst.
+Details: [Mail-Release v323](RELEASE-v323.md).
+
+---
+
 ## Automatische Freischaltung und Mitgliederverwaltung – 08.11.2026 · v322
 
 Aktueller Live-Stand: `tfb-kiosk-v322`, Website-Code
