@@ -1,0 +1,24 @@
+// Derive the live access mail from the established yellow/blue membership design.
+import {readFileSync,writeFileSync} from 'node:fs';
+const root=new URL('../',import.meta.url);
+let html=readFileSync(new URL('assets/docs/tfb-mitgliedsanmeldung-muster-gelb.html',root),'utf8');
+const replace=(before,after)=>{if(!html.includes(before))throw Error('Mail reference changed: '+before.slice(0,65));html=html.replace(before,after);};
+replace('Dein Mitgliedsantrag · Tennisfreunde Bielstein','Dein Freischaltcode · Tennisfreunde Bielstein');
+replace('  <p style="margin:0;padding:12px 16px 0;text-align:center;font:11px/1.5 Arial,sans-serif;color:#686868">PRÄSENTATIONSMUSTER · Fiktive Beispieldaten</p>\n','');
+replace('Dein Antrag ist angekommen. Bitte bestätige ihn – alles Weitere später über die Klingel in der App.','Dein persönlicher Code für deinen TFB-Zugang. Zehn Minuten gültig.');
+html=html.replaceAll("../../assets/fonts/",'https://joern-kaemper.de/assets/fonts/');
+replace('src="../brand/tfb-logo-midnight-amber.png"','src="https://joern-kaemper.de/assets/brand/tfb-logo-midnight-amber.png"');
+replace('Deine Mitgliedsanmeldung','Dein Mitgliederzugang');
+replace('Schön, dass du<br>mitspielen möchtest.','Schön, dass du<br>dabei bist.');
+replace('Hallo Anna,','Hallo,');
+replace('dein Antrag auf Mitgliedschaft bei den Tennisfreunden Bielstein ist bei uns angekommen. Bitte bestätige ihn noch mit einem Klick.','mit deinem persönlichen Freischaltcode bestätigst du deine E-Mail-Adresse und richtest deinen Zugang zur TFB-App ein.');
+replace('<a aria-disabled="true" style="display:block;padding:16px 24px;font-family:\'TFB DM Sans\',Arial,sans-serif;font-size:16px;line-height:1.4;font-weight:700;color:#001D3D;text-align:center;text-decoration:none;border-radius:6px;">Antrag bestätigen&nbsp; &rarr;</a>', '<p class="access-code" style="margin:0;padding:16px 12px;font-family:Consolas,\'Courier New\',monospace;font-size:34px;line-height:1.4;font-weight:700;letter-spacing:7px;color:#001D3D;text-align:center;">{{CODE}}</p>');
+replace('Dein Bestätigungslink ist 48 Stunden gültig.','Dein Freischaltcode ist zehn Minuten gültig und nur einmal verwendbar.');
+replace('DEIN ANTRAG IM ÜBERBLICK','DEIN ZUGANG AUF EINEN BLICK');
+replace('>Für</td>','>Passwort</td>');replace('Anna Beispiel','Mindestens zwölf Zeichen');
+replace('>Mitgliedschaft</td>','>Danach</td>');replace('Aktive Mitgliedschaft','Mit E-Mail und Passwort anmelden');
+replace('Nach deiner Bestätigung prüft der Vorstand deinen Antrag. Diese E-Mail ist noch keine Aufnahmebestätigung.','Gehe zurück zur geöffneten TFB-Website, gib dort den Code ein und lege dein persönliches Passwort fest. Danach bist du direkt angemeldet.');
+replace('Sobald dein Zugang freigeschaltet ist, erhältst du weitere Benachrichtigungen direkt über die Klingel in der App.','Dein Profilbild, Chats, Kommentare und dein digitaler Bierdeckel – dein Club ist nach der Anmeldung auch auf dem Handy für dich da.');
+replace('Du hast diesen Antrag nicht gestellt? Dann ignoriere diese E-Mail. Ohne deine Bestätigung wird der Antrag nicht zur Aufnahmeprüfung vorgelegt.','Du hast keinen Freischaltcode angefordert? Dann ignoriere diese E-Mail. Ohne Codebestätigung und Passwortvergabe wird an deinem Zugang nichts geändert.');
+writeFileSync(new URL('server/cloudflare/templates/access-mail.html',root),html);
+console.log('Access mail generated from the established yellow/blue membership reference.');

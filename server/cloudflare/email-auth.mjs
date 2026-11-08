@@ -1,9 +1,9 @@
+import {accessMailHtml} from './access-mail.mjs';
 const enc=new TextEncoder();
 const norm=s=>String(s||'').trim().toLowerCase().normalize('NFC');
 const digest=async s=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',enc.encode(s))),n=>n.toString(16).padStart(2,'0')).join('');
 const same=(a,b)=>{if(a.length!==b.length)return false;let n=0;for(let i=0;i<a.length;i++)n|=a.charCodeAt(i)^b.charCodeAt(i);return n===0;};
 const fail=(status,message)=>{throw Object.assign(Error(message),{status});};
-const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export const emailAccessReady=env=>Boolean(env.AUTH_MAIL?.send||(env.RESEND_API_KEY&&env.AUTH_EMAIL_FROM));
 export async function recordAccess(env,id,login=false){
  const now=Date.now();
@@ -41,7 +41,7 @@ export async function requestEmailCode(env,data){
  if(memberId){
   const message={from:env.AUTH_EMAIL_FROM||'Tennisfreunde Bielstein <tfb@padel-bielstein.de>',to:[email],subject:'Dein TFB-Freischaltcode',
    text:`Dein Freischaltcode: ${code}\n\nEr ist 10 Minuten gültig und nur einmal verwendbar. Gib ihn auf der TFB-Website ein und lege dein persönliches Passwort mit mindestens 12 Zeichen fest.\n\nWenn du keinen Code angefordert hast, ignoriere diese Nachricht.\nDeine Tennisfreunde Bielstein`,
-   html:`<div style="background:#efefef;padding:32px 12px;font-family:Arial,sans-serif;color:#001D3D"><div style="max-width:480px;margin:auto;background:white;padding:32px;border-radius:12px"><p style="font-weight:bold;letter-spacing:2px">TENNISFREUNDE BIELSTEIN</p><h1 style="font-size:26px">Dein Zugang zum Club.</h1><p>Hier ist dein persönlicher Freischaltcode:</p><p style="background:#001D3D;color:#FFC300;padding:20px;text-align:center;font:bold 34px monospace;letter-spacing:8px;border-radius:8px">${esc(code)}</p><p>10 Minuten gültig · nur einmal verwendbar</p><p>Gib den Code auf der TFB-Website ein und lege dein Passwort mit mindestens zwölf Zeichen fest.</p><p style="font-size:12px;color:#666">Nicht angefordert? Dann kannst du diese Nachricht ignorieren.</p></div></div>`};
+   html:accessMailHtml(code)};
   try{
    if(env.AUTH_MAIL?.send)await env.AUTH_MAIL.send(message);
    else{
