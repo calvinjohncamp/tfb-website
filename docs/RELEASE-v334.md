@@ -16,3 +16,7 @@ Splash als erste Zeile, einzige Tabelle, Summen/Anteile, historische Jahreswahl,
 CSV und 320/390/834/1440 px. Worker-Dry-Run erfolgreich. Service Worker v334.
 Details RELEASE-v334.md.
 
+Live veröffentlicht: Quellstand 69960d5, Pages-Lauf 42475414949 erfolgreich,
+Worker b26b10d0-f74d-4319-9300-acc8d81668c8, Service Worker v334.
+Öffentlich ausgelieferte JS-Datei enthält gemeinsame Tabelle/Summenzeile und
+automatische historische Diagrammjahre; Cachedatei bestätigt v334.
