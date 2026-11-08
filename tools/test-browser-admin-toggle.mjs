@@ -40,7 +40,7 @@ try {
   await pencil.click();
 
   await page.locator('[data-action="site-edit"]').first().waitFor();
-  const expected = ['Splash bearbeiten','Home bearbeiten','Partner verwalten','Mitglieder verwalten','Clubstatistik','App-Anleitung','Sicherungen'];
+  const expected = ['Splash bearbeiten','Home bearbeiten','Partner verwalten','Mitglieder verwalten','Clubstatistik','Kiosk-Abrechnung','App-Anleitung','Sicherungen'];
   for (const view of ['home','kiosk','chat','aktuell','sport','club','treffen']) {
     await page.evaluate(async view => { location.hash = '#'+view; await TFB.ui.renderView(view); }, view);
     await page.locator('.tfb-admin-links').waitFor();
@@ -54,6 +54,10 @@ try {
       assert.equal(layout.below,true,view);assert.equal(layout.left,true,view);assert.equal(layout.overflow,false,view);
     }
   }
+  await page.locator('.tfb-admin-links a[href="#kioskabrechnung"]').click();
+  await page.locator('[data-kb-admin-view] .kb-period-grid').waitFor();
+  assert.equal(await page.locator('[data-kb-member]').inputValue(),'');
+  assert.match(await page.locator('.kb-scope').innerText(),/Clubweiter Überblick/);
   await page.locator('.tfb-admin-links [data-action="site-edit"]').click();
   await page.locator('.site-page[data-page="home"].editing-page').waitFor();
   assert.equal(await page.evaluate(()=>location.hash),'#home');
@@ -89,6 +93,9 @@ try {
   await page.waitForFunction(() => TFB.ui?.state.member && !TFB.ui.state.member.isAdmin && !TFB.ui.state.member.adminHidden);
   assert.equal(await pencil.count(), 0);
   assert.equal(await page.locator('[data-action="site-edit"], [data-action="edit-start"]').count(), 0);
+  await page.evaluate(()=>{location.hash='#kioskabrechnung';});
+  await page.getByText('Diese clubweite Übersicht steht nur der berechtigten Verwaltung zur Verfügung.').waitFor();
+  assert.equal(await page.locator('[data-kb-admin-view]').count(),0);
   assert.deepEqual(errors, []);
   console.log('PASS: secure-login admin pencil toggles Home/Kiosk tools, stays hidden after session refresh/reload, retains role and never elevates ordinary members.');
 } finally { await browser.close(); }

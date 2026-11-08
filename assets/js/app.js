@@ -8,7 +8,7 @@
   const $sheet = document.getElementById('sheet-root');
   const $toast = document.getElementById('toast-root');
 
-  const VIEWS = ['home', 'kiosk', 'strichliste', 'abrechnungen', 'chat', 'aktuell', 'gefluester', 'sport', 'team', 'club', 'treffen', 'verwaltung', 'impressum', 'satzung', 'partnerzahlen', 'clubstatistik', 'partner'];
+  const VIEWS = ['home', 'kiosk', 'strichliste', 'abrechnungen', 'chat', 'aktuell', 'gefluester', 'sport', 'team', 'club', 'treffen', 'verwaltung', 'impressum', 'satzung', 'partnerzahlen', 'clubstatistik', 'partner', 'kioskabrechnung'];
   const KIOSK_AREA = ['kiosk', 'strichliste', 'abrechnungen'];   // nur mit Anmeldung
   // Reiter unten: Kiosk zuerst, dann die Vereinsseiten, dann der Padel-Link.
   // Team-Seiten gehören zu „Sport“
@@ -114,7 +114,7 @@
     // Ausnahmen: Neu laden (bleibt auf der Seite) und direkte Links wie #treffen/<id>.
     const nav = (performance.getEntriesByType && performance.getEntriesByType('navigation')[0]) || {};
     const deepLink = location.hash.includes('/');
-    if (!location.hash || (nav.type !== 'reload' && !deepLink && !['#impressum','#satzung','#partnerzahlen','#partner','#clubstatistik'].includes(location.hash))) history.replaceState(null, '', '#home');
+    if (!location.hash || (nav.type !== 'reload' && !deepLink && !['#impressum','#satzung','#partnerzahlen','#partner','#clubstatistik','#kioskabrechnung'].includes(location.hash))) history.replaceState(null, '', '#home');
     // Decide on the splash before mounting the app shell to avoid exposing a
     // frame of the previous page during a reload.
     await splash;
@@ -454,6 +454,7 @@
           <div class="tfb-admin-links"><button type="button" class="btn small" data-action="splash-edit">Splash bearbeiten</button>${editHome}<a class="btn small" href="#partner">Partner verwalten</a>
             <button type="button" class="btn small" data-action="members-manage">Mitglieder verwalten</button>
             <a class="btn small" href="#clubstatistik">Clubstatistik</a>
+            <a class="btn small" href="#kioskabrechnung">Kiosk-Abrechnung</a>
             <button type="button" class="btn small" data-install-help>App-Anleitung</button>
             <button type="button" class="btn small" data-action="admin-backup">Sicherungen</button></div></div>`);
         const homeEditShortcut = view === 'home' && $view.querySelector('.site-page[data-page="home"]') && !$view.querySelector('.editing-page')
