@@ -5,7 +5,7 @@
   "compatibility_date": "2026-10-15",
   "workers_dev": true,
   "preview_urls": false,
-  "vars": { "PARTNER_MEASUREMENT_ENABLED": "0" },
+  "vars": { "PARTNER_MEASUREMENT_ENABLED": "0", "AUTH_EMAIL_FROM": "Tennisfreunde Bielstein <tfb@padel-bielstein.de>" },
   "rules": [{ "type": "Text", "globs": ["**/*.sql"], "fallthrough": true }],
   "d1_databases": [{
     "binding": "DB",

@@ -1,3 +1,4 @@
+import {emailAccessReady,recordAccess,memberAccessOverview,requestEmailCode,claimEmailCode} from './email-auth.mjs';
 // TFB: protected member directory. Invitations/Kiosk remain a local simulation.
 import schema from './schema.sql';
 import {publicCommunity, publicChatMedia, syncState, syncCommit, syncRevision, syncFaces, syncPhoto, syncUploadVideo, syncChatVideo} from './app-sync.mjs';
@@ -80,6 +81,7 @@ async function authenticated(request, env, admin = false) {
     WHERE s.token_hash=? AND s.expires_at>? AND m.active=1`).bind(tokenHash, Date.now()).first();
   if (!m) fail(401, 'Deine Anmeldung ist abgelaufen. Bitte erneut anmelden.');
   if (admin && !m.is_admin) fail(403, 'Nur die Verwaltung darf diese Funktion nutzen.');
+  await recordAccess(env,m.id);
   return { member: m, tokenHash };
 }
 async function createSession(env, m) {
@@ -90,6 +92,7 @@ async function createSession(env, m) {
     env.DB.prepare('INSERT INTO sessions(token_hash,member_id,expires_at) VALUES (?,?,?)')
       .bind(await hash(token), m.id, Date.now() + SESSION_MS),
   ]);
+  await recordAccess(env,m.id,true);
   return { token, member: await publicMember(env, m) };
 }
 function validatePassword(value) {
@@ -174,6 +177,21 @@ async function route(request, env, url) {
       .bind(id,first,last,email,norm(`${first} ${last} ${email}`),await passwordHash(data.password,salt,env.PASSWORD_PEPPER),salt,Date.now()).run();
     if (result.meta.changes !== 1) fail(409, 'Die Verwaltung ist bereits eingerichtet. Bitte anmelden.');
     return createSession(env, await env.DB.prepare('SELECT * FROM members WHERE id=?').bind(id).first());
+  }
+  if (request.method === 'GET' && path === '/auth/options') return {automaticEmail:emailAccessReady(env)};
+  if (request.method === 'POST' && path === '/auth/email/request') {
+    await rate(env,request,'email-code',10);
+    return requestEmailCode(env,await body(request,4096));
+  }
+  if (request.method === 'POST' && path === '/auth/email/activate') {
+    await rate(env,request,'email-verify',20);
+    const data=await body(request,4096);validatePassword(data.password);
+    const member=await claimEmailCode(env,data),salt=random();
+    const result=await env.DB.prepare('UPDATE members SET password_hash=?,password_salt=?,activation_hash=NULL,activation_expires=NULL WHERE id=? AND active=1 RETURNING *')
+      .bind(await passwordHash(data.password,salt,env.PASSWORD_PEPPER),salt,member.id).first();
+    if(!result)fail(401,'Der Mitgliederzugang ist nicht mehr aktiv.');
+    await env.DB.prepare('DELETE FROM sessions WHERE member_id=?').bind(member.id).run();
+    return createSession(env,result);
   }
   if (request.method === 'POST' && ['/auth/login','/auth/activate'].includes(path)) {
     await rate(env, request, 'auth', 15);
@@ -289,6 +307,8 @@ async function route(request, env, url) {
     const rows = await env.DB.prepare(`SELECT id,first_name,last_name FROM members WHERE active=1 AND id IN (${ids.map(()=>'?').join(',')})`).bind(...ids).all();
     return Object.fromEntries(rows.results.map(m=>[m.id,`${m.first_name} ${m.last_name}`]));
   }
+  if (request.method === 'GET' && path === '/admin/members') return memberAccessOverview(env);
+  if (request.method === 'POST' && path === '/auth/presence') return {ok:true};
   if (request.method === 'GET' && path === '/admin/info') {
     const row = await env.DB.prepare('SELECT COUNT(*) AS n,MAX(updated_at) AS at FROM members WHERE imported=1 AND active=1').first();
     return { imported: row.n, at: row.at ? new Date(row.at).toISOString() : null };

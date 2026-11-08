@@ -8,6 +8,7 @@ const visibility=readFileSync(new URL('partner-visibility.mjs',root),'utf8').rep
 const editorial=readFileSync(new URL('editorial.mjs',root),'utf8');
 const backup=readFileSync(new URL('editorial-backup.mjs',root),'utf8').replace("from './editorial.mjs'",'from '+JSON.stringify(data(editorial)));
 let source=readFileSync(new URL('worker.mjs',root),'utf8')
+  .replace("from './email-auth.mjs'",'from '+JSON.stringify(data(readFileSync(new URL('email-auth.mjs',root),'utf8'))))
   .replace("import schema from './schema.sql';",'const schema='+JSON.stringify(readFileSync(new URL('schema.sql',root),'utf8'))+';')
   .replace("from './editorial.mjs'",'from '+JSON.stringify(data(editorial)))
   .replace("from './editorial-backup.mjs'",'from '+JSON.stringify(data(backup)))

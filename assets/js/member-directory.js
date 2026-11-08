@@ -74,10 +74,17 @@
     return attachVerified(result, token);
   }
   api.secureDirectory = true;
+  const authReady=call('/auth/options').then(o=>{api.automaticEmail=Boolean(o.automaticEmail);}).catch(()=>{api.automaticEmail=false;});
+  api.requestEmailAccess=(email,memberNo)=>call('/auth/email/request',{email,memberNo});
+  api.activateEmailAccess=(challengeId,code,password)=>acceptCode(challengeId,code,password);
+  async function acceptCode(challengeId,code,password){return accept(await call('/auth/email/activate',{challengeId,code,password}));}
+  api.memberAccessOverview=()=>call('/admin/members');
+
   api.lookupEmail = async () => ({ known: true, hasPassword: true }); // Never disclose membership before login.
   api.signIn = async (identifier, password) => accept(await call('/auth/login', { identifier, password }));
   api.createPassword = async (identifier, password, code) => accept(await call('/auth/activate', { identifier, password, code }));
   api.session = async () => {
+    await authReady;
     if (!token) { clear(); return null; }
     const requestToken = token;
     let result;
@@ -92,6 +99,9 @@
     rememberToken();
     return attachVerified(result, requestToken);
   };
+  let heartbeatBusy=false;
+  async function heartbeat(){if(heartbeatBusy||!token||!verified||document.visibilityState==='hidden')return;heartbeatBusy=true;try{await call('/auth/presence',{});}catch{}finally{heartbeatBusy=false;}}
+  setInterval(heartbeat,60000);document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')heartbeat();});
   api.signOut = async () => { try { if(token) await call('/auth/logout', {}); } finally { clear(); await local.signOut(); } };
   window.addEventListener('storage', event => {
     if (event.storageArea === localStorage && (event.key === KEY || event.key === null) && token && event.newValue !== token) {

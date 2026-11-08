@@ -167,8 +167,8 @@
         <label class="field"><span>${api.secureDirectory ? 'E-Mail oder Mitgliedsnummer' : 'E-Mail'}</span>
           <input name="email" type="${api.secureDirectory ? 'text' : 'email'}" inputmode="${api.secureDirectory ? 'text' : 'email'}" autocomplete="username" required value="${esc(state.authEmail)}" placeholder="${api.secureDirectory ? 'E-Mail oder Mitgliedsnummer' : 'name@beispiel.de'}">
         </label>
-        ${api.secureDirectory ? '<p class="muted small">Für deinen ersten Zugang brauchst du einen persönlichen Freischaltcode vom Vorstand. Damit legst du dein Passwort fest. Bei einer gemeinsamen Familien-E-Mail verwende bitte deine Mitgliedsnummer.</p>' : ''}
-        <button class="btn primary block" type="submit">Weiter</button>`;
+        ${api.secureDirectory ? `<p class="muted small">${api.automaticEmail ? 'Zum ersten Mal hier? Lass dir deinen Freischaltcode automatisch per E-Mail senden und lege dein Passwort fest.' : 'Für deinen ersten Zugang brauchst du einen persönlichen Freischaltcode vom Vorstand. Damit legst du dein Passwort fest.'}</p>` : ''}
+        <button class="btn primary block" type="submit">Weiter</button>${api.automaticEmail ? '<button type="button" class="btn block" data-action="auth-email-start">Erster Besuch? Zugang anlegen</button>' : ''}`;
     } else if (s === 'password') {
       body = `
         <h2>${api.secureDirectory ? 'Anmelden' : `Hallo ${esc(state.authFirstName)}!`}</h2>
@@ -180,8 +180,21 @@
         <div class="auth-links">
           <button type="button" class="link" data-action="auth-back">Andere E-Mail</button>
           <button type="button" class="link" data-action="forgot">Passwort vergessen?</button>
-          ${api.secureDirectory ? '<button type="button" class="link" data-action="auth-activate">Ich habe einen Freischaltcode</button>' : ''}
+          ${api.secureDirectory ? (api.automaticEmail ? '<button type="button" class="link" data-action="auth-email-start">Zugang anlegen / Freischaltmail anfordern</button>' : '<button type="button" class="link" data-action="auth-activate">Ich habe einen Freischaltcode</button>') : ''}
         </div>`;
+    } else if (s === 'email-request') {
+      body = `<p class="auth-kicker">Willkommen im Club</p><h2>Dein TFB-Zugang.</h2>
+        <p class="muted">Wir schicken einen Freischaltcode an deine beim TFB hinterlegte E-Mail-Adresse. Danach legst du dein persönliches Passwort fest.</p>
+        <label class="field"><span>E-Mail-Adresse</span><input name="email" type="email" autocomplete="email" required value="${esc(state.authEmail.includes('@') ? state.authEmail : '')}" placeholder="name@beispiel.de"></label>
+        <details class="auth-family"><summary>Gemeinsame Familienadresse?</summary><p class="small muted">Trage zusätzlich deine Mitgliedsnummer ein, damit der Zugang dir zugeordnet wird.</p><label class="field"><span>Mitgliedsnummer</span><input name="memberNo" autocomplete="off" value="${esc(state.authMemberNo||'')}"></label></details>
+        <button class="btn primary block" type="submit">Freischaltcode senden</button><button type="button" class="link center" data-action="auth-back">Bereits registriert? Anmelden</button>`;
+    } else if (s === 'email-code') {
+      body = `<p class="auth-kicker">Noch ein Schritt</p><h2>Prüfe dein Postfach.</h2>
+        <p class="muted">Wenn <strong>${esc(state.authEmail)}</strong> eindeutig in unserer Mitgliederliste hinterlegt ist, erhältst du einen sechsstelligen Code. Er ist zehn Minuten gültig. Prüfe bitte auch deinen Spam-Ordner.</p>
+        <label class="field"><span>Freischaltcode</span><input class="auth-code" name="activationCode" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required placeholder="000000"></label>
+        <label class="field"><span>Dein neues Passwort</span>${pwInput('name="password" autocomplete="new-password" minlength="12" required placeholder="mindestens 12 Zeichen"')}</label>
+        <label class="field"><span>Passwort wiederholen</span>${pwInput('name="password2" autocomplete="new-password" minlength="12" required')}</label>
+        <button class="btn primary block" type="submit">Zugang aktivieren</button><button type="button" class="link center" data-action="auth-email-start">Keine Mail? Adresse prüfen / erneut senden</button>`;
     } else if (s === 'create') {
       body = `
         <h2>${api.secureDirectory ? 'Zugang freischalten' : `Willkommen, ${esc(state.authFirstName)}!`}</h2>
@@ -224,6 +237,11 @@
     const btn = form.querySelector('button[type=submit]');
     btn.disabled = true;
     try {
+      if (state.authStep === 'email-request') {
+        state.authEmail=String(data.get('email')||'').trim();state.authMemberNo=String(data.get('memberNo')||'').trim();
+        const result=await api.requestEmailAccess(state.authEmail,state.authMemberNo);
+        state.authChallengeId=result.challengeId;state.authStep='email-code';return showAuth();
+      }
       if (state.authStep === 'email') {
         const email = String(data.get('email') || '').trim();
         if (api.secureDirectory ? !email || email.length > 160 || /[\u0000-\u001f]/.test(email) : !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error(api.secureDirectory ? 'Bitte E-Mail oder Mitgliedsnummer eingeben.' : 'Bitte eine gültige E-Mail-Adresse eingeben.');
@@ -233,7 +251,11 @@
         state.authStep = !res.known ? 'unknown' : res.hasPassword ? 'password' : 'create';
         return showAuth();
       }
-      if (state.authStep === 'password') {
+      if (state.authStep === 'email-code') {
+        const password=String(data.get('password')||'');if(password.length<12)throw Error('Bitte mindestens zwölf Zeichen für dein Passwort verwenden.');
+        if(password!==String(data.get('password2')||''))throw Error('Die beiden Passwörter sind nicht gleich.');
+        state.member=await api.activateEmailAccess(state.authChallengeId,String(data.get('activationCode')||'').trim(),password);
+      } else if (state.authStep === 'password') {
         state.member = await api.signIn(state.authEmail, String(data.get('password') || ''));
       } else if (state.authStep === 'create') {
         const pw = String(data.get('password') || '');
@@ -1014,6 +1036,7 @@
           <button type="submit" class="btn primary block">Speichern</button>
         </form>
 
+        ${TFB.installApp?.profileButton?.()||''}
         ${rawMember?.isAdmin ? '<button type="button" class="link" data-action="splash-open">Einstiegsseite ansehen</button>' : ''}
         <button type="button" class="btn block acct-logout" data-action="logout">Abmelden</button>
 
@@ -1337,8 +1360,10 @@
     else if (action === 'admin-backup') openAdminBackup();
     else if (action === 'close-sheet') closeSheet();
     else if (action === 'auth-back') { state.authStep = 'email'; showAuth(); }
+    else if (action === 'auth-email-start') { state.authStep = 'email-request'; showAuth(); }
     else if (action === 'auth-activate') { state.authStep = 'create'; showAuth(); }
     else if (action === 'login') { showAuth(); }
+    else if (action === 'forgot' && api.automaticEmail) { state.authStep='email-request';showAuth(); }
     else if (action === 'forgot') toast(api.secureDirectory ? 'Bitte beim Verein einen neuen persönlichen Freischaltcode anfordern. Damit kannst du ein neues Passwort festlegen.' : 'Passwort-Zurücksetzen per Mail kommt mit dem Echtbetrieb.');
     else if (action === 'demo-fill') {
       state.authEmail = api.demoLogin.email;
