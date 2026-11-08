@@ -1,4 +1,4 @@
-import {collectSimpleUsage,simpleUsageReport,cleanSimpleUsage} from './simple-usage.mjs';
+import {collectSimpleUsage,simpleUsageReport,simpleUsageHistory,cleanSimpleUsage} from './simple-usage.mjs';
 import {collectUsage,usageReport,cleanUsage} from './club-usage.mjs';
 import {emailAccessReady,recordAccess,memberAccessOverview,requestEmailCode,claimEmailCode} from './email-auth.mjs';
 // TFB: protected member directory. Invitations/Kiosk remain a local simulation.
@@ -327,6 +327,7 @@ async function route(request, env, url) {
     return Object.fromEntries(rows.results.map(m=>[m.id,`${m.first_name} ${m.last_name}`]));
   }
   if (request.method === 'GET' && path === '/admin/usage') return simpleUsageReport(env,url.searchParams.get('month'),Date.now(),{period:url.searchParams.get('period')||'month',year:url.searchParams.get('year')||undefined,trend:url.searchParams.get('trend')||'30days'});
+  if (request.method === 'GET' && path === '/admin/usage-export') return simpleUsageHistory(env);
   if (request.method === 'GET' && path === '/admin/usage-legacy') return usageReport(env,url.searchParams.get('month'));
   if (request.method === 'GET' && path === '/admin/members') return memberAccessOverview(env);
   if (request.method === 'POST' && path === '/auth/presence') return {ok:true};

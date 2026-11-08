@@ -88,10 +88,10 @@
     if (draft) settings = draft; else await refreshSettings();
     if(!force&&!settings.enabled){rendered();return;}
     if(!splash){splash=document.createElement('section');splash.id='tfb-splash';splash.className='tfb-splash';splash.tabIndex=-1;splash.setAttribute('role','dialog');splash.setAttribute('aria-modal','true');splash.setAttribute('aria-label','Willkommen bei den Tennisfreunden Bielstein');document.body.appendChild(splash);}
-    ui().closeSheet();stopObserver();active=null;splash.innerHTML=splashMarkup();splash.hidden=false;splash.scrollTop=0;
+    ui().closeSheet();stopObserver();active=null;splash.innerHTML=splashMarkup();splash.hidden=false;splash.scrollTop=0;splash.dataset.usageOpening=crypto.randomUUID();splash.dataset.usagePreview=force&&Boolean(draft)?'1':'0';
     document.body.classList.add('tfb-splash-open');document.getElementById('app').inert=true;
     splash.focus({preventScroll:true});
-    begin('splash',splash);
+    begin('splash',splash);TFB.usage?.rendered();
   }
   function hide(count=true) {
     if(!splash||splash.hidden)return;
