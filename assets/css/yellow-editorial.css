@@ -169,8 +169,8 @@ body .app .topbar .topnav .tab.active::before {
   color: var(--tfb-signature-yellow); opacity: 1;
 }
 :root:not(.tfb-logo-midnight-amber) body .view[data-view="aktuell"] .date-badge {
-  background: var(--tfb-signature-red); color: #fff;
+  background: var(--tfb-signature-red); color: #171717;
 }
 :root:not(.tfb-logo-midnight-amber) body .view[data-view="aktuell"] .date-badge > :is(small, b) {
-  color: #fff; opacity: 1;
+  color: #171717; opacity: 1;
 }
