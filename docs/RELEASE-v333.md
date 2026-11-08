@@ -30,3 +30,12 @@ CSV und Gast-/Adminrechten bestanden. Chromium/WebKit inkl. 320/390/834/1440 px,
 Splash-Einmalzählung, CSV-Inhalt und vollständiger Diagrammoberfläche geprüft;
 Worker-Dry-Run erfolgreich. Service Worker v333. Details RELEASE-v333.md.
 
+Live veröffentlicht: Quellstand 05a8c92, Pages-Lauf 42474205709 erfolgreich,
+Worker 4ed904c8-3a6c-4f32-a5e4-e56f11b1ed83, Service Worker v333.
+Echte Browserprüfung: sichtbare Öffnung der Einstiegsseite aus dem Profil und
+anschließender Eintritt nach Home. Ergebnis: Splash 1 / Mitglieder 1 / Externe 0,
+Seitenaufrufe separat von 10 auf 11, weiterhin 1 Besucher und 1 Besuch.
+Kumulierte Kurve mit Novemberpunkt und dynamische Jahresauswahl sichtbar.
+CSV vollständig serverseitig und mit echten Downloads in Chromium/WebKit-Fixtures
+geprüft; Live-Download über Browserautomation nicht abschließend verifiziert
+(Automationsverbindung abgebrochen). Keine synthetischen Live-Zähler erzeugt.
