@@ -1,5 +1,18 @@
 # TFB – Übergabe für die nächste Sitzung
 
+## Absatzabstände Über uns und Trainernamen · v365 · 09.11.2026
+
+Ursache fehlender sichtbarer Absätze: globale CSS-Regel p { margin:0 }, nicht
+ein Speicherfehler. Öffentlicher Live-Text vor Änderung enthielt sechs korrekt
+getrennte Absätze, inklusive der vom Nutzer ergänzten Padel-/Rabattinformation.
+Gezielter Abstand 1em zwischen Fließtextabsätzen im Über-uns-Dialog; letztem
+Absatz keinen unnötigen unteren Rand geben. Keine Inhaltsänderung/Speicherung.
+Trainernamen jetzt Signature-Rot bzw. Signature-Gelb als reine Schriftfarbe,
+ohne gelben Marker. Spezifität berücksichtigt die vorhandene redaktionelle
+Schriftgestaltung, damit die rote Namensfarbe nicht wieder überschrieben wird.
+Chrome/WebKit: Namensfarben beider Welten und reale Abstände zwischen Absätzen
+geprüft. Bestehende E-Mail-Akzente, Kontakte und Nutzerinhalte bleiben erhalten.
+
 ## Trainer-E-Mails in Signature-Farben · v364 · 09.11.2026
 
 Veröffentlicht: 548c0e7, Pages-Lauf 42599957102 erfolgreich. Live-Dateien

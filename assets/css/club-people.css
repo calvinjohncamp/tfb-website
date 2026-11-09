@@ -55,3 +55,8 @@
 .trainer-contact a[href^="mailto:"] { color:var(--tfb-signature-red); font-weight:700; justify-self:start; max-width:100%; }
 :root.tfb-logo-midnight-amber .trainer-contact a[href^="mailto:"] { color:var(--tfb-midnight-blue); font-weight:500; }
 :root.tfb-logo-midnight-amber .trainer-email-text { background-image:url("../brand/tfb-highlight-freihand.svg"); background-size:100% 1.1em; background-position:left center; background-repeat:no-repeat; -webkit-box-decoration-break:clone; box-decoration-break:clone; padding:0 .1em; }
+/* Keep saved paragraph breaks visible despite the application's global p reset. */
+.board-about p:not(.trainer-eyebrow) { margin:0 0 1em; }
+.board-about p:last-child { margin-bottom:0; }
+.trainer-team .trainer-card .trainer-copy h3 { color:var(--tfb-signature-red); }
+:root.tfb-logo-midnight-amber .trainer-team .trainer-card .trainer-copy h3 { color:var(--tfb-signature-yellow); }
