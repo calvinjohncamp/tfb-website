@@ -8,11 +8,11 @@
   const $sheet = document.getElementById('sheet-root');
   const $toast = document.getElementById('toast-root');
 
-  const VIEWS = ['home', 'kiosk', 'strichliste', 'abrechnungen', 'chat', 'aktuell', 'gefluester', 'sport', 'team', 'club', 'treffen', 'verwaltung', 'impressum', 'satzung', 'partnerzahlen', 'clubstatistik', 'partner', 'kioskabrechnung'];
+  const VIEWS = ['home', 'kiosk', 'strichliste', 'abrechnungen', 'chat', 'aktuell', 'gefluester', 'sport', 'team', 'club', 'treffen', 'verwaltung', 'impressum', 'satzung', 'partnerzahlen', 'clubstatistik', 'partner', 'kioskabrechnung', 'produktbibliothek'];
   const KIOSK_AREA = ['kiosk', 'strichliste', 'abrechnungen'];   // nur mit Anmeldung
   // Reiter unten: Kiosk zuerst, dann die Vereinsseiten, dann der Padel-Link.
   // Team-Seiten gehören zu „Sport“
-  const areaOf = (view) => (KIOSK_AREA.includes(view) ? 'kiosk' : view === 'team' ? 'sport' : view === 'gefluester' ? 'chat' : view);
+  const areaOf = (view) => (KIOSK_AREA.includes(view) ? 'kiosk' : view === 'produktbibliothek' ? 'kiosk' : view === 'team' ? 'sport' : view === 'gefluester' ? 'chat' : view);
   const state = {
     catalog: null,
     authStep: 'email',      // email | password | create | unknown
@@ -114,7 +114,7 @@
     // Ausnahmen: Neu laden (bleibt auf der Seite) und direkte Links wie #treffen/<id>.
     const nav = (performance.getEntriesByType && performance.getEntriesByType('navigation')[0]) || {};
     const deepLink = location.hash.includes('/');
-    if (!location.hash || (nav.type !== 'reload' && !deepLink && !['#impressum','#satzung','#partnerzahlen','#partner','#clubstatistik','#kioskabrechnung'].includes(location.hash))) history.replaceState(null, '', '#home');
+    if (!location.hash || (nav.type !== 'reload' && !deepLink && !['#impressum','#satzung','#partnerzahlen','#partner','#clubstatistik','#kioskabrechnung','#produktbibliothek'].includes(location.hash))) history.replaceState(null, '', '#home');
     // Decide on the splash before mounting the app shell to avoid exposing a
     // frame of the previous page during a reload.
     await splash;
@@ -456,7 +456,7 @@
             <a class="btn small" href="#clubstatistik">Statistik</a>
             <a class="btn small" href="#kioskabrechnung">Kiosk</a>
             <button type="button" class="btn small tfb-backup-icon" data-action="admin-backup" aria-label="Datensicherung" title="Datensicherung"><svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M4 3h13l4 4v14H3V3Z"/><path d="M7 3v7h10V3M7 21v-8h10v8M14 5v3"/></svg></button></div></div>`);
-        const activeAdmin = $view.querySelector(`.tfb-admin-links a[href="#${view}"]`);
+        const activeAdmin = $view.querySelector(`.tfb-admin-links a[href="#${view==='produktbibliothek'?'kioskabrechnung':view}"]`);
         if(activeAdmin) activeAdmin.setAttribute('aria-current','page');
         const homeEditShortcut = view === 'home' && $view.querySelector('.site-page[data-page="home"]') && !$view.querySelector('.editing-page')
           ? $view.querySelector('.tfb-admin-links [data-action="site-edit"]') : null;
@@ -548,7 +548,7 @@
             </div>`}
         </aside>
         <div class="kiosk-main">
-          ${!edit && state.member?.isAdmin ? `<div class="kiosk-tools"><button type="button" class="view-close" data-action="edit-start" aria-label="Kiosk bearbeiten" title="Kiosk bearbeiten">${icon.pencil}</button></div>` : ''}
+          ${!edit && state.member?.isAdmin ? `<div class="kiosk-tools"><a class="btn small" href="#produktbibliothek">Produktbibliothek</a><button type="button" class="view-close" data-action="edit-start" aria-label="Kiosk bearbeiten" title="Kiosk bearbeiten">${icon.pencil}</button></div>` : ''}
 
           ${cat.sections.map((section, index) => sectionMarkup(section, index, cat, edit)).join('')}
           ${edit ? `<button type="button" class="btn block add-section" data-action="section-new">${icon.plus} Neuer Bereich</button>` : ''}
@@ -593,14 +593,14 @@
         <div class="tile is-soon" aria-disabled="true">
           <div class="tile-art" style="--tint:${esc(p.color)}">${visual(p)}</div>
           <div class="tile-text"><strong>${esc(p.name)}</strong><span>${esc(p.detail)}</span></div>
-          <div class="tile-foot"><b>${euro(p.price)}</b><span class="soon-tag">bald</span></div>
+          <div class="tile-foot"><b>${euro(p.price)}${p.kind==='rental'?` <small>/ ${esc(p.unit||'Nutzung')}</small>`:''}</b><span class="soon-tag">bald</span></div>
         </div>`;
     }
     return `
       <button class="tile" type="button" data-action="${edit ? 'product-edit' : 'pick'}" data-id="${esc(p.id)}">
         <div class="tile-art" style="--tint:${esc(p.color)}">${visual(p)}</div>
         <div class="tile-text"><strong>${esc(p.name)}</strong><span>${esc(p.detail)}</span></div>
-        <div class="tile-foot"><b>${euro(p.price)}</b><span class="tile-add">${edit ? icon.pencil : icon.plus}</span></div>
+        <div class="tile-foot"><b>${euro(p.price)}${p.kind==='rental'?` <small>/ ${esc(p.unit||'Nutzung')}</small>`:''}</b><span class="tile-add">${edit ? icon.pencil : icon.plus}</span></div>
       </button>`;
   }
 
@@ -621,20 +621,22 @@
     if(!state.member){showAuth();return;}
     const p = state.catalog.products.find((x) => x.id === productId);
     if (!p) return;
+    const rental=p.kind==='rental',hourly=rental&&/stund/i.test(p.unit||''),unit=p.unit||'Stück';
+    const expected={priceCents:p.price,productName:p.name,unit,kind:p.kind||'sale'};
     let qty = 1;
     const update = () => {
       $sheet.querySelector('[data-qty]').textContent = qty;
       $sheet.querySelector('[data-total]').textContent = euro(qty * p.price);
       $sheet.querySelector('[data-step="-1"]').disabled = qty <= 1;
       $sheet.querySelector('[data-step="1"]').disabled = qty >= cfg.maxQuantity;
-      $sheet.querySelector('[data-hint]').textContent = qty > 1 ? `Runde: ${qty} Striche auf deinen Deckel` : 'Eine Runde ausgeben? Einfach die Anzahl erhöhen.';
+      $sheet.querySelector('[data-hint]').textContent = rental?(hourly?`${qty} ${qty===1?'Stunde':'Stunden'} · ${euro(qty*p.price)} insgesamt`:`${qty} ${unit} · ${euro(qty*p.price)} insgesamt`):qty > 1 ? `Runde: ${qty} Striche auf deinen Deckel` : 'Eine Runde ausgeben? Einfach die Anzahl erhöhen.';
     };
     openSheet(`
       <div class="pick">
         <div class="pick-art" style="--tint:${esc(p.color)}">${visual(p)}</div>
         <h2>${esc(p.name)}</h2>
-        <p class="muted">${esc(p.detail)} · ${euro(p.price)}</p>
-        <div class="stepper" role="group" aria-label="Anzahl">
+        <p class="muted">${esc(p.detail)} · ${euro(p.price)}${rental?' / '+esc(unit):''}</p>
+        <p class="muted small">${hourly?'Mietdauer in Stunden':rental?'Anzahl der Verleiheinheiten':'Anzahl'}</p><div class="stepper" role="group" aria-label="${hourly?'Mietdauer in Stunden':'Anzahl'}">
           <button type="button" class="step" data-step="-1" aria-label="Weniger">${icon.minus}</button>
           <output data-qty aria-live="polite">1</output>
           <button type="button" class="step" data-step="1" aria-label="Mehr">${icon.plus}</button>
@@ -650,9 +652,9 @@
       update();
     }));
     $sheet.querySelector('[data-confirm]').addEventListener('click', async (e) => {
-      e.currentTarget.disabled = true;
+      const confirm=e.currentTarget;confirm.disabled = true;
       try {
-        const ids = await api.addToTab(p.id, qty);
+        const ids = await api.addToTab(p.id, qty, expected);
         closeSheet();
         if (navigator.vibrate) navigator.vibrate(12);
         const text = `${qty > 1 ? qty + ' × ' : ''}${p.name}`;
@@ -664,8 +666,9 @@
         const d = document.querySelector('a.deckel');
         if (d) { d.classList.add('wobble'); setTimeout(() => d.classList.remove('wobble'), 600); }
       } catch (err) {
-        e.currentTarget.disabled = false;
+        confirm.disabled = false;
         toast(err.message);
+        if(/Artikel.*geändert|Artikel gibt|Artikel nicht|Daten.*geändert/.test(err.message)){await api.refreshKiosk?.();state.catalog=await api.catalog();closeSheet();if(state.catalog.products.some(x=>x.id===p.id&&x.active&&!x.archived))openPick(p.id);}
       }
     });
   }
@@ -761,9 +764,9 @@
       ${partnerSlot('abrechnungen', 'Deine Abrechnung wird dir präsentiert von')}`;
   }
 
-  async function commitCatalog(next, message) {
+  async function commitCatalog(next, message, expected=JSON.stringify(state.catalog)) {
     try {
-      state.catalog = await api.saveCatalog(next);
+      state.catalog = await api.saveCatalog(next,{expected});
       if (message) toast(message);
     } catch (err) {
       toast(err.message);
@@ -800,11 +803,13 @@
   };
   const priceText = (cents) => (cents / 100).toFixed(2).replace('.', ',');
 
-  function openProductEditor(id, sectionId) {
+  function openProductEditor(id, sectionId, copy = null) {
     const original = state.catalog.products.find((x) => x.id === id);
     const draft = original
       ? { ...original }
-      : { id: 'p-' + Date.now().toString(36), section: sectionId, name: '', detail: '', price: 200, art: 'bottle', color: '#C4553A', active: true,archived:false,unit:'Stück',kind:'sale' };
+      : { ...(copy||{}), id: 'p-' + crypto.randomUUID(), section: sectionId, name: '', detail: '', price: 200, art: 'bottle', color: '#C4553A', active: true,archived:false,unit:'Stück',kind:'sale' };
+    if(copy)Object.assign(draft,copy,{id:draft.id,active:true,archived:false});
+    const catalogAtOpen=JSON.stringify(state.catalog);
     const sections = state.catalog.sections;
     openSheet(`
       <form class="editor" data-editor="product" novalidate>
@@ -876,7 +881,7 @@
         const next = JSON.parse(JSON.stringify(state.catalog));
         next.products = next.products.filter((x) => x.id !== draft.id);
         closeSheet();
-        commitCatalog(next, `„${draft.name}“ aus dem Sortiment genommen`);
+        commitCatalog(next, `„${draft.name}“ aus dem Sortiment genommen`,catalogAtOpen);
       }
     });
     form.addEventListener('submit', (e) => {
@@ -894,7 +899,7 @@
         next.products.push(draft); // neu oder in anderen Bereich verschoben: hinten anstellen
       }
       closeSheet();
-      commitCatalog(next, original ? 'Gespeichert' : `„${draft.name}“ angelegt`);
+      commitCatalog(next, original ? 'Gespeichert' : `„${draft.name}“ angelegt`,catalogAtOpen);
     });
   }
 
@@ -1483,7 +1488,7 @@
     const img=`<img src="${esc(p.logo)}" alt="${esc(p.name)}" decoding="async" fetchpriority="high">`;
     return /^https?:\/\//i.test(p.url||'')?`<a ${attrs} href="${esc(p.url)}" target="_blank" rel="noopener noreferrer nofollow">${img}</a>`:`<div ${attrs}>${img}</div>`;
   };
-  TFB.ui = { state, api, cfg, esc, icon, logo, viewHead, partnerSlot, openSheet, closeSheet, toast, renderView, currentView, loadImage, largeImage, openLightbox, openAvatarCropper, refreshAvatars, isAdmin:()=>Boolean(rawMember?.isAdmin) };
+  TFB.ui = { state, api, cfg, esc, icon, logo, viewHead, partnerSlot, openSheet, closeSheet, toast, renderView, currentView, editProduct:openProductEditor, loadImage, largeImage, openLightbox, openAvatarCropper, refreshAvatars, isAdmin:()=>Boolean(rawMember?.isAdmin) };
 
   if ('serviceWorker' in navigator && (location.protocol === 'https:' || ['localhost', '127.0.0.1', '[::1]'].includes(location.hostname))) {
     navigator.serviceWorker.register('sw.js').catch(() => {});

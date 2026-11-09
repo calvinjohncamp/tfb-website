@@ -102,7 +102,9 @@
     if(!member)throw Error('Bitte zuerst anmelden.');
     if(pending)throw Error('Die letzte Speicherung ist noch offen. Bitte die App neu öffnen.');
     if(name==='updateProfile'&&['firstName','lastName','email'].some(k=>args[0][k]!=null&&args[0][k]!==member[k]))throw Error('Änderungen an Name oder Anmelde-E-Mail bitte beim Verein vornehmen lassen.');
+    const catalogBefore=name==='saveCatalog'?(args[1]?.expected??JSON.stringify(await api.catalog())):null;
     await refresh();
+    if(catalogBefore!==null&&catalogBefore!==JSON.stringify(await api.catalog()))throw Error('Das Sortiment wurde inzwischen geändert. Bitte die Produktbibliothek aktualisieren und die Änderung erneut vornehmen.');
     const before=new Map(api.syncSnapshot().map(r=>[key(r),r]));
     let result;
     try {

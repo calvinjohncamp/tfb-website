@@ -83,7 +83,7 @@ function cleanDesign(slide) {
 }
 function timestamp(v) { if(typeof v!=='string'||!Number.isFinite(Date.parse(v))||Date.parse(v)>Date.now()+60000)fail(400,'Ungültiges Datum.');return v; }
 async function records(env, filter = () => true) {
-  const meta=(await env.DB.prepare('SELECT r.* FROM app_records r JOIN members m ON m.id=r.owner_id WHERE m.active=1').all()).results.filter(filter);
+  const meta=(await env.DB.prepare("SELECT r.* FROM app_records r JOIN members m ON m.id=r.owner_id WHERE (m.active=1 OR r.kind='catalog')").all()).results.filter(filter);
   const chunks=[];
   for(let i=0;i<meta.length;i+=80){
     const ids=meta.slice(i,i+80).map(r=>r.payload_id);
@@ -227,12 +227,12 @@ async function validate(env,member,c,op,all,importing) {
   }
   if(!op.deleted&&op.kind==='catalog') {
     if(!member.is_admin||op.id!=='club')fail(403,'Nur die Verwaltung kann das Sortiment ändern.');
-    if(!Array.isArray(v.sections)||!Array.isArray(v.products)||v.sections.length>30||v.products.length>300)fail(400,'Ungültiges Sortiment.');
+    if(!Array.isArray(v.sections)||!Array.isArray(v.products)||v.sections.length>30||v.products.filter(p=>!p.archived).length>300||v.products.length>3000)fail(400,'Ungültiges Sortiment.');
     const sections=v.sections.map(x=>({id:text(x.id,80),title:text(x.title,40),note:text(x.note||'',120),status:x.status==='soon'?'soon':'open'}));
     let products=v.products.map(p=>{if(!Number.isSafeInteger(p.price)||p.price<0||p.price>50000||!sections.some(x=>x.id===p.section))fail(400,'Ungültiger Artikelpreis.');return {id:text(p.id,100),section:p.section,name:text(p.name,40),detail:text(p.detail||'',80),price:p.price,art:text(p.art||'bottle',80),color:/^#[0-9a-f]{6}$/i.test(p.color)?p.color:'#C4553A',active:p.active!==false&&!p.archived,archived:Boolean(p.archived),unit:text(p.unit||'Stück',40),kind:p.kind==='rental'?'rental':'sale'};});
     if(new Set(products.map(p=>p.id)).size!==products.length||new Set(sections.map(s=>s.id)).size!==sections.length)fail(400,'Doppelte Artikelkennung.');
     const prior=c.map.get('catalog:club')?.value||catalog;
-    const used=new Set(c.rows.filter(r=>r.kind==='item').map(r=>r.value.productId));
+    const used=new Set((await env.DB.prepare('SELECT DISTINCT product_id FROM kiosk_entries').all()).results.map(r=>r.product_id));
     for(const p of prior?.products||[])if(used.has(p.id)&&!products.some(x=>x.id===p.id))products.push({...p,active:false,archived:true});
     for(const section of prior?.sections||[])if(!sections.some(x=>x.id===section.id)&&products.some(p=>p.section===section.id))sections.push({...section,status:'soon'});
     value={sections,products};
@@ -317,6 +317,7 @@ async function validate(env,member,c,op,all,importing) {
       const menu=all.find(r=>r.kind==='catalog')?.value||c.map.get('catalog:club')?.value||catalog;
       const p=menu.products.find(p=>p.id===v.productId&&p.active);
       if(!importing&&(!p||!menu.sections.some(s=>s.id===p.section&&s.status==='open')))fail(400,'Artikel nicht verfügbar.');
+      if(!importing&&['priceCents','productName','unit','kind'].some(k=>v[k]!==undefined&&v[k]!==({priceCents:p.price,productName:p.name,unit:p.unit||'Stück',kind:p.kind||'sale'})[k]))fail(409,'Dieser Artikel wurde inzwischen geändert. Bitte die Bestellung mit dem aktuellen Preis erneut öffnen.');
       const account=all.find(r=>r.kind==='account'&&r.id===member.id)?.value||c.map.get('account:'+member.id)?.value;
       if(!account?.consentedAt||!['tfb-kiosk-v3','tfb-kiosk-preparation-v1'].includes(account.consentVersion))fail(403,'Bitte zuerst der Kioskordnung zustimmen.');
       value={id:op.id,memberId:member.id,productId:importing?text(v.productId,100):p.id,productName:importing?text(v.productName||p?.name||'Vorführartikel',100):p.name,priceCents:p?.price||0,createdAt:importing?timestamp(v.createdAt):now,status:'open',demo:true,imported:Boolean(importing),detail:p?.detail||'',sectionId:p?.section||'',sectionName:menu.sections.find(s=>s.id===p?.section)?.title||'',unit:p?.unit||'Stück',kind:p?.kind||'sale'};
@@ -334,8 +335,9 @@ export async function syncCommit(env,member,data) {
   for(const op of data.operations){if(!op||typeof op!=='object')fail(400,'Ungültiger Datensatz.');if(seen.has(key(op)))fail(400,'Doppelter Datensatz.');seen.add(key(op));ops.push(await validate(env,member,c,op,data.operations,Boolean(data.importing)));}
   // A single SQLite transaction gates EVERY write on ALL expected revisions.
   // Chunked payloads allow high-resolution photos without exceeding D1 row limits.
+  const catalogGuard=!data.importing&&ops.some(o=>o.kind==='item'&&!c.map.has(key(o)))&&!ops.some(o=>o.kind==='catalog')?` AND COALESCE((SELECT revision FROM app_records WHERE kind='catalog' AND id='club'),0)=${c.map.get('catalog:club')?.revision||0}`:'';
   const checks=ops.map(()=>`COALESCE((SELECT revision FROM app_records WHERE kind=? AND id=?),0)=?`).join(' AND ');
-  const statements=[env.DB.prepare(`INSERT INTO app_commits(id,member_id,signature,created_at) SELECT ?,?,?,? WHERE ${checks}`).bind(data.id,member.id,signature,Date.now(),...ops.flatMap(o=>[o.kind,o.id,o.revision]))];
+  const statements=[env.DB.prepare(`INSERT INTO app_commits(id,member_id,signature,created_at) SELECT ?,?,?,? WHERE ${checks}${catalogGuard}`).bind(data.id,member.id,signature,Date.now(),...ops.flatMap(o=>[o.kind,o.id,o.revision]))];
   for(const o of ops){
     const payloadId=crypto.randomUUID(), json=JSON.stringify(o.value);
     for(let i=0;i<json.length;i+=250000)statements.push(env.DB.prepare('INSERT INTO app_payloads(payload_id,part,data) SELECT ?,?,? WHERE EXISTS(SELECT 1 FROM app_commits WHERE id=? AND signature=?)').bind(payloadId,i/250000,json.slice(i,i+250000),data.id,signature));

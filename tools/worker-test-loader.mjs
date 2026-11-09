@@ -24,6 +24,6 @@ let source=readFileSync(new URL('worker.mjs',root),'utf8')
   .replace("from './management.mjs'",'from '+JSON.stringify(data(readFileSync(new URL('management.mjs',root),'utf8'))));
 if(process.env.TFB_WORKER_BUNDLE){
   const file=new URL('file://'+process.env.TFB_WORKER_BUNDLE);
-  source=readFileSync(file,'utf8').replace(/import (\w+) from ["']([^"']+\.sql)["'];/g,(_,name,path)=>`const ${name} = ${JSON.stringify(readFileSync(new URL(path,file),'utf8'))};`);
+  source=readFileSync(file,'utf8').replace(/import (\w+) from ["']([^"']+\.(?:sql|html))["'];/g,(_,name,path)=>`const ${name} = ${JSON.stringify(readFileSync(new URL(path,file),'utf8'))};`);
 }
 export default (await import(data(source))).default;

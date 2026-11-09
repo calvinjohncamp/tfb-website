@@ -1445,12 +1445,13 @@
     },
 
     // Striche auf den eigenen Bierdeckel setzen. Preis kommt immer aus dem Katalog.
-    async addToTab(productId, quantity = 1) {
+    async addToTab(productId, quantity = 1, expected = null) {
       const member = requireMember();
       if (!publicMember(member).hasConsent) throw new Error('Bitte zuerst der Kioskordnung zustimmen.');
       const product = db.catalog.products.find((p) => p.id === productId && p.active);
       const section = product && db.catalog.sections.find((x) => x.id === product.section);
       if (!product || !section || section.status !== 'open') throw new Error('Diesen Artikel gibt es gerade nicht.');
+      if(expected&&Object.entries(expected).some(([k,v])=>v!==({priceCents:product.price,productName:product.name,unit:product.unit||'Stück',kind:product.kind||'sale'})[k]))throw new Error('Dieser Artikel wurde inzwischen geändert. Bitte die Bestellung mit dem aktuellen Preis erneut öffnen.');
       const qty = Math.max(1, Math.min(cfg.maxQuantity, Math.floor(Number(quantity) || 1)));
       const now = new Date();
       const created = Array.from({ length: qty }, () => makeItem(member.id, product, now));
