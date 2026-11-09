@@ -10,7 +10,11 @@ const editorial=readFileSync(new URL('editorial.mjs',root),'utf8');
 const backup=readFileSync(new URL('editorial-backup.mjs',root),'utf8').replace("from './editorial.mjs'",'from '+JSON.stringify(data(editorial)));
 const mail=readFileSync(new URL('access-mail.mjs',root),'utf8').replace("import template from './templates/access-mail.html';",'const template='+JSON.stringify(readFileSync(new URL('templates/access-mail.html',root),'utf8'))+';');
 const email=readFileSync(new URL('email-auth.mjs',root),'utf8').replace("from './access-mail.mjs'",'from '+JSON.stringify(data(mail)));
+const kioskAccount=data(readFileSync(new URL('kiosk-account.mjs',root),'utf8').replace("from './kiosk-domain.mjs'",'from '+JSON.stringify(data(readFileSync(new URL('kiosk-domain.mjs',root),'utf8')))));
+const bridge=data(readFileSync(new URL('padel-kiosk-bridge.mjs',root),'utf8').replace("from './kiosk-account.mjs'",'from '+JSON.stringify(kioskAccount)).replace("from './kiosk-billing.mjs'",'from '+JSON.stringify(data(readFileSync(new URL('kiosk-billing.mjs',root),'utf8')))));
 let source=readFileSync(new URL('worker.mjs',root),'utf8')
+  .replace("from './kiosk-account.mjs'",'from '+JSON.stringify(kioskAccount))
+  .replace("from './padel-kiosk-bridge.mjs'",'from '+JSON.stringify(bridge))
   .replace("from './kiosk-billing.mjs'",'from '+JSON.stringify(data(readFileSync(new URL('kiosk-billing.mjs',root),'utf8'))))
   .replace("from './simple-usage.mjs'",'from '+JSON.stringify(data(readFileSync(new URL('simple-usage.mjs',root),'utf8'))))
   .replace("from './club-usage.mjs'",'from '+JSON.stringify(data(readFileSync(new URL('club-usage.mjs',root),'utf8'))))

@@ -1,0 +1,56 @@
+{
+  "version": "20261109-shared-1",
+  "url": "https://joern-kaemper.de/assets/shared-kiosk/20261109-shared-1/",
+  "files": [
+    {
+      "path": "asset-base.js",
+      "bytes": 110,
+      "sha256": "efd85e47187153fa5df2de676e8e875243877fcfbe8330a69a461ddcc6c5f4a9"
+    },
+    {
+      "path": "art.js",
+      "bytes": 27316,
+      "sha256": "6e8179f61984764668e9d69d930f31de66e357c3669b81558f05581ba9bc1153"
+    },
+    {
+      "path": "kiosk.js",
+      "bytes": 32491,
+      "sha256": "9ace9711943313ca61aeda1e721d137639ebdb9062cbd8aacce0690b5222606a"
+    },
+    {
+      "path": "billing.js",
+      "bytes": 33491,
+      "sha256": "34d73afa7990cb56246ca95b19bb5b1afd7cb4f47890030961ac583c63017ce9"
+    },
+    {
+      "path": "standalone.css",
+      "bytes": 358696,
+      "sha256": "84212b4e904ed7019d818990796f1200dd2bbb754ec2f8198372391abc756e06"
+    },
+    {
+      "path": "native.css",
+      "bytes": 411891,
+      "sha256": "a40cf820bf05078086c062981ff56eef0f1cd6e55d16c9dc0a6528e7679ef66d"
+    },
+    {
+      "path": "fonts.css",
+      "bytes": 442,
+      "sha256": "20a58a517d62c4d970b6bec1f9d1167b6ddfc149178388abea8c51ed53c16e18"
+    },
+    {
+      "path": "kiosk-export.js",
+      "bytes": 4970,
+      "sha256": "e4c626ff88faedd7e6e6b701b4159a62978c5ef6fd31e43746f6264edc7002ee"
+    },
+    {
+      "path": "kiosk-day-image.js",
+      "bytes": 6478,
+      "sha256": "b80928b58f85576dd64e17c00a71169e351564360c6f9f908dfcd6a1366b846f"
+    },
+    {
+      "path": "kiosk-domain.mjs",
+      "bytes": 1751,
+      "sha256": "71ec6e79152de70e8d51702e34c56652c52ca0b594cdb28743cbbe99ecbc70e6"
+    }
+  ]
+}

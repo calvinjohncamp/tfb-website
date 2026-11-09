@@ -16,7 +16,7 @@ ASSET_TYPES = {'.js', '.css', '.png', '.jpg', '.jpeg', '.svg', '.webp', '.gif', 
 tracked = subprocess.check_output(
     ['git', 'ls-files', '-z'], cwd=ROOT).decode().split('\0')
 # Explicit public startup asset, including during local release preparation.
-tracked = sorted(set(tracked) | {'assets/js/cloud-sync.js', 'assets/js/partner-visibility.js', 'assets/js/partner-content.js', 'assets/js/partner-admin.js', 'assets/css/partner-visibility.css', 'assets/js/editorial.js', 'assets/js/snapshot-zip.js'})
+tracked = sorted(set(tracked) | {'assets/css/corporate.css', 'assets/js/cloud-sync.js', 'assets/js/partner-visibility.js', 'assets/js/partner-content.js', 'assets/js/partner-admin.js', 'assets/css/partner-visibility.css', 'assets/js/editorial.js', 'assets/js/snapshot-zip.js'})
 selected = []
 for name in tracked:
     path = Path(name)
@@ -25,6 +25,7 @@ for name in tracked:
     if name in ENTRY_FILES or (
         name.startswith('assets/') and (
             path.suffix.lower() in ASSET_TYPES
+            or (name.startswith('assets/shared-kiosk/') and path.suffix.lower() in {'.mjs', '.json'})
             or name == 'assets/clubarchiv/bestand.json'
             or name in {'assets/docs/tfb-mitgliedsanmeldung-muster.html', 'assets/docs/tfb-mitgliedsanmeldung-muster-gelb.html'}
             or (name.startswith('assets/clubarchiv/medien/')

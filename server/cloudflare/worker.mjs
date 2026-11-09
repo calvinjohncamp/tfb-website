@@ -1,3 +1,5 @@
+import {kioskTally} from './kiosk-account.mjs';
+import {padelKioskBridge} from './padel-kiosk-bridge.mjs';
 import {kioskReport,kioskArchiveMonth,kioskStatement,kioskCredit,kioskMessage,kioskOverview} from './kiosk-billing.mjs';
 import {collectSimpleUsage,simpleUsageReport,simpleUsageHistory,cleanSimpleUsage} from './simple-usage.mjs';
 import {collectUsage,usageReport,cleanUsage} from './club-usage.mjs';
@@ -171,6 +173,7 @@ async function importMembers(env, data) {
 
 async function route(request, env, url) {
   const path = url.pathname;
+  if(request.method==='POST'&&path==='/integrations/padel/kiosk')return padelKioskBridge(request,env,await body(request,8192));
   if (request.method === 'GET' && path === '/manage') return new Response(managementPage, { headers: { 'Content-Type': 'text/html; charset=utf-8',
     'Content-Security-Policy': "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'self'; form-action 'none'; frame-ancestors 'none'; base-uri 'none'" } });
   if (request.method === 'GET' && path === '/health') return { service: 'tfb-api', version: 1, databaseBound: Boolean(env.DB), configured: Boolean(env.PASSWORD_PEPPER && env.SETUP_TOKEN) };
@@ -271,6 +274,7 @@ async function route(request, env, url) {
   }
   if (request.method === 'POST' && path === '/app/kiosk/question') return kioskMessage(env,member,await body(request,4096));
   if (request.method === 'POST' && path === '/admin/kiosk/reply') return kioskMessage(env,member,await body(request,4096),true);
+  if (request.method === 'GET' && path === '/app/kiosk/tally') return kioskTally(env,member);
   if (request.method === 'GET' && path === '/app/kiosk/overview') return kioskOverview(env,member,url.searchParams);
   if (request.method === 'GET' && path === '/admin/kiosk/overview') return kioskOverview(env,member,url.searchParams,true);
   if (request.method === 'GET' && path === '/app/kiosk/report') return kioskReport(env,member,url.searchParams);

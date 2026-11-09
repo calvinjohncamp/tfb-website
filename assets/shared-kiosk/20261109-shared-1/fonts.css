@@ -1,0 +1,14 @@
+@font-face {
+  font-family: "TFB Bricolage";
+  src: url("https://joern-kaemper.de/assets/css/../fonts/editorial/bricolage-grotesque.ttf") format("truetype");
+  font-weight: 200 800;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "TFB DM Sans";
+  src: url("https://joern-kaemper.de/assets/css/../fonts/editorial/dm-sans.ttf") format("truetype");
+  font-weight: 100 1000;
+  font-style: normal;
+  font-display: swap;
+}

@@ -305,4 +305,11 @@
   setInterval(poll,10000);
   document.addEventListener('visibilitychange',()=>{if(!document.hidden)poll();});
   window.addEventListener('online',poll);
+  // Both app entrances read the same authoritative kiosk journal, including Padel-origin purchases.
+  api.myOpenMonth=async()=>{
+    if(!member)return {month:new Date().toLocaleDateString('sv-SE',{timeZone:'Europe/Berlin'}).slice(0,7),items:[],totalCents:0};
+    const owner=member.id,r=await call('/app/kiosk/report');if(member?.id!==owner)throw Error('Die Anmeldung hat sich geändert.');
+    return {month:r.from.slice(0,7),totalCents:r.totalCents,items:r.entries.filter(e=>e.net_cents>0).map(e=>({id:e.id,productId:e.product_id,productName:e.product_name,priceCents:e.net_cents,createdAt:e.created_at,quantity:e.quantity||1,origin:e.origin}))};
+  };
+  api.tally=async()=>member?call('/app/kiosk/tally'):[];
 })();
