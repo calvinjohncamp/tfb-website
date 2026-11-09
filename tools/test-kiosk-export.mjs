@@ -23,11 +23,21 @@ test('annual club and personal exports reuse protected monthly reports without c
  assert.equal((await f.call('/admin/kiosk/report?month=2025-01',undefined,f.otherToken)).status,403);
  assert.equal(f.env.DB.sqlite.prepare('SELECT count(*) n FROM app_commits').get().n,count);
 });
-test('CSV includes original amounts, correction actor and net totals in chronological event order',()=>{
+const parseCsv=text=>{const rows=[];let row=[],value='',quoted=false;for(let i=0;i<text.length;i++){const c=text[i];if(i===0&&c==='\ufeff')continue;if(c==='"'){if(quoted&&text[i+1]==='"'){value+='"';i++;}else quoted=!quoted;}else if(c===';'&&!quoted){row.push(value);value='';}else if(c==='\n'&&!quoted){row.push(value.replace(/\r$/,''));rows.push(row);row=[];value='';}else value+=c;}row.push(value);rows.push(row);return rows;};
+test('CSV has plain German headings, a single corrected amount per purchase and a separate audit list',()=>{
  const plan=exportPlan({kind:'closing',year:'2025',today}),entry=(id,at,price,adjustments=[])=>({id,created_at:at,display_name:'=FORMULA',product_name:'Wasser; "kalt"',unit:'Stück',price_cents:price,net_cents:price-adjustments.reduce((s,a)=>s+a.amount_cents,0),adjustments,basis:'server'});
- const csv=exportCsv([entry('a','2025-01-01T12:00:00Z',100,[{id:'credit',created_at:'2025-03-01T12:00:00Z',amount_cents:20,reason:'Prüfung',actor_name:'Finanzwart',source:'admin'}]),entry('b','2025-02-01T12:00:00Z',200)],{plan,generatedAt:'2026-11-08T12:00:00Z'});
- assert(csv.startsWith('\ufeff'));assert(csv.indexOf('"b"')<csv.indexOf('"credit"'));assert.match(csv,/Finanzwart/);assert.match(csv,/"'\=FORMULA"/);assert.match(csv,/"0,80"/);assert.match(csv,/2025-12-31/);
- const empty=exportCsv([],{plan,generatedAt:today});assert.match(empty,/Jahresabschluss 2025/);assert.match(empty,/"Januar";"0,00"/);assert.match(empty,/"Dezember";"0,00"/);assert.match(empty,/"Jahressumme";"0,00"/);assert(!empty.includes('"Buchung";'));assert(csv.indexOf('"Jahressumme";"2,80"')<csv.indexOf('"Einzelbuchungen"'));assert.match(csv,/"Januar";"0,80"/);assert.match(csv,/"Februar";"2,00"/);
+ const csv=exportCsv([entry('a','2025-01-01T12:00:00Z',100,[{id:'credit',created_at:'2025-03-01T12:00:00Z',amount_cents:20,reason:'Prüfung; mit "Begründung"\nzweite Zeile',actor_name:'Finanzwart',source:'admin'}]),entry('b','2025-02-01T12:00:00Z',200)],{plan,generatedAt:'2026-11-09T06:03:12.414Z'}),rows=parseCsv(csv),bookings=rows.filter(r=>['a','b'].includes(r[0])&&r[5]==='Stück');
+ assert(csv.startsWith('\ufeff'));assert.doesNotMatch(csv,/Vorführbetrag|Vorführbetrieb|Datenstand UTC|Zeitpunkt UTC|Quelle|"Export"/);
+ assert(rows.every(r=>r.length===9));assert.deepEqual(bookings.map(r=>r[0]),['a','b']);assert.deepEqual(bookings[0].slice(2,4),['01.01.2025','13:00:00']);assert.deepEqual(bookings[0].slice(6),['1,00','0,20','0,80']);
+ assert.equal(bookings.reduce((sum,r)=>sum+Math.round(Number(r[8].replace(',','.'))*100),0),280);
+ assert.deepEqual(rows.find(r=>r[0]==='Erstellt am').slice(1,3),['09.11.2026','07:03:12']);
+ assert(rows.some(r=>r[5]==='Korrektur'&&r[6]==='0,20'&&r[8]==='Finanzwart'&&r[7].includes('zweite Zeile')));assert.match(csv,/Nicht erneut abziehen/);assert.match(csv,/"'\=FORMULA"/);
+ assert(rows.findIndex(r=>r[0]==='Jahressumme')<rows.findIndex(r=>r[0]==='Einzelbuchungen'));assert.deepEqual(rows.find(r=>r[0]==='Jahressumme').slice(0,2),['Jahressumme','2,80']);
+ const empty=exportCsv([],{plan,generatedAt:today});assert.match(empty,/Jahresabschluss 2025/);assert.match(empty,/"Januar";"0,00"/);assert.match(empty,/"Dezember";"0,00"/);assert.match(empty,/"Jahressumme";"0,00"/);assert.match(empty,/Keine Rücknahmen oder Korrekturen/);
+});
+test('CSV uses German daylight-saving local time without time codes or milliseconds',()=>{
+ const plan=exportPlan({kind:'month',year:'2025',month:'2025-07',today});const csv=exportCsv([{id:'summer',created_at:'2025-07-01T12:30:45.123Z',display_name:'Mitglied',product_name:'Wasser',unit:'Stück',price_cents:100,net_cents:0,adjustments:[{id:'undo',created_at:'2025-07-01T12:30:50Z',amount_cents:100,reason:'Zurückgenommen',actor_name:'Mitglied',source:'undo'}]}],{plan,generatedAt:'2026-11-09T06:03:12.414Z'}),rows=parseCsv(csv);
+ assert.deepEqual(rows.find(r=>r[0]==='summer'&&r[5]==='Stück').slice(2,4),['01.07.2025','14:30:45']);assert(rows.some(r=>r[5]==='Stornierung'&&r[3]==='14:30:50'));assert.doesNotMatch(csv,/2025-07-01T|\.123Z/);
 });
 test('a failed month fails the entire annual export instead of silently returning partial data',async()=>{
  const plan=exportPlan({kind:'cumulative',year:'2026',month:'2026-03',today});await assert.rejects(()=>collectExport(plan,async m=>{if(m==='2026-02')throw Error('Unavailable');return {entries:[]};}),/Unavailable/);
