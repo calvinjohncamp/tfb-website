@@ -825,12 +825,12 @@
           <label class="field"><span>Preis in €</span>
             <input name="price" inputmode="decimal" value="${priceText(draft.price)}" required>
           </label>
-          <label class="field"><span>Bereich</span>
-            <select name="section">${sections.map((x) => `<option value="${esc(x.id)}" ${x.id === draft.section ? 'selected' : ''}>${esc(x.title)}</option>`).join('')}</select>
+          <label class="field"><span>Kategorie</span>
+            <select name="section" required aria-label="Kategorie">${sections.map((x) => `<option value="${esc(x.id)}" ${x.id === draft.section ? 'selected' : ''}>${esc(x.title)}</option>`).join('')}</select>
           </label>
         </div>
         <div class="field-row"><label class="field"><span>Abrechnungseinheit</span><input name="unit" maxlength="40" value="${esc(draft.unit||'Stück')}" placeholder="z. B. pro Nutzung / pro Satz"></label><label class="field"><span>Artikelart</span><select name="kind"><option value="sale"${draft.kind!=='rental'?' selected':''}>Verkauf</option><option value="rental"${draft.kind==='rental'?' selected':''}>Verleih</option></select></label></div>
-        <p class="fineprint">Änderungen gelten für neue Buchungen. Frühere Namen und Preise bleiben erhalten.</p>
+        <p class="fineprint">Die Kategorie bestimmt die Gruppe im Kiosk und in der Produktbibliothek. Änderungen gelten für neue Buchungen; frühere Namen und Preise bleiben erhalten.</p>
         <div class="field"><span>Symbol</span>
           <div class="symbol-grid">
             ${TFB.artKinds.map(([kind, label]) => `<button type="button" class="symbol ${kind === draft.art ? 'on' : ''}" data-art="${kind}" title="${label}" aria-label="${label}">${TFB.art(kind, draft.color)}</button>`).join('')}
@@ -890,6 +890,7 @@
       draft.name = draft.name.trim();
       draft.price = parsePrice(form.elements.price.value);
       if (!draft.name) { err.textContent = 'Bitte einen Namen eingeben.'; return; }
+      if (!state.catalog.sections.some(x=>x.id===draft.section)) { err.textContent = 'Bitte eine gültige Kategorie auswählen.'; return; }
       if (!Number.isFinite(draft.price) || draft.price < 0 || draft.price > 50000) { err.textContent = 'Bitte einen gültigen Preis eingeben, z. B. 2,50.'; return; }
       const next = JSON.parse(JSON.stringify(state.catalog));
       const i = next.products.findIndex((x) => x.id === draft.id);
