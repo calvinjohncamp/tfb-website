@@ -1,5 +1,24 @@
 # TFB – Übergabe für die nächste Sitzung
 
+## Ruhiger Footer und Bierdeckel-Farbwelt · 09.11.2026
+
+Der Statistik-Datenschutzhinweis verwendet denselben dezenten Footerstil wie
+Impressum und Satzung: gleiche Schriftgröße/-stärke, Farbe und Abstände; flexible
+Zeilenumbrüche, gut bedienbarer Button und sichtbarer Tastaturfokus. Der vollständige
+bestehende Hinweis bleibt unverändert und öffnet sich weiterhin im Dialog.
+
+Das Bierdeckel-Symbol folgt jetzt ausdrücklich der TFB-Farbwelt: #FFC300 in Gelb,
+#C4553A in Rot. Ursache war die lokal rot definierte --signal-Variable des gemeinsamen
+Kioskmoduls. Gezielt nur die Ballfarbe korrigiert, ohne das gemeinsame Modul oder
+andere Produkt-/Markenfarben zu überschreiben. Keine Medienabfrage: gilt auf allen
+Geräten. Versionierte App-/CSS-Dateien und neuer Offlinecache sorgen für Aktualisierung.
+
+Chromium und WebKit: je 375/390/768/834/1024/1440 px, beide Farbwelten, Ballfarbe und
+Maskenfüllung, identische Footer-Linkstile, Datenschutzdialog, Farbwechsel nach Neuladen
+und keine horizontale Überbreite erfolgreich. Isolierte Testkonten und Testdatenbank
+mit dem produktiven additiven Padel-Kiosk-Schema; keine echten Buchungen angelegt.
+
+
 ## Bereinigte SVG-Logos in beiden Farbwelten · 09.11.2026
 
 Veröffentlichung bestätigt: Programm ff0996e, Pages-Lauf 42697840167 erfolgreich.

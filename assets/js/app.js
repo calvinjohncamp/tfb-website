@@ -332,7 +332,7 @@
       </header>
       <main class="view" id="view" data-view="${view}"><div class="loading"></div></main>
       <footer class="site-footer">
-        <nav aria-label="Vereinsinformationen"><a href="#impressum">Impressum</a><a href="#satzung">Satzung</a><button type="button" class="link" data-usage-info>Datenschutz zur Statistik</button></nav>
+        <nav aria-label="Vereinsinformationen"><a class="footer-link" href="#impressum">Impressum</a><a class="footer-link" href="#satzung">Satzung</a><button type="button" class="footer-link" data-usage-info>Datenschutz zur Statistik</button></nav>
         <p>© ${new Date().getFullYear()} Tennisfreunde Bielstein e.V. · Inhalte, Gestaltung &amp; App-Konzept. Alle Rechte vorbehalten.</p>
       </footer>`;
     alignHeader();

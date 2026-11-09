@@ -266,3 +266,11 @@ html.tfb-logo-midnight-amber body :is(.tfb-logo-split, .tfb-splash-wordmark) {
 .membership-mail-dialog iframe {
   display: block; width: 100%; height: 70vh; height: 70dvh; border: 1px solid var(--line); border-radius: 4px; background: #efefef;
 }
+
+/* The scoped kiosk keeps its own --signal; the coaster follows the active TFB theme. */
+html:not(.tfb-logo-midnight-amber) .deckel .deckel-ball {
+  color: var(--tfb-signature-red, #C4553A);
+}
+html.tfb-logo-midnight-amber .deckel .deckel-ball {
+  color: var(--tfb-signature-yellow, #FFC300);
+}

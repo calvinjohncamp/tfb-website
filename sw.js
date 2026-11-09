@@ -1,6 +1,6 @@
 // TFB-Kiosk – Service Worker.
 // Netz zuerst, damit Änderungen sofort ankommen; ohne Netz startet die App aus dem Zwischenspeicher.
-const CACHE = 'tfb-kiosk-vector-logos-20261109-1';
+const CACHE = 'tfb-kiosk-footer-theme-20261109-1';
 const SHELL = [
   './assets/shared-kiosk/20261109-shared-1/asset-base.js',
   './assets/shared-kiosk/20261109-shared-1/art.js',
@@ -34,11 +34,11 @@ const SHELL = [
   './assets/css/chat-media.css', './assets/js/chat-media.js',
   './assets/css/home-media.css', './assets/js/home-media.js', './assets/js/newsroom.js',
   './assets/css/club-archive.css', './assets/js/club-archive.js',
-  './assets/css/brand.css', './assets/css/app.css',
+  './assets/css/brand.css', './assets/css/app.css', './assets/css/app.css?v=20261109-footer-theme-1',
   './assets/css/design-preview.css', './assets/js/design-preview.js',
-  './assets/css/partner-visibility.css', './assets/css/partner-visibility.css?v=20261109-vector-logos-1', './assets/js/partner-visibility.js', './assets/js/partner-content.js', './assets/js/partner-admin.js',
+  './assets/css/partner-visibility.css', './assets/css/partner-visibility.css?v=20261109-footer-theme-1', './assets/js/partner-visibility.js', './assets/js/partner-content.js', './assets/js/partner-admin.js',
   './assets/fonts/editorial/bricolage-grotesque.ttf', './assets/fonts/editorial/dm-sans.ttf',
-  './assets/js/config.js', './assets/data/partners.js', './assets/data/teams.js', './assets/data/site-seed.js', './assets/js/partner-rotation.js', './assets/js/site.js', './assets/js/meet.js', './assets/js/demo-backend.js', './assets/js/brand-data.js', './assets/js/art.js', './assets/js/app.js',
+  './assets/js/config.js', './assets/data/partners.js', './assets/data/teams.js', './assets/data/site-seed.js', './assets/js/partner-rotation.js', './assets/js/site.js', './assets/js/meet.js', './assets/js/demo-backend.js', './assets/js/brand-data.js', './assets/js/art.js', './assets/js/app.js', './assets/js/app.js?v=20261109-footer-theme-1',
   './assets/icons/favicon-64.png', './assets/icons/icon-192.png',
   './assets/js/membership.js',
   './assets/js/photo-drop.js',
