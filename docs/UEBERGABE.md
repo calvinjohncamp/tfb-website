@@ -2,6 +2,10 @@
 
 ## Trainerbilder einpassen und Kontaktfelder · v361 · 09.11.2026
 
+Veröffentlicht: aea51d0; Pages-Lauf 42596083219 erfolgreich. Live-Dateien
+bytegleich, vier Kontaktfelder und Leons Mail-/Telefonlinks sowie alle
+Trainerbilder öffentlich geprüft; keine JavaScript-Fehler.
+
 Trainerpflege: „Foto einpassen“ nutzt den vorhandenen Foto-Rahmendialog mit
 Zoom, horizontaler und vertikaler Verschiebung sowie Originalansicht. Gespeichert
 wird nur der Ausschnitt (trainers[].frame), Originalbild unverändert. Neues Foto
