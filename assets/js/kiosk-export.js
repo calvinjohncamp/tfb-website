@@ -27,7 +27,7 @@ const date=d=>localDate.format(new Date(d));
 const time=d=>localTime.format(new Date(d));
 export function exportCsv(entries,{plan,generatedAt,scopeLabel='Alle Mitglieder'}){
  const labels={month:'Monatsabrechnung',cumulative:'Jahr kumuliert',closing:'Jahresabschluss'};
- const headers=['Buchungsnummer','Mitglied','Datum','Uhrzeit','Artikel','Einheit','Buchungsbetrag (EUR)','Rücknahmen/Korrekturen (EUR)','Abrechnungsbetrag (EUR)'];
+ const headers=['Buchungsnummer','Mitglied','Datum','Uhrzeit','Artikel','Einheit','Buchungsbetrag (EUR)','Storno/Korrekturen (EUR)','Abrechnungsbetrag (EUR)'];
  const sorted=[...entries].sort(chronological),total=sorted.reduce((sum,e)=>sum+e.net_cents,0);
  const rows=[['TFB Kiosk '+labels[plan.kind]+' '+plan.year],['Auswahl',scopeLabel],['Zeitraum',date(plan.from+'T12:00:00Z')+' bis '+date(plan.to+'T12:00:00Z')],['Erstellt am',date(generatedAt),time(generatedAt)],['Alle Uhrzeiten: deutsche Ortszeit (einschließlich Sommer-/Winterzeit).']];
  if(plan.kind==='closing'){
@@ -35,15 +35,15 @@ export function exportCsv(entries,{plan,generatedAt,scopeLabel='Alle Mitglieder'
   for(const e of sorted){const d=e.day||calendarDay.format(new Date(e.created_at));if(d.slice(0,4)===plan.year)totals[Number(d.slice(5,7))-1]+=e.net_cents;}
   rows.push([],['Monatsübersicht'],['Monat','Abrechnungsbetrag (EUR)'],...totals.map((value,i)=>[new Date(Date.UTC(Number(plan.year),i,15)).toLocaleDateString('de-DE',{month:'long',timeZone:'Europe/Berlin'}),euro(value)]),['Jahressumme',euro(totals.reduce((sum,n)=>sum+n,0))]);
  }
- rows.push([],['Einzelbuchungen'],['Abrechnungsbetrag = Buchungsbetrag minus Rücknahmen/Korrekturen.'],headers);
+ rows.push([],['Einzelbuchungen'],['Abrechnungsbetrag = Buchungsbetrag minus Storno/Korrekturen.'],headers);
  for(const e of sorted)rows.push([e.id,e.display_name,date(e.created_at),time(e.created_at),e.product_name,e.unit,euro(e.price_cents),euro(e.price_cents-e.net_cents),euro(e.net_cents)]);
  rows.push(['Gesamter Abrechnungsbetrag','','','','','','','',euro(total)]);
  const corrections=sorted.flatMap(e=>e.adjustments.map(a=>({...a,booking:e}))).sort(chronological);
- rows.push([],['Rücknahmen und Korrekturen'],['Die folgenden Beträge sind in den Abrechnungsbeträgen oben bereits berücksichtigt. Nicht erneut abziehen.']);
+ rows.push([],['Storno und Korrekturen'],['Die folgenden Beträge sind in den Abrechnungsbeträgen oben bereits berücksichtigt. Nicht erneut abziehen.']);
  if(corrections.length){
   rows.push(['Zu Buchungsnummer','Mitglied','Datum','Uhrzeit','Artikel','Art','Korrekturbetrag (EUR)','Begründung','Bearbeitet von']);
-  for(const a of corrections)rows.push([a.booking.id,a.booking.display_name,date(a.created_at),time(a.created_at),a.booking.product_name,a.source==='undo'?'Stornierung':'Korrektur',euro(a.amount_cents),a.reason,a.actor_name||'Frühere Verwaltung']);
- }else rows.push(['Keine Rücknahmen oder Korrekturen im ausgewählten Zeitraum.']);
+  for(const a of corrections)rows.push([a.booking.id,a.booking.display_name,date(a.created_at),time(a.created_at),a.booking.product_name,a.source==='undo'?'Storno':'Korrektur',euro(a.amount_cents),a.source==='undo'?'':a.reason,a.source==='undo'?'':a.actor_name||'Frühere Verwaltung']);
+ }else rows.push(['Keine Stornos oder Korrekturen im ausgewählten Zeitraum.']);
  // Nine columns throughout; ordinary text is protected against spreadsheet formulas.
  return '\ufeff'+rows.map(r=>Array.from({length:headers.length},(_,i)=>r[i]??'').map(cell).join(';')).join('\r\n');
 }

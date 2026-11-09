@@ -1095,7 +1095,7 @@
     box.closePhoto = close;
     const onKey = (event) => {
       if (event.key === 'Escape') { event.preventDefault(); event.stopImmediatePropagation(); close(); }
-      if (event.key === 'Tab') { event.preventDefault(); box.querySelector('.lightbox-close').focus(); }
+      if (event.key === 'Tab') { event.preventDefault(); const controls=[...box.querySelectorAll('a[href],button:not(:disabled)')],index=controls.indexOf(document.activeElement);controls[(index+(event.shiftKey?-1:1)+controls.length)%controls.length]?.focus(); }
     };
     box.addEventListener('click', (event) => {
       event.stopPropagation();

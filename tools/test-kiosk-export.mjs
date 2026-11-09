@@ -33,11 +33,11 @@ test('CSV has plain German headings, a single corrected amount per purchase and 
  assert.deepEqual(rows.find(r=>r[0]==='Erstellt am').slice(1,3),['09.11.2026','07:03:12']);
  assert(rows.some(r=>r[5]==='Korrektur'&&r[6]==='0,20'&&r[8]==='Finanzwart'&&r[7].includes('zweite Zeile')));assert.match(csv,/Nicht erneut abziehen/);assert.match(csv,/"'\=FORMULA"/);
  assert(rows.findIndex(r=>r[0]==='Jahressumme')<rows.findIndex(r=>r[0]==='Einzelbuchungen'));assert.deepEqual(rows.find(r=>r[0]==='Jahressumme').slice(0,2),['Jahressumme','2,80']);
- const empty=exportCsv([],{plan,generatedAt:today});assert.match(empty,/Jahresabschluss 2025/);assert.match(empty,/"Januar";"0,00"/);assert.match(empty,/"Dezember";"0,00"/);assert.match(empty,/"Jahressumme";"0,00"/);assert.match(empty,/Keine Rücknahmen oder Korrekturen/);
+ const empty=exportCsv([],{plan,generatedAt:today});assert.match(empty,/Jahresabschluss 2025/);assert.match(empty,/"Januar";"0,00"/);assert.match(empty,/"Dezember";"0,00"/);assert.match(empty,/"Jahressumme";"0,00"/);assert.match(empty,/Keine Stornos oder Korrekturen/);
 });
 test('CSV uses German daylight-saving local time without time codes or milliseconds',()=>{
  const plan=exportPlan({kind:'month',year:'2025',month:'2025-07',today});const csv=exportCsv([{id:'summer',created_at:'2025-07-01T12:30:45.123Z',display_name:'Mitglied',product_name:'Wasser',unit:'Stück',price_cents:100,net_cents:0,adjustments:[{id:'undo',created_at:'2025-07-01T12:30:50Z',amount_cents:100,reason:'Zurückgenommen',actor_name:'Mitglied',source:'undo'}]}],{plan,generatedAt:'2026-11-09T06:03:12.414Z'}),rows=parseCsv(csv);
- assert.deepEqual(rows.find(r=>r[0]==='summer'&&r[5]==='Stück').slice(2,4),['01.07.2025','14:30:45']);assert(rows.some(r=>r[5]==='Stornierung'&&r[3]==='14:30:50'));assert.doesNotMatch(csv,/2025-07-01T|\.123Z/);
+ assert.deepEqual(rows.find(r=>r[0]==='summer'&&r[5]==='Stück').slice(2,4),['01.07.2025','14:30:45']);assert(rows.some(r=>r[5]==='Storno'&&r[3]==='14:30:50'));assert.doesNotMatch(csv,/2025-07-01T|\.123Z/);
 });
 test('a failed month fails the entire annual export instead of silently returning partial data',async()=>{
  const plan=exportPlan({kind:'cumulative',year:'2026',month:'2026-03',today});await assert.rejects(()=>collectExport(plan,async m=>{if(m==='2026-02')throw Error('Unavailable');return {entries:[]};}),/Unavailable/);
