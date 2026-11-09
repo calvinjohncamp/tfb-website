@@ -2825,3 +2825,16 @@ svg.link-arrow.link-arrow path { fill:currentColor; stroke:none; }
 .site-page[data-page="home"] .feature :is(.link-chip-img,.link-chip>small,.feature-link>.btn.signal>span,.feature-more>.more-link>span){display:none}
 
 .site-page[data-page="home"] .feature .content-overview-tools>.btn svg{display:none}
+
+/* Fixed contribution categories with editable annual Euro amounts. */
+.fees-edit-button { margin: 0 0 20px; }
+.fees-editor h2 { padding-right: 28px; }
+.fees-editor fieldset { border: 0; padding: 0; margin: 24px 0; min-width: 0; }
+.fees-editor legend { font-size: 1rem; font-weight: 700; margin-bottom: 8px; }
+.fees-editor .fees-amount-field { display: grid; grid-template-columns: minmax(0, 1fr) 132px; align-items: center; gap: 16px; margin: 0; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.fees-amount-field > span:first-child { margin: 0; font-size: .88rem; line-height: 1.4; color: var(--ink); }
+.fees-amount-field > .fees-amount-wrap { display: flex; align-items: center; gap: 8px; margin: 0; }
+.fees-amount-wrap > span { display: inline; margin: 0; font-weight: 400; }
+.fees-amount-wrap input { min-width: 0; width: 100%; text-align: right; font-variant-numeric: tabular-nums; }
+.fees-editor-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 20px; }
+@media (max-width: 420px) { .fees-editor .fees-amount-field { grid-template-columns: minmax(0, 1fr) 112px; gap: 12px; } }

@@ -1,5 +1,27 @@
 # TFB-Kiosk – Projektgedächtnis und Übergabe
 
+## Mitgliedsbeiträge ab 2027 · 09.11.2026
+
+Neue Jahresbeiträge laut Vorstand: Jugend bis 14 Jahre 50 €, Jugend bis 18 Jahre
+90 €, Erwachsene 210 €, Ehepartner 150 €, Azubi / Student / Schüler 110 €,
+passiv 50 €, Gast- / zweite Mitgliedschaft 110 €, Schnupperjahr Erwachsene 80 €,
+Jugend 50 €. Ab dem 3. Kind beitragsfrei. Öffentlich ausdrücklich ab 01.01.2027.
+
+Adminpflege: Stift → Beiträge → Beträge bearbeiten → Beiträge speichern.
+Neun Beträge veränderbar, Kategorien und Beitragsfreiheit fest. Zentrale Speicherung
+im bestehenden CMS-Dokument page:verein unter membershipFees (Integer-Centbeträge),
+inklusive Revisionen und Sicherungen. Ohne gespeicherten Eintrag gelten die oben
+aufgeführten Vorgaben. Kein Backend-/Schemawechsel. Fremde Club-Inhalte bleiben
+beim Speichern erhalten; parallele Änderungen führen zu verständlichem Konflikt.
+
+Validiert: 4 Beitragstests und 7 CMS-Tests erfolgreich; gezielter öffentlicher
+Beitragstest erfolgreich. Browserprüfung Chromium/WebKit jeweils 390/834/1440 px:
+Anzeige, Adminrollen, Abbrechen, Eingabevalidierung, zentrales Speichern und Lesen
+als Gast/Mitglied, Konfliktschutz und Layout erfolgreich. Vollständige alte Home-
+Tests enthalten noch zwei unabhängige veraltete Erwartungen an Trainerkarten.
+Antrag und Bestätigungsmail berechnen keine Beiträge und enthalten keine alten Beträge.
+
+
 ## Ruhiger Footer und Bierdeckel-Farbwelt · 09.11.2026
 
 Veröffentlichung bestätigt: Programm afdd7f1, Pages-Lauf 42702239487 erfolgreich.

@@ -34,6 +34,8 @@ async function setup() {
     partnerSlot: () => '', viewHead: () => '', toast() {}, renderView() {}, openLightbox: (...args) => opened.push(args), openSheet: html => opened.push(html) };
   vm.runInContext(readFileSync(new URL('assets/js/newsroom.js', root), 'utf8'), context);
   vm.runInContext(readFileSync(new URL('assets/js/site.js', root), 'utf8'), context);
+  vm.runInContext(readFileSync(new URL('assets/js/club-people.js', root), 'utf8'), context);
+  vm.runInContext(readFileSync(new URL('assets/js/membership-fees.js', root), 'utf8'), context);
   return { context, api, opened, storage };
 }
 
@@ -406,12 +408,13 @@ test('club offers contributions before admission and opens the complete annual f
   assert.ok(html.indexOf('data-action="membership-fees"') < html.indexOf('data-action="membership-open"'));
   assert.match(html, /membership-fees-button/);
   assert.match(html, /membership-apply-button/);
-  context.TFB.actions['membership-fees']();
-  const modal = opened[0];
-  for (const price of ['36,00 €', '60,00 €', '75,00 €', '189,00 €', '129,00 €', '50,00 €', '95,00 €']) assert.ok(modal.includes(price));
-  assert.match(modal, /Kinder bis 6 Jahre/);
-  assert.match(modal, /Beitragsfrei/);
-  assert.match(modal, /dritte Kind.*Volljährigkeit/);
+  await context.TFB.actions['membership-fees']();
+  const modal = opened[0].replace(/\u00a0/g, ' ');
+  for (const price of ['50,00 €', '80,00 €', '90,00 €', '210,00 €', '150,00 €', '110,00 €']) assert.ok(modal.includes(price));
+  assert.match(modal, /Jugend bis 14 Jahre/);
+  assert.match(modal, /Jugend bis 18 Jahre/);
+  assert.match(modal, /Ab dem 3\. Kind beitragsfrei/);
+  assert.match(modal, /2027/);
   assert.match(modal, /1\. Januar/);
   assert.match(modal, /pro Kalenderjahr/);
 });

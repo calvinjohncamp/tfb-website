@@ -3115,40 +3115,7 @@
       dialog.setAttribute('aria-labelledby', 'membership-mail-title');
       dialog.querySelector('.sheet-close').focus({ preventScroll: true });
     },
-    'membership-fees': () => {
-      const rows = [
-        ['Kinder bis 6 Jahre', 'Beitragsfrei'],
-        ['Kinder von 7 bis 10 Jahren', '36,00 €'],
-        ['Jugendliche von 11 bis 18 Jahren', '75,00 €'],
-        ['Erwachsene', '189,00 €'],
-        ['Ehepartner', '129,00 €'],
-        ['Passive Mitglieder', '50,00 €'],
-        ['Auszubildende, Studierende, FSJ und Bufdi', '95,00 €'],
-        ['Zweitmitgliedschaft für Erwachsene', '95,00 €'],
-      ];
-      ui().openSheet(`<section class="editor membership-fees" aria-labelledby="membership-fees-title">
-        <p class="fees-eyebrow">Tennisfreunde Bielstein</p>
-        <h2 id="membership-fees-title">Mitgliedsbeiträge</h2>
-        <p class="fees-intro">Alle Beiträge gelten pro Kalenderjahr.</p>
-        <section class="fees-trial" aria-labelledby="fees-trial-title">
-          <h3 id="fees-trial-title">Erst mal Tennis ausprobieren</h3>
-          <p>Schnuppermitgliedschaft für Tennisanfänger im ersten Jahr der Vereinszugehörigkeit.</p>
-          <dl><div><dt>Erwachsene</dt><dd>60,00 €</dd></div><div><dt>Kinder und Jugendliche</dt><dd>36,00 €</dd></div></dl>
-        </section>
-        <h3 class="fees-regular-title">Reguläre Mitgliedschaft</h3>
-        <dl class="fees-list">${rows.map(([label, price]) => `<div><dt>${esc(label)}</dt><dd>${esc(price)}</dd></div>`).join('')}</dl>
-        <div class="fees-notes"><p>Das dritte Kind einer Familie ist bis zur Volljährigkeit beitragsfrei.</p><p>Der Aufnahmetermin ist jeweils der 1. Januar.</p></div>
-      </section>`);
-      const dialog = document.querySelector('.membership-fees')?.closest('[role="dialog"]');
-      if (dialog) {
-        dialog.setAttribute('aria-labelledby', 'membership-fees-title');
-        const close = dialog.querySelector('.sheet-close');
-        close.focus();
-        dialog.addEventListener('keydown', (event) => {
-          if (event.key === 'Tab') { event.preventDefault(); close.focus(); }
-        });
-      }
-    },
+    'membership-fees': () => TFB.membershipFees.open(),
     'board-photo-open': async (el) => {
       const people = await ui().api.boardPeople();
       const person = people[Number(el.dataset.index)];
