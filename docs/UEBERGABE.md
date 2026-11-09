@@ -2,6 +2,8 @@
 
 ## Beitragspflege direkt im Clubbereich · 09.11.2026
 
+Veröffentlichung bestätigt: 4f71748, Pages-Lauf 42709215859 erfolgreich. Live-Frontend mit isolierter API in Chromium/WebKit bei 834 px auf neuen Club-Zugang, fehlenden globalen Button, Speichern und Konflikte geprüft; erfolgreich. Keine produktiven Testbeträge gespeichert.
+
 Auf Nutzerwunsch den globalen Adminbutton Beiträge entfernt. Stattdessen öffnet
 der Button unter Club → Mitglied werden im Seiten-Bearbeitungsmodus direkt den
 Beitragseditor und heißt dann Beiträge bearbeiten. Öffentliche Ansicht weiterhin
