@@ -2,6 +2,11 @@
 
 ## Trainerreihenfolge und Statuspflege · v362 · 09.11.2026
 
+Veröffentlicht: Programm 328d2c4, Pages-Lauf 42597120824 erfolgreich; Worker
+fd3a56f8-ec61-4b3c-abae-f0b6e30a0a95. Kontakte und gewünschte Reihenfolge
+anschließend über die echte Adminpflege gespeichert, ohne bestehende Texte
+oder Bildausschnitte zu ersetzen. Live-Dateien bytegleich geprüft.
+
 Trainerpflege mit Bereichen Aktiv (immer offen), Inaktiv und Ausgeblendet
 (aufklappbar). Pfeile je Person verschieben die Reihenfolge innerhalb ihres
 Bereichs. Statusauswahl Aktiv/Inaktiv/Ausgeblendet; „Ausblenden“ ersetzt das
@@ -14,7 +19,7 @@ Adminansicht und Sicherungen behalten sämtliche Einträge. Gewünschte Livefolg
 Leon Kaufmann, Basti Manz, Johann Szakacs, Isabel Hähn.
 
 Gezielter Mitgliederabgleich: Isabel und Sebastian/Basti eindeutig gefunden,
-E-Mail-Adressen in der zentralen Trainerpflege ergänzt. Bастis Telefonnummer
+E-Mail-Adressen in der zentralen Trainerpflege ergänzt. Bastis Telefonnummer
 aus bestehendem öffentlichen Vorstandseintrag übernommen. Johann hat weder
 E-Mail noch Zweitadresse in der Mitgliederliste; keine Telefonnummern in den
 importierten Mitgliedsstammdaten. Keine fremden Familienkontakte verwenden.
