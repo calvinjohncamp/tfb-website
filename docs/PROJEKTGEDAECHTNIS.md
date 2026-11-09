@@ -2,6 +2,15 @@
 
 ## Fünf-Tage-Matrix und A4-Druckplan · 09.11.2026
 
+Veröffentlichung bestätigt: a45dc73, Pages-Lauf 42711291614 erfolgreich.
+index.html, Daten-/UI-JavaScript, court-plan.css, sw.js und alle vier PDF-/JPEG-
+Dateien live bytegleich mit dem geprüften Paket. Live-Frontend zusätzlich mit
+isolierter API in Chromium/WebKit bei 390/834 px geprüft: fünf Tage, Matrix,
+Vorschau, Farbwechsel, Downloads, feste Platzspalte und Navigation erfolgreich.
+Echte öffentliche Wochenmatrix zusätzlich sichtbar kontrolliert. Screenshot:
+output/TFB-Platzbelegung-Wochenmatrix-2027-live.jpg. Druckdateien zusätzlich
+unter output/pdf/ im Hauptprojekt. Keine produktiven Inhaltsdaten verändert.
+
 Nutzerpräzisierung: Ganze Woche als kompakte Matrix statt gestapelter Tagespläne.
 Mo–Fr als fünf Spalten, Plätze 1/2/3/4/6/7 als sechs Zeilen, 29 Belegungen mit
 Mannschaft und Uhrzeit. Samstag/Sonntag auch aus Tageswahl entfernt; keine Aussage
