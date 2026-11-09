@@ -74,3 +74,5 @@ html.tfb-logo-midnight-amber .kb-calendar-head .kb-year-control{color:#fff}
 @media(max-width:350px){.kb-calendar-head .kb-year-control .kb-closing-label{font-size:.68rem}.kb-calendar.is-closing .kb-calendar-head .kb-closing-total{padding:7px 9px}}
 html.tfb-logo-midnight-amber .kb-calendar.is-closing .kb-calendar-head .kb-closing-total{background:transparent}html.tfb-logo-midnight-amber .kb-calendar.is-closing .kb-calendar-head .kb-closing-total :is(span,b){color:#FFC300}
 .kb-calendar.is-closing .kb-calendar-head .kb-closing-total{background:transparent;padding:0;gap:5px}
+
+.kb-day-picker .kb-month-title .kb-month-closing-label{font-size:.72rem;font-weight:800;line-height:1.15;letter-spacing:0;text-transform:none}@media(max-width:350px){.kb-day-picker .kb-month-title .kb-month-closing-label{font-size:.62rem}}
