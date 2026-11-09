@@ -20,3 +20,10 @@ Testadressen: Freischaltung, spätere Anmeldung und mobile Darstellung erfolgrei
 Worker-Dry-Run erfolgreich. Zusätzlich 9 von 10 App-Sync-Tests erfolgreich; der
 bestehende Fehler im Altimport-Test „prices and timestamps“ tritt identisch auf
 dem unveränderten produktiven Quellstand 2a7bb86 auf.
+
+
+Veröffentlichung bestätigt: Programm b6cd5ed, Worker
+e6041417-612c-4a4f-82a9-7af226b2ba58, Pages-Lauf 42689385488 erfolgreich.
+index.html, app.js, member-directory.js und sw.js auf joern-kaemper.de
+bytegleich mit dem geprüften Paket; /auth/options liefert automaticEmail=true.
+Reale Codezustellung im Mitgliedspostfach bleibt vom Empfänger zu bestätigen.
