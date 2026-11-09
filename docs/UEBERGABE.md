@@ -41,6 +41,10 @@ Abrechnung, responsive Kalender und bestehende Exporte. Historische Versionen
 bleiben im Backend nachweisbar, obwohl der Abschnitt nicht mehr angezeigt wird.
 Service Worker v354.
 
+Veröffentlicht: Commit 108e24a, Pages-Workflow 42574830822 erfolgreich.
+282 Webdateien vorbereitet. Sieben öffentliche Dateien (Billing, Tagesbild,
+CSV, App, beide CSS und Service Worker v354) live bytegleich geprüft.
+
 ## Einheitliche Mitgliederansicht und Tagesübersicht als JPG · v353 · 09.11.2026
 
 Persönliche Abrechnung war noch durch die alte .view-Regel auf 760px begrenzt.
