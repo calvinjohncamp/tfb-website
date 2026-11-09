@@ -2,6 +2,10 @@
 
 ## Absatzabstände Über uns und Trainernamen · v365 · 09.11.2026
 
+Veröffentlicht: f639032, Pages-Lauf 42600606555 erfolgreich. Live-Dateien
+bytegleich; alle sechs gespeicherten Absätze wortgleich im Dialog und mit
+sichtbarem Abstand geprüft. Namensfarben beider Welten korrekt; keine Fehler.
+
 Ursache fehlender sichtbarer Absätze: globale CSS-Regel p { margin:0 }, nicht
 ein Speicherfehler. Öffentlicher Live-Text vor Änderung enthielt sechs korrekt
 getrennte Absätze, inklusive der vom Nutzer ergänzten Padel-/Rabattinformation.
