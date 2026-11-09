@@ -1,5 +1,5 @@
 /* One readable day on small screens; proportional court lanes on larger screens. */
-.court-plan { --cp-accent: #C4553A; --cp-soft: #F2E5DF; --cp-ink: var(--ink); margin: 16px 0 40px; }
+.court-plan, .cp-download-preview { --cp-accent: #C4553A; --cp-soft: #EAA18A; --cp-ink: var(--ink); margin: 16px 0 40px; }
 :root.tfb-logo-midnight-amber .court-plan { --cp-accent: #FFC300; --cp-soft: #FFF2C5; --cp-ink: var(--tfb-midnight-blue); }
 .sport-switch { grid-template-columns: repeat(3, minmax(0, 1fr)); max-width: 550px; }
 .sport-switch a { white-space: nowrap; font-size: clamp(.72rem, 2.8vw, .84rem); }
@@ -8,14 +8,14 @@
 .cp-kicker { font-size: .76rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
 .court-plan .cp-head h2 { font-size: clamp(2rem, 5vw, 3.2rem); line-height: 1.15; margin: 8px 0 12px; }
 .cp-head p:last-child { color: var(--muted); line-height: 1.55; }
-.cp-court-icon { flex: 0 0 auto; width: 98px; height: 62px; display: block; position: relative; border: 2px solid currentColor; color: var(--cp-ink); background: var(--cp-accent); transform: rotate(-8deg); }
+.cp-court-icon { flex: 0 0 auto; width: 245px; height: 155px; display: block; position: relative; border: 2px solid currentColor; color: var(--cp-ink); background: var(--cp-accent); transform: rotate(8deg); margin: 20px 18px; }
 .cp-court-icon::before, .cp-court-icon::after { content: ''; position: absolute; }
-.cp-court-icon::before { inset: 10px 0; border-block: 1px solid; }
+.cp-court-icon::before { inset: 16% 0; border-block: 1px solid; }
 .cp-court-icon::after { inset: 0 50%; border-left: 1px solid; }
-.cp-court-icon i { position: absolute; inset: 10px 24%; border-inline: 1px solid; }
+.cp-court-icon i { position: absolute; inset: 16% 24%; border-inline: 1px solid; }
 .cp-court-icon i::after { content: ''; position: absolute; top: 50%; left: 0; right: 0; border-top: 1px solid; }
 .cp-controls { display: flex; gap: 14px; align-items: stretch; border-bottom: 1px solid var(--line); padding-bottom: 18px; }
-.cp-days { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 5px; flex: 1; }
+.cp-days { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 5px; flex: 1; }
 .cp-days button, .cp-week { border: 1px solid transparent; border-radius: 8px; background: transparent; color: var(--cp-ink); font: inherit; font-size: .83rem; font-weight: 600; min-height: 55px; padding: 10px 4px; cursor: pointer; }
 .cp-days button { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; }
 .cp-days button[aria-pressed="true"], .cp-week[aria-pressed="true"] { background: var(--cp-ink); color: var(--bg); }
@@ -58,11 +58,47 @@
 .cp-empty p { max-width: 420px; color: var(--muted); line-height: 1.5; }
 .cp-note { display: grid; grid-template-columns: 130px 1fr; gap: 16px; border-top: 1px solid var(--line); margin-top: 20px; padding-top: 20px; font-size: .8rem; line-height: 1.6; }
 .cp-note p { color: var(--muted); }
+.cp-matrix-hint { margin: -10px 0 18px !important; font-size: .8rem; color: var(--muted); }
+.cp-matrix-scroll { overflow-x: auto; overscroll-behavior-x: contain; border: 1px solid var(--line); border-radius: 8px; }
+.cp-matrix-scroll:focus-visible { outline: 2px solid var(--cp-ink); outline-offset: 3px; }
+.cp-matrix { border-collapse: separate; border-spacing: 0; table-layout: fixed; width: 100%; min-width: 900px; }
+.cp-matrix caption { position: absolute; width: 1px; height: 1px; clip-path: inset(50%); overflow: hidden; }
+.cp-matrix thead th { font: 700 .8rem var(--font); background: var(--cp-ink); color: #fff; text-align: left; padding: 16px 10px; }
+.cp-matrix thead th:first-child { width: 64px; position: sticky; left: 0; z-index: 2; }
+.cp-matrix tbody th { position: sticky; left: 0; z-index: 1; box-shadow: 1px 0 0 var(--line); font-family: var(--font); width: 64px; border-top: 1px solid var(--line); vertical-align: middle; text-align: center; background: var(--bg); }
+.cp-matrix tbody th small { display: block; font-size: .65rem; font-weight: 400; color: var(--muted); }
+.cp-matrix tbody th b { display: block; font-size: 1.25rem; margin-top: 4px; }
+.cp-matrix td { vertical-align: top; border-left: 1px solid var(--line); border-top: 1px solid var(--line); padding: 6px; background: var(--card); height: 70px; }
+.cp-matrix-event { padding: 10px 8px; border-radius: 3px; min-height: 54px; display: flex; flex-direction: column; justify-content: center; gap: 5px; }
+.cp-matrix-event + .cp-matrix-event { margin-top: 6px; }
+.cp-matrix-event strong { font: 700 .8rem/1.3 var(--font); overflow-wrap: anywhere; }
+.cp-matrix-event time { font-size: .7rem; font-variant-numeric: tabular-nums; }
+.cp-matrix-event.cp-team { background: var(--bg); color: var(--cp-ink); border-left: 3px solid var(--cp-ink); }
+.cp-matrix-event.cp-youth { border-left: 3px solid var(--cp-accent); }
+.cp-matrix-event.cp-coach { border: 1px dashed var(--cp-ink); }
+.cp-matrix-empty { display: block; color: var(--muted); padding: 17px 8px; font-size: .8rem; }
+.cp-downloads { display: grid; grid-template-columns: minmax(0, 260px) minmax(0, 1fr); gap: 32px; align-items: center; margin: 36px 0; padding: 28px 0; border-block: 1px solid var(--line); }
+.cp-preview-button { border: 0; padding: 0; background: transparent; cursor: pointer; position: relative; text-align: left; box-shadow: 0 2px 12px #0001; }
+.cp-preview-button img, .cp-download-preview img { width: 100%; height: auto; display: block; }
+.cp-preview-button > span { display: block; padding: 9px 12px; font: 600 .75rem var(--font); background: var(--cp-ink); color: #fff; }
+.cp-preview-button:focus-visible { outline: 2px solid var(--cp-ink); outline-offset: 4px; }
+.court-plan .cp-downloads h3 { font-size: 1.3rem; margin-bottom: 12px; }
+.cp-downloads p { font-size: .85rem; color: var(--muted); line-height: 1.6; margin-bottom: 18px; }
+.cp-file-links { display: flex; flex-wrap: wrap; gap: 8px; }
+.cp-file-links .btn { text-decoration: none; font-size: .78rem; }
+.cp-download-preview h2 { padding-right: 28px; }
+.cp-download-preview > p { color: var(--muted); font-size: .8rem; margin-bottom: 20px; }
+.cp-download-preview .cp-file-links { margin-top: 20px; }
+.cp-brand-amber, img.cp-brand-amber { display: none; }
+:root.tfb-logo-midnight-amber .cp-brand-crail { display: none; }
+:root.tfb-logo-midnight-amber .cp-brand-amber { display: flex; }
+:root.tfb-logo-midnight-amber img.cp-brand-amber { display: block; }
 .cp-status { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
 @media (max-width: 1050px) { .cp-day-long { display: none; } .cp-day-short { display: inline; } }
 @media (max-width: 759px) {
   .cp-head { padding-top: 8px; gap: 16px; }
-  .cp-head > .cp-court-icon { width: 65px; height: 44px; }
+  .cp-head { flex-wrap: wrap; }
+  .cp-head > .cp-court-icon { width: 163px; height: 110px; margin: 12px 14px 20px auto; }
   .cp-head p:last-child { font-size: .88rem; }
   .cp-controls { flex-wrap: wrap; gap: 12px; }
   .cp-days { flex-basis: 100%; }
@@ -77,6 +113,8 @@
   .cp-event time { font-size: .8rem; }
   .cp-unassigned { margin: auto 0; padding: 6px 0; font-size: .76rem; }
   .cp-note { grid-template-columns: 1fr; gap: 6px; }
+  .cp-downloads { grid-template-columns: 1fr; gap: 22px; }
+  .cp-preview-button { width: min(100%, 320px); }
 }
 @media print {
   .cp-controls, .cp-legend, .cp-status { display: none; }

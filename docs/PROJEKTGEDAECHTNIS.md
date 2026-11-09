@@ -1,5 +1,36 @@
 # TFB-Kiosk – Projektgedächtnis und Übergabe
 
+## Fünf-Tage-Matrix und A4-Druckplan · 09.11.2026
+
+Nutzerpräzisierung: Ganze Woche als kompakte Matrix statt gestapelter Tagespläne.
+Mo–Fr als fünf Spalten, Plätze 1/2/3/4/6/7 als sechs Zeilen, 29 Belegungen mit
+Mannschaft und Uhrzeit. Samstag/Sonntag auch aus Tageswahl entfernt; keine Aussage
+über freie Wochenenden. Mobile Matrix horizontal scrollbar, Platzspalte bleibt
+sichtbar. Tagesansicht weiterhin für schnelle mobile Nutzung.
+
+Platzsymbol im Uhrzeigersinn statt gegen den Uhrzeigersinn geneigt (+8 Grad),
+2,5-fache Größe auf Desktop und Handy. Exakte Flächenfarben #FFC300 / #C4553A;
+rote Jugend-Markierung kräftiger #EAA18A statt blassem #F2E5DF. Änderungen nur
+im Platzplan, keine globalen redaktionellen Textmarker verändert.
+
+Vorschau und PDF-/JPEG-Downloads auf der Seite, automatisch passend zur Farbwelt.
+assets/docs/tfb-platzbelegung-sommer-2027-{black-crail,midnight-amber}.{pdf,jpg}.
+PDFs je eine echte A4-Querformatseite (841,89 × 595,28 pt), vektorielle Logos,
+eingebettete Instanzen der Website-Schriften, 29 Belegungen. JPEGs direkt aus den
+PDFs bei 300 dpi (3508 × 2481 px), keine separate Datenpflege. PDFs ca. 30 KB,
+JPEGs unter 1 MB. Vier Dateien im Offlinecache. Reproduzierbarer Builder:
+tools/build-court-plan-downloads.py mit ReportLab/fonttools/svglib/pypdf/Poppler;
+Daten ausschließlich aus assets/data/court-plan.js. Keine Datenbankänderung.
+
+Beide PDF-Seiten visuell kontrolliert; Seitenformat, Seitenzahl und Häufigkeit
+aller Mannschaftsbezeichnungen und Zeiten gegen Quelldaten geprüft. Browsertests
+Chromium/WebKit bei 375/390/760/834/1440 px in beiden Farbwelten erfolgreich:
+fünf Tage, sechs Plätze, 29 Belegungen, feste Platzspalte bei horizontalem Scrollen,
+keine Seitenüberbreite, keine abgeschnittenen Einträge, Vorschau, themenabhängige
+Downloadlinks, geladene Vorschaubilder, Symbolgröße/-neigung, Tag/Woche und
+Sportnavigation. 308 öffentliche Dateien im Veröffentlichungspaket validiert.
+
+
 ## Beitragspflege direkt im Clubbereich · 09.11.2026
 
 Veröffentlichung bestätigt: 4f71748, Pages-Lauf 42709215859 erfolgreich. Live-Frontend mit isolierter API in Chromium/WebKit bei 834 px auf neuen Club-Zugang, fehlenden globalen Button, Speichern und Konflikte geprüft; erfolgreich. Keine produktiven Testbeträge gespeichert.

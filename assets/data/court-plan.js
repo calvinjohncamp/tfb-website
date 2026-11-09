@@ -36,7 +36,7 @@
   ];
   TFB.courtPlanData = Object.freeze({
     season: 'Sommer 2027', courts: Object.freeze([1, 2, 3, 4, 6, 7]),
-    days: Object.freeze(['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag']),
+    days: Object.freeze(['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag']),
     entries: Object.freeze(rows.map(([day, court, start, end, label, kind, cell]) => Object.freeze({ day, court, start, end, label, kind, cell }))),
   });
 })();

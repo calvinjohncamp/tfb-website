@@ -35,17 +35,22 @@ for(const engine of [chromium,webkit]){
   await plan.getByRole('button',{name:'Dienstag',exact:true}).click();assert.equal(await plan.locator('.cp-event').count(),6);
   assert.match(await plan.locator('.cp-event').filter({hasText:'Tr. Johann'}).innerText(),/17:00–21:00 Uhr/);
   await plan.getByRole('button',{name:'Mittwoch',exact:true}).click();assert.equal(await plan.locator('.cp-event').count(),7);
-  await plan.getByRole('button',{name:'Ganze Woche',exact:true}).click();assert.equal(await plan.locator('.cp-event').count(),29);assert.equal(await plan.locator('.cp-day').count(),7);
+  await plan.getByRole('button',{name:'Ganze Woche',exact:true}).click();assert.equal(await plan.locator('.cp-matrix-event').count(),29);assert.equal(await plan.locator('.cp-matrix tbody tr').count(),6);assert.equal(await plan.locator('.cp-matrix thead th').count(),6);assert.equal(await plan.getByRole('button',{name:'Samstag',exact:true}).count(),0);assert.equal(await plan.getByRole('button',{name:'Sonntag',exact:true}).count(),0);
   // Every visible event must fit its box, including the one-hour trainer entry.
-  assert.deepEqual(await plan.locator('.cp-event').evaluateAll(es=>es.filter(e=>e.scrollHeight>e.clientHeight+1||e.scrollWidth>e.clientWidth+1).map(e=>e.textContent)),[]);
+  assert.deepEqual(await plan.locator('.cp-matrix-event').evaluateAll(es=>es.filter(e=>e.scrollHeight>e.clientHeight+1||e.scrollWidth>e.clientWidth+1).map(e=>e.textContent)),[]);
   assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
-  await plan.getByRole('button',{name:'Samstag',exact:true}).click();assert.equal(await plan.locator('.cp-event').count(),0);assert.match(await plan.locator('.cp-empty').innerText(),/keine festen Belegungen/);
+  if(width<900){const region=plan.locator('.cp-matrix-scroll'),cell=plan.locator('.cp-matrix tbody th').first();const before=await cell.evaluate(e=>e.getBoundingClientRect().left);await region.evaluate(e=>{e.scrollLeft=250;});assert.ok(Math.abs(await cell.evaluate(e=>e.getBoundingClientRect().left)-before)<2,'Court column stays visible during horizontal scrolling');await region.evaluate(e=>{e.scrollLeft=0;});}
+  await plan.getByRole('button',{name:'Wochenplan als Druckvorschau öffnen',exact:true}).click();await p.locator('.cp-download-preview').waitFor();assert.equal(await p.locator('.cp-download-preview a[download]:visible').count(),2);await p.locator('.sheet-close').click();
   // Keyboard activation uses native buttons and keeps focus on the selected day.
   await plan.getByRole('button',{name:'Donnerstag',exact:true}).press('Enter');assert.equal(await plan.locator('.cp-event').count(),8);
   for(const yellow of [false,true]){
    // The actual public color switch has the accessible name "Farbwelt wechseln".
    if(await p.locator('html').evaluate(e=>e.classList.contains('tfb-logo-midnight-amber'))!==yellow)await p.locator('.topbar [data-tfb-brand]').click();
    assert.equal(await plan.evaluate(e=>getComputedStyle(e).getPropertyValue('--cp-accent').trim()),yellow?'#FFC300':'#C4553A');
+   const pdf=plan.locator('.cp-downloads a[download]:visible').first();assert.match(await pdf.getAttribute('href'),new RegExp(yellow?'midnight-amber.pdf':'black-crail.pdf'));
+   const icon=plan.locator('.cp-head > .cp-court-icon');const geometry=await icon.evaluate(e=>({width:e.offsetWidth,matrix:getComputedStyle(e).transform}));assert.ok(geometry.width>=(width<760?160:240));assert.ok(Number(geometry.matrix.split(',')[1])>0,'Court tilts clockwise');
+   await plan.locator('.cp-downloads img:visible').scrollIntoViewIfNeeded();await p.waitForFunction(()=>{const img=document.querySelector('.cp-downloads img.cp-brand-'+(document.documentElement.classList.contains('tfb-logo-midnight-amber')?'amber':'crail'));return img?.complete&&img.naturalWidth>0;});
+   await plan.getByRole('button',{name:'Ganze Woche',exact:true}).click();assert.equal(await plan.locator('.cp-matrix-event').count(),29);assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);await p.screenshot({path:`/private/tmp/tfb-court-matrix-${engine.name()}-${width}-${yellow?'amber':'crail'}.png`,fullPage:true});await plan.getByRole('button',{name:'Donnerstag',exact:true}).click();
    assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
    await p.screenshot({path:`/private/tmp/tfb-court-${engine.name()}-${width}-${yellow?'amber':'crail'}.png`,fullPage:true});
   }
@@ -53,6 +58,6 @@ for(const engine of [chromium,webkit]){
   await p.locator('[data-action=splash-enter]').click();await p.locator('nav[aria-label="Bereiche"] a[href="#sport"]').click();
   await p.getByRole('link',{name:'Training',exact:true}).click();await p.locator('.training-coaches,.trainer-grid,.club-people').first().waitFor();assert.equal(await p.locator('.court-plan').count(),0);
   await p.getByRole('link',{name:'Mannschaften',exact:true}).click();await p.locator('.team-row').first().waitFor();
-  assert.deepEqual(errors,[]);await c.close();console.log(`PASS ${engine.name()} ${width}: 29 assignments, day/week controls, court numbers, empty days, themes, legibility and Sport navigation`);
+  assert.deepEqual(errors,[]);await c.close();console.log(`PASS ${engine.name()} ${width}: 29 assignments, five-day matrix, print preview/downloads, court geometry, themes, legibility and Sport navigation`);
  }}finally{await browser.close();}
 }
