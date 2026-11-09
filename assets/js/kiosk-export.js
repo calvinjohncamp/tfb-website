@@ -6,7 +6,7 @@ export function exportPlan({kind,year,month=null,today}){
  let from=year+'-01-01',to;
  if(kind==='month'){if(!month||month>today.slice(0,7))throw Error('Bitte zuerst einen begonnenen Monat auswählen.');from=month+'-01';to=lastDay(month);}
  else if(kind==='cumulative')to=month?lastDay(month):year+'-12-31';
- else if(kind==='closing'){to=year+'-12-31';if(today<to)throw Error('Der Jahresabschluss ist ab dem 31.12.'+year+' verfügbar.');}
+ else if(kind==='closing'){to=year+'-12-31';if(today<String(Number(year)+1)+'-01-01')throw Error('Der Jahresabschluss ist ab dem 01.01.'+(Number(year)+1)+' verfügbar.');}
  else throw Error('Unbekannter Export.');
  if(to>today)to=today;
  const months=[];for(let n=Number(from.slice(5,7));n<=Number(to.slice(5,7));n++)months.push(year+'-'+String(n).padStart(2,'0'));

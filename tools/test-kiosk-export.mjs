@@ -7,8 +7,8 @@ test('month, cumulative cutoff and annual closing use explicit calendar boundari
  assert.equal(exportPlan({kind:'cumulative',year:'2026',month:'2026-10',today}).to,'2026-10-31');
  assert.equal(exportPlan({kind:'cumulative',year:'2026',month:'2026-11',today}).to,today);
  assert.equal(exportPlan({kind:'cumulative',year:'2025',today}).months.length,12);
- assert.throws(()=>exportPlan({kind:'closing',year:'2026',today}),/31.12.2026/);
- assert.equal(exportPlan({kind:'closing',year:'2026',today:'2026-12-31'}).to,'2026-12-31');
+ assert.throws(()=>exportPlan({kind:'closing',year:'2026',today}),/01.01.2027/);
+ assert.throws(()=>exportPlan({kind:'closing',year:'2026',today:'2026-12-31'}),/01.01.2027/);assert.equal(exportPlan({kind:'closing',year:'2026',today:'2027-01-01'}).to,'2026-12-31');
  assert.throws(()=>exportPlan({kind:'month',year:'2026',today}),/Monat/);
  assert.throws(()=>exportPlan({kind:'cumulative',year:'2027',today}),/begonnenes/);
 });
