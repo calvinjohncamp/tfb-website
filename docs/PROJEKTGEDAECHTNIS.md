@@ -21,6 +21,10 @@ Syntaxprüfung und Chromium-/WebKit-Prüfung der bestehenden Buchungs-/Export-
 abläufe, eigener Abrechnungen sowie eines leeren Vorjahresmonats. Service Worker
 v355 sorgt für die aktualisierten Texte.
 
+Live bestätigt: Commit 963111c, Pages-Workflow 42575184215 erfolgreich.
+App, Konfiguration, gemeinsame Abrechnung und Service Worker v355 öffentlich
+bytegleich mit dem geprüften Stand.
+
 ## Klare Stornos und Tagesumsatz mit Bildvorschau · v354 · 09.11.2026
 
 Die gemeinsame Admin-/Mitgliederansicht nennt den Bereich nun „Storno und

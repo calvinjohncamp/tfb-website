@@ -20,3 +20,7 @@ konkretem Auftrag ausgeführt; keine Daten jetzt zurückgesetzt oder gelöscht.
 Syntaxprüfung und Chromium-/WebKit-Prüfung der bestehenden Buchungs-/Export-
 abläufe, eigener Abrechnungen sowie eines leeren Vorjahresmonats. Service Worker
 v355 sorgt für die aktualisierten Texte.
+
+Live bestätigt: Commit 963111c, Pages-Workflow 42575184215 erfolgreich.
+App, Konfiguration, gemeinsame Abrechnung und Service Worker v355 öffentlich
+bytegleich mit dem geprüften Stand.
