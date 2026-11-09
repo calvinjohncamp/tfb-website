@@ -1,5 +1,42 @@
 # TFB-Kiosk – Projektgedächtnis und Übergabe
 
+## Nutzerbewertung und Abstimmung mit der Buchhaltung · 09.11.2026
+
+Der Nutzer ist mit dem aktuellen Kiosk-Zwischenstand aus Sicht eines normalen
+Admins ausdrücklich sehr zufrieden und hält ihn für nahezu livefähig.
+Kalender, persönliche und clubweite Abrechnung, Einzelbuchungen, Stornos,
+Admin-Gutschriften, CSV und Tagesumsatz als Bild sind als Arbeitsstand akzeptiert.
+Kein weiterer Umbau der Oberfläche oder Ausbau zu einer vollständigen
+Finanzbuchhaltung ist daraus automatisch abzuleiten.
+
+Arbeitshypothese des Nutzers: Buchhalter/Steuerberater verbucht den Verein
+voraussichtlich hauptsächlich anhand von Kontoauszügen und Lastschriftdaten
+der Bank. Die App könnte ihm - wie dem Admin - vor allem als nachvollziehbare
+Verbrauchsaufzeichnung und Abgleich dienen. Das ist noch keine bestätigte
+Arbeitsweise oder Freigabe des Finanzverantwortlichen; der Nutzer bespricht
+Rolle und benötigte Übergabedaten persönlich mit ihm.
+
+Die neutrale Prüfung ergab eine gute Einzelbuchungs-/Korrekturhistorie. Offen
+bleiben verbindliche Abrechnungsläufe und spätere Korrekturen, Zahlungsabgleich,
+passendes Buchhaltungsformat/steuerliche Zuordnung, langfristige Abschluss-
+unterlagen und Verfahrensbeschreibung sowie Mandat/Bankübergabe/Vorankündigung.
+Zusätzlich zu klären: eingeschränkter Buchhaltungszugang und Einordnung möglicher
+Kassenpflichten. Diese Punkte sind Abstimmungsgrundlage, kein Auftrag, jetzt
+sämtliche Funktionen zu entwickeln. Erst tatsächlichen Bedarf mit Finanzwart
+und Buchhalter klären; einfache bestehende Lösung möglichst beibehalten.
+
+Einseitige A4-Abstimmungsunterlage im TFB-Look mit roter Logovariante erstellt
+und visuell geprüft: Projektordner output/pdf/
+TFB-Kiosk-Abrechnung-Abstimmung-Finanzvorstand.pdf.
+Sie enthält bereits integrierte Funktionen, offene Punkte und den Vorschlag,
+einen Beispielmonat von den Käufen bis zum Bankeinzug und Buchhaltungsabgleich
+gemeinsam durchzugehen. PDF lokal im Projekt, nicht öffentlich veröffentlicht.
+
+Weiterhin gilt: Echtabbuchungen noch nicht aktiviert. Geplante spätere
+Nullstellung vor dem Start erst auf konkreten Auftrag; jetzt keine Buchungen,
+Abrechnungen oder Statistiken löschen. Aktueller Live-Stand bleibt v355;
+diese Aktualisierung betrifft ausschließlich Projektwissen und Übergabe.
+
 ## Neutrale Kiosk-Texte für die fertige Oberfläche · v355 · 09.11.2026
 
 Auf ausdrücklichen Wunsch keine Vorführ-/Testbuchungs-Bezeichnungen mehr in
