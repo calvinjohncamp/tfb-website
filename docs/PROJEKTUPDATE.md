@@ -2,6 +2,10 @@
 
 ## Schlichte Trainerkontakte und App-Logo · v363 · 09.11.2026
 
+Veröffentlicht: c498fc6, Pages-Lauf 42599609235 erfolgreich. Live-Dateien
+bytegleich geprüft, keine unterstrichenen Trainerkontakte, exakter App-Iconpfad
+in „Über uns“, Dialog öffnet und alle vier Porträts laden ohne Skriptfehler.
+
 E-Mail und Handy unter den Trainerkarten ohne Unterstreichung (auch Hover/Fokus).
 mailto:- und tel:-Verknüpfungen bleiben auf allen Geräten funktionsfähig;
 Telefonlinks können auch am Desktop an vorhandene Telefon-/Handoff-Apps gehen.
