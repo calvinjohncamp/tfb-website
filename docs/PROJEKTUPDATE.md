@@ -1,5 +1,27 @@
 # TFB – Projektupdate vom 09.11.2026
 
+## Produkt- und Kategoriepflege vom Nutzer bestätigt · 09.11.2026
+
+Der Nutzer hat die frühere Kategorie „Spezialitäten“ für Bockwurst, Grillfleisch
+und ähnliche Speisen selbst in der App umbenannt. Gewählte Bezeichnung:
+„Stärkung gefällig?“ (vom Nutzer als „Stärkung gefällig“ bezeichnet). Die
+Inhaltsänderung ist laut Nutzer bereits umgesetzt; nicht erneut anlegen,
+überschreiben oder auf „Spezialitäten“ zurücksetzen. Maßgeblich bleibt der in
+der App gepflegte Katalog, nicht die ältere Bezeichnung im Standardkatalog.
+
+Ausdrückliche positive Abnahme: Produkte und Kategorien lassen sich jetzt sehr
+komfortabel handhaben und bearbeiten. Bibliothek mit Kiosk-Kategorien, gemeinsamer
+Reihenfolge, kompakten Karten, festen Statusbereichen, schneller Statusänderung
+und Kategorieverwaltung ist als Arbeitsstand akzeptiert. Kein weiterer UI-Umbau
+oder Sortimentswechsel aus dieser Rückmeldung ableiten.
+
+Aktueller veröffentlichter Programmstand bleibt v359. Diese Aktualisierung
+sichert ausschließlich Projektwissen, Projektupdate und Übergabe. Bestehende
+Nutzeränderungen im Live-Sortiment erhalten. Die offenen Absprachen mit Finanzwart/
+Buchhalter zu tatsächlichem Einzug und Übergabedaten bleiben bestehen; echte
+Abbuchungen weiterhin nicht aktiviert. Spätere Nullstellung erst bei konkretem
+Auftrag, jetzt keine Daten löschen oder zurücksetzen.
+
 ## Kategoriepflege in der Produktbibliothek · v359 · 09.11.2026
 
 Oben + Neue Kategorie, an jeder aktiven Kategorie Bearbeiten neben + Artikel.
