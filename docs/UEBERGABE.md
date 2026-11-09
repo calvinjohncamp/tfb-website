@@ -1,5 +1,19 @@
 # TFB – Übergabe für die nächste Sitzung
 
+## Beitragspflege direkt im Clubbereich · 09.11.2026
+
+Auf Nutzerwunsch den globalen Adminbutton Beiträge entfernt. Stattdessen öffnet
+der Button unter Club → Mitglied werden im Seiten-Bearbeitungsmodus direkt den
+Beitragseditor und heißt dann Beiträge bearbeiten. Öffentliche Ansicht weiterhin
+Mitgliedsbeiträge. Weg: Stift einschalten → Clubseite bearbeiten → Beiträge bearbeiten.
+Beträge, Kategorien, Rollen und zentrale Speicherung unverändert.
+
+Bestehende Browserprüfung auf den neuen Weg angepasst: keine globale Verknüpfung,
+kontextueller Editor, 9 Eingaben, Abbrechen, Validierung, zentrales Speichern,
+Gast-/Mitgliederansicht und Konfliktschutz; Chromium/WebKit je 390/834/1440 px
+vollständig erfolgreich. Gezielter öffentlicher Beitragstest ebenfalls erfolgreich.
+
+
 ## Platzbelegung Sommer 2027 · 09.11.2026
 
 Veröffentlichung bestätigt: Programm f2bec7c, Pages-Lauf 42708346210 erfolgreich.
