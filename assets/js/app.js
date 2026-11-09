@@ -515,7 +515,7 @@
           <div class="deckel-top">${logo('ball', 'deckel-ball')}<span class="coaster-kicker">Mein Bierdeckel</span><span class="deckel-month">${esc(dateLabel)}</span></div>
           <strong class="coaster-amount">${euro(totalToday)}</strong>
           <div class="coaster-strokes">${strokes}</div>
-          <span class="coaster-note">${esc(monthName(open.month, false))} gesamt <b>${euro(open.totalCents)}</b><br>Vorführung · keine Abbuchung</span>
+          <span class="coaster-note">${esc(monthName(open.month, false))} gesamt <b>${euro(open.totalCents)}</b></span>
           ${ownerName ? `<span class="coaster-owner" title="${esc(ownerName)}">${esc(ownerName)}</span>` : ''}
         </div>
       </a>
@@ -643,7 +643,6 @@
         <button type="button" class="btn primary block big" data-confirm>
           Auf meinen Bierdeckel · <span data-total>${euro(p.price)}</span>
         </button>
-        <p class="fineprint">Vorführbetrieb · keine echten Forderungen oder Abbuchungen</p>
       </div>`);
     update();
     $sheet.querySelectorAll('[data-step]').forEach((b) => b.addEventListener('click', () => {
@@ -732,7 +731,6 @@
           <span class="muted">${esc(monthName(open.month))}</span>
         </div>
         <strong class="month-amount">${euro(open.totalCents)}</strong>
-        <p class="muted">Vorführbetrieb · keine Abbuchung</p>
         ${groups.size ? [...groups.values()].map((g) => `
           <div class="day">
             <h3>${esc(g.label)}</h3>
@@ -753,16 +751,13 @@
         <div class="section-head"><h2>Abgeschlossene Monate</h2></div>
         ${closed.length ? `<div class="card list">${closed.map((s) => `
           <div class="statement">
-            <div><strong>${esc(monthName(s.month))}</strong><span class="muted small">${strokesWord(s.itemCount)}</span>${s.demo ? '<span class="muted small">Beispiel · fiktiver Betrag</span>' : ''}</div>
+            <div><strong>${esc(monthName(s.month))}</strong><span class="muted small">${strokesWord(s.itemCount)}</span></div>
             <div class="statement-right">
               <b>${euro(s.totalCents)}</b>
-              ${s.status === 'collected'
-                ? '<span class="pill soon">Vorführbetrag</span>'
-                : '<span class="pill soon">Vorführbetrag</span>'}
+              <span class="pill soon">Abrechnungsbetrag</span>
             </div>
           </div>`).join('')}</div>` : '<p class="empty">Noch keine abgeschlossenen Monate.</p>'}
       </section>
-      <p class="fineprint">Zahlungsweg und Einzugstermin sind noch nicht festgelegt. Es erfolgen keine echten Abbuchungen.</p>
       ${partnerSlot('abrechnungen', 'Deine Abrechnung wird dir präsentiert von')}`;
   }
 
@@ -988,8 +983,8 @@
 
         <section class="acct-card">
           ${row(true, `Mitglied der ${esc(cfg.clubName)}`, 'Erkannt über deine E-Mail-Adresse aus der Mitgliederliste – du musst nichts eintragen.')}
-          ${row(m.hasConsent, 'Kiosk · Vorführbetrieb', m.hasConsent
-            ? `Freigeschaltet am ${esc(consentDate)} · keine Abbuchungen`
+          ${row(m.hasConsent, 'Kiosk', m.hasConsent
+            ? `Freigeschaltet am ${esc(consentDate)}`
             : 'Noch nicht freigeschaltet – beim ersten Besuch im Kiosk einmal zustimmen.')}
         </section>
 
