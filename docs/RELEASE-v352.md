@@ -44,3 +44,6 @@ Dateiname ohne Vorfuehrung, verständliche Überschriften, enthaltene Datensätz
 und bisherige Bedienung geprüft. Keine Backendänderung/Migration/Datenänderung.
 Service Worker v352.
 
+Veröffentlicht: Commit 865c59d, Pages-Workflow 42571464111 erfolgreich.
+Live-Exportmodul und Billing-JavaScript bytegleich mit dem geprüften Code;
+Service Worker v352 bestätigt.
