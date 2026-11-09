@@ -38,6 +38,12 @@ Gezielt abgelehnte Anfrage wird zurückgenommen, Serverstatus bleibt aktiv.
 Farbwerte beider Welten, responsive Ansichten, bestehende Preis-/Historien-
 absicherungen und feste Bereichsreihenfolge geprüft. Service Worker v357.
 
+Live bestätigt: Code c0abcc1, Testnachschärfung 7a16df3. Pages-Workflow
+42585860931 erfolgreich; Worker-Version 42744063-ef10-44b3-bd7e-28012e626f1d.
+Bibliotheksmodul, Synchronisation, CSS und Service Worker v357 öffentlich bytegleich.
+Kein Einrichtungsskript erneut ausgeführt; vorhandene Nutzeränderungen am
+Sortiment und sämtliche Buchungen unverändert belassen.
+
 ## Produktbibliothek und stundenweiser Verleih · v356 · 09.11.2026
 
 Freigabe: Produktbibliothek direkt umsetzen/veröffentlichen, Padelschläger-Verleih
