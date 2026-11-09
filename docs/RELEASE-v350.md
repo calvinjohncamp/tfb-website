@@ -31,3 +31,6 @@ frisch von origin/main (Dokumentationsstand 6231222) geklont. Die frühere
 temporäre Arbeitskopie war nicht mehr verfügbar; andere Dropbox-Änderungen
 wurden nicht in die Veröffentlichung übernommen.
 
+Veröffentlicht: Commit d354002, Pages-Workflow 42570420535 erfolgreich.
+Live-Dateien für Monatsabschluss, passende CSV-Beschriftung, Aktuelles Jahr
+und Service Worker v350 auf joern-kaemper.de bestätigt.
