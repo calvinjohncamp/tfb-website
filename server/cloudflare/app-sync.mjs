@@ -350,5 +350,7 @@ export async function syncCommit(env,member,data) {
   statements.push(...kioskCommitStatements(env,member,ops,c,data.id,signature));
   let result;try{result=await env.DB.batch(statements);}catch(e){if(String(e.message).includes('KIOSK_CREDIT_EXCEEDS_PURCHASE'))fail(409,'Diese Buchung wurde inzwischen korrigiert. Bitte die Abrechnung neu laden.');throw e;}
   if(!result[0].meta.changes)fail(409,'Die Daten wurden auf einem anderen Gerät geändert. Bitte neu laden.');
+  // Catalog-only saves acknowledge the exact normalized catalog. No full app/media reload needed.
+  if(ops.length===1&&ops[0].kind==='catalog'){const o=ops[0];return {ok:true,catalogRecord:{kind:o.kind,id:o.id,ownerId:o.ownerId,scope:o.scope,revision:o.revision+1,deleted:false,value:o.value}};}
   return {ok:true};
 }

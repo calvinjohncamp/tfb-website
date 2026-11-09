@@ -70,15 +70,20 @@
   async function commit(operations,importing=false) {
     if(!operations.length)return;
     if(pending)throw Error('Eine frühere Speicherung muss zuerst abgeglichen werden. Bitte die App neu öffnen.');
-    const command={id:id(),operations,importing}, ownerId=member.id, current=generation;
+    const command={id:id(),operations,importing}, ownerId=member.id, current=generation;let acknowledgement;
     await rememberPending(command,ownerId); // Durable before sending; exact replay after interrupted requests.
-    try {if(current!==generation)throw Error('Die Anmeldung wurde inzwischen geändert.');await call('/app/commit',command);await rememberPending(null,ownerId);if(current!==generation)throw Error('Die Anmeldung wurde inzwischen geändert.');}
+    try {if(current!==generation)throw Error('Die Anmeldung wurde inzwischen geändert.');acknowledgement=await call('/app/commit',command);await rememberPending(null,ownerId);if(current!==generation)throw Error('Die Anmeldung wurde inzwischen geändert.');}
     catch(err) {
       // Keep ambiguous network failures for safe replay, never invent a success.
       if(err.status&&err.status<500){await rememberPending(null,ownerId);if(member?.id===ownerId)await refresh(true).catch(()=>{});}
       api.syncError=err.message;throw err;
     }
-    guest=null;guestAt=0;await refresh(true);
+    guest=null;guestAt=0;
+    const saved=acknowledgement?.catalogRecord;
+    if(operations.length===1&&operations[0].kind==='catalog'&&saved&&saved.id==='club'){
+      state.records=state.records.filter(r=>!(r.kind==='catalog'&&r.id==='club'));state.records.push(saved);state.catalog=saved.value;
+      publicMember=await api.applySyncedData(state);last=Date.now();if(TFB.ui){TFB.ui.state.member=publicMember;TFB.ui.state.catalog=state.catalog;}
+    }else await refresh(true);
   }
   api.connectSync=async m=>serial(async()=>{
     if(member?.id===m.id&&state)return (await refresh())||publicMember||m;
@@ -103,7 +108,7 @@
     if(pending)throw Error('Die letzte Speicherung ist noch offen. Bitte die App neu öffnen.');
     if(name==='updateProfile'&&['firstName','lastName','email'].some(k=>args[0][k]!=null&&args[0][k]!==member[k]))throw Error('Änderungen an Name oder Anmelde-E-Mail bitte beim Verein vornehmen lassen.');
     const catalogBefore=name==='saveCatalog'?(args[1]?.expected??JSON.stringify(await api.catalog())):null;
-    await refresh();
+    if(name!=='saveCatalog')await refresh();
     if(catalogBefore!==null&&catalogBefore!==JSON.stringify(await api.catalog()))throw Error('Das Sortiment wurde inzwischen geändert. Bitte die Produktbibliothek aktualisieren und die Änderung erneut vornehmen.');
     const before=new Map(api.syncSnapshot().map(r=>[key(r),r]));
     let result;
