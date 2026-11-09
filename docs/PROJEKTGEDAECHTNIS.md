@@ -2,6 +2,12 @@
 
 ## Bereinigte SVG-Logos in beiden Farbwelten · 09.11.2026
 
+Veröffentlichung bestätigt: Programm ff0996e, Pages-Lauf 42697840167 erfolgreich.
+Live-Dateien index.html, partner-visibility.css, beide SVGs und sw.js bytegleich
+mit dem geprüften Paket. Öffentliche Website zusätzlich bei 390/1440 px in
+Chromium geprüft: beide Farbwelten, Header/Splash, transparente Naht und
+Farbumschalter erfolgreich. Sichtbare Live-Ansicht ebenfalls kontrolliert.
+
 Kopfbereich und Einstiegsseite verwenden die vom Nutzer abgenommene Vektorversion 3:
 assets/brand/tfb-logo-black-crail.svg bzw. tfb-logo-midnight-amber.svg (je ca. 11 KB).
 Beide Dateien enthalten ausschließlich Pfade und bewahren transparenten Hintergrund
