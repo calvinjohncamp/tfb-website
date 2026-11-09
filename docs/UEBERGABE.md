@@ -2,6 +2,14 @@
 
 ## Ruhiger Footer und Bierdeckel-Farbwelt · 09.11.2026
 
+Veröffentlichung bestätigt: Programm afdd7f1, Pages-Lauf 42702239487 erfolgreich.
+index.html, app.css, partner-visibility.css, app.js und sw.js live bytegleich mit
+dem geprüften Paket. Abschließende Live-Frontendprüfung in iPad-Breite (834 px)
+mit Chromium und WebKit, synthetischem Konto und isolierter API ebenfalls
+erfolgreich: beide Ballfarben, Footerstile, Datenschutzdialog und Neuladen.
+Öffentlicher Live-Footer zusätzlich sichtbar kontrolliert. Keine Server- oder
+Datenbankänderung erforderlich.
+
 Der Statistik-Datenschutzhinweis verwendet denselben dezenten Footerstil wie
 Impressum und Satzung: gleiche Schriftgröße/-stärke, Farbe und Abstände; flexible
 Zeilenumbrüche, gut bedienbarer Button und sichtbarer Tastaturfokus. Der vollständige
