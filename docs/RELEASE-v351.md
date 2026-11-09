@@ -27,3 +27,6 @@ aktuelle Sperre, aktivierte Vorjahre ohne Sperrhinweis und alle bisherigen
 CSV-/Abrechnungsabläufe. Keine Backendänderung, Migration, Buchungsänderung
 oder Bankaktion. Service Worker v351.
 
+Veröffentlicht: Commit 3582393, Pages-Workflow 42570750828 erfolgreich.
+Live-Dateien mit sichtbarem Sperrhinweis, 01.01.-Freigabe und Service Worker
+v351 auf joern-kaemper.de bestätigt.
