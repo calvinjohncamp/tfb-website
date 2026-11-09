@@ -2,7 +2,7 @@
 window.TFB = window.TFB || {};
 TFB.teams = {
  "source": "https://tvm.liga.nu/cgi-bin/WebObjects/nuLigaTENDE.woa/wa/clubTeams?club=35703",
- "updated": "02.11.2026",
+ "updated": "09.11.2026",
  "seasons": [
   {
    "season": "Winter 2026/2027",
