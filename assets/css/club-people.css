@@ -25,8 +25,8 @@
 .trainer-photo-tools img { width:64px; height:80px; object-fit:cover; border-radius:8px; }
 @media(max-width:1000px) { .trainer-grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:20px; } }
 @media(max-width:520px) { .trainer-grid { grid-template-columns:minmax(0,1fr); } .trainer-card { display:grid; grid-template-columns:minmax(110px, .8fr) minmax(0,1.2fr); } .trainer-card figure { aspect-ratio:auto; min-height:240px; } .trainer-copy { padding:18px 14px; } .trainer-copy .trainer-eyebrow { min-height:0; } }
-.block-board .board-about-card .board-about-mark { background:#c4553a; color:#fff; }
-:root.tfb-logo-midnight-amber .block-board .board-about-card .board-about-mark { background:#001d3d; color:#ffc300; }
+.block-board .board-about-card .board-about-mark { background:#efefef; }
+.block-board .board-about-card .board-about-mark img { object-fit:contain; object-position:center; }
 .block-board .board-about-card:hover { box-shadow:inset 0 0 0 1px #c4553a; }
 :root.tfb-logo-midnight-amber .block-board .board-about-card:hover { box-shadow:inset 0 0 0 1px #ffc300; }
 
@@ -37,7 +37,7 @@
 .trainer-contact { margin-top:auto; padding:16px 20px 20px; border-top:1px solid var(--line); gap:12px; }
 .trainer-contact > div { display:grid; gap:4px; min-width:0; }
 .trainer-contact > div > span:first-child { font-size:.62rem; font-weight:700; text-transform:uppercase; letter-spacing:.1em; color:var(--muted); }
-.trainer-contact a { color:var(--ink); text-decoration-thickness:1px; text-underline-offset:3px; }
+.trainer-contact a, .trainer-contact a:hover, .trainer-contact a:focus-visible { color:var(--ink); text-decoration:none; }
 .trainer-contact-empty { color:var(--muted); }
 .trainer-editor-photo { display:block; width:64px; height:85px; overflow:hidden; border-radius:8px; }
 .trainer-editor-photo .photo-frame { height:100%; }

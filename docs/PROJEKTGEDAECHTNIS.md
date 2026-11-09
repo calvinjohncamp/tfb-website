@@ -1,5 +1,18 @@
 # TFB-Kiosk – Projektgedächtnis und Übergabe
 
+## Schlichte Trainerkontakte und App-Logo · v363 · 09.11.2026
+
+E-Mail und Handy unter den Trainerkarten ohne Unterstreichung (auch Hover/Fokus).
+mailto:- und tel:-Verknüpfungen bleiben auf allen Geräten funktionsfähig;
+Telefonlinks können auch am Desktop an vorhandene Telefon-/Handoff-Apps gehen.
+„Über uns“ beim Vorstand verwendet exakt assets/icons/icon-180.png?v=305,
+dieselbe Originaldatei wie das iPhone-Startbildschirmsymbol: Signature-Blau ohne
+Ball auf dem Originalhintergrund. Bestehender runder Rahmen bleibt bestehen,
+Bild zentriert/ungekürzt und unabhängig von der Farbwelt.
+Chrome/WebKit geprüft: beide Welten, Links/Interaktionen, exakter Iconpfad und
+Dialog. Keine CMS-Inhalte ändern: Nutzer hat Johanns bekannte Daten inzwischen
+selbst ergänzt; Isabels Handynummer bleibt noch offen und folgt vom Nutzer.
+
 ## Trainerreihenfolge und Statuspflege · v362 · 09.11.2026
 
 Veröffentlicht: Programm 328d2c4, Pages-Lauf 42597120824 erfolgreich; Worker
