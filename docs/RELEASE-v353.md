@@ -50,3 +50,6 @@ Buchungen, aktuelle und vergangene Monatsmarkierungen, eigener Tages-JPG.
 Bestehende CSV-/Abrechnungs-/Fotoabläufe weiterhin erfolgreich. Service Worker
 v353 lädt das neue Bildmodul vor.
 
+Veröffentlicht: Commit 978b312, Pages-Workflow 42573002722 erfolgreich.
+282 öffentliche Webdateien vorbereitet. Live-Billing, Bildmodul und CSS
+bytegleich mit dem geprüften Code; Service Worker v353 bestätigt.
