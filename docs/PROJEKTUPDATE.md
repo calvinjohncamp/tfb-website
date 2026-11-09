@@ -1,5 +1,23 @@
 # TFB – Projektupdate vom 09.11.2026
 
+## Trainerbilder einpassen und Kontaktfelder · v361 · 09.11.2026
+
+Trainerpflege: „Foto einpassen“ nutzt den vorhandenen Foto-Rahmendialog mit
+Zoom, horizontaler und vertikaler Verschiebung sowie Originalansicht. Gespeichert
+wird nur der Ausschnitt (trainers[].frame), Originalbild unverändert. Neues Foto
+setzt den bisherigen Ausschnitt zurück. Hochformat 3:4 identisch im Dialog und
+auf Desktop/Tablet/Mobil; Handy-Kontaktbereich steht unter der gesamten Karte.
+Unter allen vier Trainern eigene dezente Kontaktfelder E-Mail und Handy,
+anklickbar bei vorhandenen Angaben. Fehlende Angaben bleiben als Strich sichtbar.
+Admin kann beide Felder in der Trainerpflege ergänzen/ändern/leeren.
+
+Leons veröffentlichte Daten geprüft unter https://www.tfbielstein.de/trainer/:
+leonkaufmann2002@icloud.com, 0176 76731093. Einmalige Standardergänzung, spätere
+bewusste Änderungen/Leerung bleiben erhalten (contactDefaultsApplied). Für die
+übrigen Trainer keine Kontaktdaten ergänzen: Nutzer übernimmt sie selbst.
+Chrome/Safari geprüft: Kontaktfelder, Foto-Upload, gespeicherter Zoom 1,7 und
+Höhenposition 80 % nach Neuladen und in öffentlicher Gastansicht.
+
 ## Trainerteam und Vorstandstext · v360 · 09.11.2026
 
 Veröffentlichung v360 bestätigt: Programmcommit 36eca8d, GitHub-Pages-Lauf
