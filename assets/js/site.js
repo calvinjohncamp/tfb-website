@@ -523,12 +523,7 @@
             ${TFB.clubArchive?.entryLink() || ''}
           </section>`;
         }
-        if (b.id === 's-training') return `<section class="training-coach">
-          <div class="training-coach-copy">${b.subtitle ? `<p class="feature-sub">${signatureText(b.subtitle)}</p>` : ''}
-          ${b.title ? `<h2>${esc(b.title)}</h2>` : ''}${paragraphs(b.text)}
-          <div class="training-contact">${b.phone ? `<a href="tel:${esc(b.phone.replace(/[^+0-9]/g, ''))}">${esc(b.phone)}</a>` : ''}
-          ${b.email ? `<a href="mailto:${esc(b.email)}">${esc(b.email)}</a>` : ''}</div></div>
-          ${b.image ? `<figure class="training-coach-photo">${picture(b.image, b.id, b.title)}</figure>` : ''}</section>`;
+        if (b.id === 's-training') return TFB.clubPeople.render(b, ref => images[ref] || ref);
         if (b.id === 'v-history') return `<section class="block-text story-teaser">${b.title ? `<h2><a class="post-title-link" href="#club/history">${esc(b.title)}</a></h2>` : ''}${paragraphs(b.text)}
           <p class="feature-more"><a class="more-link" href="#club/history">${esc(b.linkLabel || 'Mehr erfahren')} <span aria-hidden="true"><svg class="link-arrow" viewBox="0 0 806 1000" aria-hidden="true" focusable="false"><path transform="translate(0 755) scale(1 -1)" d="M528 -14 448 66 546 164 587 189 581 206 533 198H50V312H533L581 304L587 321L546 346L448 444L528 524L756 296V214Z"/></svg></span></a></p></section>`;
         return `<section class="block-text" data-site-content="${esc(b.id)}">${b.title ? `<h2>${esc(b.title)}</h2>` : ''}${paragraphs(b.text)}</section>`;
@@ -564,6 +559,7 @@
             ${b.title ? `<h2>${esc(b.title)}</h2>` : ''}
             <div class="people-grid">${(b.id === 'v-vorstand' ? boardPeople : b.people || []).map((p, i) => `
               <div class="person card">${b.id === 'v-vorstand' && p.avatar ? `<button type="button" class="person-dot board-photo" data-action="board-photo-open" data-index="${i}" title="Originalfoto von ${esc(p.name)} ansehen" aria-label="Originalfoto von ${esc(p.name)} ansehen"><img src="${esc(p.avatar)}" alt=""></button>` : `<span class="person-dot">${p.avatar ? `<img src="${esc(p.avatar)}" alt="">` : esc((p.name || p.role || '?').split(/\s+/).filter(Boolean).map((n) => n[0]).slice(0, 2).join(''))}</span>`}<div><small>${esc(p.role)}</small><strong>${esc(p.name)}</strong>${p.phone ? `<a class="board-email" href="tel:${esc(p.phone.replace(/[^+0-9]/g, ''))}">${esc(p.phone)}</a>` : ''}${p.email ? `<a class="board-email" href="mailto:${esc(p.email)}">${esc(p.email)}</a>` : ''}</div></div>`).join('')}
+            ${b.id === 'v-vorstand' ? `<button type="button" class="person card board-about-card" data-action="board-about" aria-haspopup="dialog"><span class="person-dot board-about-mark" aria-hidden="true">TFB</span><span><small>Unser Verein</small><strong>${esc((b.about || TFB.clubPeople.about).title)}</strong><span class="board-about-note">Gemeinschaft. Engagement. Tennis.</span></span></button>` : ''}
             </div>
           </section>`;
       case 'facts':
@@ -2137,6 +2133,7 @@
 
   function openBlockEditor(id, isNew = false, startTab = 'home') {
     if (id === 'v-vorstand') return TFB.board.open();
+    if (id === 's-training') return TFB.clubPeople.openEditor();
     const { openSheet, closeSheet } = ui();
     const original = findBlock(id);
     if (!original) return;

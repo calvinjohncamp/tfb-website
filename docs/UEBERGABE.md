@@ -1,5 +1,35 @@
 # TFB – Übergabe für die nächste Sitzung
 
+## Trainerteam und Vorstandstext · v360 · 09.11.2026
+
+Sport → Training: vier Porträtkarten für Leon Kaufmann, Johann Szakacs,
+Isabel Hähn und Basti Manz. Einführung aus der alten Vereins-App aufgeteilt in
+Teamtext und Personenbeschreibungen; Sebastian/Basti ist dieselbe Person und
+wird nicht doppelt geführt. Vorhandene Leon-/Basti-Bilder wiederverwendet;
+Johann/Isabel aus den bereitgestellten Screenshots mittels Bildbearbeitung
+von App-Oberfläche und Pfeilen befreit, hochauflösend rekonstruiert. Es sind
+keine neu beschafften Originalfotos. Quellen: iPhone-Screenshots vom 09.11.2026.
+
+Admin: Sport bearbeiten → Trainerbaustein bearbeiten öffnet die gemeinsame
+Pflege für Überschrift, Einführung, Name, Funktion, Text, Foto, E-Mail und
+Telefon je Trainer. Hinzufügen/Entfernen möglich. Kontaktdaten zunächst leer;
+Nutzer ergänzt sie selbst. Eingetragene Trainerkontakte werden öffentlich
+veröffentlicht (entsprechender Hinweis im Editor, publishEmail/publishPhone).
+Speicherung mit bestehender zentraler CMS-Revisionsprüfung; öffentliche
+Darstellung, Sicherungen und spätere Bearbeitung verwenden dieselben Felder.
+Defaulttexte in club-people.js greifen ausschließlich solange die betreffenden
+CMS-Felder noch fehlen; keine bestehenden Live-Seiten oder Katalogdaten ersetzen.
+
+Club → Vorstand: achte Kachel „Über uns“ im selben Kartenraster öffnet einen
+Dialog mit dem gelieferten Vorstandstext. Titel und Text in „Vorstand bearbeiten“
+pflegbar. Sieben Personen bleiben unverändert. Keine neue Home-Schnellnavigation:
+Die früheren Pill-Entwürfe wurden vom Nutzer zurückgestellt.
+
+Prüfung: tools/test-browser-club-people.mjs in Chromium und WebKit; 390/834/1440 px,
+beide Farbwelten, vier Bilder, persistente Texte/öffentliche Kontaktdaten,
+Vorstandskachel und Textpflege, öffentliche Ansicht ohne Admin-Editoren.
+Keine Finanzfunktionen, Buchungen, Statistik- oder Produktdaten verändert.
+
 ## Produkt- und Kategoriepflege vom Nutzer bestätigt · 09.11.2026
 
 Der Nutzer hat die frühere Kategorie „Spezialitäten“ für Bockwurst, Grillfleisch

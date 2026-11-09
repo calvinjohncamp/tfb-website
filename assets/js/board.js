@@ -2,7 +2,7 @@
   const ui = () => TFB.ui;
   const esc = (text) => ui().esc(text);
   async function open() {
-    if (!ui().state.member || !ui().state.member.isAdmin) return;
+    if (!ui().isAdmin()) return;
     // Local file previews cannot draw file:// photographs onto an exportable canvas.
     if (location.protocol === 'file:' && !TFB.boardPhotoData) {
       try {
@@ -18,6 +18,7 @@
     let site = await ui().api.site();
     const block = site.pages.verein.blocks.find((b) => b.id === 'v-vorstand');
     if (!block) return ui().toast('Bitte zuerst einen Vorstandsbereich im Club anlegen.');
+    const about = { ...(block.about || TFB.clubPeople.about) };
     const people = JSON.parse(JSON.stringify(block.people || []));
     const faces = new Map();
     const images = await ui().api.images();
@@ -31,6 +32,8 @@
       ui().openSheet(`<form class="editor board-editor" data-board-editor>
         <h2>Vorstand bearbeiten</h2>
         <label class="field"><span>Überschrift</span><input name="title" value="${esc(block.title || 'Vorstand')}"></label>
+        <label class="field"><span>Titel der achten Kachel</span><input name="aboutTitle" value="${esc(about.title)}" required></label>
+        <label class="field"><span>Text hinter „Über uns“</span><textarea name="aboutText" rows="10">${esc(about.text)}</textarea></label>
         <div data-board-rows>${people.map((p, i) => `<section class="board-editor-row" data-board-row="${i}">
           <header><strong>${esc(p.role || 'Neue Funktion')}</strong><div class="board-row-tools">
             <button type="button" data-board-move="${i}" data-dir="-1" ${i === 0 ? 'disabled' : ''} title="Nach oben" aria-label="Nach oben">${ui().icon.up}</button>
@@ -54,6 +57,8 @@
       const form = document.querySelector('[data-board-editor]');
       const collect = () => {
         block.title = form.elements.title.value.trim();
+        about.title = form.elements.aboutTitle.value.trim();
+        about.text = form.elements.aboutText.value.trim();
         form.querySelectorAll('[data-board-row]').forEach((row) => {
           const p = people[Number(row.dataset.boardRow)];
           row.querySelectorAll('[data-key]').forEach((input) => { p[input.dataset.key] = input.type === 'checkbox' ? input.checked : input.value.trim(); });
@@ -133,6 +138,7 @@
           site = await ui().api.site();
           const target = site.pages.verein.blocks.find((b) => b.id === 'v-vorstand');
           target.title = block.title;
+          target.about = about;
           target.people = people.map((p) => ({ role: p.role, name: p.name, ...(p.memberId ? { memberId: p.memberId } : {}),
             email: p.publishEmail && !p.memberId ? p.email : '', publishEmail: Boolean(p.publishEmail),
             phone: p.phone || '', publishPhone: Boolean(p.publishPhone), ...(!p.memberId && p.image ? { image: p.image } : {}),
