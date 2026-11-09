@@ -49,6 +49,16 @@ abweisen und responsive Darstellung 390/834/1440 in beiden Welten. Bestehende
 Abrechnungs-/CSV-/JPG-Abläufe in Chromium/WebKit weiterhin erfolgreich. Service
 Worker v356 nimmt das neue Modul auf. Keine Schemaänderung oder Nullstellung.
 
+Live veröffentlicht: Code d046a42, Pages-Workflow 42583324399 erfolgreich.
+Worker-Version 3616fed0-d240-4d5c-91e4-62174e7c72d9. Bibliotheksmodul, App,
+Synchronisation, lokales Backend, Billing, CSS, Service Worker und veröffentlichte
+HTML-Fassung bytegleich geprüft. HTML wird wie vorgesehen ohne lokale rosters-
+Einbindung publiziert. Öffentliche Community-Abfrage liefert aktiven Verleih mit
+400 Cent und Einheit Stunde. Live-Katalog revisionsgeschützt von 11 auf 12,
+Schlägerverkauf archiviert, Vorher/Nachher im Sortimentsverlauf gesichert.
+Buchungsbestand vor/nach Einrichtung identisch: 49 Originale, 18.000 Cent brutto,
+vier Stornos/Gutschriften mit 600 Cent. Keine künstlichen Live-Käufe angelegt.
+
 ## Nutzerbewertung und Abstimmung mit der Buchhaltung · 09.11.2026
 
 Der Nutzer ist mit dem aktuellen Kiosk-Zwischenstand aus Sicht eines normalen
