@@ -2,6 +2,13 @@
 
 ## Trainerteam und Vorstandstext · v360 · 09.11.2026
 
+Veröffentlichung v360 bestätigt: Programmcommit 36eca8d, GitHub-Pages-Lauf
+42594868961 erfolgreich. Live-Dateien inklusive beider aufbereiteter Porträts
+bytegleich geprüft. Öffentliche Live-Ansicht zeigt alle vier Trainer mit geladenen
+Bildern (Leon 1200×1600, Johann/Isabel 1086×1448, Basti 944×1665) und den
+„Über uns“-Dialog; keine JavaScript-Fehler. Browserprüfung enthält zusätzlich
+Trainerfoto-Upload samt erneuter Darstellung nach Speicherung und Neuladen.
+
 Sport → Training: vier Porträtkarten für Leon Kaufmann, Johann Szakacs,
 Isabel Hähn und Basti Manz. Einführung aus der alten Vereins-App aufgeteilt in
 Teamtext und Personenbeschreibungen; Sebastian/Basti ist dieselbe Person und
