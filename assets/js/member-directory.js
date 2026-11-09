@@ -75,13 +75,13 @@
   }
   api.secureDirectory = true;
   const authReady=call('/auth/options').then(o=>{api.automaticEmail=Boolean(o.automaticEmail);}).catch(()=>{api.automaticEmail=false;});
-  api.requestEmailAccess=(email,memberNo)=>call('/auth/email/request',{email,memberNo});
+  api.requestEmailAccess=(email,memberNo,fullName)=>call('/auth/email/request',{email,memberNo,fullName});
   api.activateEmailAccess=(challengeId,code,password)=>acceptCode(challengeId,code,password);
   async function acceptCode(challengeId,code,password){return accept(await call('/auth/email/activate',{challengeId,code,password}));}
   api.memberAccessOverview=()=>call('/admin/members');
 
   api.lookupEmail = async () => ({ known: true, hasPassword: true }); // Never disclose membership before login.
-  api.signIn = async (identifier, password) => accept(await call('/auth/login', { identifier, password }));
+  api.signIn = async (identifier, password, fullName) => accept(await call('/auth/login', { identifier, password, fullName }));
   api.createPassword = async (identifier, password, code) => accept(await call('/auth/activate', { identifier, password, code }));
   api.session = async () => {
     await authReady;

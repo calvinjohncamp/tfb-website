@@ -1,6 +1,6 @@
 // TFB-Kiosk – Service Worker.
 // Netz zuerst, damit Änderungen sofort ankommen; ohne Netz startet die App aus dem Zwischenspeicher.
-const CACHE = 'tfb-kiosk-shared-20261109-1';
+const CACHE = 'tfb-kiosk-family-login-20261109-1';
 const SHELL = [
   './assets/shared-kiosk/20261109-shared-1/asset-base.js',
   './assets/shared-kiosk/20261109-shared-1/art.js',

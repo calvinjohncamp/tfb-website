@@ -1,5 +1,6 @@
 import {accessMailHtml} from './access-mail.mjs';
 const enc=new TextEncoder();
+export const accessName=s=>String(s||'').trim().toLowerCase().normalize('NFC').replace(/\s+/g,' ');
 const norm=s=>String(s||'').trim().toLowerCase().normalize('NFC').replace(/[;,]+$/,'');
 const digest=async s=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',enc.encode(s))),n=>n.toString(16).padStart(2,'0')).join('');
 const same=(a,b)=>{if(a.length!==b.length)return false;let n=0;for(let i=0;i<a.length;i++)n|=a.charCodeAt(i)^b.charCodeAt(i);return n===0;};
@@ -25,12 +26,13 @@ export async function memberAccessOverview(env){
 }
 export async function requestEmailCode(env,data){
  if(!emailAccessReady(env))fail(503,'Der automatische Mailversand wird noch eingerichtet. Bitte später erneut versuchen.');
- const email=norm(data.email),memberNo=String(data.memberNo||'').trim();
- if(email.length>160||!/^[^\s@;,<>]+@[^\s@;,<>]+\.[^\s@;,<>]+$/.test(email)||memberNo.length>160)fail(400,'Bitte deine beim Verein hinterlegte E-Mail-Adresse eingeben.');
+ const email=norm(data.email),memberNo=String(data.memberNo||'').trim(),fullName=accessName(data.fullName);
+ if(email.length>160||!/^[^\s@;,<>]+@[^\s@;,<>]+\.[^\s@;,<>]+$/.test(email)||memberNo.length>160||fullName.length>160)fail(400,'Bitte deine beim Verein hinterlegte E-Mail-Adresse eingeben.');
  const now=Date.now();
  await env.DB.prepare('DELETE FROM member_login_challenges WHERE expires_at<?').bind(now-86400000).run();
- const rows=(await env.DB.prepare(`SELECT id FROM members WHERE active=1 AND (rtrim(lower(email),';, ')=? OR rtrim(lower(email2),';, ')=?) AND (?='' OR member_no=?) LIMIT 2`).bind(email,email,memberNo,memberNo).all()).results;
- const memberId=rows.length===1?rows[0].id:null;
+ const rows=(await env.DB.prepare(`SELECT id,first_name,last_name FROM members WHERE active=1 AND (rtrim(lower(email),';, ')=? OR rtrim(lower(email2),';, ')=?) AND (?='' OR member_no=?) LIMIT 100`).bind(email,email,memberNo,memberNo).all()).results;
+ const matches=rows.filter(m=>!fullName||accessName(`${m.first_name} ${m.last_name}`)===fullName);
+ const memberId=matches.length===1?matches[0].id:null;
  const previous=await env.DB.prepare('SELECT id,expires_at FROM member_login_challenges WHERE email=? AND member_id IS ? AND created_at>? AND consumed_at IS NULL ORDER BY created_at DESC LIMIT 1').bind(email,memberId,now-60000).first();
  if(previous)return {challengeId:previous.id,expiresAt:previous.expires_at,retryAfter:60};
  await env.DB.prepare('UPDATE member_login_challenges SET consumed_at=? WHERE email=? AND member_id IS ? AND consumed_at IS NULL').bind(now,email,memberId).run();

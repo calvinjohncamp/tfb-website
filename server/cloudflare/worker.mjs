@@ -3,7 +3,7 @@ import {padelKioskBridge} from './padel-kiosk-bridge.mjs';
 import {kioskReport,kioskArchiveMonth,kioskStatement,kioskCredit,kioskMessage,kioskOverview} from './kiosk-billing.mjs';
 import {collectSimpleUsage,simpleUsageReport,simpleUsageHistory,cleanSimpleUsage} from './simple-usage.mjs';
 import {collectUsage,usageReport,cleanUsage} from './club-usage.mjs';
-import {emailAccessReady,recordAccess,memberAccessOverview,requestEmailCode,claimEmailCode} from './email-auth.mjs';
+import {accessName,emailAccessReady,recordAccess,memberAccessOverview,requestEmailCode,claimEmailCode} from './email-auth.mjs';
 // TFB: protected member directory. Invitations/Kiosk remain a local simulation.
 import schema from './schema.sql';
 import {publicCommunity, publicChatMedia, syncState, syncCommit, syncRevision, syncFaces, syncPhoto, syncUploadVideo, syncChatVideo} from './app-sync.mjs';
@@ -71,13 +71,14 @@ async function rate(env, request, tag, limit) {
     ON CONFLICT(key) DO UPDATE SET attempts=attempts+1 RETURNING attempts`).bind(key, now + 1800000).first();
   if (row.attempts > limit) fail(429, 'Zu viele Versuche. Bitte in 15 Minuten erneut versuchen.');
 }
-async function memberForIdentifier(env, identifier) {
+async function memberForIdentifier(env, identifier, fullName) {
   const value = String(identifier||'').includes('@') ? mailOf(identifier) : norm(identifier);
-  if (!value || value.length > 160) return null;
+  if (!value || value.length > 160 || String(fullName||'').length > 160) return null;
   const result = await env.DB.prepare(`SELECT * FROM members WHERE active=1
-    AND (rtrim(lower(email),';, ')=? OR rtrim(lower(email2),';, ')=? OR member_no=?) LIMIT 2`).bind(value, value, value).all();
-  // Shared household mail addresses need the unambiguous membership number.
-  return result.results.length === 1 ? result.results[0] : null;
+    AND (rtrim(lower(email),';, ')=? OR rtrim(lower(email2),';, ')=? OR member_no=?) LIMIT 100`).bind(value, value, value).all();
+  // A name only selects an account; mailbox verification/password is still required.
+  const matches=result.results.filter(m=>!fullName||accessName(`${m.first_name} ${m.last_name}`)===accessName(fullName));
+  return matches.length === 1 ? matches[0] : null;
 }
 async function authenticated(request, env, admin = false) {
   const match = /^Bearer ([a-f0-9]{64})$/.exec(request.headers.get('Authorization') || '');
@@ -211,7 +212,7 @@ async function route(request, env, url) {
     await rate(env, request, 'auth', 15);
     const data = await body(request);
     if (typeof data.password !== 'string' || data.password.length > 128) fail(400, 'Zugangsdaten prüfen.');
-    const m = await memberForIdentifier(env, data.identifier);
+    const m = await memberForIdentifier(env, data.identifier, data.fullName);
     if (path === '/auth/login') {
       const actual = await passwordHash(data.password, m?.password_salt || '0'.repeat(64), env.PASSWORD_PEPPER);
       if (!m?.password_hash || !equal(actual, m.password_hash)) fail(401, 'Anmeldung nicht möglich. E-Mail oder Mitgliedsnummer und Passwort prüfen.');

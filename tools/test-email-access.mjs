@@ -38,3 +38,29 @@ test('existing imported trailing separators still accept the clean email for cod
  assert.match(f.mail[0].html,/<font color="#001D3D">\d{6}<\/font>/);assert.match(f.mail[0].html,/width="200"/);assert.match(f.mail[0].html,/text-align:left;-webkit-text-fill-color:#001D3D/);
  assert.equal((await f.activate(r.body.challengeId,f.code())).status,200);
 });
+
+test('family email plus full name selects only that person for activation, reset and later login',async()=>{
+ const f=await setup();
+ f.env.DB.sqlite.prepare('UPDATE members SET email=?,member_no=?,first_name=?,last_name=? WHERE id=?').run('other@example.invalid;','101','Änne','Müller',f.admin.id);
+ f.env.DB.sqlite.prepare('UPDATE members SET member_no=? WHERE id=?').run('202',f.otherId);
+ const request=fullName=>f.call('/auth/email/request',{email:'other@example.invalid',fullName});
+ const missing=await request('Wrong Person');assert.equal(missing.status,200);assert.equal(f.mail.length,0);
+ const selected=await request('  OTHER   Member ');assert.equal(f.mail.length,1);
+ assert.equal((await f.activate(selected.body.challengeId,f.code())).body.member.id,f.otherId);
+ assert.equal(f.env.DB.sqlite.prepare('SELECT password_hash FROM members WHERE id=?').get(f.admin.id).password_hash===null,false);
+ assert.equal((await f.call('/auth/login',{identifier:'other@example.invalid',password})).status,401);
+ assert.equal((await f.call('/auth/login',{identifier:'other@example.invalid',password,fullName:'Other Member'})).body.member.id,f.otherId);
+ assert.equal((await f.call('/auth/login',{identifier:'other@example.invalid',password,fullName:'Änne Müller'})).status,401);
+ assert.equal((await f.call('/auth/login',{identifier:'202',password})).body.member.id,f.otherId);
+ const unicode=await request(' ÄNNE  MÜLLER ');assert.equal(f.mail.length,2);
+ assert.equal((await f.activate(unicode.body.challengeId,f.code())).body.member.id,f.admin.id);
+ assert.equal((await f.call('/auth/login',{identifier:'other@example.invalid',password,fullName:'änne müller'})).body.member.id,f.admin.id);
+ const reset=await request('Other Member');assert.equal(f.mail.length,3);assert.equal((await f.activate(reset.body.challengeId,f.code())).body.member.id,f.otherId);
+});
+
+test('duplicate full names remain ambiguous and member number still resolves them',async()=>{
+ const f=await setup();f.env.DB.sqlite.prepare('UPDATE members SET email=?,first_name=?,last_name=?,member_no=? WHERE id=?').run('other@example.invalid','Other','Member','1',f.admin.id);
+ f.env.DB.sqlite.prepare('UPDATE members SET member_no=? WHERE id=?').run('2',f.otherId);
+ const ambiguous=await f.call('/auth/email/request',{email:'other@example.invalid',fullName:'Other Member'});assert.equal(ambiguous.status,200);assert.equal(f.mail.length,0);
+ const own=await f.call('/auth/email/request',{email:'other@example.invalid',fullName:'Other Member',memberNo:'2'});assert.equal(f.mail.length,1);assert.equal((await f.activate(own.body.challengeId,f.code())).body.member.id,f.otherId);
+});

@@ -123,3 +123,12 @@ in der Übersicht. Andere Besucher werden nur nach „Statistik erlauben“ gez�
 Sechs gezielte Tests sowie Chromium-/WebKit-Prüfungen einschließlich direktem
 Admin-Aufruf und simuliertem installierten App-Modus bestanden. Details RELEASE-v327.md.
 
+
+
+## Familienadressen – 09.11.2026
+
+Wird dieselbe E-Mail für mehrere Mitglieder genutzt, zusätzlich den vollständigen
+Vor- und Nachnamen wie in der Vereinsliste eintragen. Das funktioniert bei der
+Freischaltung, beim Passwortzurücksetzen und bei der späteren Passwortanmeldung.
+Alternativ weiterhin mit Mitgliedsnummer arbeiten. Bei identischen Namen ist die
+Mitgliedsnummer erforderlich. Details: LOGIN-FAMILIENADRESSEN-2026-11-09.md.

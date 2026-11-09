@@ -175,6 +175,7 @@
       body = `
         <h2>${api.secureDirectory ? 'Anmelden' : `Hallo ${esc(state.authFirstName)}!`}</h2>
         <p class="muted">${esc(state.authEmail)}</p>
+        ${api.secureDirectory ? `<label class="field"><span>Dein Vor- und Nachname (bei Familienadresse)</span><input name="fullName" autocomplete="name" maxlength="160" value="${esc(state.authFullName||'')}" placeholder="Wie in der Mitgliederliste"></label><p class="small muted">Wird die E-Mail auch für andere Familienmitglieder genutzt? Ergänze deinen vollständigen Namen oder melde dich mit deiner Mitgliedsnummer an.</p>` : ''}
         <label class="field"><span>Passwort</span>
           ${pwInput('name="password" autocomplete="current-password" required autofocus')}
         </label>
@@ -188,11 +189,11 @@
       body = `<p class="auth-kicker">Willkommen im Club</p><h2>Dein TFB-Zugang.</h2>
         <p class="muted">Wir schicken einen Freischaltcode an deine beim TFB hinterlegte E-Mail-Adresse. Danach legst du dein persönliches Passwort fest.</p>
         <label class="field"><span>E-Mail-Adresse</span><input name="email" type="email" autocomplete="email" required value="${esc(state.authEmail.includes('@') ? state.authEmail : '')}" placeholder="name@beispiel.de"></label>
-        <details class="auth-family"><summary>Gemeinsame Familienadresse?</summary><p class="small muted">Trage zusätzlich deine Mitgliedsnummer ein, damit der Zugang dir zugeordnet wird.</p><label class="field"><span>Mitgliedsnummer</span><input name="memberNo" autocomplete="off" value="${esc(state.authMemberNo||'')}"></label></details>
+        <label class="field"><span>Dein Vor- und Nachname (bei Familienadresse)</span><input name="fullName" autocomplete="name" maxlength="160" value="${esc(state.authFullName||'')}" placeholder="Wie in der Mitgliederliste"></label><p class="small muted">Deine E-Mail wird auch für weitere Familienmitglieder verwendet? Ergänze deinen vollständigen Namen. Alternativ kannst du unten deine Mitgliedsnummer angeben.</p><details class="auth-family"><summary>Alternativ: Mitgliedsnummer angeben</summary><label class="field"><span>Mitgliedsnummer</span><input name="memberNo" autocomplete="off" value="${esc(state.authMemberNo||'')}"></label></details>
         <button class="btn primary block" type="submit">Freischaltcode senden</button><button type="button" class="link center" data-action="auth-back">Bereits registriert? Anmelden</button>`;
     } else if (s === 'email-code') {
       body = `<p class="auth-kicker">Noch ein Schritt</p><h2>Prüfe dein Postfach.</h2>
-        <p class="muted">Wenn <strong>${esc(state.authEmail)}</strong> eindeutig in unserer Mitgliederliste hinterlegt ist, erhältst du einen sechsstelligen Code. Er ist zehn Minuten gültig. Prüfe bitte auch deinen Spam-Ordner.</p>
+        <p class="muted">Wenn <strong>${esc(state.authEmail)}</strong> eindeutig in unserer Mitgliederliste hinterlegt ist, erhältst du einen sechsstelligen Code. Er ist zehn Minuten gültig. Prüfe bitte auch deinen Spam-Ordner. Keine Mail erhalten? Gehe zurück und ergänze bei einer Familienadresse deinen Vor- und Nachnamen oder deine Mitgliedsnummer.</p>
         <label class="field"><span>Freischaltcode</span><input class="auth-code" name="activationCode" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required placeholder="000000"></label>
         <label class="field"><span>Dein neues Passwort</span>${pwInput('name="password" autocomplete="new-password" minlength="12" required placeholder="mindestens 12 Zeichen"')}</label>
         <label class="field"><span>Passwort wiederholen</span>${pwInput('name="password2" autocomplete="new-password" minlength="12" required')}</label>
@@ -240,8 +241,8 @@
     btn.disabled = true;
     try {
       if (state.authStep === 'email-request') {
-        state.authEmail=String(data.get('email')||'').trim();state.authMemberNo=String(data.get('memberNo')||'').trim();
-        const result=await api.requestEmailAccess(state.authEmail,state.authMemberNo);
+        state.authEmail=String(data.get('email')||'').trim();state.authMemberNo=String(data.get('memberNo')||'').trim();state.authFullName=String(data.get('fullName')||'').trim();
+        const result=await api.requestEmailAccess(state.authEmail,state.authMemberNo,state.authFullName);
         state.authChallengeId=result.challengeId;state.authStep='email-code';return showAuth();
       }
       if (state.authStep === 'email') {
@@ -258,7 +259,8 @@
         if(password!==String(data.get('password2')||''))throw Error('Die beiden Passwörter sind nicht gleich.');
         state.member=await api.activateEmailAccess(state.authChallengeId,String(data.get('activationCode')||'').trim(),password);
       } else if (state.authStep === 'password') {
-        state.member = await api.signIn(state.authEmail, String(data.get('password') || ''));
+        state.authFullName=String(data.get('fullName')||'').trim();
+        state.member = await api.signIn(state.authEmail, String(data.get('password') || ''),state.authFullName);
       } else if (state.authStep === 'create') {
         const pw = String(data.get('password') || '');
         if (pw.length < (api.secureDirectory ? 12 : 8)) throw new Error(`Bitte mindestens ${api.secureDirectory ? 12 : 8} Zeichen verwenden.`);
