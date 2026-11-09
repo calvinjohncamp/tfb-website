@@ -2,6 +2,14 @@
 
 ## Mitgliedsbeiträge ab 2027 · 09.11.2026
 
+Veröffentlichung bestätigt: Programm 18612c5, Pages-Lauf 42706618452 erfolgreich.
+Live-Dateien index.html, app.css, app.js, site.js, membership-fees.js und sw.js
+bytegleich mit dem geprüften Paket. Live-Frontend zusätzlich mit isolierter API
+in Chromium/WebKit bei 834 px einschließlich Speichern und Konflikten geprüft;
+öffentliche echte Live-Übersicht sichtbar mit den Vorstandsbeiträgen kontrolliert.
+Keine produktiven Testbeträge gespeichert. Neue Vorgaben gelten als Startwerte;
+der erste Admin-Speichervorgang legt die expliziten Werte im zentralen CMS ab.
+
 Neue Jahresbeiträge laut Vorstand: Jugend bis 14 Jahre 50 €, Jugend bis 18 Jahre
 90 €, Erwachsene 210 €, Ehepartner 150 €, Azubi / Student / Schüler 110 €,
 passiv 50 €, Gast- / zweite Mitgliedschaft 110 €, Schnupperjahr Erwachsene 80 €,
