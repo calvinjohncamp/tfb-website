@@ -2,6 +2,10 @@
 
 ## Trainer-E-Mails in Signature-Farben · v364 · 09.11.2026
 
+Veröffentlicht: 548c0e7, Pages-Lauf 42599957102 erfolgreich. Live-Dateien
+bytegleich; rote Fettschrift und gelber Marker mit dunkelblauer Schrift
+auf der echten Website geprüft, keine Skriptfehler.
+
 Trainer-E-Mail-Links in der roten Welt Signature-Rot und fett (700). In der
 gelben Welt dunkelblaue Schrift (500) auf dem bestehenden gelben Freihand-
 Textmarker. Markierung sitzt auf dem Textspan, mit Klonen bei Zeilenumbrüchen;
