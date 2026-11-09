@@ -78,3 +78,7 @@ html.tfb-logo-midnight-amber .kb-calendar.is-closing .kb-calendar-head .kb-closi
 .kb-day-picker .kb-month-title .kb-month-closing-label{font-size:.72rem;font-weight:800;line-height:1.15;letter-spacing:0;text-transform:none}@media(max-width:350px){.kb-day-picker .kb-month-title .kb-month-closing-label{font-size:.62rem}}
 
 .kb-exports .kb-actions{align-items:flex-start}.kb-closing-export{display:grid;gap:5px;max-width:100%}.kb-closing-export>small{font-size:.68rem;color:var(--muted);line-height:1.4;padding-left:2px}.kb-exports .btn:disabled{background:#E5E5E5;border-color:#D3D3D3;color:#777;opacity:1;cursor:not-allowed;box-shadow:none}
+
+/* Personal billing uses the same wide workspace and calendar marks as administration. */
+.view[data-view="abrechnungen"]:has([data-kb-member-view]){max-width:none;margin:0}[data-kb-member-view]{max-width:1120px;margin:12px auto 40px}.kb-calendar-days button.has-turnover i{flex:0 0 2px;min-height:2px;flex-shrink:0}.kb-jpg-export{margin-left:20px}.kb-personal-exports .kb-jpg-export{margin-left:0}@media(max-width:650px){.kb-jpg-export{margin-left:0}}
+.kb-month.is-selected:not(:disabled):hover{box-shadow:inset 0 0 0 2px var(--signal)}
