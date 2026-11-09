@@ -905,12 +905,15 @@
   }
 
   function openSectionEditor(id) {
+    if (!rawMember?.isAdmin) return;
     const original = state.catalog.sections.find((x) => x.id === id);
-    const draft = original ? { ...original } : { id: 's-' + Date.now().toString(36), title: '', note: '', status: 'open' };
+    const draft = original ? { ...original } : { id: 's-' + crypto.randomUUID(), title: '', note: '', status: 'open' };
+    const catalogAtOpen = JSON.stringify(state.catalog);
     const used = original ? state.catalog.products.filter((p) => p.section === id).length : 0;
+    const targets = state.catalog.sections.filter(x=>x.id!==id);
     openSheet(`
       <form class="editor" data-editor="section" novalidate>
-        <h2>${original ? 'Bereich bearbeiten' : 'Neuer Bereich'}</h2>
+        <h2>${original ? 'Kategorie bearbeiten' : 'Neue Kategorie'}</h2>
         <label class="field"><span>Name</span><input name="title" maxlength="40" value="${esc(draft.title)}" placeholder="z. B. Heißgetränke" required></label>
         <label class="field"><span>Hinweis (optional)</span><input name="note" maxlength="120" value="${esc(draft.note)}" placeholder="z. B. Kalt aus dem Kühlschrank"></label>
         <div class="field"><span>Status</span>
@@ -919,13 +922,13 @@
             <button type="button" class="${draft.status === 'soon' ? 'on' : ''}" data-status="soon">Bald (nur Vorschau)</button>
           </div>
         </div>
+        <p class="fineprint">Die Kategorie wird gemeinsam im Kiosk und in der Produktbibliothek verwendet. Frühere Buchungen behalten ihre damaligen Angaben.</p>
         <p class="form-error" role="alert"></p>
         <button type="submit" class="btn primary block">Speichern</button>
-        ${original ? (used
-          ? `<p class="fineprint">Zum Löschen zuerst die ${used} Artikel verschieben oder löschen.</p>`
-          : '<button type="button" class="btn block danger" data-delete>Bereich löschen</button>') : ''}
+        ${original ? `<div class="pl-category-removal">${used?`<p class="fineprint">Dieser Kategorie sind ${used} Artikel zugeordnet. Wähle zum Entfernen eine Zielkategorie. Aktive, inaktive und archivierte Artikel werden dorthin verschoben; Preise und Status bleiben erhalten.</p>${targets.length?`<label class="field"><span>Artikel verschieben nach</span><select name="moveTo" aria-label="Zielkategorie"><option value="">Bitte Kategorie wählen</option>${targets.map(x=>`<option value="${esc(x.id)}">${esc(x.title)}</option>`).join('')}</select></label>`:'<p class="fineprint">Lege zuerst eine weitere Kategorie an oder entferne die zugeordneten Artikel.</p>'}`:''}<button type="button" class="btn block danger" data-delete${used&&!targets.length?' disabled':''}>Kategorie entfernen</button></div>` : ''}
       </form>`);
     const form = $sheet.querySelector('[data-editor]');
+    form.addEventListener('change',()=>{const del=form.querySelector('[data-delete]');if(del){delete del.dataset.armed;del.textContent='Kategorie entfernen';}});
     form.addEventListener('click', (e) => {
       const st = e.target.closest('[data-status]');
       if (st) {
@@ -933,12 +936,15 @@
         form.querySelectorAll('[data-status]').forEach((b) => b.classList.toggle('on', b === st));
       }
       const del = e.target.closest('[data-delete]');
-      if (del) {
-        if (!del.dataset.armed) { del.dataset.armed = '1'; del.textContent = 'Entfernen? Frühere Buchungen bleiben erhalten'; return; }
-        const next = JSON.parse(JSON.stringify(state.catalog));
+      if (del&&!del.disabled) {
+        const target = form.elements.moveTo?.value;
+        if(used&&!targets.some(x=>x.id===target)){form.querySelector('.form-error').textContent='Bitte zuerst eine Zielkategorie für die Artikel wählen.';return;}
+        if (!del.dataset.armed) { del.dataset.armed = '1'; del.textContent = used?'Kategorie entfernen und Artikel verschieben?':'Kategorie wirklich entfernen?';return; }
+        const next = structuredClone(state.catalog);
         next.sections = next.sections.filter((x) => x.id !== id);
+        if(used)next.products=next.products.map(p=>p.section===id?{...p,section:target}:p);
         closeSheet();
-        commitCatalog(next, 'Bereich gelöscht');
+        commitCatalog(next, 'Kategorie entfernt',catalogAtOpen);
       }
     });
     form.addEventListener('submit', (e) => {
@@ -946,11 +952,11 @@
       draft.title = form.elements.title.value.trim();
       draft.note = form.elements.note.value.trim();
       if (!draft.title) { form.querySelector('.form-error').textContent = 'Bitte einen Namen eingeben.'; return; }
-      const next = JSON.parse(JSON.stringify(state.catalog));
+      const next = structuredClone(state.catalog);
       const i = next.sections.findIndex((x) => x.id === draft.id);
       if (i >= 0) next.sections[i] = draft; else next.sections.push(draft);
       closeSheet();
-      commitCatalog(next, original ? 'Gespeichert' : `Bereich „${draft.title}“ angelegt`);
+      commitCatalog(next, original ? 'Kategorie gespeichert' : `Kategorie „${draft.title}“ angelegt`,catalogAtOpen);
     });
   }
 
@@ -1489,7 +1495,7 @@
     const img=`<img src="${esc(p.logo)}" alt="${esc(p.name)}" decoding="async" fetchpriority="high">`;
     return /^https?:\/\//i.test(p.url||'')?`<a ${attrs} href="${esc(p.url)}" target="_blank" rel="noopener noreferrer nofollow">${img}</a>`:`<div ${attrs}>${img}</div>`;
   };
-  TFB.ui = { state, api, cfg, esc, icon, logo, viewHead, partnerSlot, openSheet, closeSheet, toast, renderView, currentView, editProduct:openProductEditor, loadImage, largeImage, openLightbox, openAvatarCropper, refreshAvatars, isAdmin:()=>Boolean(rawMember?.isAdmin) };
+  TFB.ui = { state, api, cfg, esc, icon, logo, viewHead, partnerSlot, openSheet, closeSheet, toast, renderView, currentView, editProduct:openProductEditor, editCategory:openSectionEditor, loadImage, largeImage, openLightbox, openAvatarCropper, refreshAvatars, isAdmin:()=>Boolean(rawMember?.isAdmin) };
 
   if ('serviceWorker' in navigator && (location.protocol === 'https:' || ['localhost', '127.0.0.1', '[::1]'].includes(location.hostname))) {
     navigator.serviceWorker.register('sw.js').catch(() => {});

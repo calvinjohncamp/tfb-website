@@ -1,6 +1,6 @@
 // TFB-Kiosk – Service Worker.
 // Netz zuerst, damit Änderungen sofort ankommen; ohne Netz startet die App aus dem Zwischenspeicher.
-const CACHE = 'tfb-kiosk-v358';
+const CACHE = 'tfb-kiosk-v359';
 const SHELL = [
   './assets/js/product-library.js',
   './assets/css/kiosk-billing.css', './assets/js/kiosk-billing.js', './assets/js/kiosk-export.js', './assets/js/kiosk-day-image.js',
