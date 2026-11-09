@@ -33,3 +33,8 @@ Historische Einträge behalten Verleih, spätere Käufe nutzen neue Zuordnung;
 Archivierung/Wiederaktivierung bewahrt letzte Kategorie. Suche, Statuswechsel,
 Preiswechsel, 390/834/1440px und beide Signature-Welten sowie die vorhandenen
 Abrechnungs-/CSV-/JPG-Abläufe weiterhin erfolgreich geprüft.
+
+Live bestätigt: Commit 4724eaf, Pages-Workflow 42586541983 erfolgreich.
+283 öffentliche Webdateien vorbereitet. Bibliotheksmodul, App, CSS und Service
+Worker v358 öffentlich bytegleich mit dem geprüften Stand. Vorhandenes Live-
+Sortiment und Buchungsdaten nicht verändert.
