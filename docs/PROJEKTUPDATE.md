@@ -32,6 +32,10 @@ Veralteten Kategorieeditor bei paralleler Adminänderung abweisen. Bestehende
 Bibliotheks-, Preis-, Verleih-, responsive und Abrechnungs-/CSV-/JPG-Prüfungen
 weiterhin erfolgreich. Mobile Darstellung der neuen Kategorieaktionen geprüft.
 
+Live bestätigt: Commit 216b5e7, Pages-Workflow 42587471938 erfolgreich.
+Bibliotheksmodul, App, CSS und Service Worker v359 öffentlich bytegleich mit dem
+geprüften Stand. Keine Live-Kategorien oder Produktdaten vorab verändert.
+
 ## Produktbibliothek nach Kiosk-Kategorien · v358 · 09.11.2026
 
 Aktive Artikel jetzt in denselben Kategorien wie im Kiosk, direkt aus der

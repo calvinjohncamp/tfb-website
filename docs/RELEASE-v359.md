@@ -31,3 +31,7 @@ belegte Kategorie ohne Ziel ablehnen, aktive/inaktive/archivierte Artikel korrek
 Veralteten Kategorieeditor bei paralleler Adminänderung abweisen. Bestehende
 Bibliotheks-, Preis-, Verleih-, responsive und Abrechnungs-/CSV-/JPG-Prüfungen
 weiterhin erfolgreich. Mobile Darstellung der neuen Kategorieaktionen geprüft.
+
+Live bestätigt: Commit 216b5e7, Pages-Workflow 42587471938 erfolgreich.
+Bibliotheksmodul, App, CSS und Service Worker v359 öffentlich bytegleich mit dem
+geprüften Stand. Keine Live-Kategorien oder Produktdaten vorab verändert.
