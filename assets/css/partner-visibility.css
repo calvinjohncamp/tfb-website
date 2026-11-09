@@ -206,13 +206,18 @@ html.tfb-logo-midnight-amber body :is(.team-rank.top, .meet-mine.open, .meet-fac
 @media (max-width: 639px) {
   html.tfb-logo-midnight-amber .team-row .team-news.has { color: var(--on-signature); }
 }
-html.tfb-logo-midnight-amber body :is(.tfb-logo-split, .tfb-splash-wordmark) {
-  background: url('../brand/tfb-logo-midnight-amber.png') center / contain no-repeat;
+/* Clean vector masters in both themes. Keep the transparent splash-ball button clickable. */
+html body :is(.tfb-logo-split, .tfb-splash-wordmark) {
+  background: url('../brand/tfb-logo-black-crail.svg') center / contain no-repeat;
+  aspect-ratio: 7513 / 3354;
 }
-html.tfb-logo-midnight-amber :is(.tfb-logo-split, .tfb-splash-wordmark) .tfb-logo-noball {
+html.tfb-logo-midnight-amber body :is(.tfb-logo-split, .tfb-splash-wordmark) {
+  background-image: url('../brand/tfb-logo-midnight-amber.svg');
+}
+:is(.tfb-logo-split, .tfb-splash-wordmark) .tfb-logo-noball {
   visibility: hidden;
 }
-html.tfb-logo-midnight-amber :is(.tfb-logo-split, .tfb-splash-wordmark) .tfb-logo-ball {
+:is(.tfb-logo-split, .tfb-splash-wordmark) .tfb-logo-ball {
   opacity: 0;
 }
 

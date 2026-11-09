@@ -1,5 +1,23 @@
 # TFB-Kiosk – Projektgedächtnis und Übergabe
 
+## Bereinigte SVG-Logos in beiden Farbwelten · 09.11.2026
+
+Kopfbereich und Einstiegsseite verwenden die vom Nutzer abgenommene Vektorversion 3:
+assets/brand/tfb-logo-black-crail.svg bzw. tfb-logo-midnight-amber.svg (je ca. 11 KB).
+Beide Dateien enthalten ausschließlich Pfade und bewahren transparenten Hintergrund
+und transparente Ballnaht. Bisherige Rastermasken an diesen Stellen ausgeblendet;
+der unsichtbare Ballbutton der Einstiegsseite bleibt als Farbweltschalter aktiv.
+Geometrie/Größe unverändert, Logo-Seitenverhältnis aus der Vektorvorlage übernommen.
+App-Symbole, Mailvorlagen und redaktionelle Inhalte unverändert.
+
+Neuer Offlinecache tfb-kiosk-vector-logos-20261109-1 hält beide SVGs und die versionierte
+Stylesheet-URL vor. Frontendänderung ohne Worker-/Datenbankeingriff. Veröffentlichung
+isoliert auf aktuellem main vorbereitet, um den zwischenzeitlichen Shared-Kiosk-Ausbau
+zu erhalten. Chromium und WebKit bei 390/834/1440 px: beide SVGs in Header und Splash,
+exakte Signature-Farben, transparente Naht, Farbumschalter und gespeicherte Farbwahl,
+ausgeblendete Altmasken und keine horizontale Überbreite geprüft; keine Skriptfehler.
+
+
 ## Trainer und „Über uns“ vom Nutzer abgenommen · 09.11.2026
 
 Ausdrückliche positive Abnahme nach v365: „Sehr schick das alles.“ Der aktuelle
