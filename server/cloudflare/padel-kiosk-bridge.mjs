@@ -36,7 +36,7 @@ async function receive(env,{kind,order:o}){
 }
 
 async function account(env,data){
- const member=await env.DB.prepare('SELECT m.* FROM padel_kiosk_links l JOIN members m ON m.id=l.member_id WHERE l.auth_id=? AND m.active=1').bind(data.authId).first();
+ const member=await env.DB.prepare('SELECT m.* FROM padel_kiosk_links l JOIN members m ON m.id=l.member_id WHERE l.auth_id=?').bind(data.authId).first();
  if(!member)fail(403,'TFB-Kontozuordnung fehlt.');
  member.is_admin=false; // A Padel personal account never inherits TFB administration rights.
  const query=new URLSearchParams(data.query||{});
