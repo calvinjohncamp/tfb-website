@@ -1,5 +1,31 @@
 # TFB – Projektupdate vom 09.11.2026
 
+## Trainerreihenfolge und Statuspflege · v362 · 09.11.2026
+
+Trainerpflege mit Bereichen Aktiv (immer offen), Inaktiv und Ausgeblendet
+(aufklappbar). Pfeile je Person verschieben die Reihenfolge innerhalb ihres
+Bereichs. Statusauswahl Aktiv/Inaktiv/Ausgeblendet; „Ausblenden“ ersetzt das
+bisherige Entfernen ohne Verlust der Texte, Bilder, Kontakte oder Ausschnitte.
+Jeder Eintrag lässt sich wieder aktivieren. Neue Trainer weiterhin hinzufügbar.
+Änderungen werden gemeinsam mit „Trainerteam speichern“ veröffentlicht.
+Öffentlich erscheinen ausschließlich aktive, nicht ausgeblendete Trainer;
+auch der öffentliche CMS-Endpunkt entfernt die übrigen Personen aus der Antwort.
+Adminansicht und Sicherungen behalten sämtliche Einträge. Gewünschte Livefolge:
+Leon Kaufmann, Basti Manz, Johann Szakacs, Isabel Hähn.
+
+Gezielter Mitgliederabgleich: Isabel und Sebastian/Basti eindeutig gefunden,
+E-Mail-Adressen in der zentralen Trainerpflege ergänzt. Bастis Telefonnummer
+aus bestehendem öffentlichen Vorstandseintrag übernommen. Johann hat weder
+E-Mail noch Zweitadresse in der Mitgliederliste; keine Telefonnummern in den
+importierten Mitgliedsstammdaten. Keine fremden Familienkontakte verwenden.
+Isabels Handynummer und Johanns fehlende Angaben ergänzt der Nutzer manuell.
+Keine privaten Mitgliedskontakte in Programmdateien oder Git hinterlegen.
+
+Prüfung Chromium/WebKit: Sortierung, Inaktiv/Ausblenden, Wiederaktivieren ohne
+Datenverlust, zwei aktive öffentliche Einträge vs. vier vollständige Admin-
+einträge, erneute Gesamtfolge; bestehende Bildausschnitte/Kontakte bestehen.
+Sieben CMS-/Sicherungsprüfungen ebenfalls erfolgreich.
+
 ## Trainerbilder einpassen und Kontaktfelder · v361 · 09.11.2026
 
 Veröffentlicht: aea51d0; Pages-Lauf 42596083219 erfolgreich. Live-Dateien

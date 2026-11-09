@@ -26,6 +26,7 @@ export function mediaRefs(value,found=new Set()){
 function ready(env){if(!env.CMS_BUCKET)fail(503,'Der geschützte Inhaltsspeicher wird eingerichtet.');}
 async function publicDocuments(env,documents){
  const copy=clone(documents),people=copy['page:verein']?.value?.blocks?.find(b=>b.id==='v-vorstand')?.people||[];
+ for(const block of copy['page:sport']?.value?.blocks||[])if(Array.isArray(block.trainers))block.trainers=block.trainers.filter(p=>p.active!==false&&!p.hidden);
  const ids=[...new Set(people.map(p=>p.memberId).filter(Boolean))],members=new Map(),accounts=new Map();
  if(ids.length){
   const rows=(await env.DB.prepare('SELECT id,first_name,last_name,email FROM members WHERE active=1 AND id IN (SELECT value FROM json_each(?))').bind(JSON.stringify(ids)).all()).results;for(const row of rows)members.set(row.id,row);

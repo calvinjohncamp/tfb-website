@@ -42,3 +42,11 @@
 .trainer-editor-photo { display:block; width:64px; height:85px; overflow:hidden; border-radius:8px; }
 .trainer-editor-photo .photo-frame { height:100%; }
 @media(max-width:520px) { .trainer-card { display:grid; grid-template-columns:minmax(110px,.8fr) minmax(0,1.2fr); } .trainer-card figure { aspect-ratio:3/4; min-height:0; align-self:start; } .trainer-contact { grid-column:1/-1; width:100%; margin-top:0; padding:16px; grid-template-columns: minmax(0,1fr); } }
+
+.trainer-editor-head { display:flex; gap:12px; justify-content:space-between; align-items:center; }
+.trainer-editor-head h3 { margin:0; }
+.trainer-editor-head > div { display:flex; gap:6px; }
+.trainer-status-group { margin:24px 0; }
+.trainer-status-group > summary { font-weight:800; cursor:pointer; padding:14px 0; }
+.trainer-editor-person:has(option[value="inactive"]:checked), .trainer-editor-person:has(option[value="hidden"]:checked) { border-left:3px solid #c4553a; padding-left:16px; }
+:root.tfb-logo-midnight-amber .trainer-editor-person:has(option[value="inactive"]:checked), :root.tfb-logo-midnight-amber .trainer-editor-person:has(option[value="hidden"]:checked) { border-left-color:#001d3d; }
