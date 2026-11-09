@@ -1,5 +1,27 @@
 # TFB-Kiosk – Projektgedächtnis und Übergabe
 
+## Trainer und „Über uns“ vom Nutzer abgenommen · 09.11.2026
+
+Ausdrückliche positive Abnahme nach v365: „Sehr schick das alles.“ Der aktuelle
+Look gilt als akzeptierter Arbeitsstand; keine weiteren Designänderungen aus
+dieser Rückmeldung ableiten. Live-Programm bleibt v365 (f639032, bestätigte
+Veröffentlichung 42600606555); diese Aktualisierung dokumentiert nur Projektwissen.
+
+Verbindlicher Stand für die Weiterarbeit:
+- Trainerfolge: Leon Kaufmann, Basti Manz, Johann Szakacs, Isabel Hähn.
+- Adminpflege: Trainer ergänzen, mit Pfeilen sortieren, inaktiv setzen,
+  ausblenden und wieder aktivieren; Texte, Kontakte und Fotos bleiben erhalten.
+- Bildrahmen: Zoom und Position/Höhe selbst einstellbar; Originale unverändert.
+- Namen: reine Signature-Rot-/Signature-Gelb-Schrift, kein Marker.
+- E-Mails: rot fett; gelb mit Freihand-Textmarker und dunkelblauer Schrift.
+  E-Mail- und Handy-Links ohne Unterstreichung, weiterhin anklickbar.
+- „Über uns“: achte Vorstandskachel mit originalem iPhone-App-Symbol
+  (Signature-Blau ohne Ball, Originalhintergrund, bestehende Umrandung).
+  Titel/Text editierbar; gespeicherte Absätze mit sichtbaren Abständen.
+- Vom Nutzer ergänzte Johann-Kontakte und überarbeiteter Über-uns-Text sind
+  maßgeblich. Keine Standardtexte oder älteren Kontaktdaten darüber speichern.
+- Isabels Handynummer fehlt weiterhin; Nutzer ergänzt sie später selbst.
+
 ## Absatzabstände Über uns und Trainernamen · v365 · 09.11.2026
 
 Veröffentlicht: f639032, Pages-Lauf 42600606555 erfolgreich. Live-Dateien
