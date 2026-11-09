@@ -1,10 +1,18 @@
 // TFB-Kiosk – Service Worker.
 // Netz zuerst, damit Änderungen sofort ankommen; ohne Netz startet die App aus dem Zwischenspeicher.
-const CACHE = 'tfb-kiosk-v366-shared';
+const CACHE = 'tfb-kiosk-shared-20261109-1';
 const SHELL = [
-  './assets/shared-kiosk/20261109-shared-1/native.css', './assets/shared-kiosk/20261109-shared-1/fonts.css', './assets/shared-kiosk/20261109-shared-1/kiosk-domain.mjs', './assets/shared-kiosk/20261109-shared-1/manifest.json',
-  './assets/shared-kiosk/20261109-shared-1/asset-base.js',  './assets/shared-kiosk/20261109-shared-1/art.js',  './assets/shared-kiosk/20261109-shared-1/kiosk.js',  './assets/shared-kiosk/20261109-shared-1/billing.js',  './assets/shared-kiosk/20261109-shared-1/standalone.css',  './assets/shared-kiosk/20261109-shared-1/kiosk-export.js',  './assets/shared-kiosk/20261109-shared-1/kiosk-day-image.js',
-
+  './assets/shared-kiosk/20261109-shared-1/asset-base.js',
+  './assets/shared-kiosk/20261109-shared-1/art.js',
+  './assets/shared-kiosk/20261109-shared-1/kiosk.js',
+  './assets/shared-kiosk/20261109-shared-1/billing.js',
+  './assets/shared-kiosk/20261109-shared-1/standalone.css',
+  './assets/shared-kiosk/20261109-shared-1/native.css',
+  './assets/shared-kiosk/20261109-shared-1/fonts.css',
+  './assets/shared-kiosk/20261109-shared-1/kiosk-export.js',
+  './assets/shared-kiosk/20261109-shared-1/kiosk-day-image.js',
+  './assets/shared-kiosk/20261109-shared-1/kiosk-domain.mjs',
+  './assets/shared-kiosk/20261109-shared-1/manifest.json',
   './assets/js/club-people.js', './assets/css/club-people.css',
   './assets/js/product-library.js',
   './assets/css/kiosk-billing.css', './assets/js/kiosk-billing.js', './assets/js/kiosk-export.js', './assets/js/kiosk-day-image.js',
@@ -22,7 +30,6 @@ const SHELL = [
   './assets/icons/icon-512.png?v=305', './assets/icons/icon-192.png?v=305',
   './assets/icons/icon-maskable-512.png?v=305', './assets/icons/icon-180.png?v=305',
   './assets/icons/icon-512.png', './assets/icons/icon-maskable-512.png', './assets/icons/icon-180.png',
-  './assets/css/corporate.css', './assets/brand/tfb-logo.png',
   './assets/brand/tfb-logo-midnight-amber.png',
   './assets/css/chat-media.css', './assets/js/chat-media.js',
   './assets/css/home-media.css', './assets/js/home-media.js', './assets/js/newsroom.js',
