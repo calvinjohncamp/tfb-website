@@ -2,6 +2,13 @@
 
 ## Platzbelegung Sommer 2027 · 09.11.2026
 
+Veröffentlichung bestätigt: Programm f2bec7c, Pages-Lauf 42708346210 erfolgreich.
+index.html, site.js, court-plan.js (Daten und UI), court-plan.css und sw.js live
+bytegleich mit dem geprüften Paket. Live-Frontend in Chromium/WebKit bei 390/834 px
+mit isolierter API erneut erfolgreich; echter öffentlicher Plan sichtbar kontrolliert.
+Screenshot: output/TFB-Platzbelegung-Sommer-2027-live.jpg. Keine produktiven CMS-
+oder Geschäftsdaten verändert. Lokaler Arbeitsstand gezielt ergänzt, andere Änderungen erhalten.
+
 Neuer dritter Sportbereich #sport/platzbelegung neben Mannschaften und Training.
 29 feste Belegungen aus Platzbelegung Sommer 27.xlsx, Tabelle1, D6:K38.
 Plätze 1/2/3/4/6/7 unverändert; Tagesanzahlen Mo–So 4/6/7/8/4/0/0.
