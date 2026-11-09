@@ -1,5 +1,37 @@
 # TFB-Kiosk – Projektgedächtnis und Übergabe
 
+## Platzbelegung Sommer 2027 · 09.11.2026
+
+Neuer dritter Sportbereich #sport/platzbelegung neben Mannschaften und Training.
+29 feste Belegungen aus Platzbelegung Sommer 27.xlsx, Tabelle1, D6:K38.
+Plätze 1/2/3/4/6/7 unverändert; Tagesanzahlen Mo–So 4/6/7/8/4/0/0.
+Jörn bestätigt Saison 2027 (alte Unterzeile 2026 ignorieren) und Dienstag Johann
+17–21 Uhr (G18:K18 endet ausdrücklich 21 Uhr). Stundenbereiche sonst aus verbundenen
+Stundenzellen abgeleitet und unabhängig gegen XML abgeglichen. M9:M11 außerhalb
+der Tabelle (offen, Damen 30.2, 2. Herren) ohne Zeit-/Platzzuordnung nicht eingeplant.
+
+Responsive Tagesansicht: proportionale Platzspuren ab 760 px, lesbare Einträge
+auf Handygrößen. Wochentagswahl und Ganze Woche; leere Tage ausdrücklich ohne feste
+Belegung, kein Live-Buchungsversprechen. Zwei Farbwelten, bestehende Bricolage-/DM-
+Sans-Typografie, Tastatursteuerung und Statusansage. Drei Sportbuttons in einer Reihe.
+Daten in assets/data/court-plan.js, Darstellung assets/js/court-plan.js und
+assets/css/court-plan.css. Kein CMS-/Backendwechsel und keine Reservierungsfunktion.
+Die Randnotizen sind kein Ersatz für bestätigte Trainingszeiten.
+
+Recherche: Pinterest-Suche ergab keine geeignete konkrete Sportansicht. Als
+Gestaltungsreferenzen CodyHouse Weekly Schedule (responsive Tage/Zeitraster),
+https://codyhouse.co/ds/components/info/weekly-schedule und Mobiscroll Day/Week,
+https://demo.mobiscroll.com/scheduler/mobile-week-view. Eigenständige Umsetzung
+im TFB-System, keine fremden Komponenten, Schriftarten oder Bilder übernommen.
+
+Validiert: Daten-/Zeitgrenzentests, unabhängiger Abgleich aller 29 Excel-Zellen,
+Chromium und WebKit bei 375/390/760/834/1440 px jeweils beide Farbwelten: Tag/Woche,
+Wochenende, bestätigtes Ende Dienstag, Platznummern, keine abgeschnittenen Events,
+kein horizontaler Überlauf, Tastatur, Neuladen und Rückkehr Training/Mannschaften.
+304 öffentliche Dateien mit prepare-pages.py geprüft; versionierte Bestandsdateien
+und neuer Offlinecache für die Veröffentlichung.
+
+
 ## Mitgliedsbeiträge ab 2027 · 09.11.2026
 
 Veröffentlichung bestätigt: Programm 18612c5, Pages-Lauf 42706618452 erfolgreich.

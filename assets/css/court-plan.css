@@ -1,0 +1,85 @@
+/* One readable day on small screens; proportional court lanes on larger screens. */
+.court-plan { --cp-accent: #C4553A; --cp-soft: #F2E5DF; --cp-ink: var(--ink); margin: 16px 0 40px; }
+:root.tfb-logo-midnight-amber .court-plan { --cp-accent: #FFC300; --cp-soft: #FFF2C5; --cp-ink: var(--tfb-midnight-blue); }
+.sport-switch { grid-template-columns: repeat(3, minmax(0, 1fr)); max-width: 550px; }
+.sport-switch a { white-space: nowrap; font-size: clamp(.72rem, 2.8vw, .84rem); }
+.court-plan :is(button, h2, h3, h4, p) { margin: 0; }
+.cp-head { display: flex; justify-content: space-between; align-items: center; gap: 24px; padding: 16px 0 28px; }
+.cp-kicker { font-size: .76rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+.court-plan .cp-head h2 { font-size: clamp(2rem, 5vw, 3.2rem); line-height: 1.15; margin: 8px 0 12px; }
+.cp-head p:last-child { color: var(--muted); line-height: 1.55; }
+.cp-court-icon { flex: 0 0 auto; width: 98px; height: 62px; display: block; position: relative; border: 2px solid currentColor; color: var(--cp-ink); background: var(--cp-accent); transform: rotate(-8deg); }
+.cp-court-icon::before, .cp-court-icon::after { content: ''; position: absolute; }
+.cp-court-icon::before { inset: 10px 0; border-block: 1px solid; }
+.cp-court-icon::after { inset: 0 50%; border-left: 1px solid; }
+.cp-court-icon i { position: absolute; inset: 10px 24%; border-inline: 1px solid; }
+.cp-court-icon i::after { content: ''; position: absolute; top: 50%; left: 0; right: 0; border-top: 1px solid; }
+.cp-controls { display: flex; gap: 14px; align-items: stretch; border-bottom: 1px solid var(--line); padding-bottom: 18px; }
+.cp-days { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 5px; flex: 1; }
+.cp-days button, .cp-week { border: 1px solid transparent; border-radius: 8px; background: transparent; color: var(--cp-ink); font: inherit; font-size: .83rem; font-weight: 600; min-height: 55px; padding: 10px 4px; cursor: pointer; }
+.cp-days button { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; }
+.cp-days button[aria-pressed="true"], .cp-week[aria-pressed="true"] { background: var(--cp-ink); color: var(--bg); }
+.cp-days button:hover:not([aria-pressed="true"]), .cp-week:hover:not([aria-pressed="true"]) { background: var(--cp-soft); }
+.cp-days button:focus-visible, .cp-week:focus-visible { outline: 2px solid var(--cp-ink); outline-offset: 3px; }
+.cp-day-short { display: none; }
+.cp-day-dot { height: 4px; width: 4px; border-radius: 50%; background: currentColor; opacity: .22; }
+.cp-day-dot.has-entries { opacity: 1; }
+.cp-week { padding-inline: 14px; border-color: var(--line); white-space: nowrap; }
+.cp-legend { display: flex; flex-wrap: wrap; gap: 12px 24px; padding: 20px 0; font-size: .75rem; }
+.cp-legend > span { display: inline-flex; align-items: center; gap: 8px; }
+.cp-legend i { height: 11px; width: 11px; border-radius: 2px; border: 1px solid var(--cp-ink); }
+.cp-team { background: var(--cp-ink); color: var(--bg); }
+.cp-youth { background: var(--cp-soft); color: var(--cp-ink); }
+.cp-coach { background: var(--card); color: var(--cp-ink); }
+.cp-legend .cp-coach { border-style: dashed; }
+.cp-day { padding: 8px 0 18px; }
+.cp-day + .cp-day { margin-top: 28px; padding-top: 28px; border-top: 1px solid var(--line); }
+.cp-day-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 24px; }
+.court-plan .cp-day-head h3 { font-size: 1.4rem; }
+.cp-day-head > span { color: var(--muted); font-size: .78rem; }
+.cp-axis, .cp-lane { display: grid; grid-template-columns: 68px minmax(0, 1fr); }
+.cp-axis { font-size: .7rem; font-variant-numeric: tabular-nums; color: var(--muted); padding-bottom: 12px; }
+.cp-axis > div { position: relative; height: 16px; margin-right: 14px; }
+.cp-axis > div > span { position: absolute; left: calc(var(--hour) / 7 * 100%); transform: translateX(-50%); }
+.cp-axis > div > span:first-child { transform: none; }
+.cp-lane { border-top: 1px solid var(--line); min-height: 112px; }
+.cp-lane:last-child { border-bottom: 1px solid var(--line); }
+.court-plan .cp-lane h4 { display: flex; flex-direction: column; justify-content: center; font-family: var(--font); font-size: 1.25rem; font-weight: 600; }
+.cp-lane h4 > span { font-size: .66rem; font-weight: 400; color: var(--muted); margin-bottom: 4px; }
+.cp-track { position: relative; margin: 0 14px 0 0; background: repeating-linear-gradient(to right, var(--line) 0, var(--line) 1px, transparent 1px, transparent calc(100% / 7)); }
+.cp-event { position: absolute; top: 8px; bottom: 8px; left: var(--start); width: calc(var(--duration) - 4px); border-radius: 5px; padding: 10px 8px; display: flex; flex-direction: column; justify-content: center; gap: 5px; min-width: 0; }
+.cp-event strong { font-family: var(--font); font-size: .85rem; line-height: 1.2; overflow-wrap: anywhere; }
+.cp-event time { font-size: .75rem; font-variant-numeric: tabular-nums; line-height: 1.3; }
+.cp-event.cp-coach { border: 1px dashed var(--cp-ink); }
+.cp-unassigned { display: inline-block; margin: 35px 12px; color: var(--muted); font-size: .76rem; background: var(--bg); padding: 2px 6px; }
+.cp-empty { background: var(--card); border-radius: 8px; border: 1px solid var(--line); padding: 36px 24px; display: flex; flex-direction: column; align-items: center; text-align: center; }
+.cp-empty .cp-court-icon { width: 72px; height: 46px; margin: 6px 0 26px; }
+.court-plan .cp-empty h4 { font-size: 1.25rem; margin-bottom: 10px; }
+.cp-empty p { max-width: 420px; color: var(--muted); line-height: 1.5; }
+.cp-note { display: grid; grid-template-columns: 130px 1fr; gap: 16px; border-top: 1px solid var(--line); margin-top: 20px; padding-top: 20px; font-size: .8rem; line-height: 1.6; }
+.cp-note p { color: var(--muted); }
+.cp-status { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+@media (max-width: 1050px) { .cp-day-long { display: none; } .cp-day-short { display: inline; } }
+@media (max-width: 759px) {
+  .cp-head { padding-top: 8px; gap: 16px; }
+  .cp-head > .cp-court-icon { width: 65px; height: 44px; }
+  .cp-head p:last-child { font-size: .88rem; }
+  .cp-controls { flex-wrap: wrap; gap: 12px; }
+  .cp-days { flex-basis: 100%; }
+  .cp-week { min-height: 42px; margin-left: auto; font-size: .76rem; }
+  .cp-days button { min-height: 55px; font-size: .82rem; }
+  .cp-legend { gap: 12px 16px; }
+  .cp-axis { display: none; }
+  .cp-lane { grid-template-columns: 47px minmax(0, 1fr); padding: 12px 0; min-height: 68px; }
+  .cp-track { margin: 0; background: none; display: grid; gap: 8px; }
+  .cp-event { position: static; width: auto; min-height: 80px; padding: 12px 14px; gap: 6px; }
+  .cp-event strong { font-size: .95rem; }
+  .cp-event time { font-size: .8rem; }
+  .cp-unassigned { margin: auto 0; padding: 6px 0; font-size: .76rem; }
+  .cp-note { grid-template-columns: 1fr; gap: 6px; }
+}
+@media print {
+  .cp-controls, .cp-legend, .cp-status { display: none; }
+  .cp-day { break-inside: avoid; }
+  .cp-event { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+}

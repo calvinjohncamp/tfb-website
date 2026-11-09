@@ -939,6 +939,8 @@
     if (key === 'verein' && location.hash.split('/')[1] === 'history') return storyPageView('history');
     const { state, icon, partnerSlot } = ui();
     const page = site.pages[key];
+    const courtPlan = key === 'sport' && section === 'platzbelegung';
+    if (courtPlan) editing = null;
     const edit = editing === key && state.member && state.member.isAdmin && !preview;
     const admin = state.member && state.member.isAdmin;
     const training = key === 'sport' && location.hash.split('/')[1] === 'training';
@@ -953,7 +955,7 @@
       return (b.type === 'post' || photoDate) && newsDates++ % 2 === 1;
     }) : []);
     const renderPageBlock = b => renderBlock(b, key, accentDates.has(b));
-    const blocks = edit
+    const blocks = courtPlan ? TFB.courtPlan.render() : edit
       ? key==='aktuell'?layoutBlocks(list,key,b=>editWrap(b,list.indexOf(b),list.length,renderPageBlock(b))):list.map((b, i) => editWrap(b, i, list.length, renderPageBlock(b))).join('')
       : legal ? `<div class="legal-document">${list.map(renderPageBlock).join('')}</div>` : layoutBlocks(list, key, renderPageBlock);
     return `
@@ -967,11 +969,12 @@
           ? ''
           : `<header class="view-head page-head">
           <div><h1>${esc(page.title)}</h1>${page.intro ? `<p class="muted">${esc(page.intro)}</p>` : ''}</div>
-          ${key === 'aktuell' ? '<div class="page-head-tools">' : ''}${admin && !edit ? `<button type="button" class="view-close" data-action="site-edit" data-page="${key}" aria-label="Seite bearbeiten">${icon.pencil}</button>` : ''}${key === 'aktuell' ? `${!edit ? contentOverviewLink(key) : ''}</div>` : ''}
+          ${key === 'aktuell' ? '<div class="page-head-tools">' : ''}${admin && !edit && !courtPlan ? `<button type="button" class="view-close" data-action="site-edit" data-page="${key}" aria-label="Seite bearbeiten">${icon.pencil}</button>` : ''}${key === 'aktuell' ? `${!edit ? contentOverviewLink(key) : ''}</div>` : ''}
         </header>`}
         ${key === 'sport' ? `<nav class="seg sport-switch" aria-label="Sportbereiche">
-          <a class="${training ? '' : 'on'}" href="#sport" ${training ? '' : 'aria-current="page"'}>Mannschaften</a>
+          <a class="${training || courtPlan ? '' : 'on'}" href="#sport" ${training || courtPlan ? '' : 'aria-current="page"'}>Mannschaften</a>
           <a class="${training ? 'on' : ''}" href="#sport/training" ${training ? 'aria-current="page"' : ''}>Training</a>
+          <a class="${courtPlan ? 'on' : ''}" href="#sport/platzbelegung" ${courtPlan ? 'aria-current="page"' : ''}>Platzbelegung</a>
         </nav>` : ''}
         ${key === 'home' ? `<div class="home-masthead"><span>Neu im Club</span><span>${esc(new Date().toLocaleDateString('de-DE', { month: 'long', year: 'numeric' }))}</span></div>` : ''}
         ${key === 'home' && !edit && !list.some(b => b.type === 'feature') ? contentOverviewLink(key) : ''}
@@ -2074,7 +2077,7 @@
   // Link-Ziel: entweder eine Website oder eine Seite der App (Menüpunkte und Home-Unterseiten)
   function appTargets() {
     const list = [['#home', 'Home'], ['#kiosk', 'Kiosk'], ['#strichliste', 'Kiosk · Strichliste'], ['#abrechnungen', 'Kiosk · Abrechnungen'],
-      ['#chat', 'Chat'], ['#chat/alle', 'Chat · Alle Beiträge'], ['#aktuell', 'Aktuell'], ['#sport', 'Sport'], ['#sport/training', 'Sport · Training'], ['#club', 'Club'], ['#club/history', 'Club · History'], ['#impressum', 'Impressum'], ['#satzung', 'Satzung']];
+      ['#chat', 'Chat'], ['#chat/alle', 'Chat · Alle Beiträge'], ['#aktuell', 'Aktuell'], ['#sport', 'Sport'], ['#sport/training', 'Sport · Training'], ['#sport/platzbelegung', 'Sport · Platzbelegung'], ['#club', 'Club'], ['#club/history', 'Club · History'], ['#impressum', 'Impressum'], ['#satzung', 'Satzung']];
     if (TFB.config.features && TFB.config.features.treffen) list.push(['#treffen', 'Verabreden']);
     (site.pages.home.blocks || []).filter((x) => x.type === 'feature' && hasMore(x) && (!x.navigation || x.navigation === 'detail'))
       .forEach((x) => list.push([`#home/${x.id}`, `Home · ${x.title}`]));
