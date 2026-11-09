@@ -2,6 +2,17 @@
 
 ## Abrechnung mit voller Breite und zentrierter PDF-Kopf · 09.11.2026
 
+Veröffentlichung bestätigt: e2d6527, Pages-Lauf 42713475494 erfolgreich.
+index.html, statement-layout.css, court-plan.js, sw.js und alle vier PDF-/JPEG-
+Dateien live bytegleich mit dem geprüften Paket. Live-Frontend mit isolierter API
+in Chromium/WebKit je 834×1194 und 1194×834 in beiden Welten erneut erfolgreich.
+Angemeldete persönliche Live-Abrechnung zusätzlich sichtbar kontrolliert; sauberer
+Monatsrahmen und volle Inhaltsbreite bestätigt. Nur navigiert/gelesen, keine echten
+Kauf- oder Korrekturaktionen ausgelöst. Die kurz unterbrochene Browserverbindung
+wurde wiederhergestellt; abschließende Ansicht in normaler Browsergröße.
+Nachweis: output/TFB-Abrechnung-ueberarbeitet-live.jpg. Aktualisierte Druckdateien
+zusätzlich unter output/pdf/ im Hauptprojekt. Lokaler Arbeitsstand gezielt ergänzt.
+
 Nutzer meldet geklemmte iPad-Kalender und unsauberen Monatsrahmen. Ursache:
 äußere Abrechnungsansicht auf 760 px begrenzt; quadratische Kalender mit zu
 knappen Monatszeilen und altem gemeinsamem Rasterrahmen. Neue hosteigene CSS
