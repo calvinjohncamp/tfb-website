@@ -1,0 +1,61 @@
+/* TFB host layout: keep the shared kiosk release immutable. */
+.view[data-view="abrechnungen"]:has([data-kb-member-view]),
+.view[data-view="kioskabrechnung"]:has([data-kb-admin-view]) {
+  max-width: none; width: 100%; margin: 0;
+}
+.shared-kiosk-scope :is([data-kb-member-view], [data-kb-admin-view]) { max-width: none; width: 100%; margin: 16px 0 40px; }
+.shared-kiosk-scope :is([data-kb-member-view], [data-kb-admin-view]) > .kb-panel { max-width: none; padding: 12px 0; margin: 0; }
+.shared-kiosk-scope .kb-calendar-toolbar { display: block; width: 100%; max-width: none; }
+.shared-kiosk-scope .kb-calendar-toolbar .kb-breadcrumb { width: 100%; gap: 10px 14px; margin: 16px 0 20px; }
+.shared-kiosk-scope .kb-history-years { margin-left: auto; padding-left: 0; gap: 8px; }
+.shared-kiosk-scope .kb-breadcrumb button { min-height: 38px; }
+.shared-kiosk-scope .kb-breadcrumb .kb-year-pill { border-color: color-mix(in srgb, var(--kb-brand) 55%, var(--line)); color: var(--kb-brand); background: var(--card); }
+.shared-kiosk-scope .kb-breadcrumb .kb-year-pill[aria-pressed="true"] { background: var(--kb-soft); box-shadow: inset 0 0 0 1px var(--kb-brand); }
+.shared-kiosk-scope .kb-calendar-pair { --statement-accent: #C4553A; }
+html.tfb-logo-midnight-amber .shared-kiosk-scope .kb-calendar-pair { --statement-accent: #FFC300; }
+.shared-kiosk-scope .kb-calendar-pair { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: stretch; gap: 24px; max-width: none; width: 100%; }
+.shared-kiosk-scope .kb-calendar-pair > :is(.kb-calendar, .kb-day-picker) { aspect-ratio: auto; min-width: 0; min-height: 470px; height: auto; border-radius: 14px; background: var(--card); }
+.shared-kiosk-scope .kb-calendar-pair :is(.kb-calendar-head, .kb-day-picker-head) { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 14px; align-items: center; min-height: 132px; height: auto; flex: 0 0 132px; padding: 18px 20px 42px; }
+.shared-kiosk-scope .kb-calendar-pair .kb-calendar-head > div { min-width: 0; margin: 0; padding-bottom: 0; }
+.shared-kiosk-scope .kb-calendar-pair .kb-calendar-head > div:not(.kb-year-control) { text-align: right; }
+.shared-kiosk-scope .kb-calendar-pair .kb-year-value { font-size: clamp(2.5rem, 6.6cqi, 3.4rem); line-height: 1.1; }
+.shared-kiosk-scope .kb-calendar-pair .kb-month-title { min-width: 0; }
+.shared-kiosk-scope .kb-calendar-pair .kb-month-title strong { font-size: clamp(1.35rem, 6.6cqi, 2.4rem); line-height: 1.15; }
+.shared-kiosk-scope .kb-calendar-pair .kb-month-sum { min-width: 0; max-width: none; margin: 0; padding-bottom: 0; }
+.shared-kiosk-scope .kb-calendar-pair :is(.kb-calendar-head > div b, .kb-month-sum > b) { font-size: clamp(1.15rem, 4.2cqi, 1.5rem); line-height: 1.2; white-space: nowrap; }
+.shared-kiosk-scope .kb-calendar-pair :is(.kb-calendar-head .kb-today, .kb-day-picker-head button) { right: 20px; bottom: 12px; min-height: 27px; padding: 4px 10px; font-size: .68rem; line-height: 1.2; }
+.shared-kiosk-scope .kb-calendar-pair .kb-months { grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: repeat(4, minmax(80px, 1fr)); gap: 8px; padding: 14px; min-height: 0; }
+.shared-kiosk-scope .kb-calendar-pair .kb-month { display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 4px; position: relative; min-height: 80px; padding: 12px 10px; border: 0; border-radius: 8px; box-shadow: none; background: var(--card); }
+.shared-kiosk-scope .kb-calendar-pair .kb-month > span { position: absolute; right: 8px; top: 6px; font-size: .58rem; opacity: .65; }
+.shared-kiosk-scope .kb-calendar-pair .kb-month strong { font-size: 1.45rem; line-height: 1.2; letter-spacing: -.035em; }
+.shared-kiosk-scope .kb-calendar-pair .kb-month b { font-size: .83rem; line-height: 1.25; }
+.shared-kiosk-scope .kb-calendar-pair .kb-month small { font-size: .66rem; line-height: 1.3; white-space: normal; }
+.shared-kiosk-scope .kb-calendar-pair .kb-month.is-current:not(.is-selected) { background: var(--kb-soft); box-shadow: inset 0 0 0 1px var(--kb-brand); }
+.shared-kiosk-scope .kb-calendar-pair .kb-month.is-selected,
+.shared-kiosk-scope .kb-calendar-pair .kb-month.is-selected:not(:disabled):hover { background: color-mix(in srgb, var(--kb-brand) 9%, var(--card)); box-shadow: inset 0 0 0 2px var(--kb-brand); border-radius: 8px; }
+.shared-kiosk-scope .kb-calendar-pair .kb-month:not(:disabled):hover { background: var(--kb-soft); box-shadow: inset 0 0 0 1px var(--kb-brand); border-radius: 8px; }
+.shared-kiosk-scope .kb-calendar-pair .kb-month:focus-visible { outline: 2px solid var(--kb-brand); outline-offset: 2px; }
+.shared-kiosk-scope .kb-calendar-pair .kb-calendar-days { grid-auto-rows: minmax(40px, 1fr); gap: 6px; padding: 16px; }
+.shared-kiosk-scope .kb-calendar-pair .kb-calendar-days > span { padding: 0; font-size: .72rem; }
+.shared-kiosk-scope .kb-calendar-pair .kb-calendar-days button { min-height: 44px; padding: 4px; font-size: 1rem; line-height: 1.2; border-radius: 8px; }
+.shared-kiosk-scope .kb-calendar-pair .kb-calendar-days button[aria-pressed="true"] { aspect-ratio: auto; max-height: none; width: auto; justify-self: stretch; border-radius: 8px; }
+.shared-kiosk-scope .kb-calendar-pair .kb-calendar-days .has-turnover { color: var(--kb-brand); font-weight: 750; }
+.shared-kiosk-scope .kb-calendar-pair .kb-calendar-days .has-turnover i { background: var(--statement-accent); }
+.shared-kiosk-scope .kb-period-heading { margin-top: 28px; }
+@media (max-width: 999px) {
+  .shared-kiosk-scope .kb-calendar-pair { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+  .shared-kiosk-scope .kb-calendar-pair > :is(.kb-calendar, .kb-day-picker) { min-height: 0; }
+  .shared-kiosk-scope .kb-calendar-pair .kb-months { grid-template-columns: repeat(4, minmax(0, 1fr)); grid-template-rows: repeat(3, minmax(88px, 1fr)); }
+  .shared-kiosk-scope .kb-calendar-pair .kb-calendar-days { grid-auto-rows: minmax(44px, 1fr); }
+}
+@media (max-width: 599px) {
+  .shared-kiosk-scope .kb-calendar-pair .kb-months { grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: repeat(4, minmax(88px, 1fr)); padding: 10px; gap: 6px; }
+  .shared-kiosk-scope .kb-calendar-pair .kb-month { padding: 12px 8px; }
+  .shared-kiosk-scope .kb-calendar-pair .kb-month strong { font-size: 1.35rem; }
+  .shared-kiosk-scope .kb-calendar-pair .kb-month b { font-size: .77rem; }
+  .shared-kiosk-scope .kb-calendar-pair .kb-month small { font-size: .63rem; }
+  .shared-kiosk-scope .kb-calendar-pair :is(.kb-calendar-head, .kb-day-picker-head) { padding-inline: 16px; gap: 10px; }
+  .shared-kiosk-scope .kb-calendar-pair .kb-calendar-days { padding: 10px; gap: 3px; }
+  .shared-kiosk-scope .kb-calendar-pair .kb-calendar-days button { font-size: .94rem; }
+  .shared-kiosk-scope .kb-history-years { flex-basis: 100%; justify-content: flex-start; }
+}

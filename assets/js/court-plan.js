@@ -5,7 +5,7 @@
   const esc = text => TFB.ui.esc(text);
   const time = entry => `${entry.start}:00–${entry.end}:00`;
   const entries = index => data().entries.filter(e => e.day === index);
-  const filename = (world, type) => `assets/docs/tfb-platzbelegung-sommer-2027-${world}.${type}`;
+  const filename = (world, type) => `assets/docs/tfb-platzbelegung-sommer-2027-${world}.${type}?v=20261109-statement-layout-1`;
   const previews = () => ['black-crail', 'midnight-amber'].map((world, i) => `<img class="cp-brand-${i ? 'amber' : 'crail'}" src="${filename(world, 'jpg')}" alt="Wochenplan Sommer 2027: Montag bis Freitag, Plätze 1, 2, 3, 4, 6 und 7" width="3508" height="2481" loading="lazy">`).join('');
   const downloads = () => ['black-crail', 'midnight-amber'].map((world, i) => `<span class="cp-brand-${i ? 'amber' : 'crail'} cp-file-links"><a class="btn" href="${filename(world, 'pdf')}" download>PDF herunterladen</a><a class="btn" href="${filename(world, 'jpg')}" download>JPEG herunterladen</a></span>`).join('');
   function matrix() {

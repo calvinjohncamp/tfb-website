@@ -7,6 +7,7 @@ from pathlib import Path
 import json
 import subprocess
 import tempfile
+import math
 
 from fontTools.ttLib import TTFont as FontToolsFont
 from fontTools.varLib.instancer import instantiateVariableFont
@@ -75,11 +76,24 @@ def build(world, ink, accent, soft):
     canvas.setFillColor(HexColor('#FFFFFF'))
     canvas.rect(0, 0, width, height, fill=1, stroke=0)
     logo = svg2rlg(str(ROOT / f'assets/brand/tfb-logo-{world}.svg'))
-    logo.scale(94 / logo.width, 94 / logo.width)
+    logo_scale = 94 / logo.width
+    logo_height = logo.height * logo_scale
+    logo.scale(logo_scale, logo_scale)
     renderPDF.draw(logo, canvas, 28, height - 68)
-    text(canvas, 145, height - 36, 'Platzbelegung', 24, 'Display', ink)
-    text(canvas, 146, height - 54, 'SOMMER 2027  /  MONTAG BIS FREITAG', 9, 'Bold', ink)
-    court(canvas, width - 115, height - 63, 78, accent, ink)
+    header_center_y = height - 68 + logo_height / 2
+    title = 'Platzbelegung'
+    subtitle = 'SOMMER 2027  /  MONTAG BIS FREITAG'
+    gap = 18
+    title_ascent = pdfmetrics.getAscent('Display') * 24 / 1000
+    subtitle_descent = pdfmetrics.getDescent('Bold') * 9 / 1000
+    title_baseline = header_center_y - (title_ascent - gap + subtitle_descent) / 2
+    text(canvas, (width - pdfmetrics.stringWidth(title, 'Display', 24)) / 2, title_baseline, title, 24, 'Display', ink)
+    text(canvas, (width - pdfmetrics.stringWidth(subtitle, 'Bold', 9)) / 2, title_baseline - gap, subtitle, 9, 'Bold', ink)
+    angle = math.radians(-8)
+    court_width, court_height = 78, 78 * .632
+    court_offset_x = court_width / 2 * math.cos(angle) - court_height / 2 * math.sin(angle)
+    court_offset_y = court_width / 2 * math.sin(angle) + court_height / 2 * math.cos(angle)
+    court(canvas, width - 75 - court_offset_x, header_center_y - court_offset_y, court_width, accent, ink)
 
     left, top = 28, height - 90
     total, court_width, header_height, row_height = width - 56, 43, 30, 64

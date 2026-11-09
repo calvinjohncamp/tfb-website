@@ -12,6 +12,12 @@ export async function fixture(){
   async function call(path,data,token){const r=await worker.fetch(new Request('https://tfb-api.test'+path,{method:data===undefined?'GET':'POST',headers:{Origin:'https://joern-kaemper.de','CF-Connecting-IP':'192.0.2.2',...(token?{Authorization:'Bearer '+token}:{}),...(data===undefined?{}:{'Content-Type':'application/json'})},...(data===undefined?{}:{body:JSON.stringify(data)})}),env);return {status:r.status,body:await r.json()};}
   const setup=await call('/setup',{setupToken:env.SETUP_TOKEN,firstName:'Demo',lastName:'Owner',email:'test@example.invalid',password:'Synthetic password only 123!'});
   assert.equal(setup.status,200);const admin=setup.body.member,adminToken=setup.body.token;
+  // Match the deployed additive Padel bridge migration used by kiosk reports.
+  // This fixture stays in memory; it never migrates a production database.
+  env.DB.sqlite.exec(`CREATE TABLE IF NOT EXISTS padel_kiosk_links(auth_id TEXT PRIMARY KEY,member_id TEXT NOT NULL REFERENCES members(id));
+    CREATE TABLE IF NOT EXISTS padel_kiosk_receipts(event_id TEXT PRIMARY KEY,entry_id TEXT NOT NULL,fingerprint TEXT NOT NULL,payload TEXT NOT NULL,created_at TEXT NOT NULL);
+    CREATE TRIGGER IF NOT EXISTS padel_kiosk_receipts_no_update BEFORE UPDATE ON padel_kiosk_receipts BEGIN SELECT RAISE(ABORT,'KIOSK_HISTORY_IMMUTABLE'); END;
+    CREATE TRIGGER IF NOT EXISTS padel_kiosk_receipts_no_delete BEFORE DELETE ON padel_kiosk_receipts BEGIN SELECT RAISE(ABORT,'KIOSK_HISTORY_IMMUTABLE'); END;`);
   const otherId=crypto.randomUUID();
   env.DB.sqlite.prepare("INSERT INTO members(id,first_name,last_name,email,search_text,updated_at) VALUES (?,'Other','Member','other@example.invalid','other member other@example.invalid',?)").run(otherId,Date.now());
   const token='b'.repeat(64),hash=Buffer.from(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(token))).toString('hex');

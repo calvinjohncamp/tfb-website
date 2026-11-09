@@ -1,5 +1,40 @@
 # TFB-Kiosk – Projektgedächtnis und Übergabe
 
+## Abrechnung mit voller Breite und zentrierter PDF-Kopf · 09.11.2026
+
+Nutzer meldet geklemmte iPad-Kalender und unsauberen Monatsrahmen. Ursache:
+äußere Abrechnungsansicht auf 760 px begrenzt; quadratische Kalender mit zu
+knappen Monatszeilen und altem gemeinsamem Rasterrahmen. Neue hosteigene CSS
+assets/css/statement-layout.css NACH dem unveränderten shared-kiosk/native.css.
+Keine Änderung am gemeinsamen Kioskpaket oder an Abrechnungsberechnungen.
+
+Persönliche und administrative Ansicht nutzen die volle Inhaltsbreite. Ab 1000 px
+stehen flexible Kalender nebeneinander, darunter volle Breite untereinander;
+Jahresraster im Tablet-Hochformat 4 × 3, auf kleinen Handys 3 × 4. Keine erzwungenen
+Quadrate, genügend Feldhöhe, lesbare Schrift und keine Zell-Gitternetzkollisionen.
+Auswahl mit gleichmäßigem inneren Rahmen in der jeweiligen Markenfarbe; getrennte
+Felder und Fokusrahmen. Historische Jahre sauber in der breiten Werkzeugzeile.
+Buchungstage: gut lesbare dunkle Zahlen, gelbe/rote Unterstreichung passend zur Welt.
+
+Druckplan: beide Titelzeilen horizontal auf die Blattmitte ausgerichtet, gesamter
+Titelblock vertikal exakt auf die Mitte des linken Logos. Rechtes Court-Symbol
+auf dieselbe Achse und symmetrischen Abstand zur Blattmitte gesetzt. 29 Belegungen,
+eine A4-Querformatseite und 300-dpi-JPEGs wie zuvor. PDFs/JPEGs samt Vorschauen neu
+generiert; versionierte Download-/Bild-URLs vermeiden alte Browserkopien.
+
+Tests: 15 Kiosk-Backendtests erfolgreich; vollständige bestehende Browserprüfung
+in Chromium/WebKit mit Korrekturen, Mietartikeln, Archivierung, Monatsversionen,
+Datentrennung, CSV und Tages-JPEG erfolgreich. Alte Quadrat-Erwartung an den neuen
+responsiven Aufbau angepasst. Testfixture um die bereits produktiv vorhandenen
+additiven Padel-Bridge-Tabellen ergänzt (nur SQLite im Speicher, kein Backendrelease).
+Neue Layoutprüfung in Chromium/WebKit bei 390×844, 844×390, 768×1024, 834×1194,
+1024×768, 1194×834, 1366×1024 und 1440×1000 je beide Welten erfolgreich: volle
+Inhaltsbreite, sichtbare Monatsfelder, saubere Auswahl, September-Kopf ohne
+Überlappung, Monats-/Tagesnavigation und unveränderte Testbuchungssummen.
+Beide PDF-Seiten visuell geprüft, Titelzentrierung zusätzlich per Textkoordinaten
+innerhalb 0,5 pt gemessen. 309 öffentliche Dateien im Paket geprüft.
+
+
 ## Fünf-Tage-Matrix und A4-Druckplan · 09.11.2026
 
 Veröffentlichung bestätigt: a45dc73, Pages-Lauf 42711291614 erfolgreich.

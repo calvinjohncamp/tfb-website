@@ -1,11 +1,12 @@
 // TFB-Kiosk – Service Worker.
 // Netz zuerst, damit Änderungen sofort ankommen; ohne Netz startet die App aus dem Zwischenspeicher.
-const CACHE = 'tfb-kiosk-court-matrix-20261109-1';
+const CACHE = 'tfb-kiosk-statement-layout-20261109-1';
 const SHELL = [
-  './assets/docs/tfb-platzbelegung-sommer-2027-black-crail.pdf', './assets/docs/tfb-platzbelegung-sommer-2027-black-crail.jpg',
-  './assets/docs/tfb-platzbelegung-sommer-2027-midnight-amber.pdf', './assets/docs/tfb-platzbelegung-sommer-2027-midnight-amber.jpg',
+  './assets/css/statement-layout.css?v=20261109-statement-layout-1',
+  './assets/docs/tfb-platzbelegung-sommer-2027-black-crail.pdf', './assets/docs/tfb-platzbelegung-sommer-2027-black-crail.pdf?v=20261109-statement-layout-1', './assets/docs/tfb-platzbelegung-sommer-2027-black-crail.jpg', './assets/docs/tfb-platzbelegung-sommer-2027-black-crail.jpg?v=20261109-statement-layout-1',
+  './assets/docs/tfb-platzbelegung-sommer-2027-midnight-amber.pdf', './assets/docs/tfb-platzbelegung-sommer-2027-midnight-amber.pdf?v=20261109-statement-layout-1', './assets/docs/tfb-platzbelegung-sommer-2027-midnight-amber.jpg', './assets/docs/tfb-platzbelegung-sommer-2027-midnight-amber.jpg?v=20261109-statement-layout-1',
   './assets/data/court-plan.js', './assets/js/court-plan.js', './assets/css/court-plan.css',
-  './assets/data/court-plan.js?v=20261109-court-matrix-1', './assets/js/court-plan.js?v=20261109-court-matrix-1', './assets/css/court-plan.css?v=20261109-court-matrix-1',
+  './assets/data/court-plan.js?v=20261109-statement-layout-1', './assets/js/court-plan.js?v=20261109-statement-layout-1', './assets/css/court-plan.css?v=20261109-statement-layout-1',
   './assets/shared-kiosk/20261109-shared-1/asset-base.js',
   './assets/shared-kiosk/20261109-shared-1/art.js',
   './assets/shared-kiosk/20261109-shared-1/kiosk.js',
@@ -38,13 +39,13 @@ const SHELL = [
   './assets/css/chat-media.css', './assets/js/chat-media.js',
   './assets/css/home-media.css', './assets/js/home-media.js', './assets/js/newsroom.js',
   './assets/css/club-archive.css', './assets/js/club-archive.js',
-  './assets/css/brand.css', './assets/css/app.css', './assets/css/app.css?v=20261109-court-matrix-1',
+  './assets/css/brand.css', './assets/css/app.css', './assets/css/app.css?v=20261109-statement-layout-1',
   './assets/css/design-preview.css', './assets/js/design-preview.js',
-  './assets/css/partner-visibility.css', './assets/css/partner-visibility.css?v=20261109-court-matrix-1', './assets/js/partner-visibility.js', './assets/js/partner-content.js', './assets/js/partner-admin.js',
+  './assets/css/partner-visibility.css', './assets/css/partner-visibility.css?v=20261109-statement-layout-1', './assets/js/partner-visibility.js', './assets/js/partner-content.js', './assets/js/partner-admin.js',
   './assets/fonts/editorial/bricolage-grotesque.ttf', './assets/fonts/editorial/dm-sans.ttf',
-  './assets/js/config.js', './assets/data/partners.js', './assets/data/teams.js', './assets/data/site-seed.js', './assets/js/partner-rotation.js', './assets/js/site.js', './assets/js/meet.js', './assets/js/demo-backend.js', './assets/js/brand-data.js', './assets/js/art.js', './assets/js/app.js', './assets/js/app.js?v=20261109-court-matrix-1',
+  './assets/js/config.js', './assets/data/partners.js', './assets/data/teams.js', './assets/data/site-seed.js', './assets/js/partner-rotation.js', './assets/js/site.js', './assets/js/meet.js', './assets/js/demo-backend.js', './assets/js/brand-data.js', './assets/js/art.js', './assets/js/app.js', './assets/js/app.js?v=20261109-statement-layout-1',
   './assets/icons/favicon-64.png', './assets/icons/icon-192.png',
-  './assets/js/membership.js', './assets/js/membership-fees.js', './assets/js/site.js?v=20261109-court-matrix-1',
+  './assets/js/membership.js', './assets/js/membership-fees.js', './assets/js/site.js?v=20261109-statement-layout-1',
   './assets/js/photo-drop.js',
   './assets/js/photo-frame.js',
   './assets/js/photo-viewer.js',
