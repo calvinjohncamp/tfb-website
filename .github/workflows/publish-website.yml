@@ -14,7 +14,7 @@ concurrency:
 jobs:
   publish:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
     permissions:
       contents: read
       pages: write
@@ -33,3 +33,5 @@ jobs:
       - name: Website veröffentlichen
         id: deployment
         uses: actions/deploy-pages@v4
+        with:
+          timeout: 900000
