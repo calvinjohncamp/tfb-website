@@ -50,3 +50,8 @@
 .trainer-status-group > summary { font-weight:800; cursor:pointer; padding:14px 0; }
 .trainer-editor-person:has(option[value="inactive"]:checked), .trainer-editor-person:has(option[value="hidden"]:checked) { border-left:3px solid #c4553a; padding-left:16px; }
 :root.tfb-logo-midnight-amber .trainer-editor-person:has(option[value="inactive"]:checked), :root.tfb-logo-midnight-amber .trainer-editor-person:has(option[value="hidden"]:checked) { border-left-color:#001d3d; }
+
+/* Email accents follow the club's signature treatment; phone links stay quiet. */
+.trainer-contact a[href^="mailto:"] { color:var(--tfb-signature-red); font-weight:700; justify-self:start; max-width:100%; }
+:root.tfb-logo-midnight-amber .trainer-contact a[href^="mailto:"] { color:var(--tfb-midnight-blue); font-weight:500; }
+:root.tfb-logo-midnight-amber .trainer-email-text { background-image:url("../brand/tfb-highlight-freihand.svg"); background-size:100% 1.1em; background-position:left center; background-repeat:no-repeat; -webkit-box-decoration-break:clone; box-decoration-break:clone; padding:0 .1em; }

@@ -1,5 +1,14 @@
 # TFB – Projektupdate vom 09.11.2026
 
+## Trainer-E-Mails in Signature-Farben · v364 · 09.11.2026
+
+Trainer-E-Mail-Links in der roten Welt Signature-Rot und fett (700). In der
+gelben Welt dunkelblaue Schrift (500) auf dem bestehenden gelben Freihand-
+Textmarker. Markierung sitzt auf dem Textspan, mit Klonen bei Zeilenumbrüchen;
+keine Unterstreichung. Handy-Links bleiben dezent. Chrome/WebKit: Farbe,
+Schriftgewicht, Marker und Mail-/Telefonverknüpfungen geprüft. Keine CMS-Daten,
+Nutzerergänzungen, Fotos oder Reihenfolgen geändert.
+
 ## Schlichte Trainerkontakte und App-Logo · v363 · 09.11.2026
 
 Veröffentlicht: c498fc6, Pages-Lauf 42599609235 erfolgreich. Live-Dateien
