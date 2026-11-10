@@ -51,12 +51,20 @@ try {
         const world=document.querySelector('.tfb-admin-design .world-switch').getBoundingClientRect(),links=document.querySelector('.tfb-admin-links').getBoundingClientRect(),first=document.querySelector('.tfb-admin-links > *').getBoundingClientRect();
         return {inline:innerWidth<1000||Math.abs(first.top-world.top)<3,separated:Math.abs(parseFloat(getComputedStyle(document.querySelector('.tfb-admin-design')).columnGap)-3*parseFloat(getComputedStyle(document.querySelector('.tfb-admin-links')).columnGap))<1,compact:world.height<=30,overflow:document.documentElement.scrollWidth>innerWidth};
       });
+      const heights=await page.locator('.tfb-admin-links .btn').evaluateAll(es=>es.map(e=>e.getBoundingClientRect().height));assert.ok(heights.every(height=>Math.abs(height-heights[0])<1),view+' button heights');
       assert.equal(layout.inline,true,view);assert.equal(layout.compact,true,view);assert.equal(layout.separated,true,view);assert.equal(layout.overflow,false,view);
     }
   }
   await page.locator('.tfb-admin-links a[href="#kioskabrechnung"]').click();
   await page.locator('[data-kb-admin-view] .kb-calendar').waitFor();
-  assert.equal(await page.locator('[data-kb-member]').inputValue(),'');assert.equal(await page.locator('.tfb-admin-links a[aria-current=page]').innerText(),'Kiosk');for(const yellow of [true,false]){await page.evaluate(y=>document.documentElement.classList.toggle('tfb-logo-midnight-amber',y),yellow);await page.waitForFunction(bg=>getComputedStyle(document.querySelector('.tfb-admin-links [aria-current=page]')).backgroundColor===bg,yellow?'rgb(0, 29, 61)':'rgb(196, 85, 58)');assert.deepEqual(await page.locator('.tfb-admin-links [aria-current=page]').evaluate(el=>({bg:getComputedStyle(el).backgroundColor,fg:getComputedStyle(el).color})),{bg:yellow?'rgb(0, 29, 61)':'rgb(196, 85, 58)',fg:yellow?'rgb(255, 195, 0)':'rgb(255, 255, 255)'});}
+  assert.equal(await page.locator('[data-kb-member]').inputValue(),'');
+  assert.equal(await page.locator('.tfb-admin-links a[aria-current=page]').innerText(),'Kiosk');
+  for(const yellow of [true,false]){
+    await page.evaluate(y=>document.documentElement.classList.toggle('tfb-logo-midnight-amber',y),yellow);
+    await page.waitForFunction(bg=>getComputedStyle(document.querySelector('.tfb-backup-button')).backgroundColor===bg,yellow?'rgb(0, 29, 61)':'rgb(196, 85, 58)');
+    assert.deepEqual(await page.locator('.tfb-admin-links [aria-current=page]').evaluate(el=>({bg:getComputedStyle(el).backgroundColor,fg:getComputedStyle(el).color})),{bg:'rgb(23, 23, 23)',fg:'rgb(255, 255, 255)'});
+    assert.equal(await page.locator('.tfb-backup-button').evaluate(el=>getComputedStyle(el).color),'rgb(255, 255, 255)');
+  }
   assert.match(await page.locator('.kb-account-heading').innerText(),/Clubweite Abrechnung/);
   await page.locator('.tfb-admin-links [data-action="site-edit"]').click();
   await page.locator('.site-page[data-page="home"].editing-page').waitFor();

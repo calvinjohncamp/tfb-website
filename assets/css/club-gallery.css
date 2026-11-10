@@ -2,5 +2,12 @@
 .cg-years .on{background:var(--club-pill-bg);border-color:var(--club-pill-bg);color:#fff}
 .cg-albums .on{background:var(--club-alt-bg);border-color:var(--club-alt-bg);color:var(--club-alt-ink)}
 .cg-years .on:hover,.cg-albums .on:hover{filter:brightness(1.06)}
-.cg-album{margin-top:30px}.cg-album h2{margin-bottom:10px}.cg-album>.collage{margin-top:22px;max-width:100%;border-radius:12px;overflow:hidden}
-.cg-album .collage-item{position:relative}.cg-more{position:absolute;inset:0;display:grid;place-items:center;background:#0008;color:#fff;font-size:2rem;font-weight:750;pointer-events:none}
+/* Every image is present in the mosaic; offscreen originals load lazily. */
+.cg-album{margin-top:30px}.cg-album h2{margin-bottom:10px}
+.cg-photo-collage{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-auto-rows:clamp(130px,14vw,185px);grid-auto-flow:dense;gap:10px;margin-top:22px}
+.cg-photo-collage .collage-item{grid-column:span 1;grid-row:span 1;position:relative;min-width:0;border:0;border-radius:10px;overflow:hidden;padding:0;background:var(--paper);cursor:pointer}
+.cg-photo-collage .collage-item:nth-child(9n+1){grid-column:span 2;grid-row:span 2}
+.cg-photo-collage .collage-item img{display:block;width:100%;height:100%;object-fit:cover}
+.cg-photo-collage .collage-item:focus-visible{outline:3px solid var(--club-pill-bg);outline-offset:2px}
+@media(max-width:1000px){.cg-photo-collage{grid-template-columns:repeat(3,minmax(0,1fr));grid-auto-rows:150px}}
+@media(max-width:600px){.cg-photo-collage{grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:clamp(115px,32vw,160px);gap:8px}}

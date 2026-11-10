@@ -1,9 +1,9 @@
 // TFB-Kiosk – Service Worker.
 // Netz zuerst, damit Änderungen sofort ankommen; ohne Netz startet die App aus dem Zwischenspeicher.
-const CACHE = 'tfb-kiosk-gallery-mail-20261110-1';
+const CACHE = 'tfb-kiosk-gallery-complete-20261110-1';
 const SHELL = [
-  './assets/js/club-gallery.js?v=20261110-gallery-mail-1',
-  './assets/css/club-gallery.css?v=20261110-gallery-mail-1',
+  './assets/js/club-gallery.js?v=20261110-gallery-complete-1',
+  './assets/css/club-gallery.css?v=20261110-gallery-complete-1',
   './assets/js/member-mail-renderer.mjs?v=20261110-gallery-mail-1',
   './assets/css/member-mail.css?v=20261110-gallery-mail-1',
   './assets/js/member-mail-template.js?v=20261110-gallery-mail-1',
@@ -70,7 +70,7 @@ const SHELL = [
   './assets/css/home-media.css', './assets/js/home-media.js', './assets/js/newsroom.js',
   './assets/css/club-archive.css?v=20261110-club-return-1', './assets/js/club-archive.js?v=20261110-gallery-mail-1',
   './assets/css/brand.css', './assets/css/app.css', './assets/css/app.css?v=20261109-statement-layout-1',
-  './assets/css/design-preview.css?v=20261110-gallery-mail-1', './assets/js/design-preview.js',
+  './assets/css/design-preview.css?v=20261110-gallery-complete-1', './assets/js/design-preview.js',
   './assets/css/partner-visibility.css', './assets/css/partner-visibility.css?v=20261109-statement-layout-1', './assets/js/partner-visibility.js', './assets/js/partner-content.js', './assets/js/partner-admin.js?v=20261110-search-pdfs-1',
   './assets/fonts/editorial/bricolage-grotesque.ttf', './assets/fonts/editorial/dm-sans.ttf',
   './assets/js/config.js', './assets/data/partners.js', './assets/data/teams.js', './assets/data/site-seed.js', './assets/js/partner-rotation.js', './assets/js/site.js?v=20261110-gallery-mail-1', './assets/js/meet.js', './assets/js/demo-backend.js', './assets/js/brand-data.js', './assets/js/art.js', './assets/js/app.js?v=20261110-gallery-mail-1', './assets/js/app.js?v=20261110-gallery-mail-1',

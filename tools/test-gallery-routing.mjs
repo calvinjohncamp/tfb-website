@@ -10,5 +10,5 @@ test('only the seven standalone older year galleries leave the article archive',
  assert.equal(items.filter(gallery.isEntry).length,7);
  for(const id of ['397','996','1942','2038','3220','3405','3589'])assert.ok(gallery.isEntry(id));
  for(const id of ['8567','8453','7950','7596','6332','35'])assert.equal(gallery.isEntry(id),false,id);
- assert.equal(gallery.routeFor('3405'),'#club/galerie/2019/1');
+ assert.equal(gallery.routeFor('3405'),'#club/galerie/2019');
 });

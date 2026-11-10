@@ -1,5 +1,14 @@
 # TFB – Übergabe für die nächste Sitzung
 
+## Galerie komplett und Admin-Farben · 10.11.2026
+
+Jahrwahl zeigt alle Bilder aller Alben; Unterpills filtern auf ein komplettes
+Album, Alle Bilder kehrt zur Jahresansicht zurück. Responsives Mosaik ohne
+Fünf-Bilder-Begrenzung, native Lazy-Bilder, bestehender Vollbildbetrachter.
+Aktive Admin-Menüpunkte Schwarz/Weiß. Datensicherung / Time Machine Blau bzw.
+Rot mit weißer Schrift; alle Adminbuttons exakt gleich hoch. Keine Backendänderung.
+Details: [Release](RELEASE-gallery-complete-20261110.md).
+
 ## Galerie, Testmail und Jahresarchiv · 10.11.2026
 
 Neuer vierter Clubarchiv-Pill Galerie (#club/galerie): vorhandene 10 Jahrgänge,
