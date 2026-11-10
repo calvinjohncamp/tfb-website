@@ -11,8 +11,8 @@ import {publicCommunity, publicChatMedia, syncState, syncCommit, syncRevision, s
 import { managementPage } from './management.mjs';
 import {collectVisibility, visibilityReport} from './partner-visibility.mjs';
 import {publicPartnerContent,adminPartnerContent,savePartner,savePartnerSettings,savePartnerRotation,removePartner,partnerLogo} from './partner-management.mjs';
-import {editorialState,uploadEditorialMedia,editorialMedia,editorialCommit,editorialCheckpoint,editorialHistory,editorialPreview,editorialRestore,editorialExport,editorialScheduled} from './editorial.mjs';
-import {backupEditorialSystem} from './editorial-backup.mjs';
+import {digest,editorialState,uploadEditorialMedia,editorialMedia,editorialCommit,editorialCheckpoint,editorialHistory,editorialPreview,editorialRestore,editorialExport,editorialScheduled} from './editorial.mjs';
+import {backupEditorialSystem,unifiedBackup,unifiedScheduled} from './editorial-backup.mjs';
 
 const ORIGINS = new Set(['https://joern-kaemper.de', 'https://www.joern-kaemper.de', 'https://calvinjohncamp.github.io']);
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -298,10 +298,11 @@ async function route(request, env, url) {
   if (request.method === 'GET' && path.startsWith('/admin/site/media/')) return editorialMedia(env,decodeURIComponent(path.split('/').at(-1)),true);
   if (request.method === 'POST' && path === '/admin/site/media') return uploadEditorialMedia(env,await body(request,15*1024*1024));
   if (request.method === 'POST' && path === '/admin/site/commit') return editorialCommit(env,member,await body(request,4*1024*1024));
+  if (request.method === 'POST' && path === '/admin/site/backup') return unifiedBackup(env,member,await body(request,4096));
   if (request.method === 'POST' && path === '/admin/site/checkpoint') return editorialCheckpoint(env,member,await body(request,4096));
   if (request.method === 'POST' && path === '/admin/site/system-checkpoint') return backupEditorialSystem(env);
   if (request.method === 'POST' && path === '/admin/site/preview') return editorialPreview(env,await body(request,4*1024*1024));
-  if (request.method === 'POST' && path === '/admin/site/restore') return editorialRestore(env,member,await body(request,4*1024*1024));
+  if (request.method === 'POST' && path === '/admin/site/restore') { const data=await body(request,4*1024*1024);return editorialRestore(env,member,data,async()=>{const hash=await digest('safety:'+data.id),id=hash.slice(0,8)+'-'+hash.slice(8,12)+'-'+hash.slice(12,16)+'-'+hash.slice(16,20)+'-'+hash.slice(20,32);return unifiedBackup(env,member,{id,label:'Vor Wiederherstellung',kind:'safety'},true);}); }
   if (request.method === 'GET' && path === '/admin/site/release') {
     const release=await env.DB.prepare('SELECT * FROM cms_releases WHERE commit_id=?').bind(url.searchParams.get('id')||'').first();
     if(!release||!env.CMS_BUCKET)fail(404,'Programmstand nicht gefunden.');
@@ -373,7 +374,7 @@ async function route(request, env, url) {
 }
 
 export default {
-  async scheduled(controller,env,ctx){ctx.waitUntil((async()=>{await editorialScheduled(env);await backupEditorialSystem(env);if(env.USAGE_MEASUREMENT_ENABLED==='1'){await cleanUsage(env);await cleanSimpleUsage(env);}})());},
+  async scheduled(controller,env,ctx){ctx.waitUntil((async()=>{await unifiedScheduled(env);if(env.USAGE_MEASUREMENT_ENABLED==='1'){await cleanUsage(env);await cleanSimpleUsage(env);}})());},
   async fetch(request, env) {
     const url = new URL(request.url); const origin = request.headers.get('Origin');
     const sameOrigin = origin === url.origin;

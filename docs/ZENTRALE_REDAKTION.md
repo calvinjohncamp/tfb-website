@@ -1,5 +1,9 @@
 # Zentrale Redaktion und Sicherungen v232
 
+Aktueller Stand 10.11.2026: Einheitliche Sicherung und geschützter Website-Restore,
+siehe RELEASE-unified-backup-20261110.md. Die folgenden v232-Bedienhinweise sind
+historisch; die aktuelle Oberfläche hat „Jetzt sichern“ und „Gesicherte Stände“.
+
 Stand: 26.10.2026. v232 veröffentlicht und live geprüft; Nachweise in UEBERGABE.md.
 R2-Aktivierung vom Nutzer bestätigt. Erster echter Gesamtlauf erfolgreich um
 18:37:56 MEZ, echter Admin-ZIP-Download vollständig geprüft.

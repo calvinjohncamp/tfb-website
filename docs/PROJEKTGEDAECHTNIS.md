@@ -1,5 +1,33 @@
 # TFB-Kiosk – Projektgedächtnis und Übergabe
 
+## Einheitliche Datensicherung mit Schutz laufender Daten · 10.11.2026
+
+Nutzer hat ausdrücklich bestätigt: Wiederherstellung der Website darf heutige
+Mitglieder, Umsätze, Chats, Seitenaufrufe und sonstige laufende Clubdaten nicht
+verlieren. Neue Bedienung deshalb nur „Jetzt sichern“ und „Gesicherte Stände“
+mit optionalem Namen und verständlicher Vorschau. Technische Sicherung sowie
+Datei-Download/-Import sind aus dem normalen Hauptdialog entfernt.
+
+Neue vollständige Punkte kombinieren Website-Snapshot, verschlüsselte Datenbank
+und unveränderliche Kopien aller privaten Mailvorlagen/-archivdokumente. Ein
+zusätzlicher privater R2-Bucket tfb-website-backups hält die verschlüsselte Kopie
+samt verwalteten CMS-Medien und Programmarchiven. Tägliche/monatliche automatische
+Sicherungen stehen in derselben Liste; ältere reine Website-Stände bleiben
+gekennzeichnet sichtbar. Erfolg erst nach bestätigter zusätzlicher Kopie.
+
+Normale Wiederherstellung schreibt ausschließlich freigegebene CMS-Inhalte und
+sichert vorher den aktuellen Stand vollständig. Geschäftstabellen und aktuelles
+Mailarchiv werden dabei nicht zurückgesetzt. Belegt mit späterem Mitglied,
+Kioskkauf, Chat und Seitenaufrufen: alle laufenden Tabellen nach Restore exakt
+erhalten. 34 Node-Tests sowie Chromium/WebKit bei 390/834/1440 px und beiden
+Farbwelten erfolgreich. Keine Schemaänderung nötig. Details, Betriebsgrenzen und
+Werkzeuge: RELEASE-unified-backup-20261110.md.
+
+Vor einem späteren Programmrelease den genauen committed Programmstand mit
+ tools/register-program-backup.mjs im privaten Speicher registrieren; nur aus
+sauberem Release-Checkout. Lokalen sonst bereits geänderten Projektbaum nicht
+pauschal committen. Schlüssel bleiben außerhalb Git und außerhalb der UI.
+
 ## PDFs bleiben in der App und haben ein X · 10.11.2026
 
 Veröffentlicht und live bestätigt: Programm `693853c`, erfolgreicher Pages-Lauf

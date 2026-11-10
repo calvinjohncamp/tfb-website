@@ -1,6 +1,6 @@
 // Operator-only local recovery; never imported into the website or Worker.
 import {DatabaseSync} from 'node:sqlite';
-import {existsSync,readFileSync} from 'node:fs';
+import {mkdirSync,writeFileSync,existsSync,readFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
 async function decryptJson(bytes,hex){
  if(!/^[a-f0-9]{64}$/.test(hex))throw Error('Expected a separate 256-bit backup key');
@@ -30,4 +30,8 @@ export function verifyObjects(archive,directory){
  for(const object of archive.objects){const file=directory+'/'+object.key;if(!existsSync(file)||readFileSync(file).length!==object.size)throw Error('Missing/incomplete object: '+object.key);}
  for(const item of [...media,...releases]){const bytes=readFileSync(directory+'/'+item.object_key),expected=item.hash||item.sha256;if(createHash('sha256').update(bytes).digest('hex')!==expected)throw Error('Object checksum mismatch');}
  return archive.objects.length;
+}
+
+export function restoreBucketDocuments(archive,directory){
+ let count=0;for(const [key,value] of Object.entries(archive.bucketDocuments||{})){if(!/^member-mail\/(drafts\/[a-zA-Z0-9-]{1,100}\.json|tests\/[a-zA-Z0-9-]{1,100}\/[a-zA-Z0-9-]{1,100}\.json)$/.test(key)||typeof value.text!=='string'||createHash('sha256').update(value.text).digest('hex')!==value.sha256)throw Error('Invalid archived mail document');const path=directory+'/'+key;if(existsSync(path))throw Error('An existing mail document will not be overwritten');mkdirSync(path.slice(0,path.lastIndexOf('/')),{recursive:true,mode:0o700});writeFileSync(path,value.text,{mode:0o600});count++;}return count;
 }

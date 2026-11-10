@@ -83,11 +83,11 @@ export async function statisticsSnapshot(env){
  return {format:'tfb-usage-snapshot',version:1,createdAt:new Date().toISOString(),tables:JSON.parse(row.data)};
 }
 async function snapshotObject(env,state,extra){
- ready(env);const id=crypto.randomUUID(),at=new Date().toISOString(),objectKey='editorial/history/'+id+'.json';
+ ready(env);const id=extra.snapshotId||crypto.randomUUID(),at=new Date().toISOString(),objectKey='editorial/history/'+id+'.json';
  const releases=(await env.DB.prepare('SELECT commit_id,object_key,sha256,size FROM cms_releases ORDER BY created_at DESC LIMIT 1').all()).results;
  const used=mediaRefs(joinSite(state.documents));
  const manifest={format:'tfb-website-snapshot',version:1,schemaVersion:6,project:'tfb',id,createdAt:at,revision:state.revision,documents:state.documents,media:state.media.filter(m=>used.has(m.ref)),release:releases[0]||null,...extra,...(!['edit','restore'].includes(extra.kind)?{statistics:await statisticsSnapshot(env)}:{})};
- await env.CMS_BUCKET.put(objectKey,JSON.stringify(manifest),{httpMetadata:{contentType:'application/json'}});
+ await env.CMS_BUCKET.put(objectKey,JSON.stringify(manifest),{httpMetadata:{contentType:'application/json'},customMetadata:{backup:extra.unified?'pending':'content'}});
  return {id,at,objectKey,manifest};
 }
 export async function editorialCommit(env,member,data){
@@ -115,14 +115,18 @@ export async function editorialCommit(env,member,data){
   try{await env.DB.batch(statements);return result;}catch(e){if(!String(e.message).includes('CMS_CONFLICT')){const duplicate=await env.DB.prepare('SELECT signature,result FROM cms_receipts WHERE id=?').bind(data.id).first();if(duplicate?.signature===signature)return JSON.parse(duplicate.result);throw e;}if(attempt===2)fail(409,'Inhalte wurden gleichzeitig geändert. Dein Entwurf bleibt erhalten.');}
  }
 }
-export async function editorialCheckpoint(env,member,{label='',kind='manual',bucket=''}={}){
+export async function editorialCheckpoint(env,member,{label='',kind='manual',bucket='',unified=false}={}){
  const state=await editorialState(env,true);if(!['manual','safety','daily','monthly'].includes(kind))fail(400,'Ungültiger Sicherungstyp.');
- if(['daily','monthly'].includes(kind)){const existing=await env.DB.prepare('SELECT id FROM cms_history WHERE kind=? AND bucket=?').bind(kind,bucket).first();if(existing)return existing;}
- const saved=await snapshotObject(env,state,{label:label.slice(0,120)||'Manuell gesichert',author:member.id,kind});
+ if(['daily','monthly'].includes(kind)){const existing=await env.DB.prepare('SELECT id FROM cms_history WHERE kind=? AND bucket=?').bind(kind,bucket).first();if(existing){if(!unified)return existing;const previous=await readSnapshot(env,existing.id);if(previous.systemBackup)return existing;const retry=await snapshotObject(env,state,{snapshotId:existing.id,label:label.slice(0,120)||'Automatische Sicherung',author:member.id,kind,unified:true});await env.DB.prepare('UPDATE cms_history SET revision=?,created_at=?,label=? WHERE id=?').bind(state.revision,retry.at,label.slice(0,120),existing.id).run();return existing;}}
+ const saved=await snapshotObject(env,state,{label:label.slice(0,120)||'Manuell gesichert',author:member.id,kind,...(unified?{unified:true}:{})});
  await env.DB.prepare('INSERT INTO cms_history VALUES(?,?,?,?,?,?,?,?,?)').bind(saved.id,state.revision,saved.at,member.id,label.slice(0,120)||'Manuell gesichert',kind,kind==='manual'&&label.trim()?1:0,saved.objectKey,bucket).run();return {id:saved.id};
 }
-export async function editorialHistory(env){return {snapshots:(await env.DB.prepare('SELECT id,revision,created_at,author,label,kind,named FROM cms_history ORDER BY created_at DESC LIMIT 200').all()).results};}
-async function readSnapshot(env,id){ready(env);const row=await env.DB.prepare('SELECT object_key FROM cms_history WHERE id=?').bind(id).first();if(!row)fail(404,'Sicherungsstand nicht gefunden.');const object=await env.CMS_BUCKET.get(row.object_key);if(!object)fail(503,'Sicherungsdatei nicht erreichbar.');return object.json();}
+export async function editorialHistory(env){
+ const snapshots=(await env.DB.prepare('SELECT id,revision,created_at,author,label,kind,named FROM cms_history ORDER BY created_at DESC,rowid DESC').all()).results;
+ const metadata=new Map();let cursor;do{const page=await env.CMS_BUCKET.list({prefix:'editorial/history/',include:['customMetadata'],limit:1000,...(cursor?{cursor}:{})});for(const object of page.objects)metadata.set(object.key,object.customMetadata||{});cursor=page.truncated?page.cursor:undefined;}while(cursor);
+ return {snapshots:snapshots.filter(row=>!['pending','failed'].includes(metadata.get('editorial/history/'+row.id+'.json')?.backup)).map(row=>({...row,complete:metadata.get('editorial/history/'+row.id+'.json')?.backup==='complete'}))};
+}
+export async function readSnapshot(env,id){ready(env);const row=await env.DB.prepare('SELECT object_key FROM cms_history WHERE id=?').bind(id).first();if(!row)fail(404,'Sicherungsstand nicht gefunden.');const object=await env.CMS_BUCKET.get(row.object_key);if(!object)fail(503,'Sicherungsdatei nicht erreichbar.');return object.json();}
 export async function editorialPreview(env,data){
  const snapshot=data.snapshot?await readSnapshot(env,data.snapshot):data.manifest;
  if(snapshot?.format!=='tfb-website-snapshot'||snapshot.version!==1||(snapshot.schemaVersion||6)>6||snapshot.project!=='tfb'||!snapshot.documents)fail(400,'Keine unterstützte TFB-Inhaltssicherung.');
@@ -134,12 +138,13 @@ export async function editorialPreview(env,data){
  for(const ref of media){const row=await env.DB.prepare('SELECT object_key FROM cms_media WHERE ref=?').bind(ref).first();if(!row||!await env.CMS_BUCKET.head(row.object_key))fail(400,'Zu diesem Stand fehlen Medien. Bitte zuerst das vollständige Sicherungspaket importieren.');}
  return {snapshot:snapshot.id||null,revision:state.revision,changes,summary:changes.map(x=>({key:x.key,title:x.value?.title||x.key,blocks:Array.isArray(x.value?.blocks)?x.value.blocks.length:null})),token:await digest(JSON.stringify(changes))};
 }
-export async function editorialRestore(env,member,data){
+export async function editorialRestore(env,member,data,beforeRestore){
+ if(!/^[a-zA-Z0-9-]{12,100}$/.test(data?.id||''))fail(400,'Ungültige Wiederherstellung.');
  const requestHash=await digest(JSON.stringify(data));
  const prior=await env.DB.prepare('SELECT result FROM cms_receipts WHERE id=?').bind(data.id||'').first();
  if(prior){const result=JSON.parse(prior.result);if(result.requestHash!==requestHash)fail(409,'Diese Wiederherstellung wurde bereits anders verwendet.');return result;}
  const preview=await editorialPreview(env,data);if(preview.token!==data.token)fail(409,'Die Vorschau ist nicht mehr aktuell. Bitte erneut vergleichen.');if(!preview.changes.length)return {ok:true,unchanged:true};
- await editorialCheckpoint(env,member,{label:'Vor Wiederherstellung',kind:'safety'});
+ if(beforeRestore)await beforeRestore();else await editorialCheckpoint(env,member,{label:'Vor Wiederherstellung',kind:'safety'});
  return editorialCommit(env,member,{id:data.id,changes:preview.changes,label:'Wiederhergestellt: '+String(data.label||'früherer Stand').slice(0,80),kind:'restore',requestHash});
 }
 export async function editorialExport(env,id,inline=false){
@@ -151,7 +156,7 @@ export async function editorialExport(env,id,inline=false){
 }
 export async function editorialPrune(env){
  const rows=(await env.DB.prepare('SELECT id,kind,named,object_key FROM cms_history ORDER BY created_at DESC').all()).results,counts={};
- for(const row of rows){if(row.named||row.kind==='safety'||row.kind==='restore')continue;const limit=row.kind==='daily'?30:row.kind==='monthly'?12:30;counts[row.kind]=(counts[row.kind]||0)+1;if(counts[row.kind]>limit){await env.DB.prepare('DELETE FROM cms_history WHERE id=?').bind(row.id).run();await env.CMS_BUCKET.delete(row.object_key);}}
+ for(const row of rows){if(row.named||row.kind==='safety'||row.kind==='restore')continue;const limit=row.kind==='daily'?30:row.kind==='monthly'?12:30;counts[row.kind]=(counts[row.kind]||0)+1;if(counts[row.kind]>limit){await env.DB.prepare('DELETE FROM cms_history WHERE id=?').bind(row.id).run();await env.CMS_BUCKET.delete(row.object_key);await env.CMS_BUCKET.delete('backups/points/'+row.id+'.json.gz.aes');if(env.BACKUP_BUCKET)await env.BACKUP_BUCKET.delete('backups/points/'+row.id+'.json.gz.aes');}}
 }
 export async function editorialScheduled(env){
  const now=new Date().toISOString();await editorialCheckpoint(env,{id:'system'},{label:'Tagesstand '+now.slice(0,10),kind:'daily',bucket:now.slice(0,10)});await editorialCheckpoint(env,{id:'system'},{label:'Monatsstand '+now.slice(0,7),kind:'monthly',bucket:now.slice(0,7)});await editorialPrune(env);
