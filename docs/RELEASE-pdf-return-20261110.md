@@ -15,3 +15,14 @@ Prüfwerkzeug: tools/test-browser-pdf-viewer.mjs. Synthetische Konten/Daten; vor
 Validierung erfolgreich: Chromium und WebKit jeweils 390, 834 und 1440 px. Alle vier Mitglieder-PDFs werden tatsächlich auf Canvas gezeichnet, X vollständig im sichtbaren Bereich. Kein neuer Tab, kein Verlassen der Ausgangsroute; X/Escape/Browser-Zurück erhalten Textentwurf und Scrollstand. Zusätzliche Prüfung direkt auf der Clubseite mit blauer und roter Platzordnung und Rückkehr zu Mitgliederinfos. Auf 390 px außerdem 66-seitige Chronik bis Seite 66 gelesen, alte Canvas-Flächen freigegeben. Ausschließlich isolierte Datenbank und Testkonten; keine echten Vereinsdaten geändert.
 
 Der Service Worker reicht Range-Teilabrufe direkt an den Browser weiter; keine unzulässigen 206-Antworten im App-Shell-Cache. Fremdbibliothek und Lizenzdateien unverändert übernommen; die Whitespace-Prüfung schließt unveränderte Vendor-Dateien aus. Bestehender Mail-Editor in Chromium/WebKit zusätzlich ohne Regression geprüft.
+
+
+Veröffentlicht und live bestätigt: Programm `693853c`, erfolgreicher Pages-Lauf
+`42793635579`. Zehn Webdateien einschließlich PDF.js/Worker/Bilddecoder und
+Freihandmarker bytegleich geprüft. Im echten angemeldeten Browser Platzordnung
+auf Club geöffnet: Dokument gezeichnet, X sichtbar, geschlossen und unmittelbar
+zur selben Clubansicht/Mitgliederinfos mit Fokus auf dem ursprünglichen Pill
+zurückgekehrt. Keine Inhaltsänderungen, keine Mail versendet. Privater Nachweis:
+`output/TFB-PDF-Betrachter-live.png` und `output/TFB-PDF-Rueckweg-live-check.json`.
+Backend unverändert auf `f375fb08-04c4-4170-ac96-9954cb83109b`.
+

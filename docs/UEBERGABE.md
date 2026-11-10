@@ -2,6 +2,15 @@
 
 ## PDFs bleiben in der App und haben ein X · 10.11.2026
 
+Veröffentlicht und live bestätigt: Programm `693853c`, erfolgreicher Pages-Lauf
+`42793635579`. Zehn Webdateien einschließlich PDF.js/Worker/Bilddecoder und
+Freihandmarker bytegleich geprüft. Im echten angemeldeten Browser Platzordnung
+auf Club geöffnet: Dokument gezeichnet, X sichtbar, geschlossen und unmittelbar
+zur selben Clubansicht/Mitgliederinfos mit Fokus auf dem ursprünglichen Pill
+zurückgekehrt. Keine Inhaltsänderungen, keine Mail versendet. Privater Nachweis:
+`output/TFB-PDF-Betrachter-live.png` und `output/TFB-PDF-Rueckweg-live-check.json`.
+Backend unverändert auf `f375fb08-04c4-4170-ac96-9954cb83109b`.
+
 Vom Nutzer auf dem iPhone gemeldet und präzisiert: PDFs unter Club → Mitgliederinfos
 öffnen ohne sichtbaren Rückweg. Direkte externe PDF-Anzeige wird durch einen
 App-eigenen PDF-Dialog ersetzt: fest sichtbares 44px-X, Titel, Seitenzahl und
