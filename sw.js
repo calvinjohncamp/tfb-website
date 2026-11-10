@@ -58,7 +58,7 @@ const SHELL = [
   './assets/css/club-usage.css', './assets/js/club-usage.js',
   './assets/css/member-access.css', './assets/js/app-install.js',
   './assets/css/yellow-editorial.css', './assets/brand/tfb-highlight-freihand.svg',
-  './assets/js/member-directory.js', './assets/js/cloud-sync.js',
+  './assets/js/member-directory.js?v=20261110-unified-backup-1', './assets/js/member-directory.js', './assets/js/cloud-sync.js',
   './assets/js/snapshot-zip.js', './assets/js/editorial.js?v=20261110-unified-backup-1',
   './assets/data/public-content.js',
   './assets/docs/tfb-mitgliedsanmeldung-muster.pdf',

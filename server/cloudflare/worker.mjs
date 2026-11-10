@@ -173,7 +173,7 @@ async function importMembers(env, data) {
   return plan;
 }
 
-async function route(request, env, url) {
+async function route(request, env, url, ctx) {
   const path = url.pathname;
   if(request.method==='POST'&&path==='/integrations/padel/kiosk')return padelKioskBridge(request,env,await body(request,8192));
   if (request.method === 'GET' && path === '/manage') return new Response(managementPage, { headers: { 'Content-Type': 'text/html; charset=utf-8',
@@ -298,11 +298,11 @@ async function route(request, env, url) {
   if (request.method === 'GET' && path.startsWith('/admin/site/media/')) return editorialMedia(env,decodeURIComponent(path.split('/').at(-1)),true);
   if (request.method === 'POST' && path === '/admin/site/media') return uploadEditorialMedia(env,await body(request,15*1024*1024));
   if (request.method === 'POST' && path === '/admin/site/commit') return editorialCommit(env,member,await body(request,4*1024*1024));
-  if (request.method === 'POST' && path === '/admin/site/backup') return unifiedBackup(env,member,await body(request,4096));
+  if (request.method === 'POST' && path === '/admin/site/backup') {const task=unifiedBackup(env,member,await body(request,4096));ctx?.waitUntil(task.catch(()=>{}));return task;}
   if (request.method === 'POST' && path === '/admin/site/checkpoint') return editorialCheckpoint(env,member,await body(request,4096));
   if (request.method === 'POST' && path === '/admin/site/system-checkpoint') return backupEditorialSystem(env);
   if (request.method === 'POST' && path === '/admin/site/preview') return editorialPreview(env,await body(request,4*1024*1024));
-  if (request.method === 'POST' && path === '/admin/site/restore') { const data=await body(request,4*1024*1024);return editorialRestore(env,member,data,async()=>{const hash=await digest('safety:'+data.id),id=hash.slice(0,8)+'-'+hash.slice(8,12)+'-'+hash.slice(12,16)+'-'+hash.slice(16,20)+'-'+hash.slice(20,32);return unifiedBackup(env,member,{id,label:'Vor Wiederherstellung',kind:'safety'},true);}); }
+  if (request.method === 'POST' && path === '/admin/site/restore') { const data=await body(request,4*1024*1024);const task=editorialRestore(env,member,data,async()=>{const hash=await digest('safety:'+data.id),id=hash.slice(0,8)+'-'+hash.slice(8,12)+'-'+hash.slice(12,16)+'-'+hash.slice(16,20)+'-'+hash.slice(20,32);return unifiedBackup(env,member,{id,label:'Vor Wiederherstellung',kind:'safety'},true);});ctx?.waitUntil(task.catch(()=>{}));return task; }
   if (request.method === 'GET' && path === '/admin/site/release') {
     const release=await env.DB.prepare('SELECT * FROM cms_releases WHERE commit_id=?').bind(url.searchParams.get('id')||'').first();
     if(!release||!env.CMS_BUCKET)fail(404,'Programmstand nicht gefunden.');
@@ -375,7 +375,7 @@ async function route(request, env, url) {
 
 export default {
   async scheduled(controller,env,ctx){ctx.waitUntil((async()=>{await unifiedScheduled(env);if(env.USAGE_MEASUREMENT_ENABLED==='1'){await cleanUsage(env);await cleanSimpleUsage(env);}})());},
-  async fetch(request, env) {
+  async fetch(request, env, ctx) {
     const url = new URL(request.url); const origin = request.headers.get('Origin');
     const sameOrigin = origin === url.origin;
     const allowed = !origin || sameOrigin || ORIGINS.has(origin);
@@ -388,7 +388,7 @@ export default {
     if (!allowed) return respond({error:'Diese Website ist nicht freigegeben.'},403);
     if (request.method==='OPTIONS') return new Response(null,{status:204,headers:{...headers,'Access-Control-Allow-Methods':'GET, POST, OPTIONS','Access-Control-Allow-Headers':'Authorization, Content-Type','Access-Control-Max-Age':'600'}});
     if (!['GET','POST'].includes(request.method)) return respond({error:'Methode nicht unterstützt.'},405);
-    try { return respond(await route(request,env,url)); }
+    try { return respond(await route(request,env,url,ctx)); }
     catch(e) { return respond({error:e.status ? e.message : 'Der Mitgliederzugang ist noch nicht bereit oder vorübergehend nicht erreichbar.'},e.status||503); }
   }
 };

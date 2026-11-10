@@ -26,7 +26,8 @@
     if (location.protocol !== 'https:') throw Error('Bitte öffne die Website über https://joern-kaemper.de, um dich sicher anzumelden.');
     const requestToken = token;
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 15000);
+    const backupOperation = /^\/admin\/site\/(backup|restore)$/.test(path);
+    const timeout = setTimeout(() => controller.abort(), backupOperation ? 120000 : 15000);
     try {
       const response = await fetch(base + path, {
         method: data === undefined ? 'GET' : 'POST', cache: 'no-store', signal: controller.signal,
@@ -42,7 +43,7 @@
       }
       return value;
     } catch (err) {
-      if (err.name === 'AbortError' || err instanceof TypeError) throw Error('Der Mitgliederzugang ist gerade nicht erreichbar. Bitte später erneut versuchen.');
+      if (err.name === 'AbortError' || err instanceof TypeError) throw Error(backupOperation ? 'Die Bestätigung konnte nicht empfangen werden. Bitte den aktuellen Stand prüfen und erneut versuchen.' : 'Der Mitgliederzugang ist gerade nicht erreichbar. Bitte später erneut versuchen.');
       throw err;
     } finally { clearTimeout(timeout); }
   }
