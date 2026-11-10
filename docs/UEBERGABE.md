@@ -1,5 +1,14 @@
 # TFB – Übergabe für die nächste Sitzung
 
+## Mitgliederbrief und Mailarchiv · 10.11.2026
+
+Neuer letzter Adminpunkt „E-Mail an alle Mitglieder“ (#membermail): direkt
+bearbeitbarer Brief mit Beispiel, Archivname, Datum, Betreff, Speichern und
+Speichern unter. Zentrales privates R2-Archiv, Adminschutz und ETag-Konfliktprüfung.
+Nutzer hat ersten Entwurf auf Editor/Archiv begrenzt; Versand bleibt ausdrücklich
+außen vor. Worker 9eb0745d-3410-41d7-bec1-6dd0ab379f51 veröffentlicht, keine Migration.
+Details: [Release](RELEASE-member-mail-20261110.md).
+
 ## Mehrwortsuche, rote PDFs und Anfahrt · 10.11.2026
 
 „TFB Cup“ findet „TF Bielstein Cup 2025“. Gemeinsame Mehrwortsuche mit Clubnamen-

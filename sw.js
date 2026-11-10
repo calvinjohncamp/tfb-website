@@ -1,7 +1,10 @@
 // TFB-Kiosk – Service Worker.
 // Netz zuerst, damit Änderungen sofort ankommen; ohne Netz startet die App aus dem Zwischenspeicher.
-const CACHE = 'tfb-kiosk-club-return-20261110-1';
+const CACHE = 'tfb-kiosk-member-mail-20261110-1';
 const SHELL = [
+  './assets/css/member-mail.css?v=20261110-member-mail-1',
+  './assets/js/member-mail-template.js?v=20261110-member-mail-1',
+  './assets/js/member-mail.js?v=20261110-member-mail-1',
   './assets/js/search.js?v=20261110-search-pdfs-1',
   './assets/docs/tfb-platzordnung-rot.pdf?v=20261110-search-pdfs-1',
   './assets/docs/tfb-hausordnung-rot.pdf?v=20261110-search-pdfs-1',
@@ -14,7 +17,7 @@ const SHELL = [
 
   './assets/css/kiosk-external-shop.css?v=20261110-mitgliederinfos-1',
   './assets/js/kiosk-external-shop.js?v=20261110-mitgliederinfos-1',
-  './assets/js/app.js?v=20261110-mitgliederinfos-1',
+  './assets/js/app.js?v=20261110-member-mail-1',
   './assets/jako/jako-logo.png',
   './assets/jako/tfb-jako-sortiment-v2.png',
   './assets/css/bielstein-open.css?v=20261110-search-pdfs-1',

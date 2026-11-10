@@ -1,3 +1,4 @@
+import {memberMailList,memberMailGet,memberMailSave} from './member-mail.mjs';
 import {kioskTally} from './kiosk-account.mjs';
 import {padelKioskBridge} from './padel-kiosk-bridge.mjs';
 import {kioskReport,kioskArchiveMonth,kioskStatement,kioskCredit,kioskMessage,kioskOverview} from './kiosk-billing.mjs';
@@ -285,6 +286,9 @@ async function route(request, env, url) {
   if (request.method === 'POST' && path === '/admin/kiosk/archive') return kioskArchiveMonth(env,member,await body(request,2048));
   if (request.method === 'POST' && path === '/admin/kiosk/credit') return kioskCredit(env,member,await body(request,2048));
   if (path === '/admin/kiosk/collection') fail(409,'Echte Abbuchungen sind gesperrt. Zahlungsweg, Mandate und Einzugstermin sind noch nicht freigegeben.');
+  if (request.method === 'GET' && path === '/admin/member-mail') return memberMailList(env);
+  if (request.method === 'GET' && /^\/admin\/member-mail\/[^/]+$/.test(path)) return memberMailGet(env,path.split('/').at(-1));
+  if (request.method === 'POST' && path === '/admin/member-mail/save') return memberMailSave(env,member,await body(request,160000));
   if (request.method === 'GET' && path === '/admin/site') return editorialState(env,true);
   if (request.method === 'GET' && path === '/admin/site/history') return editorialHistory(env);
   if (request.method === 'GET' && path === '/admin/site/export') return editorialExport(env,url.searchParams.get('id'));

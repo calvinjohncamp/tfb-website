@@ -1,0 +1,37 @@
+.member-mail { max-width: 1120px; margin-inline: auto; }
+.member-mail > .view-head { align-items: flex-start; }
+.member-mail > .view-head h1 { font-size: clamp(1.8rem, 3vw, 2.5rem); line-height: 1.12; }
+.mm-layout { display: grid; grid-template-columns: 230px minmax(0, 1fr); gap: 32px; align-items: start; margin-top: 28px; }
+.mm-archive { border-top: 1px solid var(--line); padding-top: 16px; min-width: 0; }
+.mm-archive > summary { font-weight: 750; font-size: 1.1rem; cursor: pointer; }
+.mm-archive > summary small { color: var(--muted); font-size: .8rem; margin-left: 6px; }
+.mm-new { margin: 14px 0; }
+.mm-archive-list { display: grid; gap: 8px; margin-top: 14px; max-height: 65vh; overflow: auto; }
+.mm-archive-item { text-align: left; display: grid; gap: 6px; border: 1px solid var(--line); border-radius: 10px; background: var(--paper); color: var(--ink); padding: 13px; width: 100%; overflow-wrap: anywhere; cursor: pointer; }
+.mm-archive-item[aria-current="true"] { border-color: var(--club-pill-bg); box-shadow: inset 3px 0 var(--club-pill-bg); }
+.mm-archive-item b { font-size: .9rem; }
+.mm-archive-item small { font-size: .75rem; color: var(--muted); }
+.mm-archive-item:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+.mm-editor { min-width: 0; }
+.mm-meta { display: grid; grid-template-columns: minmax(0, 1fr) 170px; gap: 14px; }
+.mm-meta .mm-subject { grid-column: 1 / -1; }
+.mm-meta input { width: 100%; min-width: 0; }
+.mm-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 18px 0 10px; }
+:root body .mm-save { background: var(--club-pill-bg); border-color: var(--club-pill-bg); color: #fff; }
+.mm-status { min-height: 1.6em; margin: 0 0 12px; color: var(--muted); font-size: .82rem; }
+.mm-status.is-error { color: #a42d20; }
+.mm-hint { font-size: .85rem; color: var(--muted); margin: 0 0 12px; }
+.mm-preview { display: block; width: 100%; border: 0; min-height: 600px; background: #efefef; }
+.mm-loading { padding-block: 24px; }
+.mm-busy { opacity: .75; pointer-events: none; }
+@media (max-width: 850px) {
+ .mm-layout { grid-template-columns: minmax(0, 1fr); gap: 28px; }
+ .mm-archive { order: 2; }
+ .mm-archive-list { max-height: 360px; }
+}
+@media (max-width: 420px) {
+ .mm-meta { grid-template-columns: minmax(0, 1fr); }
+ .mm-meta .mm-subject { grid-column: auto; }
+ .mm-actions .btn { flex: 1; padding-inline: 12px; }
+ .mm-preview { width: calc(100% + 24px); margin-inline: -12px; }
+}

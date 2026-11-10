@@ -9,7 +9,7 @@
   const $sheet = document.getElementById('sheet-root');
   const $toast = document.getElementById('toast-root');
 
-  const VIEWS = ['home', 'kiosk', 'strichliste', 'abrechnungen', 'chat', 'aktuell', 'gefluester', 'sport', 'team', 'club', 'treffen', 'verwaltung', 'impressum', 'satzung', 'partnerzahlen', 'clubstatistik', 'partner', 'kioskabrechnung', 'produktbibliothek'];
+  const VIEWS = ['home', 'kiosk', 'strichliste', 'abrechnungen', 'chat', 'aktuell', 'gefluester', 'sport', 'team', 'club', 'treffen', 'verwaltung', 'impressum', 'satzung', 'partnerzahlen', 'clubstatistik', 'partner', 'kioskabrechnung', 'produktbibliothek', 'membermail'];
   const KIOSK_AREA = ['kiosk', 'strichliste', 'abrechnungen'];   // nur mit Anmeldung
   // Reiter unten: Kiosk zuerst, dann die Vereinsseiten, dann der Padel-Link.
   // Team-Seiten gehören zu „Sport“
@@ -115,7 +115,7 @@
     // Ausnahmen: Neu laden (bleibt auf der Seite) und direkte Links wie #treffen/<id>.
     const nav = (performance.getEntriesByType && performance.getEntriesByType('navigation')[0]) || {};
     const deepLink = location.hash.includes('/');
-    if (!location.hash || (nav.type !== 'reload' && !deepLink && !['#impressum','#satzung','#partnerzahlen','#partner','#clubstatistik','#kioskabrechnung','#produktbibliothek'].includes(location.hash))) history.replaceState(null, '', '#home');
+    if (!location.hash || (nav.type !== 'reload' && !deepLink && !['#impressum','#satzung','#partnerzahlen','#partner','#clubstatistik','#kioskabrechnung','#produktbibliothek','#membermail'].includes(location.hash))) history.replaceState(null, '', '#home');
     // Decide on the splash before mounting the app shell to avoid exposing a
     // frame of the previous page during a reload.
     await splash;
@@ -463,7 +463,7 @@
             <button type="button" class="btn small" data-action="members-manage">Mitglieder</button>
             <a class="btn small" href="#clubstatistik">Statistik</a>
             <a class="btn small" href="#kioskabrechnung">Kiosk</a>
-            <button type="button" class="btn small tfb-backup-icon" data-action="admin-backup" aria-label="Datensicherung" title="Datensicherung"><svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M4 3h13l4 4v14H3V3Z"/><path d="M7 3v7h10V3M7 21v-8h10v8M14 5v3"/></svg></button></div></div>`);
+            <button type="button" class="btn small tfb-backup-icon" data-action="admin-backup" aria-label="Datensicherung" title="Datensicherung"><svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M4 3h13l4 4v14H3V3Z"/><path d="M7 3v7h10V3M7 21v-8h10v8M14 5v3"/></svg></button><a class="btn small" href="#membermail">E-Mail an alle Mitglieder</a></div></div>`);
         const activeAdmin = $view.querySelector(`.tfb-admin-links a[href="#${view==='produktbibliothek'?'kioskabrechnung':view}"]`);
         if(activeAdmin) activeAdmin.setAttribute('aria-current','page');
         const homeEditShortcut = view === 'home' && $view.querySelector('.site-page[data-page="home"]') && !$view.querySelector('.editing-page')

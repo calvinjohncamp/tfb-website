@@ -179,3 +179,14 @@ test('shared mail with different people and no numbers never collapses household
  assert.equal(f.env.DB.sqlite.prepare('SELECT COUNT(*) n FROM members').get().n,3);
  assert.equal(f.env.DB.sqlite.prepare('SELECT COUNT(*) n FROM members WHERE email=?').get('family@example.invalid').n,2);
 });
+
+test('member mail archive is admin-only on every route and never exposes drafts publicly',async()=>{
+ const f=await fixture(),user=await activated(f);f.env.CMS_BUCKET={list:async()=>({objects:[],truncated:false})};
+ for(const [path,data] of [['/admin/member-mail',undefined],['/admin/member-mail/12345678-1234-1234-1234-123456789abc',undefined],['/admin/member-mail/save',{}]]){
+  assert.equal((await f.call(path,data)).status,401);
+  assert.equal((await f.call(path,data,user.token)).status,403);
+ }
+ assert.equal((await f.call('/admin/member-mail',undefined,f.admin)).status,200);
+ assert.equal((await f.call('/admin/member-mail/save',{},f.admin)).status,400);
+ assert.equal((await f.call('/member-mail')).status,401);
+});

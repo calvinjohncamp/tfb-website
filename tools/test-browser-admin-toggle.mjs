@@ -40,7 +40,7 @@ try {
   await pencil.click();
 
   await page.locator('[data-action="site-edit"]').first().waitFor();
-  const expected = ['Splash','Home','Partner','Mitglieder','Statistik','Kiosk',''];
+  const expected = ['Splash','Home','Partner','Mitglieder','Statistik','Kiosk','','E-Mail an alle Mitglieder'];
   for (const view of ['home','kiosk','chat','aktuell','sport','club','treffen']) {
     await page.evaluate(async view => { location.hash = '#'+view; await TFB.ui.renderView(view); }, view);
     await page.locator('.tfb-admin-links').waitFor();

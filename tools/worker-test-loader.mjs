@@ -13,6 +13,7 @@ const email=readFileSync(new URL('email-auth.mjs',root),'utf8').replace("from '.
 const kioskAccount=data(readFileSync(new URL('kiosk-account.mjs',root),'utf8').replace("from './kiosk-domain.mjs'",'from '+JSON.stringify(data(readFileSync(new URL('kiosk-domain.mjs',root),'utf8')))));
 const bridge=data(readFileSync(new URL('padel-kiosk-bridge.mjs',root),'utf8').replace("from './kiosk-account.mjs'",'from '+JSON.stringify(kioskAccount)).replace("from './kiosk-billing.mjs'",'from '+JSON.stringify(data(readFileSync(new URL('kiosk-billing.mjs',root),'utf8')))));
 let source=readFileSync(new URL('worker.mjs',root),'utf8')
+  .replace("from './member-mail.mjs'",'from '+JSON.stringify(data(readFileSync(new URL('member-mail.mjs',root),'utf8'))))
   .replace("from './kiosk-account.mjs'",'from '+JSON.stringify(kioskAccount))
   .replace("from './padel-kiosk-bridge.mjs'",'from '+JSON.stringify(bridge))
   .replace("from './kiosk-billing.mjs'",'from '+JSON.stringify(data(readFileSync(new URL('kiosk-billing.mjs',root),'utf8'))))
