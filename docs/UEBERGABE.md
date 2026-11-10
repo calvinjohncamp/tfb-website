@@ -2,6 +2,14 @@
 
 ## Einheitliche Datensicherung mit Schutz laufender Daten · 10.11.2026
 
+Abschluss veröffentlicht: Programm 63c1dbc, erfolgreicher Pages-Lauf
+42813704200. Fünf relevante Webdateien bytegleich mit dem geprüften Paket.
+Backend unverändert auf 9595c3e7-88b8-4874-af23-bd5be4416002. Beide Welten,
+sichtbarer Live-Sicherungsstand und bytegleiche getrennte Verschlüsselungskopie
+bestätigt. Privater Nachweis: output/TFB-TimeMachine-live-check.json und
+output/TFB-TimeMachine-Kopienpruefung.json. Aktueller Programmstand im privaten
+Sicherungsarchiv registriert. Keine Live-Wiederherstellung vorgenommen.
+
 Live-Erstprüfung: Stand „Nach Umstellung der Datensicherung“ erfolgreich angelegt
 und in der Liste sichtbar. Beide verschlüsselten Kopien bytegleich geprüft
 (24.528.461 Bytes); keine Produktivwiederherstellung und keine Mail versendet.

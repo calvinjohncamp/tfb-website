@@ -21,3 +21,11 @@ Sicherung und Inhaltswiederherstellung erhalten eine eigene längere Antwortfris
 Live-Erstprüfung erfolgreich: Programm 2dea3f9, Pages-Lauf 42812565564, Worker 9595c3e7-88b8-4874-af23-bd5be4416002. Echter neuer Stand „Nach Umstellung der Datensicherung“, ID dc5c52b1-f913-4531-8939-ac59fccc5697, sofort mit vollständiger Kennzeichnung in Gesicherte Stände erschienen. Erster Lauf inklusive erstmaliger Zusatzkopie rund 90 Sekunden. Verschlüsseltes Original und Zweitkopie anschließend heruntergeladen und ohne Entschlüsselung bytegleich geprüft: 24.528.461 Bytes. Keine Produktivwiederherstellung und keine Mail versendet. Beide Farbwelten live bestätigt; Screenshots und Prüfsummen privat unter output/TFB-TimeMachine-*.
 
 Abschluss im Hintergrund: Wird die Sicherungsmaske während des Laufs geschlossen, bleibt eine inzwischen geöffnete andere Bearbeitungsmaske erhalten. Der Abschluss meldet sich per Hinweis; er ersetzt keine fremde Maske. Zusätzlich in beiden Browsern mit kontrolliert verzögerter Kopie und einem neuen ungespeicherten Formular geprüft.
+
+Abschluss veröffentlicht: Programm 63c1dbc, erfolgreicher Pages-Lauf
+42813704200. Fünf relevante Webdateien bytegleich mit dem geprüften Paket.
+Backend unverändert auf 9595c3e7-88b8-4874-af23-bd5be4416002. Beide Welten,
+sichtbarer Live-Sicherungsstand und bytegleiche getrennte Verschlüsselungskopie
+bestätigt. Privater Nachweis: output/TFB-TimeMachine-live-check.json und
+output/TFB-TimeMachine-Kopienpruefung.json. Aktueller Programmstand im privaten
+Sicherungsarchiv registriert. Keine Live-Wiederherstellung vorgenommen.
