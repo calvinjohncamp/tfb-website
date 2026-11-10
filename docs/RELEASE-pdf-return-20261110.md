@@ -25,4 +25,3 @@ zur selben Clubansicht/Mitgliederinfos mit Fokus auf dem ursprünglichen Pill
 zurückgekehrt. Keine Inhaltsänderungen, keine Mail versendet. Privater Nachweis:
 `output/TFB-PDF-Betrachter-live.png` und `output/TFB-PDF-Rueckweg-live-check.json`.
 Backend unverändert auf `f375fb08-04c4-4170-ac96-9954cb83109b`.
-
