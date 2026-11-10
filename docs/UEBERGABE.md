@@ -1,5 +1,15 @@
 # TFB – Übergabe für die nächste Sitzung
 
+## Direkte Veröffentlichung und Regelwerk · 10.11.2026
+
+Nutzeranweisung: Websiteänderungen immer direkt veröffentlichen; Finetuning an
+der Live-Version. Erneutes OK entfällt. History aus dem vorigen Auftrag wird
+zusammen mit Sport → Regelwerk veröffentlicht. Vollständige Übernahme aller
+28 Fragen/Antworten von tfbielstein.de, vierter Sportbereich. Details/Prüfungen:
+[Release History und Regelwerk](RELEASE-history-regelwerk-20261110.md).
+Veröffentlichung isoliert auf aktuellem origin/main, nur beauftragte Änderungen.
+
+
 ## Abrechnung mit voller Breite und zentrierter PDF-Kopf · 09.11.2026
 
 Veröffentlichung bestätigt: e2d6527, Pages-Lauf 42713475494 erfolgreich.

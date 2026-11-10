@@ -1,0 +1,13 @@
+/* History: responsive chapters linking to existing club memories. */
+.history-chapters { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; margin: 24px 0 32px; }
+.history-chapter { display: flex; flex-direction: column; min-width: 0; color: inherit; text-decoration: none; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--paper); }
+.history-chapter:hover { border-color: var(--signature-text); }
+.history-chapter:focus-visible { outline: 3px solid var(--signature-text); outline-offset: 4px; }
+.history-chapter-image { display: block; aspect-ratio: 16 / 9; overflow: hidden; background: var(--line); }
+.history-chapter-image img { width: 100%; height: 100%; object-fit: cover; }
+.history-chapter-image.history-document img { object-fit: contain; padding: 12px; background: #f3f0e9; }
+.history-chapter-body { display: flex; flex: 1; flex-direction: column; gap: 10px; padding: 24px; }
+.history-chapter-body small { color: var(--muted); }
+.history-chapter-body h2 { margin: 0; font-size: 1.5rem; line-height: 1.2; }
+.history-chapter-body b { margin-top: auto; padding-top: 10px; color: var(--signature-text); }
+@media (max-width: 600px) { .history-chapters { grid-template-columns: 1fr; gap: 18px; } .history-chapter-body { padding: 20px; } }
