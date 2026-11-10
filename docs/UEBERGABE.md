@@ -1,5 +1,14 @@
 # TFB – Übergabe für die nächste Sitzung
 
+## Mitgliederinfos und vier PDFs · 10.11.2026
+
+Clubarchiv links, Mitgliederinfos rechts (mobil untereinander). Vier blaue PDF-Pills
+für Platzordnung, Hausordnung, Regeln Spielbetrieb, Jugendkonzept. Alle vier
+Original-PDFs vollständig neu gesetzt, inhaltlich unverändert, neues Vektorlogo
+und eingebettete App-Schriften, 1/2/1/7 Seiten. Quellen/Audits/Builder erhalten.
+Details: [Release Mitgliederinfos](RELEASE-mitgliederinfos-20261110.md).
+
+
 ## Club zurück, Open-Farben und JAKO-Entwurf · 10.11.2026
 
 Live bestätigt: Hauptänderung 041c772 (Pages 42772859815) und abschließende

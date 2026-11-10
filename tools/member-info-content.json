@@ -1,0 +1,629 @@
+{
+  "platzordnung": {
+    "title": "Platzordnung",
+    "label": "Platzordnung",
+    "source": "https://www.tfbielstein.de/wp-content/uploads/2023/04/Platzordnung-TFB.pdf",
+    "sourceSha256": "b00ec27ef646e872564763ca544c396ec87f749f8561c61d0b57793a5d6d5c4e",
+    "blocks": [
+      {
+        "type": "item",
+        "text": "Betrete den Tennisplatz nur mit Tennisschuhen",
+        "number": 1
+      },
+      {
+        "type": "item",
+        "text": "Bewässere den Platz vor dem Spielen ganzflächig",
+        "number": 2
+      },
+      {
+        "type": "item",
+        "text": "Ziehe den Platz nach dem Spielen ab",
+        "number": 3
+      },
+      {
+        "type": "item",
+        "text": "Mache die Linien mit dem Handbesen sauber",
+        "number": 4
+      },
+      {
+        "type": "item",
+        "text": "Stelle / Hänge die Geräte wieder an deren Platz zurück",
+        "number": 5
+      },
+      {
+        "type": "item",
+        "text": "Wenn kein anderes Mitglied auf den Platz möchte, sollte man diesen nochmal bewässern.",
+        "number": 6
+      },
+      {
+        "type": "p",
+        "text": "Danke, Euer Vorstand"
+      }
+    ],
+    "canonicalSourceText": "Platzordnung\n\n1.Betrete den Tennisplatz nur mit Tennisschuhen\n2.Bewässere den Platz vor dem Spielen ganzflächig\n3.Ziehe den Platz nach dem Spielen ab\n4.Mache die Linien mit dem Handbesen sauber\n5.Stelle / Hänge die Geräte wieder an deren Platz zurück\n6.Wenn kein anderes Mitglied auf den Platz möchte, sollte man\n  diesen nochmal bewässern.\n                                                      Danke, Euer Vorstand"
+  },
+  "hausordnung": {
+    "title": "Haus und Platzordnung",
+    "label": "Hausordnung",
+    "source": "https://www.tfbielstein.de/wp-content/uploads/2023/04/Haus-und-Platzordnung.pdf",
+    "sourceSha256": "f7faefdc024176f5920c421187fbd12de87a2745ca2fe991445e487a6abe8d61",
+    "blocks": [
+      {
+        "type": "p",
+        "text": "Tennisfreunde Bielstein e.V."
+      },
+      {
+        "type": "item",
+        "text": "Spielberechtigt sind nur aktive Vereinsmitglieder. Nichtmitglieder haben nur dann Gelegenheit als Gastspieler am Spielbetrieb teilzunehmen, wenn die Plätze nicht durch Mitglieder belegt sind. Die Gebühr für Gastspieler beträgt 5€ pro Spieler.",
+        "number": 1
+      },
+      {
+        "type": "item",
+        "text": "Vor Spielbeginn und ggf. während des Spiels muss der Platz gewässert werden. Nach jedem Spiel ist der Platz abzuziehen und die Linien zu säubern. Gesperrte Plätze dürfen nicht benutzt werden. Bei Nichtbeachtung kann der Vorstand eine zeitlich begrenzte Spielsperre verhängen.",
+        "number": 2
+      },
+      {
+        "type": "item",
+        "text": "Die Plätze dürfen nur mit Tennisschuhen betreten werden. Mit den zum Spielbetrieb verwendeten Schuhen darf das Clubhaus nicht betreten werden. Bei Nichtbeachtung dieser Vorschrift ist ein Betrag von 5 € zu entrichten",
+        "number": 3
+      },
+      {
+        "type": "item",
+        "text": "Für Garderobe und sonstige Wertgegenstände übernimmt der Verein keine Haftung. Ebenso übernimmt der Verein keine Haftung für selbstverschuldete Verletzungen und Unfälle.",
+        "number": 4
+      },
+      {
+        "type": "item",
+        "text": "Der Schlüssel für die Platzanlage kann vom Vorstand gegen ein Pfand von 50€ ausgeliehen werden. Bei Erlöschen der Mitgliedschaft ist der Schlüssel unverzüglich abzugeben. Der Verlust ist dem Vorstand sofort mitzuteilen. Der Schlüssel bleibt Eigentum des Vereins. Bei Rückgabe wird das Pfand zurückgezahlt.",
+        "number": 5
+      },
+      {
+        "type": "item",
+        "text": "Alle Mitglieder haben darauf zu achten, dass die Anlage und das Clubhaus nach Benutzung, bzw. beim Verlassen, abgeschlossen ist. Das alle Mitglieder für Ordnung und Sauberkeit auf der Tennisanlage und im Clubhaus sorgen, sollte für alle eine Selbstverständlichkeit sein. Bitte nicht vergessen: Licht, Radio, TV ausschalten - Fensterrolladen herunterlassen - Gartenmöbel unterstellen und Barhocker ins Clubheim stellen!",
+        "number": 6
+      },
+      {
+        "type": "item",
+        "text": "Getränke sind im Clubhaus vorhanden und können von jedem Mitglied entnommen werden. Unmittelbar nach der Entnahme ist eine entsprechende Eintragung in der Getränkeliste vorzunehmen. Die Eintragung muss mit der Mitgliedsnummer erfolgen damit eine eindeutige Zuordnung möglich ist. Die Beträge werden per Lastschrift abgebucht.",
+        "number": 7
+      },
+      {
+        "type": "item",
+        "text": "Während der Spielsaison (Mitte April bis Mitte Oktober) sind Treffen in geschlossener Gesellschaft nur möglich, wenn genügend Freiraum für Vereinsmitglieder verbleibt. Ansonsten kann das Clubhaus von Mitgliedern für Feiern genutzt werden. Der Vorstand entscheidet darüber. Termine sind mit Sebastian Manz abzustimmen (Tel. 0173 5256226). Der Veranstalter ist dafür verantwortlich, dass die Räumlichkeiten und Einrichtungen einschließlich der Toiletten ordnungsgemäß und sauber am Tag nach der Feier wieder übergeben werden. Sämtliche Kosten die zur Wiederherstellung des ursprünglichen Zustandes notwendig werden, trägt der Veranstalter. Die Mietkosten betragen 250 € pro Tag.",
+        "number": 8
+      },
+      {
+        "type": "item",
+        "text": "Bei groben Verstößen gegen diese Haus- und Platzordnung behält sich der Vorstand vor, von seiner Möglichkeit des Ausschlusses von Mitgliedern Gebrauch zu machen.",
+        "number": 9
+      },
+      {
+        "type": "p",
+        "text": "Unabhängig von dieser Ordnungsgrundlage gehen wir davon aus, dass sich jedes Mitglied so kameradschaftlich und fair verhält, dass der Spielbetrieb jederzeit in angenehmer Atmosphäre möglich ist. In Zweifelsfällen entscheiden anwesende Vorstandsmitglieder. Alle Grundsätze des Rechts und der guten Sitten sind von allen Mitgliedern zu respektieren und anzuwenden."
+      },
+      {
+        "type": "p",
+        "text": "Der Vorstand"
+      },
+      {
+        "type": "p",
+        "text": "Tennisfreunde Bielstein e.V. 8. April 2023"
+      }
+    ],
+    "canonicalSourceText": "Haus und Platzordnung\nTennisfreunde Bielstein e.V.\n\n1. Spielberechtigt sind nur aktive Vereinsmitglieder. Nichtmitglieder haben\nnur dann Gelegenheit als Gastspieler am Spielbetrieb teilzunehmen, wenn\ndie Plätze nicht durch Mitglieder belegt sind. Die Gebühr für Gastspieler\nbeträgt 5€ pro Spieler.\n\n\n2. Vor Spielbeginn und ggf. während des Spiels muss der Platz gewässert\nwerden. Nach jedem Spiel ist der Platz abzuziehen und die Linien zu\nsäubern. Gesperrte Plätze dürfen nicht benutzt werden. Bei Nichtbeachtung\nkann der Vorstand eine zeitlich begrenzte Spielsperre verhängen.\n\n\n3. Die Plätze dürfen nur mit Tennisschuhen betreten werden. Mit den zum\nSpielbetrieb verwendeten Schuhen darf das Clubhaus nicht betreten\nwerden. Bei Nichtbeachtung dieser Vorschrift ist ein Betrag von 5 € zu\nentrichten\n\n\n4. Für Garderobe und sonstige Wertgegenstände übernimmt der Verein\nkeine Haftung. Ebenso übernimmt der Verein keine Haftung für\nselbstverschuldete Verletzungen und Unfälle.\n\n\n5. Der Schlüssel für die Platzanlage kann vom Vorstand gegen ein Pfand\nvon 50€ ausgeliehen werden. Bei Erlöschen der Mitgliedschaft ist der\nSchlüssel unverzüglich abzugeben. Der Verlust ist dem Vorstand sofort\nmitzuteilen. Der Schlüssel bleibt Eigentum des Vereins. Bei Rückgabe wird\ndas Pfand zurückgezahlt.\n\n\n6. Alle Mitglieder haben darauf zu achten, dass die Anlage und das Clubhaus\nnach Benutzung, bzw. beim Verlassen, abgeschlossen ist. Das alle\nMitglieder für Ordnung und Sauberkeit auf der Tennisanlage und im\nClubhaus sorgen, sollte für alle eine Selbstverständlichkeit sein. Bitte nicht\nvergessen: Licht, Radio, TV ausschalten - Fensterrolladen herunterlassen -\nGartenmöbel unterstellen und Barhocker ins Clubheim stellen!\n\n\n\n\n\n7. Getränke sind im Clubhaus vorhanden und können von jedem Mitglied\nentnommen werden. Unmittelbar nach der Entnahme ist eine\nentsprechende Eintragung in der Getränkeliste vorzunehmen. Die\nEintragung muss mit der Mitgliedsnummer erfolgen damit eine eindeutige\nZuordnung möglich ist. Die Beträge werden per Lastschrift abgebucht.\n\n\n8. Während der Spielsaison (Mitte April bis Mitte Oktober) sind Treffen in\ngeschlossener Gesellschaft nur möglich, wenn genügend Freiraum für\nVereinsmitglieder verbleibt. Ansonsten kann das Clubhaus von Mitgliedern\nfür Feiern genutzt werden. Der Vorstand entscheidet darüber.\nTermine sind mit Sebastian Manz abzustimmen (Tel. 0173 5256226).\nDer Veranstalter ist dafür verantwortlich, dass die Räumlichkeiten und\nEinrichtungen einschließlich der Toiletten ordnungsgemäß und sauber am\nTag nach der Feier wieder übergeben werden. Sämtliche Kosten die zur\nWiederherstellung des ursprünglichen Zustandes notwendig werden, trägt\nder Veranstalter. Die Mietkosten betragen 250 € pro Tag.\n\n\n9. Bei groben Verstößen gegen diese Haus- und Platzordnung behält sich\nder Vorstand vor, von seiner Möglichkeit des Ausschlusses von Mitgliedern\nGebrauch zu machen.\n\n\nUnabhängig von dieser Ordnungsgrundlage gehen wir davon aus, dass sich\njedes Mitglied so kameradschaftlich und fair verhält, dass der Spielbetrieb\njederzeit in angenehmer Atmosphäre möglich ist. In Zweifelsfällen\nentscheiden anwesende Vorstandsmitglieder.\nAlle Grundsätze des Rechts und der guten Sitten sind von allen Mitgliedern\nzu respektieren und anzuwenden.\nDer Vorstand\nTennisfreunde Bielstein e.V.                        8. April 2023"
+  },
+  "regeln-spielbetrieb": {
+    "title": "Regeln Spielbetrieb",
+    "label": "Regeln Spielbetrieb",
+    "source": "https://www.tfbielstein.de/wp-content/uploads/2023/04/Regeln-Spielbetrieb.pdf",
+    "sourceSha256": "bf7e582d40565313dc128c731ebc7b14b9ca5c3fb2515052619c9d1e2e4f8dfe",
+    "blocks": [
+      {
+        "type": "p",
+        "text": "Liebe Tennisfreundinnen und liebe Tennisfreunde,"
+      },
+      {
+        "type": "p",
+        "text": "einige Regeln und Informationen für den Spielbetrieb, die zum Wohle aller Mitglieder, dem Schutz der Tennisanlage und der dauerhaften Platzqualität dienen."
+      },
+      {
+        "type": "p",
+        "text": "Wir bitten Euch, im Sinne des reibungslosen Spielbetriebs zu beherzigen:"
+      },
+      {
+        "type": "item",
+        "text": "Warten Mitglieder auf der Terrasse auf einen freien Platz, bitte Plätze für andere Mitglieder frei machen:",
+        "number": 1
+      },
+      {
+        "type": "bullet",
+        "text": "Spielzeit für ein Einzel 1 Stunde."
+      },
+      {
+        "type": "bullet",
+        "text": "Spielzeit für ein Doppel 1,5 Stunden."
+      },
+      {
+        "type": "bullet",
+        "text": "Die reservierten Plätze für Trainer und das Mannschaftstraining sind von dieser Regel ausgenommen."
+      },
+      {
+        "type": "item",
+        "text": "Betreten der Tennisplätze ist nur mit Tennisschuhen erlaubt.",
+        "number": 2
+      },
+      {
+        "type": "item",
+        "text": "Bitte die Plätze vor dem Spiel ausreichend wässern, gerne auch während des Spiels und nach dem Spiel, je nach Trockenheit.",
+        "number": 3
+      },
+      {
+        "type": "item",
+        "text": "Abziehnetze wieder an die vorgesehenen Harken hängen.",
+        "number": 4
+      },
+      {
+        "type": "item",
+        "text": "Linien mit den Besen säubern.",
+        "number": 5
+      },
+      {
+        "type": "item",
+        "text": "Tennisschuhe vor Betreten der Terrasse abklopfen auf der Matte an der Treppe. Das Clubhaus nicht mit Tennisschuhen betreten.",
+        "number": 6
+      },
+      {
+        "type": "item",
+        "text": "Fahrräder bitte am Fahrradplatz neben dem Eingangstor abstellen und auf keinen Fall auf der Terrasse.",
+        "number": 7
+      },
+      {
+        "type": "item",
+        "text": "Beim Verlassen der Tennisanlage:",
+        "number": 8
+      },
+      {
+        "type": "bullet",
+        "text": "Stühle bitte wieder zusammenklappen und wegstellen."
+      },
+      {
+        "type": "bullet",
+        "text": "Alle Lichter ausschalten, Türen und Tore kontrollieren und abschließen."
+      },
+      {
+        "type": "p",
+        "text": "Herzlichen Dank für Eure Mithilfe und Euer Verständnis."
+      },
+      {
+        "type": "p",
+        "text": "Sportliche Grüße"
+      },
+      {
+        "type": "p",
+        "text": "Euer Vorstand"
+      }
+    ],
+    "canonicalSourceText": "Regeln Spielbetrieb\n\nLiebe Tennisfreundinnen und liebe Tennisfreunde,\n\neinige Regeln und Informationen für den Spielbetrieb, die zum Wohle aller\nMitglieder, dem Schutz der Tennisanlage und der dauerhaften Platzqualität\ndienen.\n\nWir bitten Euch, im Sinne des reibungslosen Spielbetriebs zu beherzigen:\n\n  1. Warten Mitglieder auf der Terrasse auf einen freien Platz, bitte\n     Plätze für andere Mitglieder frei machen:\n\n     •   Spielzeit für ein Einzel 1 Stunde.\n     •   Spielzeit für ein Doppel 1,5 Stunden.\n     •   Die reservierten Plätze für Trainer und das Mannschaftstraining\n         sind von dieser Regel ausgenommen.\n\n  2. Betreten der Tennisplätze ist nur mit Tennisschuhen erlaubt.\n  3. Bitte die Plätze vor dem Spiel ausreichend wässern, gerne auch\n     während des Spiels und nach dem Spiel, je nach Trockenheit.\n  4. Abziehnetze wieder an die vorgesehenen Harken hängen.\n  5. Linien mit den Besen säubern.\n  6. Tennisschuhe vor Betreten der Terrasse abklopfen auf der Matte an\n     der Treppe. Das Clubhaus nicht mit Tennisschuhen betreten.\n  7. Fahrräder bitte am Fahrradplatz neben dem Eingangstor abstellen\n     und auf keinen Fall auf der Terrasse.\n  8. Beim Verlassen der Tennisanlage:\n\n     •   Stühle bitte wieder zusammenklappen und wegstellen.\n     •   Alle Lichter ausschalten, Türen und Tore kontrollieren und\n         abschließen.\n\n\nHerzlichen Dank für Eure Mithilfe und Euer Verständnis.\n\nSportliche Grüße\n\nEuer Vorstand"
+  },
+  "jugendkonzept": {
+    "title": "Leitfaden zum Jugendkonzept",
+    "label": "Jugendkonzept",
+    "source": "https://www.tfbielstein.de/wp-content/uploads/2026/08/Jugendkonzept-TfB.pdf",
+    "sourceSha256": "b6b81093927d846194ae75a55c798009d06aa7e54a05b9ed3336b765a0cc2b23",
+    "blocks": [
+      {
+        "type": "contact",
+        "text": "Verfasser:\nKai Eichmann, 1. Vorsitzender,\nE-Mail: kai.eichmann@tfbielstein.de\nund\nKatharina Pollmann, Jugendwart/-in,\nE-Mail: katha.pollmann@web.de"
+      },
+      {
+        "type": "contact",
+        "text": "Adresse:\nJahnstr. 13\n51674 Wiehl"
+      },
+      {
+        "type": "contact",
+        "text": "Postanschrift:\nPostfach 21 22\n51662 Wiehl-Bielstein"
+      },
+      {
+        "type": "contact",
+        "text": "Homepage: www.tfbielstein.de"
+      },
+      {
+        "type": "contact",
+        "text": "E-Mail: info@tfbielstein.de"
+      },
+      {
+        "type": "pagebreak"
+      },
+      {
+        "type": "h",
+        "text": "Allgemeines:"
+      },
+      {
+        "type": "p",
+        "text": "Die Tennisfreunde Bielstein e.V. wollen die Sportart Tennis vorrangig nicht als Leistungs- sondern als Freizeit- und Breitensport anbieten. Jedes Kind & jeder Jugendliche soll nach seinen Möglichkeiten, individuellen Fähigkeiten und Zielsetzungen die Chance haben, sich persönlich und sportlich weiterzuentwickeln und den Spaß am Tennis kennenlernen."
+      },
+      {
+        "type": "p",
+        "text": "Damit dies gelingen kann, haben wir unteranderem ein erfahrenes Trainerteam und eine gute Infrastruktur auf unserer Tennisanlage."
+      },
+      {
+        "type": "p",
+        "text": "Die Zusammenarbeit mit dem Trainer/-in und seinem Team soll die Integration, Entwicklung der Kinder & Jugendlichen begleiten und über eine möglichst frühe Einbindung in Medenspielen (Mannschaften U10 & U12 & U15) ermöglichen. Hier gilt es den jeweiligen Entwicklungsstand der Kinder zu beurteilen und das Einverständnis der Eltern einzuholen."
+      },
+      {
+        "type": "p",
+        "text": "Über eine zielgerechte Förderung sollen Jugendspieler aufgebaut und den Erwachsenen-Teams (offene Klasse) herangeführt werden. Zusätzliche Förder- und Leistungstrainingseinheiten bekommen nur Kinder & Jugendliche, die in einer Mannschaft spielen oder auf Empfehlung der Trainer/-in."
+      },
+      {
+        "type": "h",
+        "text": "Trainingsbedingungen:"
+      },
+      {
+        "type": "p",
+        "text": "Schaffung von einheitlichen Trainingsmethoden/-inhalten soll den Einsatz qualifizierter und lizensierter Trainer (mindestens C-Lizenz), ggf. der Einsatz vereinseigener Jugendliche zur Unterstützung als Übungsleiter oder Tennisassitstent/-in, ermöglichen. Jedes Kind & jeder Jugendliche soll über das Training motivierend angesprochen werden, um Ziele entsprechend seiner Leistungsfähigkeit erreichen zu können."
+      },
+      {
+        "type": "p",
+        "text": "Das Training soll in allen Trainingsgruppen breit gefächert, abwechslungsreich und auch sportübergreifend durchgeführt werden. Darüber hinaus soll eine umfassende tennistechnische Ausbildung, bei kleinen Kindern (ab 5 Jahre) eher in spielerischer Form, vermittelt werden."
+      },
+      {
+        "type": "p",
+        "text": "Koordination, Schnelligkeit, Kraft, Ballgefühl, Beweglichkeit, Nervenstärke und Ausdauer sind im Tennis wesentliche Aspekte um die Fitness zu steigern. Die wichtigsten Grundschläge im Tennis sind Aufschlag, Return, Vorhand, Rückhand, Slice, Vorhandvolley, Rückhandvolley und Overhead. Anfänger müssen sich mit diesen 8 Schlägen nach und nach vertraut machen und diese im Training erlernen und üben."
+      },
+      {
+        "type": "p",
+        "text": "Das Training soll für Seiteneinsteiger offenbleiben und über die Möglichkeit der Trainingssteigerung motivierend auf die Kinder & Jugendlichen wirken. Die Steigerung von Trainingsdauer, Trainingshäufigkeit und persönliche Leistungsentwicklung soll gewährleistet werden."
+      },
+      {
+        "type": "p",
+        "text": "Der Trainingsplan im Sommer und Winter beinhaltet einmal wöchentliches Jugendtraining von Montag bis Freitag für jedes Kind von 5-18 Jahren. Im Winter findet das Tennistraining in der Tennishalle Nümbrecht statt. Der Verein übernimmt einen Teil der Hallenkosten."
+      },
+      {
+        "type": "p",
+        "text": "Unser Ziel ist es, jedes Jahr mindestens vier Fördertrainingseinheiten, im Sommer á 4 Trainingseinheiten, anzubieten. Darüber hinaus möchten wir gerne versuchen, vierzehntägige Leistungstrainings (max. 2x pro Monat) für die Leistungsträger in 3 Gruppen á 8 Trainingseinheiten anzubieten."
+      },
+      {
+        "type": "p",
+        "text": "Kinder & Jugendliche können je nach Entwicklungsstand vom Fördertraining in das Leistungstraining rutschen."
+      },
+      {
+        "type": "p",
+        "text": "Für das Förder-und Leistungstraining können sich nur Kinder & Jugendliche anmelden die in einer Mannschaft spielen oder auf Empfehlung der Trainer/-in."
+      },
+      {
+        "type": "p",
+        "text": "Die Anmeldung erfolgt via Email oder per WhatsApp immer an den Jugendwart/-in."
+      },
+      {
+        "type": "h",
+        "text": "Unsere Ziele:"
+      },
+      {
+        "type": "bullet",
+        "text": "stabile Mitgliederzahlen beibehalten, aktuell um die 300, davon ca. 70 Kinder & Jugendliche"
+      },
+      {
+        "type": "bullet",
+        "text": "durch konsequente Förderung des eigenen Nachwuchses werden möglichst viele Kinder & Jugendliche zukünftig in die Damen- und Herrenmannschaften integriert, um die Bindung der Kinder & Jugendlichen an den Verein zu stärken sowie das Interesse, sich weiter verbessern zu wollen. Dadurch entsteht hoffentlich eine Sogwirkung und zusätzlicher Motivationsschub für den gesamten Nachwuchs"
+      },
+      {
+        "type": "bullet",
+        "text": "Veranstaltungen im Jugendbereich zu stabilisieren, Clubmeisterschaften, Jugendcamp ggf. LK-Turnier für U10, U12, U15 etc., Jugend-, Bambini-, Midcourt-, Kleinfeldturniere anbieten"
+      },
+      {
+        "type": "bullet",
+        "text": "wir sind bestrebt, das Tennistraining kontinuierlich zu verbessern, da dies die Basis für einen motivierten Nachwuchs bildet"
+      },
+      {
+        "type": "bullet",
+        "text": "geeignete Kinder & Jugendliche identifizieren und sukzessive fördern"
+      },
+      {
+        "type": "h",
+        "text": "Erwartungen an die Kinder & Jugendlichen:"
+      },
+      {
+        "type": "bullet",
+        "text": "Handyverbot während der Trainingseinheit"
+      },
+      {
+        "type": "bullet",
+        "text": "faires und sportliches Verhalten"
+      },
+      {
+        "type": "bullet",
+        "text": "Repräsentation des Vereins durch angemessenes Verhalten (kein Schlägerwerfen, keine Beschimpfung des Gegners bzw. der Zuschauer, Einhalten der Platz- und Spielordnung, korrekte Schiedsrichterleistung, wenn möglich)"
+      },
+      {
+        "type": "bullet",
+        "text": "regelmäßiges Training sowie Einsatz bei Medenspielen"
+      },
+      {
+        "type": "bullet",
+        "text": "volles Engagement bei allen Spielen und Unterstützung der jeweiligen Mannschaft (Teamgeist!)"
+      },
+      {
+        "type": "bullet",
+        "text": "respektvoller Umgang mit allen anderen Kinder, Jugendliche und Erwachsenen"
+      },
+      {
+        "type": "h",
+        "text": "Erwartungen an die Eltern:"
+      },
+      {
+        "type": "p",
+        "text": "Die Eltern unterstützen ihre Kinder bei der Ausübung des Tennissports, insbesondere bei den Medenspielen, Turnieren oder sonstigen Anlässen."
+      },
+      {
+        "type": "h",
+        "text": "Dies bedeutet:"
+      },
+      {
+        "type": "bullet",
+        "text": "mindestens ein Erwachsener betreut eine Jugendmannschaft während der Medenspiele"
+      },
+      {
+        "type": "bullet",
+        "text": "die Eltern stimmen sich untereinander bezüglich Fahrdienst bei Auswärtsspielen sowie Bewirtung bei Heimspielen ab"
+      },
+      {
+        "type": "bullet",
+        "text": "die Eltern des Mannschaftsführers achten darauf, dass von diesem die erforderlichen organisatorischen Leistungen für Medenspiele rechtzeitig erbracht werden (Information der Mannschaftskollegen bezüglich Mannschaftsaufstellung, Treffpunkt etc.)"
+      },
+      {
+        "type": "bullet",
+        "text": "die Eltern verhalten sich den gegnerischen Mannschaften gegenüber fair; das Schlichten von evtl. Streitfällen obliegt ausschließlich den Mannschaftsführern bzw. dem Betreuer"
+      },
+      {
+        "type": "h",
+        "text": "Organisation:"
+      },
+      {
+        "type": "p",
+        "text": "Wir möchten die Integration der Kinder & Jugendlichen mit den Erwachsenen kombinieren und zukünftig Veranstaltungen am selbigen Tage durchführen. Das stärkt den Zusammenhalt und führt zu einem positiven Miteinander. Die Saisoneröffnung für Kinder & Jugendliche und Erwachsene sollte immer am gleichen Tag stattfinden."
+      },
+      {
+        "type": "h",
+        "text": "Sportevents und Aufgaben Jugendwart/-in und Trainerteam:"
+      },
+      {
+        "type": "h",
+        "text": "Saisoneröffnung 1. Mai"
+      },
+      {
+        "type": "bullet",
+        "text": "Einladung verschicken"
+      },
+      {
+        "type": "bullet",
+        "text": "Spielplan erstellen"
+      },
+      {
+        "type": "bullet",
+        "text": "Verpflegung organisieren"
+      },
+      {
+        "type": "bullet",
+        "text": "sonstiges"
+      },
+      {
+        "type": "bullet",
+        "text": "ein Platz bleibt für die Kinder reserviert"
+      },
+      {
+        "type": "h",
+        "text": "Kinder & Jugendcamp in den Ferien"
+      },
+      {
+        "type": "h",
+        "text": "Trainerteam:"
+      },
+      {
+        "type": "bullet",
+        "text": "legt in Abstimmung mit Jugendwart/-in den Termin fest, Rückmeldung an den Vorstand"
+      },
+      {
+        "type": "bullet",
+        "text": "E-Mail für die Anmeldung verfassen"
+      },
+      {
+        "type": "bullet",
+        "text": "Konzept der Inhalte, die vermittelt werden sollen, z.B. Technik, Kondition, Koordination etc."
+      },
+      {
+        "type": "bullet",
+        "text": "Verpflegung organisieren"
+      },
+      {
+        "type": "bullet",
+        "text": "stellt zusätzliche Trainer/-in zur Verfügung"
+      },
+      {
+        "type": "bullet",
+        "text": "legt die Teilnahmegebühr fest"
+      },
+      {
+        "type": "bullet",
+        "text": "hält Verbindung zum Jugendwart/-in"
+      },
+      {
+        "type": "bullet",
+        "text": "Jugendwart/-in unterstützt bei Bedarf"
+      },
+      {
+        "type": "bullet",
+        "text": "Getränke und Verpflegung übernimmt der Verein"
+      },
+      {
+        "type": "h",
+        "text": "Kinder & Jugendclubmeisterschaften"
+      },
+      {
+        "type": "h",
+        "text": "Jugendwart/-in:"
+      },
+      {
+        "type": "bullet",
+        "text": "legt Termin fest, wünschenswert ist das Wochenende nach dem Jugendcamp"
+      },
+      {
+        "type": "bullet",
+        "text": "erstellt Spielplan (Gruppen bilden)"
+      },
+      {
+        "type": "bullet",
+        "text": "besorgt Geschenke (Pokal, Bälle, T-Shirt’s, Schweißbänder etc.)"
+      },
+      {
+        "type": "bullet",
+        "text": "Verpflegung während der Spiele organisieren"
+      },
+      {
+        "type": "bullet",
+        "text": "holt sich ggf. zusätzlich die Unterstützung vom Sportwart/-in"
+      },
+      {
+        "type": "h",
+        "text": "Ideen für die Zukunft:"
+      },
+      {
+        "type": "bullet",
+        "text": "Kid’s– Cup"
+      },
+      {
+        "type": "bullet",
+        "text": "LK-Turniere für U10 / U12 / 15"
+      },
+      {
+        "type": "bullet",
+        "text": "Midcourt,"
+      },
+      {
+        "type": "bullet",
+        "text": "Kleinfeld"
+      },
+      {
+        "type": "bullet",
+        "text": "Weihnachtsfeier"
+      },
+      {
+        "type": "bullet",
+        "text": "Karneval Rosenmontagsumzug"
+      },
+      {
+        "type": "h",
+        "text": "Kosten und Ausfall Tennistraining:"
+      },
+      {
+        "type": "p",
+        "text": "Das Trainerteam berechnet für eine Tennisstunde 40 €, welche durch die jeweilige Gruppenstärke geteilt wird. Sollten Kinder & Jugendliche das Tennistraining von sich aus absagen, werden die Kosten trotzdem in Rechnung gestellt. Wichtig: Sollte es während der Saison zu Verletzungen kommen, müssen die Kosten an den Trainer-/in gezahlt werden. Die finanzielle Abwicklung mit den Eltern bleibt Aufgabe der Trainer-/in."
+      },
+      {
+        "type": "p",
+        "text": "Kann das Tennistraining bei schlechtem Wetter nicht stattfinden, wird ein alternatives Trainingsprogramm angeboten. Hier könnt ihr die Zeit sinnvoll nutzen, um euer Spiel auf andere Weise zu verbessern. Schaut euch Technik- und Taktikvideos an, um eure Schläge und Spielweise zu analysieren bzw. einzuschätzen. Lernt die richtige Zählweise oder informiert euch über Regeländerungen. Macht ein Workout zur Kräftigung oder Beweglichkeit, um eure Athletik zu verbessern. Sprecht über mögliche Matchstrategien und analysiert Tennisspiele. Das Trainerteam soll euch hierbei unterstützen und Anregungen geben. Das Angebot ist freiwillig, bedarf aber dennoch ein An-und Abmelden beim Trainer/-in!"
+      },
+      {
+        "type": "p",
+        "text": "Wird das Tennistraining durch den Trainer/-in abgesagt, werden die Kosten nicht in Rechnung gestellt. Ein Nachholtermin kann angeboten werden, ist aber für die Trainer/-in nicht verpflichtend. Es wird vor Beginn der Winter – und Sommersaison eine Abfrage an die Eltern gemacht, ob das Kind am Tennistraining teilnehmen möchte. Daraufhin wird der Trainingsplan erstellt und die Eltern haben die Möglichkeit 14 Tage vor Trainingsbeginn das Kind abzumelden. Sollte dies nicht der Fall sein, werden die Kosten vom Trainer-/in bis zum Ende der Saison komplett berechnet."
+      },
+      {
+        "type": "p",
+        "text": "Wir wünschen uns von seitens der Eltern eine vernünftige Planung, ob die Kinder am Winter – und Sommertraining teilnehmen möchten. Für das Tennistraining im Winter (01.10. – 30.04.) übernimmt der Tennisverein anteilig die Hallenkosten. Für das teilnehmende Kind & Jugendlichen wird einmalig eine Hallenpauschale in Höhe von 75 € fällig. Der Betrag wird immer zum 15.09. per Lastschriftverfahren eingezogen."
+      },
+      {
+        "type": "h",
+        "text": "Trainingszeiten:"
+      },
+      {
+        "type": "table",
+        "rows": [
+          [
+            "Montag",
+            "Dienstag",
+            "Mittwoch",
+            "Donnerstag",
+            "Freitag"
+          ],
+          [
+            "14 – 19 Uhr",
+            "14 – 19 Uhr",
+            "14 – 19 Uhr",
+            "14 – 19 Uhr",
+            "14 – 19 Uhr"
+          ]
+        ]
+      },
+      {
+        "type": "p",
+        "text": "Die Zusammensetzung der Trainingsgruppen obliegt dem Jugendwart/-in und dem Trainerteam! Dabei werden die jüngeren Kinder ab ca. 14 Uhr, die Jugendlichen ab ca. 16 Uhr geplant. Einzelne Wünsche können nur in Ausnahmefällen berücksichtigt werden. Es ist wünschenswert, dass die Kinder sowohl im Sommer und Winter die gleichen Trainingszeiten beibehalten."
+      },
+      {
+        "type": "h",
+        "text": "Schnuppermitgliedschaft für Tennisanfänger und nur im 1. Jahr der Vereinszugehörigkeit:"
+      },
+      {
+        "type": "p",
+        "text": "Kinder und Jugendliche 36,00 Euro"
+      },
+      {
+        "type": "p",
+        "text": "Kinder und & Jugendliche, die sich nach dem 31. August im Verein anmelden, müssen erst ab 01. Januar die Schnuppermitgliedschaft bezahlen."
+      },
+      {
+        "type": "h",
+        "text": "Mitgliedsbeiträge:"
+      },
+      {
+        "type": "table",
+        "header": false,
+        "rows": [
+          [
+            "Kinder bis 6 Jahre",
+            "beitragsfrei"
+          ],
+          [
+            "Kinder 7 – 10 Jahre",
+            "36,00 Euro"
+          ],
+          [
+            "Jugendliche 11 – 18 Jahre",
+            "75,00 Euro"
+          ]
+        ]
+      },
+      {
+        "type": "h",
+        "text": "Zusatz:"
+      },
+      {
+        "type": "p",
+        "text": "Das An - u. Abmelden im Verein erfolgt immer über folgende E-Mail-Adresse: info@tfbielstein.de. Bei allen anderen Veranstaltungen für die Jugend, muss die Anmeldung über den Jugendwart/-in erfolgen."
+      },
+      {
+        "type": "h",
+        "text": "Wichtige Regelung im Verein:"
+      },
+      {
+        "type": "p",
+        "text": "Wir möchten darauf hinweisen, dass eine Kündigung der Mitgliedschaft im Tennisverein gemäß Satzung schriftlich aber formlos bis zum 31. Dezember eines Jahres beim Vorstand eingehen muss und immer nur zum 31. Dezember eines Jahres erfolgen kann. Wir bitten zu beachten, dass eine Kündigung der Vereinsmitgliedschaft ausschließlich die Mitgliedschaft im Tennisverein betrifft."
+      },
+      {
+        "type": "p",
+        "text": "Das Jugend-Tennistraining wird separat von einem selbstständigen Trainer organisiert und erstreckt sich für die Wintersaison über den Jahreswechsel bis in den April des Folgejahres. Das Kündigen des Jugendtrainings muss also separat beim Trainer erfolgen und kann immer nur zum Ende der Wintersaison (April) erfolgen. Eventuelle Sonderregelungen müssen mit dem Trainer getroffen werden und liegen nicht in der Zuständigkeit des Tennisvereins."
+      },
+      {
+        "type": "p",
+        "text": "Solltet ihr mit den Inhalten des Jugendkonzepts einverstanden sein, so heißen wir euer Kind & Jugendlichen herzlich willkommen bei den Tennisfreunden in Bielstein. Informiert euch gerne auch jederzeit über unsere Homepage oder sprecht uns persönlich an."
+      },
+      {
+        "type": "p",
+        "text": "Herzliche Grüße"
+      },
+      {
+        "type": "p",
+        "text": "Der Vorstand"
+      }
+    ],
+    "canonicalSourceText": "Leitfaden zum Jugendkonzept\nVerfasser:\nKai Eichmann, 1. Vorsitzender,\nE-Mail: kai.eichmann@tfbielstein.de\nund\nKatharina Pollmann, Jugendwart/-in,\nE-Mail: katha.pollmann@web.de\n\nAdresse:\nJahnstr. 13\n51674 Wiehl\n\nPostanschrift:\nPostfach 21 22\n51662 Wiehl-Bielstein\n\nHomepage: www.tfbielstein.de\n\nE-Mail: info@tfbielstein.de\n\n\n\n\n\n\n\nAllgemeines:\n\nDie Tennisfreunde Bielstein e.V. wollen die Sportart Tennis vorrangig nicht als Leistungs- sondern\nals Freizeit- und Breitensport anbieten. Jedes Kind & jeder Jugendliche soll nach seinen\nMöglichkeiten, individuellen Fähigkeiten und Zielsetzungen die Chance haben, sich persönlich und\nsportlich weiterzuentwickeln und den Spaß am Tennis kennenlernen.\n\nDamit dies gelingen kann, haben wir unteranderem ein erfahrenes Trainerteam und eine gute\nInfrastruktur auf unserer Tennisanlage.\n\nDie Zusammenarbeit mit dem Trainer/-in und seinem Team soll die Integration, Entwicklung der\nKinder & Jugendlichen begleiten und über eine möglichst frühe Einbindung in Medenspielen\n(Mannschaften U10 & U12 & U15) ermöglichen. Hier gilt es den jeweiligen Entwicklungsstand der\nKinder zu beurteilen und das Einverständnis der Eltern einzuholen.\n\nÜber eine zielgerechte Förderung sollen Jugendspieler aufgebaut und den Erwachsenen-Teams\n(offene Klasse) herangeführt werden. Zusätzliche Förder- und Leistungstrainingseinheiten\nbekommen nur Kinder & Jugendliche, die in einer Mannschaft spielen oder auf Empfehlung der\nTrainer/-in.\n\nTrainingsbedingungen:\n\nSchaffung von einheitlichen Trainingsmethoden/-inhalten soll den Einsatz qualifizierter und\nlizensierter Trainer (mindestens C-Lizenz), ggf. der Einsatz vereinseigener Jugendliche zur\nUnterstützung als Übungsleiter oder Tennisassitstent/-in, ermöglichen. Jedes Kind & jeder\nJugendliche soll über das Training motivierend angesprochen werden, um Ziele entsprechend\nseiner Leistungsfähigkeit erreichen zu können.\n\nDas Training soll in allen Trainingsgruppen breit gefächert, abwechslungsreich und auch\nsportübergreifend durchgeführt werden. Darüber hinaus soll eine umfassende tennistechnische\nAusbildung, bei kleinen Kindern (ab 5 Jahre) eher in spielerischer Form, vermittelt werden.\n\nKoordination, Schnelligkeit, Kraft, Ballgefühl, Beweglichkeit, Nervenstärke und Ausdauer sind im\nTennis wesentliche Aspekte um die Fitness zu steigern. Die wichtigsten Grundschläge im Tennis\nsind Aufschlag, Return, Vorhand, Rückhand, Slice, Vorhandvolley, Rückhandvolley und Overhead.\nAnfänger müssen sich mit diesen 8 Schlägen nach und nach vertraut machen und diese im\nTraining erlernen und üben.\n\nDas Training soll für Seiteneinsteiger offenbleiben und über die Möglichkeit der\nTrainingssteigerung motivierend auf die Kinder & Jugendlichen wirken. Die Steigerung von\nTrainingsdauer, Trainingshäufigkeit und persönliche Leistungsentwicklung soll gewährleistet\nwerden.\n\nDer Trainingsplan im Sommer und Winter beinhaltet einmal wöchentliches Jugendtraining von\nMontag bis Freitag für jedes Kind von 5-18 Jahren. Im Winter findet das Tennistraining in der\nTennishalle Nümbrecht statt. Der Verein übernimmt einen Teil der Hallenkosten.\n\n\n\n\n\n\nUnser Ziel ist es, jedes Jahr mindestens vier Fördertrainingseinheiten, im Sommer á 4\nTrainingseinheiten, anzubieten. Darüber hinaus möchten wir gerne versuchen, vierzehntägige\nLeistungstrainings (max. 2x pro Monat) für die Leistungsträger in 3 Gruppen á 8 Trainingseinheiten\nanzubieten.\n\nKinder & Jugendliche können je nach Entwicklungsstand vom Fördertraining                      in das\nLeistungstraining rutschen.\n\nFür das Förder-und Leistungstraining können sich nur Kinder & Jugendliche anmelden die in einer\nMannschaft spielen oder auf Empfehlung der Trainer/-in.\n\nDie Anmeldung erfolgt via Email oder per WhatsApp immer an den Jugendwart/-in.\n\n\nUnsere Ziele:\n\n          stabile Mitgliederzahlen beibehalten, aktuell um die 300, davon ca. 70 Kinder &\n           Jugendliche\n          durch konsequente Förderung des eigenen Nachwuchses werden möglichst\n           viele Kinder & Jugendliche zukünftig in die Damen- und Herrenmannschaften integriert,\n           um die Bindung der Kinder & Jugendlichen an den Verein zu stärken sowie das Interesse,\n           sich weiter verbessern zu wollen. Dadurch entsteht hoffentlich eine\n           Sogwirkung und zusätzlicher Motivationsschub für den gesamten Nachwuchs\n          Veranstaltungen im Jugendbereich zu stabilisieren, Clubmeisterschaften, Jugendcamp ggf.\n           LK-Turnier für U10, U12, U15 etc., Jugend-, Bambini-, Midcourt-, Kleinfeldturniere anbieten\n          wir sind bestrebt, das Tennistraining kontinuierlich zu verbessern, da dies die Basis für\n           einen motivierten Nachwuchs bildet\n          geeignete Kinder & Jugendliche identifizieren und sukzessive fördern\n\nErwartungen an die Kinder & Jugendlichen:\n\n          Handyverbot während der Trainingseinheit\n          faires und sportliches Verhalten\n          Repräsentation des Vereins durch angemessenes Verhalten (kein Schlägerwerfen, keine\n           Beschimpfung des Gegners bzw. der Zuschauer, Einhalten\n           der Platz- und Spielordnung, korrekte Schiedsrichterleistung, wenn möglich)\n          regelmäßiges Training sowie Einsatz bei Medenspielen\n          volles Engagement bei allen Spielen und Unterstützung der jeweiligen\n           Mannschaft (Teamgeist!)\n          respektvoller Umgang mit allen anderen Kinder, Jugendliche und Erwachsenen\n\n\n\n\n\n\nErwartungen an die Eltern:\n\nDie Eltern unterstützen ihre Kinder bei der Ausübung des Tennissports, insbesondere bei den\nMedenspielen, Turnieren oder sonstigen Anlässen.\n\n\nDies bedeutet:\n          mindestens ein Erwachsener betreut eine Jugendmannschaft während der\n           Medenspiele\n          die Eltern stimmen sich untereinander bezüglich Fahrdienst bei Auswärtsspielen\n           sowie Bewirtung bei Heimspielen ab\n          die Eltern des Mannschaftsführers achten darauf, dass von diesem die\n           erforderlichen organisatorischen Leistungen für Medenspiele rechtzeitig\n           erbracht werden (Information der Mannschaftskollegen bezüglich\n           Mannschaftsaufstellung, Treffpunkt etc.)\n          die Eltern verhalten sich den gegnerischen Mannschaften gegenüber fair; das\n           Schlichten von evtl. Streitfällen obliegt ausschließlich den Mannschaftsführern\n           bzw. dem Betreuer\n\nOrganisation:\n\nWir möchten die Integration der Kinder & Jugendlichen mit den Erwachsenen kombinieren und\nzukünftig Veranstaltungen am selbigen Tage durchführen. Das stärkt den Zusammenhalt und führt\nzu einem positiven Miteinander. Die Saisoneröffnung für Kinder & Jugendliche und Erwachsene\nsollte immer am gleichen Tag stattfinden.\n\n\nSportevents und Aufgaben Jugendwart/-in und Trainerteam:\n\nSaisoneröffnung 1. Mai\n\n\n          Einladung verschicken\n          Spielplan erstellen\n          Verpflegung organisieren\n          sonstiges\n          ein Platz bleibt für die Kinder reserviert\n\nKinder & Jugendcamp in den Ferien\n\n\nTrainerteam:\n\n\n          legt in Abstimmung mit Jugendwart/-in den Termin fest, Rückmeldung an den Vorstand\n          E-Mail für die Anmeldung verfassen\n          Konzept der Inhalte, die vermittelt werden sollen, z.B. Technik, Kondition, Koordination etc.\n          Verpflegung organisieren\n          stellt zusätzliche Trainer/-in zur Verfügung\n\n\n\n          legt die Teilnahmegebühr fest\n          hält Verbindung zum Jugendwart/-in\n          Jugendwart/-in unterstützt bei Bedarf\n          Getränke und Verpflegung übernimmt der Verein\n\nKinder & Jugendclubmeisterschaften\n\n\nJugendwart/-in:\n\n\n          legt Termin fest, wünschenswert ist das Wochenende nach dem Jugendcamp\n          erstellt Spielplan (Gruppen bilden)\n          besorgt Geschenke (Pokal, Bälle, T-Shirt’s, Schweißbänder etc.)\n          Verpflegung während der Spiele organisieren\n          holt sich ggf. zusätzlich die Unterstützung vom Sportwart/-in\n\n\nIdeen für die Zukunft:\n\n          Kid’s– Cup\n\n          LK-Turniere für U10 / U12 / 15\n\n          Midcourt,\n\n          Kleinfeld\n\n          Weihnachtsfeier\n\n          Karneval Rosenmontagsumzug\n\n\nKosten und Ausfall Tennistraining:\n\nDas Trainerteam berechnet für eine Tennisstunde 40 €, welche durch die jeweilige Gruppenstärke\ngeteilt wird. Sollten Kinder & Jugendliche das Tennistraining von sich aus absagen, werden die\nKosten trotzdem in Rechnung gestellt. Wichtig: Sollte es während der Saison zu Verletzungen\nkommen, müssen die Kosten an den Trainer-/in gezahlt werden. Die finanzielle Abwicklung mit den\nEltern bleibt Aufgabe der Trainer-/in.\n\nKann das Tennistraining bei schlechtem Wetter nicht stattfinden, wird ein alternatives Trainingsprogramm angeboten. Hier könnt ihr die Zeit sinnvoll nutzen, um euer Spiel auf andere Weise zu\nverbessern. Schaut euch Technik- und Taktikvideos an, um eure Schläge und Spielweise zu\nanalysieren bzw. einzuschätzen. Lernt die richtige Zählweise oder informiert euch über Regeländerungen. Macht ein Workout zur Kräftigung oder Beweglichkeit, um eure Athletik zu\nverbessern. Sprecht über mögliche Matchstrategien und analysiert Tennisspiele. Das Trainerteam\nsoll euch hierbei unterstützen und Anregungen geben. Das Angebot ist freiwillig, bedarf aber\ndennoch ein An-und Abmelden beim Trainer/-in!\n\n\n\n\nWird das Tennistraining durch den Trainer/-in abgesagt, werden die Kosten nicht in Rechnung\ngestellt. Ein Nachholtermin kann angeboten werden, ist aber für die Trainer/-in nicht verpflichtend.\nEs wird vor Beginn der Winter – und Sommersaison eine Abfrage an die Eltern gemacht, ob das\nKind am Tennistraining teilnehmen möchte. Daraufhin wird der Trainingsplan erstellt und die Eltern\nhaben die Möglichkeit 14 Tage vor Trainingsbeginn das Kind abzumelden. Sollte dies nicht der Fall\nsein, werden die Kosten vom Trainer-/in bis zum Ende der Saison komplett berechnet.\n\nWir wünschen uns von seitens der Eltern eine vernünftige Planung, ob die Kinder am Winter – und\nSommertraining teilnehmen möchten. Für das Tennistraining im Winter (01.10. – 30.04.)\nübernimmt der Tennisverein anteilig die Hallenkosten. Für das teilnehmende Kind & Jugendlichen\nwird einmalig eine Hallenpauschale in Höhe von 75 € fällig. Der Betrag wird immer zum 15.09. per\nLastschriftverfahren eingezogen.\n\n\nTrainingszeiten:\n\nMontag               Dienstag          Mittwoch            Donnerstag          Freitag\n14 – 19 Uhr          14 – 19 Uhr       14 – 19 Uhr         14 – 19 Uhr         14 – 19 Uhr\n\nDie Zusammensetzung der Trainingsgruppen obliegt dem Jugendwart/-in und dem Trainerteam!\nDabei werden die jüngeren Kinder ab ca. 14 Uhr, die Jugendlichen ab ca. 16 Uhr geplant. Einzelne\nWünsche können nur in Ausnahmefällen berücksichtigt werden. Es ist wünschenswert, dass die\nKinder sowohl im Sommer und Winter die gleichen Trainingszeiten beibehalten.\n\n\nSchnuppermitgliedschaft für Tennisanfänger und nur im 1. Jahr der Vereinszugehörigkeit:\n\nKinder und Jugendliche 36,00 Euro\n\nKinder und & Jugendliche, die sich nach dem 31. August im Verein anmelden, müssen erst ab 01.\nJanuar die Schnuppermitgliedschaft bezahlen.\n\n\nMitgliedsbeiträge:\n\nKinder bis 6 Jahre beitragsfrei\nKinder 7 – 10 Jahre 36,00 Euro\nJugendliche 11 – 18 Jahre 75,00 Euro\n\n\nZusatz:\n\nDas An - u. Abmelden im Verein erfolgt immer über folgende E-Mail-Adresse: info@tfbielstein.de.\nBei allen anderen Veranstaltungen für die Jugend, muss die Anmeldung über den Jugendwart/-in\nerfolgen.\n\n\n\n\n\n\nWichtige Regelung im Verein:\n\nWir möchten darauf hinweisen, dass eine Kündigung der Mitgliedschaft im Tennisverein gemäß\nSatzung schriftlich aber formlos bis zum 31. Dezember eines Jahres beim Vorstand eingehen\nmuss und immer nur zum 31. Dezember eines Jahres erfolgen kann. Wir bitten zu beachten, dass\neine Kündigung der Vereinsmitgliedschaft ausschließlich die Mitgliedschaft im Tennisverein betrifft.\n\nDas Jugend-Tennistraining wird separat von einem selbstständigen Trainer organisiert und\nerstreckt sich für die Wintersaison über den Jahreswechsel bis in den April des Folgejahres. Das\nKündigen des Jugendtrainings muss also separat beim Trainer erfolgen und kann immer nur zum\nEnde der Wintersaison (April) erfolgen. Eventuelle Sonderregelungen müssen mit dem Trainer\ngetroffen werden und liegen nicht in der Zuständigkeit des Tennisvereins.\n\nSolltet ihr mit den Inhalten des Jugendkonzepts einverstanden sein, so heißen wir euer Kind &\nJugendlichen herzlich willkommen bei den Tennisfreunden in Bielstein. Informiert euch gerne auch\njederzeit über unsere Homepage oder sprecht uns persönlich an.\n\n\nHerzliche Grüße\n\nDer Vorstand"
+  }
+}

@@ -515,10 +515,18 @@
       case 'heading':
         return `<h2 class="block-heading">${esc(b.title)}</h2>`;
       case 'text': {
-        if (page === 'verein' && b.id === 'v-chronik') return `<section class="block-text club-archive-hub" data-site-content="v-chronik">
-          <h2>Clubarchiv</h2><p>Unsere Geschichten, unsere Bilder, unsere Turniere.</p>
-          <nav class="club-archive-pills" aria-label="Clubarchiv"><a class="history-pill club-hub-pill" href="#club/archiv">Zum Archiv</a><a class="history-pill club-hub-pill" href="#club/history">Zur History</a><a class="history-pill club-hub-pill" href="#club/history/bielstein-open">TFB Open</a></nav>
-        </section>`;
+        if (page === 'verein' && b.id === 'v-chronik') return `<div class="club-info-grid">
+          <section class="block-text club-archive-hub" data-site-content="v-chronik">
+            <h2>Clubarchiv</h2><p>Unsere Geschichten, unsere Bilder, unsere Turniere.</p>
+            <nav class="club-archive-pills" aria-label="Clubarchiv"><a class="history-pill club-hub-pill" href="#club/archiv">Zum Archiv</a><a class="history-pill club-hub-pill" href="#club/history">Zur History</a><a class="history-pill club-hub-pill" href="#club/history/bielstein-open">TFB Open</a></nav>
+          </section>
+          <section class="block-text club-archive-hub club-members-info" aria-labelledby="member-info-title">
+            <h2 id="member-info-title">Mitgliederinfos</h2><p>Ordnungen, Spielbetrieb und unser Jugendkonzept.</p>
+            <nav class="club-archive-pills" aria-label="Mitgliederinfos">${[
+              ['platzordnung', 'Platzordnung'], ['hausordnung', 'Hausordnung'], ['regeln-spielbetrieb', 'Regeln Spielbetrieb'], ['jugendkonzept', 'Jugendkonzept'],
+            ].map(([key, label]) => `<a class="history-pill club-hub-pill" href="assets/docs/tfb-${key}.pdf?v=20261110-mitgliederinfos-1" target="_blank" rel="noopener" aria-label="${label} als PDF öffnen">${label}</a>`).join('')}</nav>
+          </section>
+        </div>`;
         if (b.id === 's-training') return TFB.clubPeople.render(b, ref => images[ref] || ref);
         if (b.id === 'v-history') return `<section class="block-text story-teaser" data-site-content="v-history"><h2><a class="post-title-link" href="#club/history">History</a></h2>${paragraphs('Fotos, Geschichten und Jubiläen aus unserer Clubgeschichte.')}
           <a class="btn club-archive-link club-history-link" href="#club/history">Zur History</a></section>`;
