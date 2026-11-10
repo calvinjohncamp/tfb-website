@@ -2,6 +2,14 @@
 
 ## History mit drei Karten · 10.11.2026
 
+Live bestätigt: Programmcommit cf80f80, GitHub-Pages-Lauf 42768891785 erfolgreich.
+index.html aus dem Veröffentlichungspaket, sw.js, site.js und club-history.css
+öffentlich bytegleich. Chromium und WebKit live erfolgreich: Clubreihenfolge und
+Farben, drei Karten mit Original-CMS-Bildern, vier Pills, Chronik-Link auf Bild und
+Pill, Bericht und 33 Jubiläumsbilder erreichbar. Desktop und iPhone ohne Überlauf.
+Live-Screenshots: Hauptprojekt output/TFB-History-3-Karten-live-{chromium,webkit}-{390,1440}.png.
+Keine produktiven CMS-, Mitglieder- oder Finanzdaten verändert.
+
 Clubarchiv → History → Anfahrt; gelber Zur-History- und blauer Routenbutton.
 Drei Hochformatkarten mit Pills, Reihenfolge 50 Jahre / 25 Jahre / Anfangsjahre.
 Details: [History-Gestaltung](RELEASE-history-layout-20261110.md).
