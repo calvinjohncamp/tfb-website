@@ -7,40 +7,45 @@
     "blocks": [
       {
         "type": "item",
-        "text": "Betrete den Tennisplatz nur mit Tennisschuhen",
+        "text": "Betritt den Tennisplatz nur mit Tennisschuhen.",
         "number": 1
       },
       {
         "type": "item",
-        "text": "Bewässere den Platz vor dem Spielen ganzflächig",
+        "text": "Bewässere den Platz vor dem Spielen ganzflächig.",
         "number": 2
       },
       {
         "type": "item",
-        "text": "Ziehe den Platz nach dem Spielen ab",
+        "text": "Zieh den Platz nach dem Spielen ab.",
         "number": 3
       },
       {
         "type": "item",
-        "text": "Mache die Linien mit dem Handbesen sauber",
+        "text": "Mach die Linien mit dem Handbesen sauber.",
         "number": 4
       },
       {
         "type": "item",
-        "text": "Stelle / Hänge die Geräte wieder an deren Platz zurück",
+        "text": "Stell die Geräte zurück oder häng sie wieder an ihren Platz.",
         "number": 5
       },
       {
         "type": "item",
-        "text": "Wenn kein anderes Mitglied auf den Platz möchte, sollte man diesen nochmal bewässern.",
+        "text": "Wenn nach dir niemand den Platz nutzen möchte, bewässere ihn bitte noch einmal.",
         "number": 6
       },
       {
         "type": "p",
-        "text": "Danke, Euer Vorstand"
+        "text": "Danke, euer Vorstand"
       }
     ],
-    "canonicalSourceText": "Platzordnung\n\n1.Betrete den Tennisplatz nur mit Tennisschuhen\n2.Bewässere den Platz vor dem Spielen ganzflächig\n3.Ziehe den Platz nach dem Spielen ab\n4.Mache die Linien mit dem Handbesen sauber\n5.Stelle / Hänge die Geräte wieder an deren Platz zurück\n6.Wenn kein anderes Mitglied auf den Platz möchte, sollte man\n  diesen nochmal bewässern.\n                                                      Danke, Euer Vorstand"
+    "canonicalSourceText": "Platzordnung\n\n1.Betrete den Tennisplatz nur mit Tennisschuhen\n2.Bewässere den Platz vor dem Spielen ganzflächig\n3.Ziehe den Platz nach dem Spielen ab\n4.Mache die Linien mit dem Handbesen sauber\n5.Stelle / Hänge die Geräte wieder an deren Platz zurück\n6.Wenn kein anderes Mitglied auf den Platz möchte, sollte man\n  diesen nochmal bewässern.\n                                                      Danke, Euer Vorstand",
+    "approvedRevision": {
+      "date": "2026-11-10",
+      "reason": "Vom Nutzer ausdrücklich gewünschte sprachliche Überarbeitung der sechs Platzregeln; keine Änderung der übrigen drei Dokumente.",
+      "text": "Platzordnung\n\n1. Betritt den Tennisplatz nur mit Tennisschuhen.\n2. Bewässere den Platz vor dem Spielen ganzflächig.\n3. Zieh den Platz nach dem Spielen ab.\n4. Mach die Linien mit dem Handbesen sauber.\n5. Stell die Geräte zurück oder häng sie wieder an ihren Platz.\n6. Wenn nach dir niemand den Platz nutzen möchte, bewässere ihn bitte noch einmal.\n\nDanke, euer Vorstand"
+    }
   },
   "hausordnung": {
     "title": "Haus und Platzordnung",

@@ -1,6 +1,6 @@
-/* Fourth Sport category; two columns on phones keep every label readable. */
-.sport-switch { grid-template-columns: repeat(4, minmax(0, 1fr)); max-width: 720px; }
-@media (max-width: 600px) { .sport-switch { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+/* Five Sport categories; the future home-fixtures entry stays visibly disabled. */
+.sport-switch { grid-template-columns: repeat(5, minmax(0, 1fr)); max-width: 980px; }
+@media (max-width: 600px) { .sport-switch { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 .sport-rulebook { max-width: 860px; margin: 24px 0 40px; }
 .sport-rulebook > h2 { margin: 0 0 10px; }
 .rulebook-questions { margin-top: 28px; border-top: 1px solid var(--line); }
@@ -12,3 +12,7 @@
 .rulebook-answer p { margin: 0 0 16px; }
 .rulebook-answer p:last-child { margin-bottom: 0; }
 .rulebook-source { margin-top: 28px; line-height: 1.6; }
+
+.sport-switch button { display: inline-flex; align-items: center; justify-content: center; border: 0; border-radius: 9px; padding: 9px 4px; font: inherit; font-weight: 750; font-size: clamp(.72rem, 2.8vw, .84rem); background: transparent; color: var(--muted); }
+.sport-switch :is(a, button) { min-height: 44px; white-space: normal; }
+.sport-switch button:disabled { opacity: .5; cursor: default; box-shadow: none; background: transparent; }

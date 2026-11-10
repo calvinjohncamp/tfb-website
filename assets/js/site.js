@@ -524,7 +524,7 @@
             <h2 id="member-info-title">Mitgliederinfos</h2><p>Ordnungen, Spielbetrieb und unser Jugendkonzept.</p>
             <nav class="club-archive-pills" aria-label="Mitgliederinfos">${[
               ['platzordnung', 'Platzordnung'], ['hausordnung', 'Hausordnung'], ['regeln-spielbetrieb', 'Regeln Spielbetrieb'], ['jugendkonzept', 'Jugendkonzept'],
-            ].map(([key, label]) => `<a class="history-pill club-hub-pill" href="assets/docs/tfb-${key}.pdf?v=20261110-mitgliederinfos-1" target="_blank" rel="noopener" aria-label="${label} als PDF öffnen">${label}</a>`).join('')}</nav>
+            ].map(([key, label]) => `<a class="history-pill club-hub-pill" href="assets/docs/tfb-${key}.pdf?v=${key === 'platzordnung' ? '20261110-platzordnung-2' : '20261110-mitgliederinfos-1'}" target="_blank" rel="noopener" aria-label="${label} als PDF öffnen">${label}</a>`).join('')}</nav>
           </section>
         </div>`;
         if (b.id === 's-training') return TFB.clubPeople.render(b, ref => images[ref] || ref);
@@ -996,6 +996,7 @@
           <a class="${training || courtPlan || rulebook ? '' : 'on'}" href="#sport" ${training || courtPlan || rulebook ? '' : 'aria-current="page"'}>Mannschaften</a>
           <a class="${training ? 'on' : ''}" href="#sport/training" ${training ? 'aria-current="page"' : ''}>Training</a>
           <a class="${courtPlan ? 'on' : ''}" href="#sport/platzbelegung" ${courtPlan ? 'aria-current="page"' : ''}>Platzbelegung</a>
+          <button type="button" disabled aria-disabled="true" title="Demnächst">Heimspiele TFB</button>
           <a class="${rulebook ? 'on' : ''}" href="#sport/regelwerk" ${rulebook ? 'aria-current="page"' : ''}>Regelwerk</a>
         </nav>` : ''}
         ${key === 'home' ? `<div class="home-masthead"><span>Neu im Club</span><span>${esc(new Date().toLocaleDateString('de-DE', { month: 'long', year: 'numeric' }))}</span></div>` : ''}

@@ -1,5 +1,14 @@
 # TFB – Übergabe für die nächste Sitzung
 
+## Farbwelten, Club-Feinschliff und Platzordnung · 10.11.2026
+
+Pills folgen nun beiden Farbwelten: Rot/Schwarz oder Blau/Gelb. Mitgliederinfos
+2×2-Pills; kompakter Routenbutton, dezente Trennung zur Anfahrt. Sport erhält
+Heimspiele TFB als deaktivierten Platzhalter zwischen Platzbelegung und Regelwerk.
+Nur Platzordnung sprachlich neu; andere drei PDFs nachweislich unverändert.
+Details: [Release](RELEASE-theme-polish-20261110.md).
+
+
 ## Mitgliederinfos und vier PDFs · 10.11.2026
 
 Live bestätigt: Programmcommit 3cea9f1, Pages-Lauf 42775020788 erfolgreich.

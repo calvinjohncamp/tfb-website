@@ -1,3 +1,6 @@
+/* Shared accents follow the selected app world. */
+:root { --club-pill-bg: var(--tfb-signature-red, #C4553A); --club-alt-bg: #171717; --club-alt-ink: #fff; }
+:root.tfb-logo-midnight-amber { --club-pill-bg: var(--tfb-midnight-blue, #001D3D); --club-alt-bg: var(--tfb-signature-yellow, #FFC300); --club-alt-ink: var(--tfb-midnight-blue, #001D3D); }
 /* History chapters: three portrait cards, stacked on smaller screens. */
 .history-chapters { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; margin: 24px 0 32px; align-items: stretch; }
 .history-chapter { display: flex; flex-direction: column; min-width: 0; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--paper); }
@@ -11,8 +14,8 @@
 .history-pill:hover { background: var(--ink); color: var(--paper); }
 .history-pill:focus-visible, .history-chapter-image:focus-visible { outline: 3px solid var(--ink); outline-offset: -4px; }
 /* Match the existing Zum Archiv button geometry with the requested colors. */
-:root body .site-page .btn.club-archive-link.club-history-link { background: var(--tfb-signature-yellow, #FFC300); border-color: var(--tfb-signature-yellow, #FFC300); color: var(--tfb-midnight-blue, #001D3D); }
-:root body .site-page .btn.club-archive-link.club-directions-link { background: var(--tfb-signature-yellow, #FFC300); border-color: var(--tfb-signature-yellow, #FFC300); color: var(--tfb-midnight-blue, #001D3D); }
+:root body .site-page .btn.club-archive-link.club-history-link { background: var(--club-alt-bg); border-color: var(--club-alt-bg); color: var(--club-alt-ink); }
+:root body .site-page .btn.club-archive-link.club-directions-link { background: var(--club-alt-bg); border-color: var(--club-alt-bg); color: var(--club-alt-ink); }
 @media (max-width: 1000px) {
   .history-chapters { grid-template-columns: 1fr; gap: 24px; }
   .history-chapter { width: 100%; max-width: 540px; margin-inline: auto; }
@@ -24,7 +27,7 @@
 .club-archive-hub { padding: 28px 0 24px; border-top: 1px solid var(--line); }
 .club-archive-hub > h2 { font-size: clamp(1.8rem, 3vw, 2.5rem); font-weight: 800; margin: 0 0 14px; }
 .club-archive-pills { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 22px; }
-:root body .site-page .club-hub-pill { background: var(--tfb-midnight-blue, #001D3D); border-color: var(--tfb-midnight-blue, #001D3D); color: #fff; padding-inline: 16px; }
+:root body .site-page .club-hub-pill { background: var(--club-pill-bg); border-color: var(--club-pill-bg); color: #fff; padding-inline: 16px; }
 .club-hub-pill:hover { filter: brightness(1.2); }
 .site-page[data-page="verein"] .run-texts:has(.club-archive-hub) { grid-template-columns: minmax(0, 1fr); gap: 28px; }
 
@@ -32,3 +35,15 @@
 .club-info-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 36px; align-items: start; }
 .club-info-grid > section { min-width: 0; }
 @media (max-width: 740px) { .club-info-grid { grid-template-columns: minmax(0, 1fr); gap: 0; } }
+
+/* A deliberate 2-by-2 document group and a quieter transition to directions. */
+.club-members-info .club-archive-pills { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; max-width: 460px; }
+.club-members-info .club-hub-pill { text-align: center; padding-inline: 10px; }
+.site-page[data-page="verein"] .run-texts:has(.club-info-grid) { gap: 20px; }
+.site-page[data-page="verein"] .unit:has([data-site-content="v-anfahrt"]) { padding-top: 24px; border-top: 1px solid var(--line); }
+.site-page[data-page="verein"] .unit:has([data-site-content="v-anfahrt"]) .block-text { margin-block: 0; }
+:root body .site-page .btn.club-archive-link.club-directions-link { width: auto; min-width: 0; min-height: 44px; justify-content: center; padding-inline: 20px; border-radius: 14px; }
+@media (min-width: 741px) {
+  .site-page[data-page="verein"] .unit:has([data-site-content="v-anfahrt"]) { display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+  .site-page[data-page="verein"] .unit:has([data-site-content="v-anfahrt"]) .block-button { flex: none; margin: 0; }
+}

@@ -3,7 +3,7 @@ Requires reportlab, pypdf, pdfplumber, fonttools, svglib and Poppler.
 Original PDFs and source URLs are retained under docs/quellen/mitgliederinfos.
 """
 from pathlib import Path
-import json,re,html,subprocess,tempfile,hashlib
+import json,re,html,subprocess,tempfile,hashlib,argparse
 from fontTools.ttLib import TTFont as FontFile
 from fontTools.varLib.instancer import instantiateVariableFont
 from reportlab.pdfbase import pdfmetrics
@@ -30,7 +30,7 @@ def normalized(text):
 
 
 def source_body(doc):
-    text=doc['canonicalSourceText']
+    text=doc.get('approvedRevision',{}).get('text',doc['canonicalSourceText'])
     assert text.startswith(doc['title'])
     text=text[len(doc['title']):]
     text=re.sub(r'(?m)^\s*\d+\.\s*','',text)
@@ -129,7 +129,7 @@ def build(slug,doc):
             story.append(t);continue
         if kind=='h':story.append(para(b['text'],'h'));continue
         if kind=='bullet':story.append(Paragraph(html.escape(b['text']),styles['bullet'],bulletText='•'));continue
-        if slug=='platzordnung' and b['text']=='Danke, Euer Vorstand':story.append(Spacer(1,14))
+        if slug=='platzordnung' and b['text'].lower()=='danke, euer vorstand':story.append(Spacer(1,14))
         paragraph=para(b['text'],kind)
         if b['text'] in ['Herzliche Grüße','Sportliche Grüße']:paragraph.keepWithNext=True
         story.append(paragraph)
@@ -151,11 +151,14 @@ def build(slug,doc):
             chars=p.crop((MARGIN-2,124,W-MARGIN+2,H-62)).chars
             assert all(c['x0']>=MARGIN-2 and c['x1']<=W-MARGIN+2 for c in chars),f'Overflow {slug}/{index+1}'
     print(slug,len(PdfReader(path).pages),'pages',path.stat().st_size,'bytes; complete source and output text verified')
-    return {'file':str(path.relative_to(ROOT)),'pages':len(PdfReader(path).pages),'sourceSha256':doc['sourceSha256'],'sha256':hashlib.sha256(path.read_bytes()).hexdigest(),'sourceAndOutputTextVerified':True}
+    return {'file':str(path.relative_to(ROOT)),'pages':len(PdfReader(path).pages),'sourceSha256':doc['sourceSha256'],'sha256':hashlib.sha256(path.read_bytes()).hexdigest(),'contentAndOutputTextVerified':True,'contentBasis':'approvedRevision' if doc.get('approvedRevision') else 'originalSource'}
 
 
 if __name__=='__main__':
+    parser=argparse.ArgumentParser();parser.add_argument('documents',nargs='*');args=parser.parse_args()
+    if any(slug not in DATA for slug in args.documents):parser.error('Unknown document')
+    selected=args.documents or list(DATA)
     OUT.mkdir(exist_ok=True,parents=True);QA.mkdir(exist_ok=True,parents=True)
     with tempfile.TemporaryDirectory(prefix='tfb-member-fonts-') as tmp:
-        fonts(Path(tmp));result={slug:build(slug,doc) for slug,doc in DATA.items()}
+        fonts(Path(tmp));result={slug:build(slug,DATA[slug]) for slug in selected}
     (QA/'text-audit.json').write_text(json.dumps(result,ensure_ascii=False,indent=2)+'\n')
