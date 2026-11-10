@@ -2,6 +2,11 @@
 
 ## Datensicherung: eindeutige Vorschau · 10.11.2026
 
+Live bestätigt: Programm 8cd2fb8, erfolgreicher Pages-Lauf 42815441441.
+Drei relevante Webdateien bytegleich geprüft. Bestehende Browserprüfung in
+Chromium/WebKit und beiden Farbwelten erfolgreich. Keine Live-Wiederherstellung
+ausgelöst; Backend unverändert auf 9595c3e7-88b8-4874-af23-bd5be4416002.
+
 „Ansehen“ in den gesicherten Ständen heißt jetzt „Vorschau“. Sowohl in der Liste
 als auch in der geöffneten Vorschau steht ausdrücklich: Die Vorschau verändert
 noch nichts. Erst mit „Website wiederherstellen“ wird der ausgewählte alte
