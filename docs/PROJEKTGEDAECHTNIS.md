@@ -42,6 +42,36 @@ Veröffentlichungen weiterhin direkt nach Prüfung, isoliert auf dem aktuellen
 Live-Quellstand; nur Auftragsdateien in den sonst bereits geänderten lokalen
 Projektstand übernehmen. Neue Mailformate sind keine Freigabe für Massenversand.
 
+## Bestätigter Clubstand dieser Sitzung · 10.11.2026
+
+Club beginnt wieder mit den fünf Clubbuttons, danach Mitglied werden und
+Vorstand. Clubarchiv und Mitgliederinfos stehen nebeneinander, mobil passend
+untereinander; je vier gleich große Aktionen, in der roten Welt Signature-Rot.
+Clubarchiv: Zum Archiv, Zur History, TFB Open, Galerie. Mitgliederinfos:
+Platzordnung, Hausordnung, Regeln Spielbetrieb, Jugendkonzept; Untertitel
+„Einige PDFs mit Zusatzinfos.“ Alle vier gestalteten PDFs auch als rote Variante.
+Nur die Platzordnung sprachlich überarbeitet; die übrigen offiziellen Inhalte
+unverändert. Anfahrt hat einen kompakten eckigeren Button unter der Adresse,
+in der roten Welt Schwarz. Kooperationen sind entfernt.
+
+History: 50 Jahre TFB mit Bericht/Bildergalerie, 25 Jahre TFB mit verlinkter
+Chronik-PDF, Bilder aus den Anfangsjahren. TFB Open als eigener Clubarchiv-Zugang,
+keine doppelte Open-Sektion unter History; aktive Jahrespills Blau/Rot und
+Inhaltspills Gelb/Schwarz je Welt. Turnierpartner bleiben, zusätzliche reguläre
+„Präsentiert von“-Partnerblöcke auf allen Open-Seiten entfernt. Schließen von
+Archiv, History und Open führt direkt zu Club. Galerie: zehn Jahre, 23 Alben,
+1935 Bilder; alle Jahresbilder bzw. alle Bilder des gewählten Albums in Collage,
+Vollbildnavigation ab dem angeklickten Bild. Nur dedizierte alte Galeriethemen aus
+dem Artikelarchiv ausgeblendet; normale Artikelbilder erhalten.
+
+Suchen berücksichtigen mehrere Begriffe in Headline und Text. Sport hat den
+zusätzlichen noch deaktivierten Button Heimspiele TFB zwischen Platzbelegung
+und Regelwerk. Externer JAKO-Shop ist unten im Kiosk als separater Shop erkennbar.
+Aktive Adminmenüs Schwarz/Weiß; Datensicherung / Time Machine zuletzt, Blau oder
+Rot mit Weiß und gleicher Buttonhöhe. Nutzer hat Clubseite, PDFs, Galerie,
+Open und Mailgestaltung ausdrücklich positiv bestätigt; diesen Stand bewahren.
+Einzelnachweise: RELEASE-*-20261110.md in diesem Ordner.
+
 ## Abrechnung mit voller Breite und zentrierter PDF-Kopf · 09.11.2026
 
 Veröffentlichung bestätigt: e2d6527, Pages-Lauf 42713475494 erfolgreich.
@@ -88,6 +118,7 @@ Beide PDF-Seiten visuell geprüft, Titelzentrierung zusätzlich per Textkoordina
 innerhalb 0,5 pt gemessen. 309 öffentliche Dateien im Paket geprüft.
 
 
+
 ## Fünf-Tage-Matrix und A4-Druckplan · 09.11.2026
 
 Veröffentlichung bestätigt: a45dc73, Pages-Lauf 42711291614 erfolgreich.
@@ -128,6 +159,7 @@ Downloadlinks, geladene Vorschaubilder, Symbolgröße/-neigung, Tag/Woche und
 Sportnavigation. 308 öffentliche Dateien im Veröffentlichungspaket validiert.
 
 
+
 ## Beitragspflege direkt im Clubbereich · 09.11.2026
 
 Veröffentlichung bestätigt: 4f71748, Pages-Lauf 42709215859 erfolgreich. Live-Frontend mit isolierter API in Chromium/WebKit bei 834 px auf neuen Club-Zugang, fehlenden globalen Button, Speichern und Konflikte geprüft; erfolgreich. Keine produktiven Testbeträge gespeichert.
@@ -142,6 +174,7 @@ Bestehende Browserprüfung auf den neuen Weg angepasst: keine globale Verknüpfu
 kontextueller Editor, 9 Eingaben, Abbrechen, Validierung, zentrales Speichern,
 Gast-/Mitgliederansicht und Konfliktschutz; Chromium/WebKit je 390/834/1440 px
 vollständig erfolgreich. Gezielter öffentlicher Beitragstest ebenfalls erfolgreich.
+
 
 
 ## Platzbelegung Sommer 2027 · 09.11.2026
@@ -183,6 +216,7 @@ kein horizontaler Überlauf, Tastatur, Neuladen und Rückkehr Training/Mannschaf
 und neuer Offlinecache für die Veröffentlichung.
 
 
+
 ## Mitgliedsbeiträge ab 2027 · 09.11.2026
 
 Veröffentlichung bestätigt: Programm 18612c5, Pages-Lauf 42706618452 erfolgreich.
@@ -213,6 +247,7 @@ Tests enthalten noch zwei unabhängige veraltete Erwartungen an Trainerkarten.
 Antrag und Bestätigungsmail berechnen keine Beiträge und enthalten keine alten Beträge.
 
 
+
 ## Ruhiger Footer und Bierdeckel-Farbwelt · 09.11.2026
 
 Veröffentlichung bestätigt: Programm afdd7f1, Pages-Lauf 42702239487 erfolgreich.
@@ -240,6 +275,7 @@ und keine horizontale Überbreite erfolgreich. Isolierte Testkonten und Testdate
 mit dem produktiven additiven Padel-Kiosk-Schema; keine echten Buchungen angelegt.
 
 
+
 ## Bereinigte SVG-Logos in beiden Farbwelten · 09.11.2026
 
 Veröffentlichung bestätigt: Programm ff0996e, Pages-Lauf 42697840167 erfolgreich.
@@ -262,6 +298,7 @@ isoliert auf aktuellem main vorbereitet, um den zwischenzeitlichen Shared-Kiosk-
 zu erhalten. Chromium und WebKit bei 390/834/1440 px: beide SVGs in Header und Splash,
 exakte Signature-Farben, transparente Naht, Farbumschalter und gespeicherte Farbwahl,
 ausgeblendete Altmasken und keine horizontale Überbreite geprüft; keine Skriptfehler.
+
 
 
 ## Trainer und „Über uns“ vom Nutzer abgenommen · 09.11.2026
@@ -5844,3 +5881,18 @@ stand einschließlich Bilder/Anhänge/Look, nicht bloß veröffentlichter Startb
 ## 08.11.2026 · Direkte Veröffentlichung
 
 Nutzerwunsch: Fertige Website-Änderungen immer direkt deployen, ohne zusätzliche OK-Abfrage. Veröffentlichungen weiter isoliert auf dem aktuellen Live-Quellstand vorbereiten.
+
+
+## Familienadressen beim Mitgliederzugang · 09.11.2026
+
+Gemeinsam verwendete Vereins-E-Mails müssen einer Person zugeordnet werden.
+Freischaltcode, Passwortreset und Passwortlogin unterstützen dafür jetzt einen
+optionalen vollständigen Namen (wie in der Mitgliederliste), alternativ weiterhin
+die Mitgliedsnummer. Das Namensfeld ist direkt sichtbar; keine öffentliche
+Mitgliedschaftsauskunft, keine Namen als Ersatz für Code oder Passwort.
+Programm b6cd5ed, Worker e6041417-612c-4a4f-82a9-7af226b2ba58.
+21 Zugangstests und Chromium/WebKit bestanden. Reale Freischaltmails wurden
+nicht zu Testzwecken versendet; Zustellung im Mitgliedspostfach bleibt vom
+Mitglied zu bestätigen. Nur ein eingerichtetes Konto beim Prüfzeitpunkt;
+daraus keinen allgemeinen Versandfehler ableiten. Details siehe
+LOGIN-FAMILIENADRESSEN-2026-11-09.md.
