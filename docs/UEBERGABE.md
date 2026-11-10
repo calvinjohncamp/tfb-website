@@ -1,5 +1,47 @@
 # TFB – Übergabe für die nächste Sitzung
 
+## Mitgliederbriefe, Formatierung und einheitlicher Textmarker · 10.11.2026
+
+Der E-Mail-Editor unter `#membermail` ist vom Nutzer optisch und funktional
+bestätigt; echten Testversand hat der Nutzer selbst erfolgreich geprüft.
+Testmail an Admin: in der roten Welt Rot/Weiß, in der gelben Welt Gelb/Blau.
+Nur der aktuell angemeldete Admin erhält Tests; „Mail an alle“ bleibt deaktiviert.
+Keine echten Rundmails bei Entwicklung/Prüfung versenden.
+
+Überschrift, Anrede, Fließtext und Gruß sind direkt im Brief bearbeitbar und
+haben kleine Leisten für Fett, Kursiv und Signature. Anrede standardmäßig fett,
+auch beim Laden alter Vorlagen ohne eigene Formatierung. Absichtlich anders
+formatierte Vorlagen behalten ihre Gestaltung. Die Datumszeile bleibt dezent und
+erhält keine Formatierungsleiste. Speichern, Speichern unter und Wiederladen
+bewahren alle Formatierungen; Archiv nach Jahren mit Löschen/Rückgängig und
+Schutz vor parallelem Überschreiben. Speicherung bleibt im privaten zentralen R2.
+
+Aktueller Feinschliff: gelber Textmarker exakt aus dem etablierten
+`assets/brand/tfb-highlight-freihand.svg` übernommen, wie bei markierten Daten
+unter Aktuell: unregelmäßige Freihandkontur, transparente Farbschichten
+(.31/.10/.07), Hintergrund über jede umgebrochene Textzeile. Für zuverlässigere
+Maildarstellung identische Kontur als transparente 960×144-PNG unter
+`assets/brand/tfb-highlight-freihand-mail.png`; reproduzierbar mit
+`tools/build-mail-highlight.mjs`. Kein deckender gelber Balken mehr.
+Klassisches Outlook erhält einen hellgelben Ersatz über bedingtes MSO-Markup.
+Rote Signature bleibt rote Schrift. Gemeinsamer Renderer für Editor und Versand:
+`assets/js/member-mail-renderer.mjs`. Bestehende `signature`-Markierungen
+übernehmen die neue Darstellung ohne manuelle Migration.
+
+Formatierung wird als streng geprüfte Textabschnitte gespeichert, niemals als
+beliebiges HTML. Teilweise Markierung/Entfernung erhält Fett/Kursiv und die
+Textauswahl; kopierte Fremdinhalte werden als Klartext eingefügt. Editor-CSP
+sperrt Skriptquellen; WebKit-Ereignisse funktionieren über Parent-Listener.
+Details zur Einführung: `docs/MITGLIEDERMAIL-FORMATIERUNG-2026-11-10.md`.
+
+Prüfungen: 23 Node-Tests einschließlich gebündeltem Worker sowie Chromium/WebKit
+mit beiden Farbwelten, Textmarker setzen/teilweise entfernen, Fett/Kursiv,
+Speichern/Laden/Kopie, simuliertem Testtransport, Konflikten und 320–1440 px.
+Keine vorhandene Nutzervorlage verändert und keine echte Testmail versendet.
+Veröffentlichungen weiterhin direkt nach Prüfung, isoliert auf dem aktuellen
+Live-Quellstand; nur Auftragsdateien in den sonst bereits geänderten lokalen
+Projektstand übernehmen. Neue Mailformate sind keine Freigabe für Massenversand.
+
 ## Galerie komplett und Admin-Farben · 10.11.2026
 
 Jahrwahl zeigt alle Bilder aller Alben; Unterpills filtern auf ein komplettes

@@ -27,7 +27,7 @@
    let value=escape(run.text).replace(/\n/g,'<br>');
    if(run.bold)value=`<strong style="font-weight:${key==='headline'?750:700}">${value}</strong>`;
    if(run.italic)value=`<em style="font-style:italic">${value}</em>`;
-   if(run.signature)value=mail.theme==='red'?`<span data-mm-signature="true" style="color:#C4553A">${value}</span>`:`<span data-mm-signature="true" style="background-color:#FFC300;color:#001D3D;padding:0 2px;box-decoration-break:clone;-webkit-box-decoration-break:clone">${value}</span>`;
+   if(run.signature)value=mail.theme==='red'?`<span data-mm-signature="true" style="color:#C4553A">${value}</span>`:`<span data-mm-signature="true" style="background-color:transparent;background-image:url('https://joern-kaemper.de/assets/brand/tfb-highlight-freihand-mail.png');background-size:100% 100%;background-repeat:no-repeat;color:#001D3D;padding:0 .06em;margin:0 -.06em;box-decoration-break:clone;-webkit-box-decoration-break:clone"><!--[if mso]><span style="background-color:#FFE9A2"><![endif]-->${value}<!--[if mso]></span><![endif]--></span>`;
    return value;
   }).join('');
  }

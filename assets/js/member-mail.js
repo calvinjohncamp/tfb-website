@@ -29,7 +29,7 @@
    if(['I','EM'].includes(node.tagName)||style.fontStyle==='italic')flags.italic=true;
    if(style.fontStyle==='normal')delete flags.italic;
    const color=style.color.replace(/\s/g,''),background=style.backgroundColor.replace(/\s/g,'');
-   if(color==='rgb(196,85,58)'||color==='#c4553a'||background==='rgb(255,195,0)'||background==='#ffc300')flags.signature=true;
+   if(node.dataset.mmSignature==='true'||color==='rgb(196,85,58)'||color==='#c4553a'||background==='rgb(255,195,0)'||background==='#ffc300')flags.signature=true;
    else if(color||background==='transparent'||background==='rgba(0,0,0,0)')delete flags.signature;
    const block=['DIV','P','LI'].includes(node.tagName);if(block&&runs.length&&!endsLine())add('\n',flags);
    for(const child of node.childNodes)walk(child,flags);
@@ -50,7 +50,7 @@
    const onTextChange=()=>{if(!frame.isConnected||!draft||busy)return;const prior=JSON.stringify([draft.headline,draft.salutation,draft.body,draft.closing,draft.formatting]);readFields();if(JSON.stringify([draft.headline,draft.salutation,draft.body,draft.closing,draft.formatting])!==prior)changed();resize();};
    let savedRange=null,activeField=null;
    const fieldOf=node=>(node?.nodeType===1?node:node?.parentElement)?.closest('[data-mail-field]');
-   const signatureAt=node=>{let el=node?.nodeType===1?node:node?.parentElement;while(el&&!el.hasAttribute('data-mail-field')){const color=el.style.color.replace(/\s/g,''),bg=el.style.backgroundColor.replace(/\s/g,'');if(color==='rgb(196,85,58)'||bg==='rgb(255,195,0)')return true;if(color||bg==='transparent'||bg==='rgba(0,0,0,0)')return false;el=el.parentElement;}return false;};
+   const signatureAt=node=>{let el=node?.nodeType===1?node:node?.parentElement;while(el&&!el.hasAttribute('data-mail-field')){const color=el.style.color.replace(/\s/g,''),bg=el.style.backgroundColor.replace(/\s/g,'');if(el.dataset.mmSignature==='true'||color==='rgb(196,85,58)'||bg==='rgb(255,195,0)')return true;if(color||bg==='transparent'||bg==='rgba(0,0,0,0)')return false;el=el.parentElement;}return false;};
    const selectionChanged=()=>{
     const selection=doc.getSelection();if(!selection?.rangeCount)return;const range=selection.getRangeAt(0),field=fieldOf(range.startContainer);if(!field||field!==fieldOf(range.endContainer))return;
     savedRange=range.cloneRange();activeField=field;
@@ -64,9 +64,27 @@
     const button=event.target.closest('[data-mm-command]');if(!button)return;if(busy||!savedRange||!activeField||!button.closest('.mm-edit-block').contains(activeField))return;
     activeField.focus();const selection=doc.getSelection();selection.removeAllRanges();selection.addRange(savedRange);doc.execCommand('styleWithCSS',false,true);
     const command=button.dataset.mmCommand;if(command==='signature'){
-     const remove=signatureAt(selection.getRangeAt(0).startContainer),ink=draft.theme==='red'?'#171717':'#001D3D';
-     if(draft.theme==='red')doc.execCommand('foreColor',false,remove?ink:'#C4553A');
-     else{doc.execCommand('foreColor',false,ink);doc.execCommand('hiliteColor',false,remove?'transparent':'#FFC300');}
+     const range=selection.getRangeAt(0);if(range.collapsed)return;
+     // Work with validated text runs so a freehand image never remains behind
+     // when only part of a marked passage is unmarked.
+     const offset=(target,index)=>{
+      let text='',found=false;
+      const walk=(node,root=false)=>{
+       if(found)return;if(node.nodeType===3){text+=node.textContent.slice(0,node===target?index:undefined);if(node===target)found=true;return;}
+       if(node.nodeType!==1)return;if(node.tagName==='BR'){text+='\n';return;}
+       const block=!root&&['DIV','P','LI'].includes(node.tagName);if(block&&text&&!text.endsWith('\n'))text+='\n';
+       const children=[...node.childNodes];for(const child of node===target?children.slice(0,index):children)walk(child);
+       if(node===target)found=true;if(found)return;if(block&&!text.endsWith('\n'))text+='\n';
+      };walk(activeField,true);return text.length;
+     };
+     const start=offset(range.startContainer,range.startOffset),end=offset(range.endContainer,range.endOffset),runs=fieldRuns(activeField),pieces=[];
+     let position=0;for(const run of runs){const next=position+run.text.length;for(const [a,b,selected] of [[position,Math.min(next,start),false],[Math.max(position,start),Math.min(next,end),true],[Math.max(position,end),next,false]])if(b>a)pieces.push({...run,text:run.text.slice(a-position,b-position),...(selected?{signature:true}:{})});position=next;}
+     let cursor=0,allMarked=true;for(const run of runs){if(cursor<end&&cursor+run.text.length>start&&!run.signature)allMarked=false;cursor+=run.text.length;}
+     cursor=0;for(const run of pieces){if(cursor>=start&&cursor<end){if(allMarked)delete run.signature;else run.signature=true;}cursor+=run.text.length;}
+     const key=activeField.dataset.mailField;(draft.formatting||={})[key]=pieces;draft[key]=pieces.map(run=>run.text).join('');
+     activeField.innerHTML=TFB.memberMailTemplate.richHtml(draft,key);
+     const boundary=at=>{const walker=doc.createTreeWalker(activeField,5);let node;while(node=walker.nextNode()){const length=node.nodeType===3?node.textContent.length:node.tagName==='BR'?1:0;if(node.nodeType===3&&at<=length)return [node,at];if(node.nodeType===1&&node.tagName==='BR'&&at===0)return [node.parentNode,[...node.parentNode.childNodes].indexOf(node)];at-=length;}return [activeField,activeField.childNodes.length];};
+     const restored=doc.createRange();restored.setStart(...boundary(start));restored.setEnd(...boundary(end));selection.removeAllRanges();selection.addRange(restored);changed();
     }else doc.execCommand(command,false,null);
     onTextChange();selectionChanged();
    });

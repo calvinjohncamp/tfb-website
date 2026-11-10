@@ -13,3 +13,8 @@ Validierung:
 - Ausschließlich synthetische Testkonten und simulierte Mailtransporte. Keine echte Testmail versendet und keine vorhandene Nutzervorlage verändert.
 
 Veröffentlicht: Programmstand `c39ef08`, erfolgreicher Pages-Workflow `42789893360`; Cloudflare-Worker `b16255a5-6f70-4c47-b621-c54a420df5f2`. Sechs relevante Webdateien wurden bytegleich mit dem Veröffentlichungspaket verglichen. Im angemeldeten Live-Browser sind die fette Anrede, aktive Fett-Schaltfläche, kleine Formatierungsleiste und gelb-blaue Testmail-Schaltfläche bestätigt. Keine Vorlage gespeichert und keine Nachricht über den echten Transport gesendet. Privater Nachweis im Projekt unter `output/TFB-Mail-Formatierung-live.png` und `output/TFB-Mail-Formatierung-live-check.json`.
+
+
+## Einheitlicher Freihandmarker · 10.11.2026
+
+Gelbe Markierungen verwenden nun die Freihandkontur und Transparenz des Website-Markers `tfb-highlight-freihand.svg`, identisch als transparente PNG für Mailprogramme gerendert. Mehrzeilige Passagen wiederholen den Hintergrund je Textzeile. Klassisches Outlook erhält einen hellgelben Ersatz. Die strukturierte Speicherung bleibt gleich; bestehende Markierungen ändern ihre Optik automatisch. Im Editor werden markierte Teilbereiche über Textabschnitte aktualisiert, damit beim Entfernen kein alter Bildhintergrund stehen bleibt. Browserprüfung zusätzlich für Teilwort markieren/entfernen sowie Fett auf bereits markierter Passage erfolgreich.
