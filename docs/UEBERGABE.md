@@ -2,6 +2,17 @@
 
 ## Direkte Veröffentlichung und Regelwerk · 10.11.2026
 
+Veröffentlichung bestätigt: Programmcommit c8be699, GitHub-Pages-Lauf
+42767411827 erfolgreich. index.html (Veröffentlichungspaket), Service Worker,
+site.js, Regelwerkmodul, beide neuen Stylesheets, Chronik-PDF und Titelvorschau
+öffentlich bytegleich mit dem geprüften Paket. Chromium und WebKit live mit
+öffentlichen Original-CMS-Inhalten: 28 Regelwerkfragen, aktive vierte Kategorie,
+History-Vorschaubilder, Anfangsjahre, vorhandener Jubiläumsbericht und 33 Fotos
+mit Großansicht erfolgreich; keine Skriptfehler. Sichtprüfung live erfolgreich.
+Live: https://joern-kaemper.de/#sport/regelwerk und
+https://joern-kaemper.de/#club/history . Keine CMS-/Mitglieds-/Finanzdaten verändert.
+Screenshots lokal im Hauptprojekt output/TFB-{Regelwerk,History}-live-{chromium,webkit}.png.
+
 Nutzeranweisung: Websiteänderungen immer direkt veröffentlichen; Finetuning an
 der Live-Version. Erneutes OK entfällt. History aus dem vorigen Auftrag wird
 zusammen mit Sport → Regelwerk veröffentlicht. Vollständige Übernahme aller

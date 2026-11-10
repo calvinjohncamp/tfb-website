@@ -29,3 +29,14 @@ Training und Platzbelegung weiter erreichbar. History-Übersicht, Anfangsjahre,
 33 Home-Jubiläumsbilder mit funktionierender Großansicht. Syntaxprüfung und
 vollständiger Textabgleich erfolgreich. Öffentlichen CMS-Stand 86 vor Release
 lesend geprüft: bestehende History-Bilder und Home-Kollage vorhanden.
+
+Veröffentlichung bestätigt: Programmcommit c8be699, GitHub-Pages-Lauf
+42767411827 erfolgreich. index.html (Veröffentlichungspaket), Service Worker,
+site.js, Regelwerkmodul, beide neuen Stylesheets, Chronik-PDF und Titelvorschau
+öffentlich bytegleich mit dem geprüften Paket. Chromium und WebKit live mit
+öffentlichen Original-CMS-Inhalten: 28 Regelwerkfragen, aktive vierte Kategorie,
+History-Vorschaubilder, Anfangsjahre, vorhandener Jubiläumsbericht und 33 Fotos
+mit Großansicht erfolgreich; keine Skriptfehler. Sichtprüfung live erfolgreich.
+Live: https://joern-kaemper.de/#sport/regelwerk und
+https://joern-kaemper.de/#club/history . Keine CMS-/Mitglieds-/Finanzdaten verändert.
+Screenshots lokal im Hauptprojekt output/TFB-{Regelwerk,History}-live-{chromium,webkit}.png.
