@@ -22,7 +22,7 @@
   return result;
  }
  function richHtml(mail,key){
-  const runs=mail.formatting?.[key]||[{text:String(mail[key]??''),...(['headline','closing'].includes(key)?{bold:true}:{})}];
+  const runs=mail.formatting?.[key]||[{text:String(mail[key]??''),...(['headline','salutation','closing'].includes(key)?{bold:true}:{})}];
   return runs.map(run=>{
    let value=escape(run.text).replace(/\n/g,'<br>');
    if(run.bold)value=`<strong style="font-weight:${key==='headline'?750:700}">${value}</strong>`;

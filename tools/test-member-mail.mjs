@@ -61,3 +61,8 @@ test('formatting rejects foreign markup, wrong fields, mismatching text and exce
  const env={CMS_BUCKET:new Bucket(),AUTH_MAIL:{send:async message=>{assert.ok(message.html.includes('&lt;img src=x onerror=alert(1)&gt;'));assert.equal(message.html.includes('<img src=x'),false);}}},body='<img src=x onerror=alert(1)>';
  await memberMailTest(env,{id:'admin',email:'admin@example.invalid'},{...base,body,formatting:{body:[{text:body,bold:true}]},requestId:crypto.randomUUID()});
 });
+
+
+test('salutation defaults to bold in legacy letters, while explicit plain formatting remains possible',async()=>{
+ const {html}=await import('../assets/js/member-mail-renderer.mjs');assert.ok(html(base).includes('<strong style="font-weight:700">Liebe Mitglieder,</strong>'));assert.ok(!html({...base,formatting:{salutation:[{text:base.salutation}]}}).includes('<strong style="font-weight:700">Liebe Mitglieder,</strong>'));
+});
