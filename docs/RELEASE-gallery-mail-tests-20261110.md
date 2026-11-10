@@ -50,3 +50,16 @@ simulierten aktuellen Admin, deaktivierter Bulkknopf, Löschen/Rückgängig,
 Speichern unter, Reload, Farbwelt, Konflikte und erhaltener Text. Vorhandene
 Adminrollen-/Menüprüfung beider Browser erfolgreich. Galerie mobil/desktop
 mit geladenen Originalfotos visuell geprüft.
+
+Live bestätigt: Programm f9f29f5, Pages-Lauf 42785295679 erfolgreich. Alle 14
+geänderten Startdateien einschließlich kanonischem Mail-Renderer bytegleich mit
+dem geprüften Veröffentlichungspaket. Neue private Test-/Delete-/Restore-Endpunkte
+ohne Sitzung live 401; dabei kein Versand und keine Datenänderung ausgelöst.
+Chromium und WebKit live: 10 Jahre, 23 Alben, 1935 Bilder, Vollbild-Fortschaltung
+mit geladenem Originalbild, alte Galerie-Links, Artikelarchiv-/Cup-Suche sowie
+vier Clubarchiv-Pills bei 320–1440px erfolgreich.
+Zusätzlich in eigener Chrome-Registerkarte mit vorhandenem echten Adminzugang
+nur die neue Ansicht gelesen: Testknopf aktiv, Bulkknopf deaktiviert, vorhandene
+2026-Archivvorlagen mit Löschaktionen sichtbar und Time Machine letzter Adminpunkt.
+Keine vorhandene Mailvorlage verändert und keinen Testmail-Knopf betätigt.
+Nachweis output/TFB-Galerie-Mail-Admin-live.png im gemeinsamen Workspace.
