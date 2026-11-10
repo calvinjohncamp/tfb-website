@@ -40,3 +40,14 @@ Save-as mit unverändertem Original, Seitenneuladen und Öffnen, Farbwelt speich
 Konflikt durch paralleles Gerät und erhaltener lokaler Text, kein Überlauf bei
 320/390/834/1440px. Bestehende Admin-Toggle-Prüfung beider Browser erfolgreich,
 inkl. gewöhnlicher Mitglieder und erneutem Login. Keine echten Mails versendet.
+
+Live bestätigt: Programm e8f0638, Pages-Lauf 42782430621 erfolgreich. Alle sechs
+Editor-Webdateien öffentlich bytegleich mit dem geprüften Veröffentlichungspaket.
+Neue Archiv-Endpunkte live ohne Anmeldung GET/POST 401. Über bestehenden echten
+Chrome-Adminzugang den neuen letzten Menüpunkt geöffnet, Beispielvorlage
+„Begrüßung zur neuen Saison“ zentral gespeichert (Mailarchiv: 1), Neue Mail
+geöffnet und gespeicherte Vorlage wieder aus dem Archiv geladen. Erfolgstext
+„Vorlage geladen · gespeichert …“ und vollständiger Brief sichtbar. Ein sinnvolles
+Beispiel bleibt im echten Archiv zur weiteren Bearbeitung. Kein Versand ausgelöst
+und keine Empfängerliste abgerufen. Getestete Beispiel-Briefvorschau im Workspace:
+output/TFB-Mitgliederbrief-Beispiel.png, generiert mit gemeinsamem Mail-Renderer.
