@@ -515,14 +515,10 @@
       case 'heading':
         return `<h2 class="block-heading">${esc(b.title)}</h2>`;
       case 'text': {
-        if (page === 'verein' && b.id === 'v-chronik') {
-          // Ältere Redaktionsstände verwenden noch den ursprünglichen Chronik-Text.
-          const entry = b.title === 'Chronik' ? TFB.siteSeed.pages.verein.blocks.find(block => block.id === b.id) : b;
-          return `<section class="block-text" data-site-content="${esc(b.id)}">
-            ${entry.title ? `<h2>${esc(entry.title)}</h2>` : ''}${paragraphs(entry.text)}
-            ${TFB.clubArchive?.entryLink() || ''}
-          </section>`;
-        }
+        if (page === 'verein' && b.id === 'v-chronik') return `<section class="block-text club-archive-hub" data-site-content="v-chronik">
+          <h2>Clubarchiv</h2><p>Unsere Geschichten, unsere Bilder, unsere Turniere.</p>
+          <nav class="club-archive-pills" aria-label="Clubarchiv"><a class="history-pill club-hub-pill" href="#club/archiv">Zum Archiv</a><a class="history-pill club-hub-pill" href="#club/history">Zur History</a><a class="history-pill club-hub-pill" href="#club/history/bielstein-open">TFB Open</a></nav>
+        </section>`;
         if (b.id === 's-training') return TFB.clubPeople.render(b, ref => images[ref] || ref);
         if (b.id === 'v-history') return `<section class="block-text story-teaser" data-site-content="v-history"><h2><a class="post-title-link" href="#club/history">History</a></h2>${paragraphs('Fotos, Geschichten und Jubiläen aus unserer Clubgeschichte.')}
           <a class="btn club-archive-link club-history-link" href="#club/history">Zur History</a></section>`;
@@ -562,8 +558,10 @@
             ${b.id === 'v-vorstand' ? `<button type="button" class="person card board-about-card" data-action="board-about" aria-haspopup="dialog"><span class="person-dot board-about-mark" aria-hidden="true"><img src="assets/icons/icon-180.png?v=305" alt=""></span><span><small>Unser Verein</small><strong>${esc((b.about || TFB.clubPeople.about).title)}</strong><span class="board-about-note">Gemeinschaft. Engagement. Tennis.</span></span></button>` : ''}
             </div>
           </section>`;
-      case 'facts':
-        return `<section class="block-facts">${(b.items || []).map((f) => `<div><b>${esc(f.value)}</b><span>${esc(f.label)}</span></div>`).join('')}</section>`;
+      case 'facts': {
+        const facts = `<section class="block-facts">${(b.items || []).map((f) => `<div><b>${esc(f.value)}</b><span>${esc(f.label)}</span></div>`).join('')}</section>`;
+        return page === 'verein' && b.id === 'v-facts' ? `<section class="club-facts-section"><h2>Club</h2>${facts}</section>` : facts;
+      }
       case 'button': {
         const manageFees = editing === page && ui().state.member?.isAdmin;
         if (b.id === 'v-mitglied-btn' || b.url === '#aufnahme') return `<div class="block-button membership-actions"><button type="button" class="btn membership-fees-button" data-action="${manageFees ? 'membership-fees-edit' : 'membership-fees'}">${manageFees ? 'Beiträge bearbeiten' : 'Mitgliedsbeiträge'}</button><button type="button" class="btn membership-apply-button" data-action="membership-open">${esc(b.label || 'Zum Anmeldeformular')}</button>${b.note ? `<p class="membership-benefit">${esc(b.note)}</p>` : ''}<a class="membership-mail-preview" href="assets/docs/tfb-mitgliedsanmeldung-muster.pdf" data-action="membership-mail-preview" aria-haspopup="dialog" aria-label="Muster der E-Mail-Bestätigung öffnen">E-Mail-Bestätigung (Vorschau)&nbsp;<svg class="link-arrow" viewBox="0 0 806 1000" aria-hidden="true" focusable="false"><path transform="translate(0 755) scale(1 -1)" d="M528 -14 448 66 546 164 587 189 581 206 533 198H50V312H533L581 304L587 321L546 346L448 444L528 524L756 296V214Z"/></svg></a></div>`;
@@ -914,11 +912,9 @@
     if (target) { target.tabIndex = -1; target.focus({ preventScroll: true }); target.scrollIntoView({ block: 'start' }); }
   };
   function clubBlocks(blocks) {
-    const history = blocks.find(b => b.id === 'v-history');
-    if (!history || !blocks.some(b => b.id === 'v-chronik')) return blocks;
-    const ordered = blocks.filter(b => b !== history);
-    ordered.splice(ordered.findIndex(b => b.id === 'v-chronik') + 1, 0, history);
-    return ordered;
+    const order = ['v-mitglied', 'v-mitglied-btn', 'v-facts', 'v-vorstand', 'v-chronik', 'v-anfahrt', 'v-anfahrt-btn'];
+    const hidden = new Set(['v-history', 'v-koop']);
+    return [...order.flatMap(id => blocks.filter(b => b.id === id)), ...blocks.filter(b => !order.includes(b.id) && !hidden.has(b.id))];
   }
   async function pageView(key) {
     await ensure();
@@ -930,7 +926,7 @@
           ...[...contentBlocks('aktuell'), ...site.pages.aktuell.blocks.filter(b => b.type === 'event' && !b._new)].map(b => ({ b, page: 'aktuell' })),
           ...contentBlocks('home').map(b => ({ b, page: 'home' })),
         ],
-        newsPost, eventCard, newsDatesLayout, contentOverviewLink, paragraphs, picture, shownImage, mediaPost:mediaNewsPost, mediaDetail:(b,page)=>mediaDetail(b,page,'#club/archiv'),
+        newsPost, eventCard, newsDatesLayout, contentOverviewLink, paragraphs, picture, shownImage, openGallery, mediaPost:mediaNewsPost, mediaDetail:(b,page)=>mediaDetail(b,page,'#club/archiv'),
       });
     }
     if (['home', 'aktuell'].includes(key) && section === 'alle') { editing = null; return contentOverview(key); }
@@ -948,6 +944,7 @@
     if (key === 'verein' && section === 'history') {
       editing = null;
       const chapter = location.hash.split('/')[2];
+      if (chapter === 'bielstein-open') return TFB.bielsteinOpen.view(location.hash, { picture, openGallery });
       if (chapter === 'anfangsjahre') return storyPageView('history');
       if (chapter === 'fotos-50-jahre') return historyAnniversaryPhotos();
       return historyView();
@@ -2756,6 +2753,7 @@
           <div class="history-chapter-actions">${c.actions.map(a => `<a class="history-pill" href="${a.href}"${a.pdf ? ' target="_blank" rel="noopener"' : ''}>${esc(a.label)}</a>`).join('')}</div>
         </div>
       </article>`).join('')}</div>
+      ${TFB.bielsteinOpen.teaser({ picture })}
       ${ui().partnerSlot('verein', site.pages.verein.partnerKicker || 'Präsentiert von')}
     </section>`;
   }

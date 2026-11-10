@@ -12,10 +12,19 @@
 .history-pill:focus-visible, .history-chapter-image:focus-visible { outline: 3px solid var(--ink); outline-offset: -4px; }
 /* Match the existing Zum Archiv button geometry with the requested colors. */
 :root body .site-page .btn.club-archive-link.club-history-link { background: var(--tfb-signature-yellow, #FFC300); border-color: var(--tfb-signature-yellow, #FFC300); color: var(--tfb-midnight-blue, #001D3D); }
-:root body .site-page .btn.club-archive-link.club-directions-link { background: var(--tfb-midnight-blue, #001D3D); border-color: var(--tfb-midnight-blue, #001D3D); color: #fff; }
+:root body .site-page .btn.club-archive-link.club-directions-link { background: var(--tfb-signature-yellow, #FFC300); border-color: var(--tfb-signature-yellow, #FFC300); color: var(--tfb-midnight-blue, #001D3D); }
 @media (max-width: 1000px) {
   .history-chapters { grid-template-columns: 1fr; gap: 24px; }
   .history-chapter { width: 100%; max-width: 540px; margin-inline: auto; }
   .history-chapter-body h2 { font-size: 1.5rem; }
 }
 @media (max-width: 600px) { .history-chapter-body { padding: 20px; } }
+
+/* Club: membership, five facts, board and the archive hub in a clear sequence. */
+.club-facts-section > h2 { margin: 24px 0 16px; }
+.club-archive-hub { padding: 28px 0 24px; border-top: 1px solid var(--line); }
+.club-archive-hub > h2 { font-size: clamp(1.8rem, 3vw, 2.5rem); font-weight: 800; margin: 0 0 14px; }
+.club-archive-pills { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 22px; }
+:root body .site-page .club-hub-pill { background: var(--tfb-midnight-blue, #001D3D); border-color: var(--tfb-midnight-blue, #001D3D); color: #fff; padding-inline: 16px; }
+.club-hub-pill:hover { filter: brightness(1.2); }
+.site-page[data-page="verein"] .run-texts:has(.club-archive-hub) { grid-template-columns: minmax(0, 1fr); gap: 28px; }

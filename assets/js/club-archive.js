@@ -13,7 +13,7 @@
     }
   }
   const overviewRoute = root + '/alle';
-  const collections = ['Bielstein Open', 'Fotogalerien', 'TFB-Life', 'Chronik', 'Mannschaften', 'Vereinsleben'];
+  const collections = ['Fotogalerien', 'TFB-Life', 'Chronik', 'Mannschaften', 'Vereinsleben'];
   const older = 8;
   const batch = 24;
   const esc = value => TFB.ui.esc(value ?? '');
@@ -261,6 +261,7 @@
 
   TFB.clubArchive = {
     rendered: showResults,
+    load: loadArchive,
     mediaUrl,
     downloadUrl(ref, filename) {
       const url = mediaUrl(ref);
@@ -277,6 +278,11 @@
       byId = new Map(entries.flatMap(item => [item.id,...(item.archiveAliases||[])].map(id=>[id,item])));
       const historical = items.filter(item => item.event).map(historicalDate);
       const historicalById = new Map(historical.map(item => [item.id, item]));
+      const legacy = mode === 'beitrag' ? items.find(item => item.id === decodeURIComponent(id || '')) : null;
+      const openRoute = legacy && TFB.bielsteinOpen.routeFor(legacy);
+      if (openRoute || new URLSearchParams(query).get('thema') === 'Bielstein Open') return TFB.bielsteinOpen.view(openRoute || '#club/history/bielstein-open', toolkit);
+      entries = entries.filter(item => !TFB.bielsteinOpen.isEntry(item));
+
       if (mode === 'beitrag') {
         const key = decodeURIComponent(id || '');
         return historicalById.has(key) ? dateView(historicalById.get(key)) : articleView(byId.get(key));

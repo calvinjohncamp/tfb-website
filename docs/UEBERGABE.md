@@ -1,5 +1,15 @@
 # TFB – Übergabe für die nächste Sitzung
 
+## Bielstein Open und Clubarchiv-Hub · 10.11.2026
+
+Club: Mitglied werden → Club/fünf Kennzahlen → Vorstand → Clubarchiv mit drei
+blauen Pills Zum Archiv / Zur History / TFB Open → gelbe Anfahrt. Kooperationen
+und separater Club-History-Teaser entfallen. Unter History eigener Open-Bereich
+für 2021–2024 mit Inhalten und historischen Partnern, etwa 40% kleineren Kacheln.
+24 alte Open-Artikel aus allgemeiner Archivliste herausgenommen, Direktlinks
+weiterhin gültig. Details: [Bielstein Open](RELEASE-bielstein-open-20261110.md).
+
+
 ## History mit drei Karten · 10.11.2026
 
 Live bestätigt: Programmcommit cf80f80, GitHub-Pages-Lauf 42768891785 erfolgreich.
