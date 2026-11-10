@@ -1,5 +1,24 @@
 # TFB – Übergabe für die nächste Sitzung
 
+## PDFs bleiben in der App und haben ein X · 10.11.2026
+
+Vom Nutzer auf dem iPhone gemeldet und präzisiert: PDFs unter Club → Mitgliederinfos
+öffnen ohne sichtbaren Rückweg. Direkte externe PDF-Anzeige wird durch einen
+App-eigenen PDF-Dialog ersetzt: fest sichtbares 44px-X, Titel, Seitenzahl und
+Herunterladen. X, Escape und Browser-Zurück erhalten Ausgangsansicht, Scrollstand
+und ungespeicherte Texte. Auch Chronik und Termin-PDF-Anhänge verwenden den Dialog;
+die bestehende HTML-Mailvorschau behält ihren bereits vorhandenen Rückweg.
+
+Lokal gehostetes PDF.js 6.5.438, erst bei Bedarf geladen; kein externer
+PDF-Dienst und keine PDF-Skriptausführung. Seiten nur in Sichtnähe rendern und
+entfernte Canvas-Speicher freigeben (wichtig bei 66-seitiger Chronik auf iPhone).
+Keine Dokumentinhalte geändert und keine Backend-/Datenbankänderung.
+Details und Prüfungen: RELEASE-pdf-return-20261110.md.
+
+Textmarker-Vorgängerrelease inzwischen erfolgreich veröffentlicht: c238440,
+Pages-Lauf 42791154213, Worker f375fb08-04c4-4170-ac96-9954cb83109b.
+Sechs Webdateien inklusive transparenter Freihandgrafik live bytegleich geprüft.
+
 ## Mitgliederbriefe, Formatierung und einheitlicher Textmarker · 10.11.2026
 
 Der E-Mail-Editor unter `#membermail` ist vom Nutzer optisch und funktional

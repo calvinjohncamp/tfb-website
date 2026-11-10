@@ -2030,6 +2030,7 @@
   function openViewer(ref, kind, title, filename) {
     const src = attachmentSource(ref);
     if (!src) return;
+    if(kind==='pdf'&&TFB.pdfViewer)return TFB.pdfViewer.open(src,title,filename);
     const blobUrl = kind === 'pdf' && src.startsWith('data:') ? dataUrlToBlobUrl(src) : null;
     const documentUrl = blobUrl || src;
     const downloadName = filename || (kind === 'pdf' ? 'Anhang.pdf' : 'Flyer.jpg');

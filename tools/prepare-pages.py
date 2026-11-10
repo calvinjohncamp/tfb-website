@@ -25,6 +25,7 @@ for name in tracked:
     if name in ENTRY_FILES or (
         name.startswith('assets/') and (
             path.suffix.lower() in ASSET_TYPES
+            or (name.startswith('assets/vendor/pdfjs/') and path.suffix.lower() in {'.bcmap', '.pfb', '.wasm', ''})
             or (name.startswith('assets/shared-kiosk/') and path.suffix.lower() in {'.mjs', '.json'})
             or name == 'assets/clubarchiv/bestand.json'
             or name in {'assets/docs/tfb-mitgliedsanmeldung-muster.html', 'assets/docs/tfb-mitgliedsanmeldung-muster-gelb.html'}
