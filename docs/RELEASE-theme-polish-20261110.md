@@ -33,3 +33,10 @@ deaktivierter Platzhalter ohne href, vorhandener Regelwerkbereich nutzbar,
 kein horizontaler Seitenüberlauf und keine Skriptfehler. Farbwechselprüfung wartet
 die bestehende 200ms-Buttonanimation ab. Desktop/Handy und neue PDF visuell geprüft.
 Cache tfb-kiosk-theme-polish-20261110-1. Keine CMS-/Backend-/Finanzänderung.
+
+Live veröffentlicht und geprüft: Commit 74198c8, erfolgreicher Pages-Lauf
+42776285089. Zehn öffentliche Dateien einschließlich aller vier PDFs bytegleich
+mit dem geprüften Veröffentlichungspaket. Chromium und WebKit live bei 390/1440px
+in beiden Farbwelten erfolgreich: aktive Farben inklusive Hover, 2×2-Pills,
+kompakte Anfahrt, korrekter deaktivierter Sport-Platzhalter, kein Überlauf oder
+Skriptfehler. Live-Screenshots in output/TFB-Farbwelten-Club-live-*.png.
