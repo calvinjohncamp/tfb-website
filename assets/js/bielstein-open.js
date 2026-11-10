@@ -139,9 +139,9 @@
     else if (tab === 'video') body = video(item, year);
     else body = resources(item, year, tabs.find(t => t[0] === tab)[1]);
     return `<section class="site-page bielstein-open-page">
-      <header class="view-head page-head"><div><p class="page-kicker">Unsere Turniergeschichte</p><h1>Bielstein Open</h1><p>Spitzentennis in Bielstein · ${year}</p></div><a class="view-close" href="#club/history" aria-label="Zurück zu History">${TFB.ui.icon.close}</a></header>
+      <header class="view-head page-head"><div><p class="page-kicker">Unsere Turniergeschichte</p><h1>Bielstein Open</h1><p>Spitzentennis in Bielstein · ${year}</p></div><a class="view-close" href="#club" aria-label="Zurück zur Clubseite">${TFB.ui.icon.close}</a></header>
       ${yearPills(year, tab)}${contentPills(year, tab)}<div class="bo-content" data-bo-year="${year}" data-bo-tab="${tab}">${body}</div>
-      <p class="bo-back"><a class="history-pill" href="#club/history">Zur History</a></p>
+      <p class="bo-back"><a class="history-pill" href="#club">Zur Clubseite</a></p>
     </section>`;
   }
 

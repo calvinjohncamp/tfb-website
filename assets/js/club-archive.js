@@ -38,7 +38,7 @@
 
   function heading(back, tools = '') {
     return `<header class="view-head page-head archive-head"><h1>Clubarchiv</h1>
-      ${tools || `<a class="view-close" href="${back}" aria-label="Zurück">${TFB.ui.icon.close}</a>`}</header>`;
+      <div class="archive-head-actions">${tools}<a class="view-close" href="${back}" aria-label="${back === '#club' ? 'Zurück zur Clubseite' : 'Zurück'}">${TFB.ui.icon.close}</a></div></header>`;
   }
 
   function card(item) {

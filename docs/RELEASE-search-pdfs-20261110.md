@@ -35,3 +35,11 @@ Link öffnet den Bericht, Filter/Leersuche/Reset; Home/Aktuell-Übersichten;
 Position und Größe Route planen, kein Seitenüberlauf oder Skriptfehler.
 Zusätzliche lokale Inhaltsfixtures bestätigen Suche in vollständigem Detailtext,
 Abschnitten sowie Chat-Headline/Text/Autor. Keine öffentlichen Testdaten angelegt.
+
+Zusätzlich beauftragt: Archivkopf behält Alle Beiträge als separate Aktion links
+neben einem immer sichtbaren Schließen-Kreuz zurück zur Clubseite. Auf kleinen
+Geräten bleiben die Aktionen ohne Überlauf erreichbar; doppelten Übersichtslink
+im News-Kopf entfernt. Archiv-Unteransichten behalten ihren internen Rückweg.
+Bielstein Open: Schließen und unterer Rücklink führen direkt nach Club statt History.
+Chromium/WebKit bei 320/390/834/1440px: alle Links geklickt, Ziele geprüft,
+ein Übersichtsbutton sichtbar, kein horizontaler Überlauf. Handy visuell geprüft.

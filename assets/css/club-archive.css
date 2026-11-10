@@ -59,3 +59,12 @@
 @media (max-width: 639px) {
   .club-archive [data-archive-results] { gap: 8px; }
 }
+
+/* Archive overview and Club exit remain separate, visible actions. */
+.archive-head-actions { display: flex; align-items: center; justify-content: flex-end; gap: 12px; margin-left: auto; }
+.archive-head-actions .view-close { flex: none; }
+.archive-home .aktuell-column-head > .content-overview-tools { display: none; }
+@media (max-width: 600px) {
+  .archive-head:has(.archive-head-actions) { flex-wrap: wrap; }
+  .archive-head-actions { max-width: 100%; }
+}

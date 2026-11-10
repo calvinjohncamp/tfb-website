@@ -6,6 +6,8 @@
 Alias und Headline-Priorität, vollständigerer Artikelindex. Vier zusätzliche
 rote PDF-Varianten; Links folgen Farbweltwechsel. Untertitel „Einige PDFs mit
 Zusatzinfos.“ Route planen links unter der Adresse.
+Archiv: Alle Beiträge plus separates Kreuz zur Clubseite. Open-Kreuz und
+unterer Rücklink ebenfalls direkt zu Club. Mobile/Desktop in Chromium/WebKit geprüft.
 Details: [Release](RELEASE-search-pdfs-20261110.md).
 
 ## Farbwelten, Club-Feinschliff und Platzordnung · 10.11.2026

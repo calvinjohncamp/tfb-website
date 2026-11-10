@@ -1,6 +1,6 @@
 // TFB-Kiosk – Service Worker.
 // Netz zuerst, damit Änderungen sofort ankommen; ohne Netz startet die App aus dem Zwischenspeicher.
-const CACHE = 'tfb-kiosk-search-pdfs-20261110-1';
+const CACHE = 'tfb-kiosk-club-return-20261110-1';
 const SHELL = [
   './assets/js/search.js?v=20261110-search-pdfs-1',
   './assets/docs/tfb-platzordnung-rot.pdf?v=20261110-search-pdfs-1',
@@ -19,8 +19,8 @@ const SHELL = [
   './assets/jako/tfb-jako-sortiment-v2.png',
   './assets/css/bielstein-open.css?v=20261110-search-pdfs-1',
   './assets/data/bielstein-open.js?v=20261110-mitgliederinfos-1',
-  './assets/js/bielstein-open.js?v=20261110-mitgliederinfos-1',
-  './assets/js/club-archive.js?v=20261110-search-pdfs-1',
+  './assets/js/bielstein-open.js?v=20261110-club-return-1',
+  './assets/js/club-archive.js?v=20261110-club-return-1',
   './assets/css/club-history.css?v=20261110-search-pdfs-1',
   './assets/css/sport-rulebook.css?v=20261110-search-pdfs-1',
   './assets/js/sport-rulebook.js?v=20261110-search-pdfs-1',
@@ -62,7 +62,7 @@ const SHELL = [
   './assets/brand/tfb-logo-black-crail.svg', './assets/brand/tfb-logo-midnight-amber.svg',
   './assets/css/chat-media.css', './assets/js/chat-media.js',
   './assets/css/home-media.css', './assets/js/home-media.js', './assets/js/newsroom.js',
-  './assets/css/club-archive.css', './assets/js/club-archive.js?v=20261110-search-pdfs-1',
+  './assets/css/club-archive.css?v=20261110-club-return-1', './assets/js/club-archive.js?v=20261110-club-return-1',
   './assets/css/brand.css', './assets/css/app.css', './assets/css/app.css?v=20261109-statement-layout-1',
   './assets/css/design-preview.css', './assets/js/design-preview.js',
   './assets/css/partner-visibility.css', './assets/css/partner-visibility.css?v=20261109-statement-layout-1', './assets/js/partner-visibility.js', './assets/js/partner-content.js', './assets/js/partner-admin.js?v=20261110-search-pdfs-1',
