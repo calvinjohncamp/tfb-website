@@ -30,3 +30,13 @@ Vorhandene Admin-Menü-/Rollenprüfung beider Browser erfolgreich, um Messungen 
 identische Höhen aller Adminbuttons und gewünschte Farben ergänzt.
 Keine Backend-, Inhalts-, Mailversand- oder Mitgliederänderung.
 Cache tfb-kiosk-gallery-complete-20261110-1.
+
+Live bestätigt: Programm 4aa4ab1, Pages-Lauf 42787721615 erfolgreich. Alle fünf
+Startdateien öffentlich bytegleich. Chromium und WebKit live vollständig geprüft:
+alle Jahrgänge und Albumfilter, 1935 Bilder jeweils, letzter Vollbildindex 617,
+korrekte 2/3/4 Spalten, alle Bildflächen über 70px, lazy und keine Überläufe oder
+Skriptfehler im vollständigen Lauf. Im vorhandenen echten Chrome-Adminzugang
+zusätzlich nur gelesen: aktiver Menüpunkt #171717/Weiß, Datensicherung in roter
+Welt #C4553A/Weiß, alle acht Adminbuttons exakt 30px. Blaue Welt zusätzlich in
+synthetischer Browserprüfung bestätigt. Keine Nutzervorlage bearbeitet oder Mail
+versendet. Nachweis output/TFB-Feintuning-Admin-live.png im gemeinsamen Workspace.

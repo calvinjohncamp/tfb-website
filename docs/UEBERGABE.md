@@ -7,6 +7,9 @@ Album, Alle Bilder kehrt zur Jahresansicht zurück. Responsives Mosaik ohne
 Fünf-Bilder-Begrenzung, native Lazy-Bilder, bestehender Vollbildbetrachter.
 Aktive Admin-Menüpunkte Schwarz/Weiß. Datensicherung / Time Machine Blau bzw.
 Rot mit weißer Schrift; alle Adminbuttons exakt gleich hoch. Keine Backendänderung.
+Live bestätigt: 4aa4ab1, Pages-Lauf 42787721615 erfolgreich. Fünf Dateien
+bytegleich; Galerie live in Chromium/WebKit vollständig geprüft. Echter Admin:
+Schwarz/Weiß aktiv, rote Datensicherung/Weiß und alle acht Buttons 30px bestätigt.
 Details: [Release](RELEASE-gallery-complete-20261110.md).
 
 ## Galerie, Testmail und Jahresarchiv · 10.11.2026
