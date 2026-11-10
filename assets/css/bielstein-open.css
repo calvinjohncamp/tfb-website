@@ -4,7 +4,8 @@
 .bo-teaser h3 { margin: 0 0 16px; font-size: 1.6rem; }
 .bo-years, .bo-tabs { display: flex; flex-wrap: wrap; gap: 10px; margin: 24px 0; }
 .bo-years .history-pill { min-width: 78px; }
-.bo-years .on, .bo-tabs .on { background: var(--ink); color: var(--paper); }
+.bo-years .on { background: var(--tfb-midnight-blue, #001D3D); border-color: var(--tfb-midnight-blue, #001D3D); color: #fff; }
+.bo-tabs .on { background: var(--tfb-signature-yellow, #FFC300); border-color: var(--tfb-signature-yellow, #FFC300); color: var(--tfb-midnight-blue, #001D3D); }
 .bo-teaser-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 28px; align-items: center; background: var(--paper); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
 .bo-teaser-image { display: block; height: 360px; background: #f3f0e9; }
 .bo-teaser-image img { display: block; width: 100%; height: 100%; object-fit: contain; }

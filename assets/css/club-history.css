@@ -21,7 +21,6 @@
 @media (max-width: 600px) { .history-chapter-body { padding: 20px; } }
 
 /* Club: membership, five facts, board and the archive hub in a clear sequence. */
-.club-facts-section > h2 { margin: 24px 0 16px; }
 .club-archive-hub { padding: 28px 0 24px; border-top: 1px solid var(--line); }
 .club-archive-hub > h2 { font-size: clamp(1.8rem, 3vw, 2.5rem); font-weight: 800; margin: 0 0 14px; }
 .club-archive-pills { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 22px; }

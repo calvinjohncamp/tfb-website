@@ -423,6 +423,7 @@
 
   const partnerViews = new Set(['home', 'kiosk', 'strichliste', 'abrechnungen', 'chat', 'aktuell', 'gefluester', 'sport', 'team', 'club', 'treffen']);
   function renderPartnerSlot(root, view) {
+    if (root.querySelector('.bielstein-open-page')) return;
     if (!partnerViews.has(view) || root.querySelector('.editing-page, .editbar') || (view === 'kiosk' && isEditing())) return;
     if (!root.querySelector('[data-partner-rotation]')) {
       root.insertAdjacentHTML('beforeend', partnerSlot(view, 'Präsentiert von'));
@@ -445,7 +446,11 @@
         if (!state.member && view !== 'kiosk') { $view.innerHTML = viewHead(view==='strichliste'?'Strichliste':'Abrechnungen','Deine persönlichen Kioskdaten findest du nach der Anmeldung.',false)+'<button class="btn primary" data-action="login">Anmelden</button>'; return; }
         const body = state.member && !state.member.hasConsent ? consentMarkup() : view === 'kiosk' ? await kioskView() : view === 'strichliste' ? await tallyView() : await statementsView();
         if(request!==viewRender)return;
-        $view.innerHTML = '<div class="shared-kiosk-scope">'+body+'</div>';
+        $view.innerHTML = '<div class="shared-kiosk-scope">'+body+'</div>' + (view === 'kiosk' && (!state.member || state.member.hasConsent) ? TFB.kioskShop.render() : '');
+        if (view === 'kiosk') {
+          const partner = $view.querySelector('.shared-kiosk-scope > .pbsp-slot');
+          if (partner) $view.appendChild(partner);
+        }
       } else if (TFB.views && TFB.views[view]) {
         const body=await TFB.views[view]();
         if(request!==viewRender)return;

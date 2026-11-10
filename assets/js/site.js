@@ -560,7 +560,7 @@
           </section>`;
       case 'facts': {
         const facts = `<section class="block-facts">${(b.items || []).map((f) => `<div><b>${esc(f.value)}</b><span>${esc(f.label)}</span></div>`).join('')}</section>`;
-        return page === 'verein' && b.id === 'v-facts' ? `<section class="club-facts-section"><h2>Club</h2>${facts}</section>` : facts;
+        return facts;
       }
       case 'button': {
         const manageFees = editing === page && ui().state.member?.isAdmin;
@@ -912,7 +912,7 @@
     if (target) { target.tabIndex = -1; target.focus({ preventScroll: true }); target.scrollIntoView({ block: 'start' }); }
   };
   function clubBlocks(blocks) {
-    const order = ['v-mitglied', 'v-mitglied-btn', 'v-facts', 'v-vorstand', 'v-chronik', 'v-anfahrt', 'v-anfahrt-btn'];
+    const order = ['v-facts', 'v-mitglied', 'v-mitglied-btn', 'v-vorstand', 'v-chronik', 'v-anfahrt', 'v-anfahrt-btn'];
     const hidden = new Set(['v-history', 'v-koop']);
     return [...order.flatMap(id => blocks.filter(b => b.id === id)), ...blocks.filter(b => !order.includes(b.id) && !hidden.has(b.id))];
   }
@@ -2753,7 +2753,6 @@
           <div class="history-chapter-actions">${c.actions.map(a => `<a class="history-pill" href="${a.href}"${a.pdf ? ' target="_blank" rel="noopener"' : ''}>${esc(a.label)}</a>`).join('')}</div>
         </div>
       </article>`).join('')}</div>
-      ${TFB.bielsteinOpen.teaser({ picture })}
       ${ui().partnerSlot('verein', site.pages.verein.partnerKicker || 'Präsentiert von')}
     </section>`;
   }

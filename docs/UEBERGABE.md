@@ -1,5 +1,14 @@
 # TFB – Übergabe für die nächste Sitzung
 
+## Club zurück, Open-Farben und JAKO-Entwurf · 10.11.2026
+
+Fünf Kennzahlen wieder oben, danach Mitglied werden; ursprünglicher Intro bleibt.
+History ohne zusätzlichen Open-Teaser, TFB Open nur über eigenen Clubarchiv-Einstieg.
+Jahrespills aktiv blau, Inhaltspills aktiv gelb, normale Partnerfooter auf allen
+Open-Seiten entfernt. Kiosk mit kompaktem externem JAKO-Shop und bearbeiteter
+Sortimentvorschau. Details: [Release](RELEASE-jako-club-20261110.md).
+
+
 ## Bielstein Open und Clubarchiv-Hub · 10.11.2026
 
 Live bestätigt: Programmcommit f6cad65, Pages-Lauf 42770579990 erfolgreich.
