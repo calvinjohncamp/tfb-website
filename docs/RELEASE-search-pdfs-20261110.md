@@ -43,3 +43,17 @@ im News-Kopf entfernt. Archiv-Unteransichten behalten ihren internen Rückweg.
 Bielstein Open: Schließen und unterer Rücklink führen direkt nach Club statt History.
 Chromium/WebKit bei 320/390/834/1440px: alle Links geklickt, Ziele geprüft,
 ein Übersichtsbutton sichtbar, kein horizontaler Überlauf. Handy visuell geprüft.
+
+Live bestätigt: Programmcommits f1e3a7a und ae52a41. Erfolgreicher Pages-Lauf
+42778643812 mit ae52a41; vorherigen Lauf 42777398950 bewusst zugunsten der
+währenddessen zusätzlich beauftragten Navigation ersetzt. Hosting brauchte
+mehrere Minuten in syncing_files, danach erfolgreicher Abschluss.
+19 öffentliche Webdateien inklusive aller acht Mitglieder-PDF-Varianten
+bytegleich mit geprüftem Paket. Live Chromium und WebKit: Cup-Suchvarianten,
+Bericht öffnen, Filter/Reset, Headline-Priorität, Home/Aktuell, alle PDF-Links in
+beiden Welten; Anfahrt und neuer Untertitel bei 320/390/834/1440px.
+Separater Live-Test beider Browser klickt Archiv-Übersicht, Archiv-Kreuz,
+TFB-Open-Kreuz und prüft Club-Ziel sowie keine doppelten Übersichtsaktionen
+und keinen Überlauf. Keine Skriptfehler.
+Screenshots output/TFB-Suche-PDFs-live-*.png und
+output/TFB-Archiv-Rueckweg-live-*.png im gemeinsamen Workspace.

@@ -8,6 +8,9 @@ rote PDF-Varianten; Links folgen Farbweltwechsel. Untertitel „Einige PDFs mit
 Zusatzinfos.“ Route planen links unter der Adresse.
 Archiv: Alle Beiträge plus separates Kreuz zur Clubseite. Open-Kreuz und
 unterer Rücklink ebenfalls direkt zu Club. Mobile/Desktop in Chromium/WebKit geprüft.
+Live bestätigt: ae52a41, Pages-Lauf 42778643812 erfolgreich. 19 öffentliche
+Dateien inkl. acht PDF-Varianten bytegleich; Chromium/WebKit live: Suche,
+PDF-Farbwechsel, Anfahrt und neue Rückwege bei 320–1440px erfolgreich.
 Details: [Release](RELEASE-search-pdfs-20261110.md).
 
 ## Farbwelten, Club-Feinschliff und Platzordnung · 10.11.2026
