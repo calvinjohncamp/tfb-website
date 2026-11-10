@@ -2,6 +2,17 @@
 
 ## Club zurück, Open-Farben und JAKO-Entwurf · 10.11.2026
 
+Live bestätigt: Hauptänderung 041c772 (Pages 42772859815) und abschließende
+Hover-Farbkorrektur caa48b3 (Pages 42772975566), beide erfolgreich.
+Zehn ausgelieferte Dateien einschließlich JAKO-Logo und bearbeiteter Sortimentvorschau
+bytegleich mit dem Veröffentlichungspaket. Chromium und WebKit live: ursprüngliche
+Clubreihenfolge und Intro, History nur drei Karten, Open standardmäßig 2024/Bericht,
+Jahrespill blau/Inhaltspille gelb, ausschließlich historische Turnierpartner auf
+Open-Seiten, öffentlicher Kiosk mit externem Link und funktionierender Bildvorschau.
+390/1440px live ohne Überlauf. Hoverfarben zusätzlich lokal geprüft. Keine
+produktiven Konten, Katalogartikel, Buchungen oder CMS-Inhalte verändert.
+Screenshots output/TFB-JAKO-Entwurf-live-{chromium,webkit}-{390,1440}.png.
+
 Fünf Kennzahlen wieder oben, danach Mitglied werden; ursprünglicher Intro bleibt.
 History ohne zusätzlichen Open-Teaser, TFB Open nur über eigenen Clubarchiv-Einstieg.
 Jahrespills aktiv blau, Inhaltspills aktiv gelb, normale Partnerfooter auf allen

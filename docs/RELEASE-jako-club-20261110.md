@@ -38,3 +38,14 @@ alle Inhaltsarten/Legacyroute ohne normale Partnerplätze, historische Partnerza
 13/12/11/11 erhalten, aktive Pillfarben geprüft, History ohne zusätzlichen Teaser.
 Keine Skriptfehler. Cache tfb-kiosk-jako-club-20261110-1. Direkte Veröffentlichung
 und anschließendes Live-Finetuning bleiben vom Nutzer gewünscht.
+
+Live bestätigt: Hauptänderung 041c772 (Pages 42772859815) und abschließende
+Hover-Farbkorrektur caa48b3 (Pages 42772975566), beide erfolgreich.
+Zehn ausgelieferte Dateien einschließlich JAKO-Logo und bearbeiteter Sortimentvorschau
+bytegleich mit dem Veröffentlichungspaket. Chromium und WebKit live: ursprüngliche
+Clubreihenfolge und Intro, History nur drei Karten, Open standardmäßig 2024/Bericht,
+Jahrespill blau/Inhaltspille gelb, ausschließlich historische Turnierpartner auf
+Open-Seiten, öffentlicher Kiosk mit externem Link und funktionierender Bildvorschau.
+390/1440px live ohne Überlauf. Hoverfarben zusätzlich lokal geprüft. Keine
+produktiven Konten, Katalogartikel, Buchungen oder CMS-Inhalte verändert.
+Screenshots output/TFB-JAKO-Entwurf-live-{chromium,webkit}-{390,1440}.png.
