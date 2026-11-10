@@ -521,10 +521,10 @@
             <nav class="club-archive-pills" aria-label="Clubarchiv"><a class="history-pill club-hub-pill" href="#club/archiv">Zum Archiv</a><a class="history-pill club-hub-pill" href="#club/history">Zur History</a><a class="history-pill club-hub-pill" href="#club/history/bielstein-open">TFB Open</a></nav>
           </section>
           <section class="block-text club-archive-hub club-members-info" aria-labelledby="member-info-title">
-            <h2 id="member-info-title">Mitgliederinfos</h2><p>Ordnungen, Spielbetrieb und unser Jugendkonzept.</p>
+            <h2 id="member-info-title">Mitgliederinfos</h2><p>Einige PDFs mit Zusatzinfos.</p>
             <nav class="club-archive-pills" aria-label="Mitgliederinfos">${[
               ['platzordnung', 'Platzordnung'], ['hausordnung', 'Hausordnung'], ['regeln-spielbetrieb', 'Regeln Spielbetrieb'], ['jugendkonzept', 'Jugendkonzept'],
-            ].map(([key, label]) => `<a class="history-pill club-hub-pill" href="assets/docs/tfb-${key}.pdf?v=${key === 'platzordnung' ? '20261110-platzordnung-2' : '20261110-mitgliederinfos-1'}" target="_blank" rel="noopener" aria-label="${label} als PDF öffnen">${label}</a>`).join('')}</nav>
+            ].map(([key, label]) => `<a class="history-pill club-hub-pill" data-member-pdf="${key}" href="${memberPdfUrl(key)}" target="_blank" rel="noopener" aria-label="${label} als PDF öffnen">${label}</a>`).join('')}</nav>
           </section>
         </div>`;
         if (b.id === 's-training') return TFB.clubPeople.render(b, ref => images[ref] || ref);
@@ -877,6 +877,15 @@
     return `<article class="story album-page"><div class="story-tools">${admin ? `<button type="button" class="view-close" data-action="album-edit" data-id="${esc(b.id)}" aria-label="Fotokollage bearbeiten">${ui().icon.pencil}</button>` : ''}<a class="view-close" href="#home" aria-label="Zurück zur Startseite">${ui().icon.close}</a></div><h1>${esc(album.title || b.title)}</h1>${gallery.more.images.length ? collage(gallery.more.images, gallery.id, Boolean(album.original)) : '<p class="muted">Noch keine Fotos veröffentlicht.</p>'}<div class="story-foot"><a class="more-link" href="#home">Zur Startseite</a></div></article>`;
   }
 
+  const memberPdfUrl = key => {
+    const red = !document.documentElement.classList.contains('tfb-logo-midnight-amber');
+    const version = red ? '20261110-search-pdfs-1' : key === 'platzordnung' ? '20261110-platzordnung-2' : '20261110-mitgliederinfos-1';
+    return `assets/docs/tfb-${key}${red ? '-rot' : ''}.pdf?v=${version}`;
+  };
+  new MutationObserver(() => {
+    document.querySelectorAll('[data-member-pdf]').forEach(link => { link.href = memberPdfUrl(link.dataset.memberPdf); });
+  }).observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+
   // ---------- Seite ----------
   const CONTENT_TYPES = [['feature', 'Themen'], ['post', 'Beiträge'], ['gallery', 'Galerien'], ['collage', 'Collagen'], ['text', 'Texte'], ['image', 'Fotos']];
   function contentBlocks(key) {
@@ -903,7 +912,12 @@
         const refs = (b.images?.length ? b.images : [b.image]).filter(shownImage);
         const title = b.title || b.caption || CONTENT_TYPES.find(([type]) => type === b.type)[1];
         const text = b.showText === false ? '' : plain(b.text);
-        return `<a class="mini" href="${b.mediaCollection?`#${key}/${encodeURIComponent(b.id)}`:`#${key}/beitrag/${encodeURIComponent(b.id)}`}" data-author="" data-text="${esc(`${title} ${b.kicker || ''} ${b.subtitle || ''} ${text}`.toLowerCase())}" data-where="${b.type}" data-teams="" data-photos="${refs.length}" data-at="${esc(b.date || '')}">
+        const more = b.more || {};
+        const searchable = [title, b.kicker, b.subtitle, text, plain(more.text), more.quote, more.by,
+          ...(more.sections || []).flatMap(section => [plain(section.text), section.by]),
+          ...(b.mediaCollection?.entries || []).flatMap(entry => [entry.kicker, entry.title, entry.subtitle, plain(entry.text)]),
+        ].filter(Boolean).join(' ');
+        return `<a class="mini" href="${b.mediaCollection?`#${key}/${encodeURIComponent(b.id)}`:`#${key}/beitrag/${encodeURIComponent(b.id)}`}" data-title="${esc(title)}" data-author="" data-text="${esc(searchable)}" data-where="${b.type}" data-teams="" data-photos="${refs.length}" data-at="${esc(b.date || '')}">
           ${refs.length ? `<span class="mini-img">${picture(refs[0], refs[0], title)}${refs.length > 1 ? `<i>${refs.length} Fotos</i>` : ''}</span>` : ''}
           <span class="mini-head"><span><b>${esc(title)}</b>${b.date ? `<small>${esc(fmt(b.date, { day: 'numeric', month: 'long', year: 'numeric' }))}</small>` : ''}</span></span>
           ${text ? `<span class="mini-text">${esc(text)}</span>` : ''}</a>`;
@@ -1565,7 +1579,7 @@
       const teams = [p.team, ...(p.alsoTeams || [])].filter(Boolean);
       return `
         <button type="button" class="mini ${p.hidden ? 'is-hidden' : ''}" data-action="post-open" data-id="${esc(p.id)}"
-          data-author="${esc(p.author.toLowerCase())}" data-text="${esc(`${p.title || ''} ${p.text || ''}`.toLowerCase())}"
+          data-title="${esc(p.title || '')}" data-author="${esc(p.author.toLowerCase())}" data-text="${esc(`${p.title || ''} ${p.text || ''}`.toLowerCase())}"
           data-teams="${esc(teams.join(' '))}" data-where="${p.team ? 'team' : 'club'}" data-photos="${imgs.length}" data-at="${esc(p.createdAt)}">
           ${imgs.length ? `<span class="message-collage n${imgs.length}">${imgs.map(ref => `<span class="message-photo">${picture(ref, ref, '')}</span>`).join('')}</span>` : ''}
           <span class="mini-head"><span class="fpost-avatar${p.authorMode==='tfb'?' tfb-sender-avatar':''}">${senderAvatar(p.author, p.avatar, p.authorMode)}</span>
@@ -1623,13 +1637,19 @@
   function applyOverviewFilters() {
     const root = document.querySelector('.overview');
     if (!root) return;
-    const q = (root.querySelector('[data-ov=q]').value || '').trim().toLowerCase();
+    const search = TFB.search.compile(root.querySelector('[data-ov=q]').value);
     const where = root.querySelector('[data-ov=where]').value;
     const photos = root.querySelector('[data-ov=photos]').checked;
     const since = ovPeriod ? Date.now() - Number(ovPeriod) * 864e5 : 0;
     let n = 0;
-    root.querySelectorAll('.mini').forEach((c) => {
-      const ok = (!q || c.dataset.author.includes(q) || c.dataset.text.includes(q))
+    const cards = [...root.querySelectorAll('.mini')];
+    cards.forEach((card, index) => { if (!card.hasAttribute('data-search-order')) card.dataset.searchOrder = index; });
+    cards.sort((a, b) => search.score(b.dataset.title) - search.score(a.dataset.title)
+      || Number(a.dataset.searchOrder) - Number(b.dataset.searchOrder));
+    const grid = root.querySelector('.mini-grid');
+    if (grid && cards.some((card, index) => grid.children[index] !== card)) grid.append(...cards);
+    cards.forEach((c) => {
+      const ok = search.matches(`${c.dataset.author || ''} ${c.dataset.text || ''}`)
         && (!where || (root.dataset.contentPage && c.dataset.where === where) || (where === 'club' && c.dataset.where === 'club') || (where === 'team' && c.dataset.where === 'team')
           || (where.startsWith('t:') && c.dataset.teams.split(' ').includes(where.slice(2))))
         && (!photos || Number(c.dataset.photos) > 0)

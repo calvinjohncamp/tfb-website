@@ -125,9 +125,9 @@
   const when = value => value ? new Intl.DateTimeFormat('de-DE',{dateStyle:'medium',timeStyle:'short'}).format(new Date(value)) : 'Noch kein Login erfasst';
   function memberRows() {
     const box=document.querySelector('[data-member-results]');if(!box||!snapshot)return;
-    const query=(document.querySelector('[data-member-query]')?.value||'').trim().toLocaleLowerCase('de');
+    const query=TFB.search.compile(document.querySelector('[data-member-query]')?.value||'');
     const filter=document.querySelector('[data-member-filter]')?.value||'all';
-    const rows=snapshot.members.filter(m=>`${m.firstName} ${m.lastName} ${m.email} ${m.email2} ${m.memberNo}`.toLocaleLowerCase('de').includes(query))
+    const rows=snapshot.members.filter(m=>query.matches(`${m.firstName} ${m.lastName} ${m.email} ${m.email2} ${m.memberNo}`))
       .filter(m=>filter==='all'||(filter==='online'&&m.online)||(filter==='activated'&&m.activated)||(filter==='pending'&&!m.activated)||(filter==='noemail'&&!m.email&&!m.email2));
     const collator=new Intl.Collator('de-DE-u-co-phonebk',{sensitivity:'base',numeric:true});
     rows.sort((a,b)=>collator.compare(a.lastName,b.lastName)||collator.compare(a.firstName,b.firstName)||collator.compare(a.memberNo,b.memberNo));

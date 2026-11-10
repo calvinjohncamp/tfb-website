@@ -8,10 +8,8 @@
   const tiers = {premium: 'Premium-Partner', partner: 'Partner', regional: 'Regionalpartner'};
 
   function rows() {
-    const query = search.trim().toLocaleLowerCase('de');
-    return partners.filter(p => [p.name, p.company].some(value =>
-      (value || '').toLocaleLowerCase('de').includes(query)
-    )).map(p => `
+    const query = TFB.search.compile(search);
+    return partners.filter(p => query.matches([p.name, p.company].filter(Boolean).join(' '))).map(p => `
       <article class="partner-admin-row" data-partner-row="${esc(p.id)}">
         <div class="partner-admin-logo">${p.logoPreview ? `<img src="${esc(p.logoPreview)}" alt="${esc(p.name)}">` : 'Logo'}</div>
         <div class="partner-admin-name">

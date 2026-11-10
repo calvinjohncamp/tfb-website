@@ -1,5 +1,13 @@
 # TFB – Übergabe für die nächste Sitzung
 
+## Mehrwortsuche, rote PDFs und Anfahrt · 10.11.2026
+
+„TFB Cup“ findet „TF Bielstein Cup 2025“. Gemeinsame Mehrwortsuche mit Clubnamen-
+Alias und Headline-Priorität, vollständigerer Artikelindex. Vier zusätzliche
+rote PDF-Varianten; Links folgen Farbweltwechsel. Untertitel „Einige PDFs mit
+Zusatzinfos.“ Route planen links unter der Adresse.
+Details: [Release](RELEASE-search-pdfs-20261110.md).
+
 ## Farbwelten, Club-Feinschliff und Platzordnung · 10.11.2026
 
 Pills folgen nun beiden Farbwelten: Rot/Schwarz oder Blau/Gelb. Mitgliederinfos

@@ -43,7 +43,4 @@
 .site-page[data-page="verein"] .unit:has([data-site-content="v-anfahrt"]) { padding-top: 24px; border-top: 1px solid var(--line); }
 .site-page[data-page="verein"] .unit:has([data-site-content="v-anfahrt"]) .block-text { margin-block: 0; }
 :root body .site-page .btn.club-archive-link.club-directions-link { width: auto; min-width: 0; min-height: 44px; justify-content: center; padding-inline: 20px; border-radius: 14px; }
-@media (min-width: 741px) {
-  .site-page[data-page="verein"] .unit:has([data-site-content="v-anfahrt"]) { display: flex; align-items: center; justify-content: space-between; gap: 24px; }
-  .site-page[data-page="verein"] .unit:has([data-site-content="v-anfahrt"]) .block-button { flex: none; margin: 0; }
-}
+.site-page[data-page="verein"] .unit:has([data-site-content="v-anfahrt"]) .block-button { margin: 22px 0 0; }

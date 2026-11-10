@@ -20,7 +20,7 @@
   const detail = item => root + '/beitrag/' + encodeURIComponent(item.id);
   const date = value => new Intl.DateTimeFormat('de-DE', { dateStyle: 'long', timeZone: 'UTC' }).format(new Date(value));
   const newestFirst = (a, b) => (b.date || b.year || '').localeCompare(a.date || a.year || '');
-  const normalize = value => value.toLowerCase().normalize('NFD').replace(/\p{M}/gu, '').replace(/ß/g, 'ss');
+  const normalize = TFB.search.index;
   let loading;
   let entries = [];
   let byId = new Map();
@@ -134,7 +134,6 @@
     const images = [...template.content.querySelectorAll('img[src]')];
     const photos = [...new Set([item.cover, ...images.map(img => img.getAttribute('src'))].filter(render.shownImage))];
     const hasAlbums = Boolean(template.content.querySelector('details .archive-gallery'));
-    const plain = template.content.textContent.trim();
     for (const img of images) {
       if (img.closest('details')) continue;
       const link = img.closest('a');
@@ -151,7 +150,7 @@
     if (hasAlbums) template.content.querySelectorAll('h2').forEach(el => {
       if (el.textContent === 'Fotogalerie') el.remove();
     });
-    return { ...item, photos, hasAlbums, fullBody, body: template.innerHTML, search: item.search || normalize(item.title + ' ' + plain) };
+    return { ...item, photos, hasAlbums, fullBody, body: template.innerHTML, search: normalize([item.title, TFB.search.plain(item.html), item.search, item.summary, item.year, ...(item.topics || [])].join(' ')) };
   }
 
   function editorial({ b, page }, prior, sortYear) {
@@ -180,7 +179,7 @@
     const body = (text ? render.paragraphs(text) : '') + links;
     const summary = text.replace(/\{\/?[a-z]+\}|\*\*/g, '').replace(/\s+/g, ' ').trim();
     return { id: prior?.id || `${b.archivePage||(b.sourceHomeId?'home':page)}-${b.id}`, ...(b.mediaCollection?{mediaBlock:b,mediaPage:page}:{}), title, date: b.date || b.mediaCollection?.entries?.[0]?.date || '', year, sortYear, gallery, photos, topics,
-      body, fullBody: body, source: prior?.source, search: normalize(`${title} ${text} ${mediaText} ${topics.join(' ')} ${year}`),
+      body, fullBody: body, source: prior?.source, search: normalize(`${title} ${b.kicker || ''} ${TFB.search.plain(render.paragraphs(text))} ${more.quote || ''} ${more.by || ''} ${mediaText} ${topics.join(' ')} ${year}`),
       summary: summary.length > 180 ? summary.slice(0, 180).replace(/\s+\S*$/, '') + ' …' : summary };
   }
 
@@ -219,13 +218,13 @@
     if (!output) return;
     const scope = output.closest('.club-archive');
     const field = name => scope.querySelector(`[data-archive-filter="${name}"]`);
-    const words = normalize(field('search').value).trim().split(/\s+/).filter(Boolean);
+    const search = TFB.search.compile(field('search').value);
     const year = field('year').value;
     const topic = field('topic').value;
     const photos = field('photos').checked;
     const results = entries.filter(item => (!year || item.year === year) && (!topic || item.topics.includes(topic))
-      && (!photos || item.photos.length) && words.every(word => item.search.includes(word)))
-      .sort(newestFirst);
+      && (!photos || item.photos.length) && search.matches(item.search))
+      .sort((a, b) => search.score(b.title) - search.score(a.title) || newestFirst(a, b));
     output.innerHTML = results.slice(0, resultLimit).map(card).join('');
     scope.querySelector('[data-archive-count]').textContent = `${results.length} ${results.length === 1 ? 'Beitrag' : 'Beiträge'}`;
     scope.querySelector('[data-archive-more]').hidden = results.length <= resultLimit;

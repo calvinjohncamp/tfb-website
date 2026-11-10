@@ -22,6 +22,7 @@ OUT=ROOT/'assets/docs'
 QA=ROOT/'output/member-info-qa'
 DATA=json.loads((ROOT/'tools/member-info-content.json').read_text())
 NAVY=HexColor('#001D3D');YELLOW=HexColor('#FFC300');INK=HexColor('#202932');MUTED=HexColor('#63717D');LINE=HexColor('#DCE2E7');SOFT=HexColor('#F7F8F8')
+RED_THEME=False
 W,H=A4;MARGIN=48;WIDTH=W-2*MARGIN
 
 
@@ -79,7 +80,7 @@ def fonts(folder):
 def build(slug,doc):
     assert source_body(doc)==body_text(doc['blocks']),f'Unmatched source text: {slug}'
     assert hashlib.sha256((ROOT/'docs/quellen/mitgliederinfos'/f'{slug}.pdf').read_bytes()).hexdigest()==doc['sourceSha256']
-    path=OUT/f'tfb-{slug}.pdf'
+    path=OUT/f'tfb-{slug}{"-rot" if RED_THEME else ""}.pdf'
     styles={
       'title':ParagraphStyle('Title',fontName='Display',fontSize=31,leading=35,textColor=NAVY,spaceAfter=24),
       'h':ParagraphStyle('Heading',fontName='Display',fontSize=15,leading=19,textColor=NAVY,spaceBefore=18,spaceAfter=9,keepWithNext=True),
@@ -100,7 +101,7 @@ def build(slug,doc):
         if kind=='contact':
             value=re.sub(r'^(Verfasser:|Adresse:|Postanschrift:|Homepage:|E-Mail:)',r'<b>\1</b>',value)
         return Paragraph(value,styles[kind])
-    logo=svg2rlg(str(ROOT/'assets/brand/tfb-logo-midnight-amber.svg'))
+    logo=svg2rlg(str(ROOT/('assets/brand/tfb-logo-black-crail.svg' if RED_THEME else 'assets/brand/tfb-logo-midnight-amber.svg')))
     def header(canvas,layout):
         canvas.saveState()
         target=134;scale=target/logo.width
@@ -155,7 +156,10 @@ def build(slug,doc):
 
 
 if __name__=='__main__':
-    parser=argparse.ArgumentParser();parser.add_argument('documents',nargs='*');args=parser.parse_args()
+    parser=argparse.ArgumentParser();parser.add_argument('documents',nargs='*');parser.add_argument('--theme',choices=['club','red'],default='club');args=parser.parse_args()
+    RED_THEME=args.theme=='red'
+    if RED_THEME:
+        NAVY=HexColor('#C4553A');YELLOW=NAVY;INK=HexColor('#171717');MUTED=HexColor('#666666');LINE=HexColor('#E5DAD6');SOFT=HexColor('#F8F5F4')
     if any(slug not in DATA for slug in args.documents):parser.error('Unknown document')
     selected=args.documents or list(DATA)
     OUT.mkdir(exist_ok=True,parents=True);QA.mkdir(exist_ok=True,parents=True)
