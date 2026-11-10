@@ -2,6 +2,15 @@
 
 ## Mitgliederinfos und vier PDFs · 10.11.2026
 
+Live bestätigt: Programmcommit 3cea9f1, Pages-Lauf 42775020788 erfolgreich.
+Vier neue PDFs sowie index.html aus dem Veröffentlichungspaket, sw.js, site.js und
+club-history.css öffentlich bytegleich. Chromium und WebKit live erfolgreich:
+vier korrekte blaue PDF-Pills, alle Downloads HTTP 200/application/pdf, Mitgliederinfos
+rechts bei 834/1440px bzw. unter Clubarchiv bei 390px, kein horizontaler Überlauf.
+Elf fertige PDF-Seiten visuell geprüft; Quell- und Ausgabeabsatzvergleich vollständig.
+Live-Screenshots output/TFB-Mitgliederinfos-live-{chromium,webkit}-{390,834,1440}.png.
+Keine produktiven CMS-, Mitglieder- oder Finanzdaten verändert.
+
 Clubarchiv links, Mitgliederinfos rechts (mobil untereinander). Vier blaue PDF-Pills
 für Platzordnung, Hausordnung, Regeln Spielbetrieb, Jugendkonzept. Alle vier
 Original-PDFs vollständig neu gesetzt, inhaltlich unverändert, neues Vektorlogo
