@@ -2,6 +2,17 @@
 
 ## Bielstein Open und Clubarchiv-Hub · 10.11.2026
 
+Live bestätigt: Programmcommit f6cad65, Pages-Lauf 42770579990 erfolgreich.
+26 veröffentlichte Dateien einschließlich sämtlicher 18 Sponsorenlogos bytegleich
+mit dem geprüften Veröffentlichungspaket. Chromium und WebKit mit echten öffentlichen
+CMS-Inhalten/Archivmedien live erfolgreich: vier Jahrgänge, sämtliche historischen
+Partnerbilder, Fotobetrachter mit Navigation, archiviertes Turnierzeitungs-PDF,
+Archivabgrenzung, weiter erreichbarer Jubiläumsbericht 8708. Club mit gewünschter
+Reihenfolge, fünf Kennzahlen, drei blauen Pills und gelber Anfahrt; 390/1440px
+live ohne Seitenüberlauf. Neue Oberfläche mobil/desktop visuell geprüft.
+Live: https://joern-kaemper.de/#club/history/bielstein-open .
+Screenshots Hauptprojekt output/TFB-{Clubarchiv-Hub,Bielstein-Open}-live-{chromium,webkit}-{390,1440}.png.
+
 Club: Mitglied werden → Club/fünf Kennzahlen → Vorstand → Clubarchiv mit drei
 blauen Pills Zum Archiv / Zur History / TFB Open → gelbe Anfahrt. Kooperationen
 und separater Club-History-Teaser entfallen. Unter History eigener Open-Bereich

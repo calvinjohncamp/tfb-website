@@ -51,3 +51,14 @@ fünf Kennzahlen, drei blaue Pills/gelber Routenbutton und kein horizontaler
 Desktop und Mobil visuell geprüft. Release isoliert auf main, keine Backendänderung,
 keine produktiven CMS-/Mitglieds-/Finanzdaten verändert. Cache:
 tfb-kiosk-bielstein-open-20261110-1. Direkte Veröffentlichung ist beauftragt.
+
+Live bestätigt: Programmcommit f6cad65, Pages-Lauf 42770579990 erfolgreich.
+26 veröffentlichte Dateien einschließlich sämtlicher 18 Sponsorenlogos bytegleich
+mit dem geprüften Veröffentlichungspaket. Chromium und WebKit mit echten öffentlichen
+CMS-Inhalten/Archivmedien live erfolgreich: vier Jahrgänge, sämtliche historischen
+Partnerbilder, Fotobetrachter mit Navigation, archiviertes Turnierzeitungs-PDF,
+Archivabgrenzung, weiter erreichbarer Jubiläumsbericht 8708. Club mit gewünschter
+Reihenfolge, fünf Kennzahlen, drei blauen Pills und gelber Anfahrt; 390/1440px
+live ohne Seitenüberlauf. Neue Oberfläche mobil/desktop visuell geprüft.
+Live: https://joern-kaemper.de/#club/history/bielstein-open .
+Screenshots Hauptprojekt output/TFB-{Clubarchiv-Hub,Bielstein-Open}-live-{chromium,webkit}-{390,1440}.png.
