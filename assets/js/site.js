@@ -518,7 +518,7 @@
         if (page === 'verein' && b.id === 'v-chronik') return `<div class="club-info-grid">
           <section class="block-text club-archive-hub" data-site-content="v-chronik">
             <h2>Clubarchiv</h2><p>Unsere Geschichten, unsere Bilder, unsere Turniere.</p>
-            <nav class="club-archive-pills" aria-label="Clubarchiv"><a class="history-pill club-hub-pill" href="#club/archiv">Zum Archiv</a><a class="history-pill club-hub-pill" href="#club/history">Zur History</a><a class="history-pill club-hub-pill" href="#club/history/bielstein-open">TFB Open</a></nav>
+            <nav class="club-archive-pills" aria-label="Clubarchiv"><a class="history-pill club-hub-pill" href="#club/archiv">Zum Archiv</a><a class="history-pill club-hub-pill" href="#club/history">Zur History</a><a class="history-pill club-hub-pill" href="#club/history/bielstein-open">TFB Open</a><a class="history-pill club-hub-pill" href="#club/galerie">Galerie</a></nav>
           </section>
           <section class="block-text club-archive-hub club-members-info" aria-labelledby="member-info-title">
             <h2 id="member-info-title">Mitgliederinfos</h2><p>Einige PDFs mit Zusatzinfos.</p>
@@ -941,6 +941,7 @@
   async function pageView(key) {
     await ensure();
     const section = location.hash.split('/')[1];
+    if (key === 'verein' && section === 'galerie') { editing = null; return TFB.clubGallery.view(location.hash, { picture, openGallery }); }
     if (key === 'verein' && section === 'archiv' && TFB.clubArchive) {
       editing = null;
       return TFB.clubArchive.view(location.hash, {

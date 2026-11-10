@@ -35,3 +35,6 @@
  .mm-actions .btn { flex: 1; padding-inline: 12px; }
  .mm-preview { width: calc(100% + 24px); margin-inline: -12px; }
 }
+
+.mm-sidebar{min-width:0}.mm-send{display:grid;gap:10px;margin-bottom:28px}.mm-send h2{font-size:1.1rem;margin:0 0 4px}.mm-send .btn{justify-content:center;width:100%}.mm-send p{margin:2px 0;overflow-wrap:anywhere}.mm-bulk{opacity:.4;cursor:not-allowed}.mm-year>summary{font-weight:750;font-size:1rem;margin:6px 0 12px;cursor:pointer}.mm-year>div{display:grid;gap:8px}.mm-archive-row{display:flex;gap:4px;align-items:stretch}.mm-archive-row .mm-archive-item{flex:1;min-width:0}.mm-delete{align-self:center;border:0;background:transparent;color:var(--muted);min-width:32px;min-height:40px;font-size:1.4rem;cursor:pointer}.mm-delete:hover{color:#a42d20}.mm-undo{margin:0 0 14px}.mm-undo[hidden]{display:none}
+@media(max-width:850px){.mm-sidebar{order:0}.mm-sidebar .mm-archive{margin-top:18px}.mm-sidebar .mm-archive-list{max-height:220px}.mm-send{margin-bottom:18px}.mm-send .btn{width:auto;justify-self:start;min-width:190px}}

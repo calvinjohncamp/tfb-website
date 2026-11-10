@@ -1,5 +1,15 @@
 # TFB – Übergabe für die nächste Sitzung
 
+## Galerie, Testmail und Jahresarchiv · 10.11.2026
+
+Neuer vierter Clubarchiv-Pill Galerie (#club/galerie): vorhandene 10 Jahrgänge,
+23 Alben, 1935 Bilder; nur sieben dedizierte alte Jahresgalerien aus Artikelarchiv
+ausgeblendet, normale Artikelbilder unverändert. Mail Versand: Test nur an den
+aktuellen Admin, Bulk deaktiviert. Mail Archiv nach Briefdatum-Jahr, inklusive
+Löschen/Rückgängig. E-Mail-Menü vor größerem letztem Button Datensicherung /
+Time Machine. Worker 3ce2478b-1f45-43b4-b328-84a5c53e82df veröffentlicht.
+Keine echten Mails versendet. Details: [Release](RELEASE-gallery-mail-tests-20261110.md).
+
 ## Mitgliederbrief und Mailarchiv · 10.11.2026
 
 Neuer letzter Adminpunkt „E-Mail an alle Mitglieder“ (#membermail): direkt

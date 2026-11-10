@@ -13,7 +13,7 @@
     }
   }
   const overviewRoute = root + '/alle';
-  const collections = ['Fotogalerien', 'TFB-Life', 'Chronik', 'Mannschaften', 'Vereinsleben'];
+  const collections = ['TFB-Life', 'Chronik', 'Mannschaften', 'Vereinsleben'];
   const older = 8;
   const batch = 24;
   const esc = value => TFB.ui.esc(value ?? '');
@@ -278,9 +278,11 @@
       const historical = items.filter(item => item.event).map(historicalDate);
       const historicalById = new Map(historical.map(item => [item.id, item]));
       const legacy = mode === 'beitrag' ? items.find(item => item.id === decodeURIComponent(id || '')) : null;
+      const galleryRoute = legacy && TFB.clubGallery.isEntry(legacy) && TFB.clubGallery.routeFor(legacy);
+      if (galleryRoute || new URLSearchParams(query).get('thema') === 'Fotogalerien') return TFB.clubGallery.view(galleryRoute || '#club/galerie',toolkit);
       const openRoute = legacy && TFB.bielsteinOpen.routeFor(legacy);
       if (openRoute || new URLSearchParams(query).get('thema') === 'Bielstein Open') return TFB.bielsteinOpen.view(openRoute || '#club/history/bielstein-open', toolkit);
-      entries = entries.filter(item => !TFB.bielsteinOpen.isEntry(item));
+      entries = entries.filter(item => !TFB.bielsteinOpen.isEntry(item) && !TFB.clubGallery.isEntry(item));
 
       if (mode === 'beitrag') {
         const key = decodeURIComponent(id || '');

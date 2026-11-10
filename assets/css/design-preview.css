@@ -133,3 +133,8 @@
 html.tfb-logo-midnight-amber .tfb-admin-links .btn[aria-current="page"]{background:#001D3D;border-color:#001D3D;color:#FFC300}
 
 .tfb-admin-design{column-gap:12px}
+
+/* The recovery action closes the admin row, with the same separation as its entry. */
+.tfb-admin-design{column-gap:12px}.tfb-admin-links .btn.small.tfb-backup-button{min-height:38px;margin-left:8px;padding:8px 12px;font-size:.78rem;max-width:calc(100% - 8px)}
+.tfb-admin-design,.tfb-admin-links{align-items:flex-start}
+@media(min-width:1000px){.tfb-admin-design{flex-wrap:nowrap}.tfb-admin-links{flex:1 1 0%}}

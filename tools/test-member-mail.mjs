@@ -1,5 +1,5 @@
 import test from 'node:test';import assert from 'node:assert/strict';import {createHash} from 'node:crypto';
-import {memberMailList,memberMailGet,memberMailSave} from '../server/cloudflare/member-mail.mjs';
+import {memberMailList,memberMailGet,memberMailSave,memberMailDelete,memberMailRestore,memberMailTest} from '../server/cloudflare/member-mail.mjs';
 class Bucket{
  objects=new Map();
  async get(key){const o=this.objects.get(key);return o?{...o,json:async()=>JSON.parse(o.value)}:null;}
@@ -28,4 +28,23 @@ test('atomic conditions reject an edit that races another writer',async()=>{
 test('invalid dates, paths, header injection, missing or oversized content are rejected',async()=>{
  for(const data of [{...base,id:'../../editorial'},{...base,date:'2026-02-30'},{...base,subject:'Hi\nBcc:all'},{...base,body:''},{...base,body:'x'.repeat(30001)},{...base,theme:'unknown'}])await assert.rejects(memberMailSave({CMS_BUCKET:new Bucket()},admin,data),{status:400});
  await assert.rejects(memberMailGet({CMS_BUCKET:new Bucket()},id),{status:404});
+});
+
+test('deletion is reversible, absent from the archive and protected against stale saves',async()=>{
+ const env={CMS_BUCKET:new Bucket()},saved=await memberMailSave(env,admin,base);
+ const removed=await memberMailDelete(env,admin,{id,expectedEtag:saved.etag});assert.ok(removed.deletedAt);assert.equal((await memberMailList(env)).rows.length,0);
+ await assert.rejects(memberMailGet(env,id),{status:404});await assert.rejects(memberMailSave(env,admin,{...base,expectedEtag:saved.etag}),{status:409});
+ await memberMailRestore(env,admin,{id,expectedEtag:removed.etag});assert.equal((await memberMailGet(env,id)).body,base.body);assert.equal((await memberMailList(env)).rows.length,1);
+});
+test('test delivery is only to the current admin, matches the canonical renderer and is idempotent',async()=>{
+ const messages=[],env={CMS_BUCKET:new Bucket(),AUTH_MAIL:{send:async message=>messages.push(message)}},member={id:'test-admin',email:'ADMIN@example.invalid'},request={...base,requestId:crypto.randomUUID(),to:'outsider@example.invalid'};
+ const result=await memberMailTest(env,member,request);assert.equal(result.to,'admin@example.invalid');assert.deepEqual(messages[0].to,['admin@example.invalid']);assert.match(messages[0].subject,/^\[TFB Test\]/);assert.ok(messages[0].html.includes('Hallo &amp; willkommen.'));assert.equal(messages[0].html.includes('contenteditable'),false);
+ await memberMailTest(env,member,request);assert.equal(messages.length,1);
+ await assert.rejects(memberMailTest(env,member,{...request,body:'Changed'}),{status:409});
+ assert.equal((await memberMailList(env,member)).rows.length,0,'sending a test never saves an archive entry');
+});
+test('failed test delivery retains a retry key and cannot fall back to bulk or a supplied recipient',async()=>{
+ const env={CMS_BUCKET:new Bucket(),AUTH_MAIL:{send:async()=>{throw Error('provider failure');}}},member={id:'admin',email:'admin@example.invalid'},request={...base,requestId:crypto.randomUUID()};
+ await assert.rejects(memberMailTest(env,member,request),{status:503});let count=0;env.AUTH_MAIL.send=async()=>{count++;};await memberMailTest(env,member,request);assert.equal(count,1);
+ await assert.rejects(memberMailTest(env,{id:'no-mail'},{...request,requestId:crypto.randomUUID(),to:'outside@example.invalid'}),{status:400});
 });
