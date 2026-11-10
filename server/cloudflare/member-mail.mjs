@@ -1,9 +1,9 @@
-import {html as mailHtml} from '../../assets/js/member-mail-renderer.mjs';
+import {html as mailHtml,normalizeFormatting} from '../../assets/js/member-mail-renderer.mjs';
 // Private, admin-only letter templates. No recipient lookup and no mail transport.
 const PREFIX='member-mail/drafts/';
 const fail=(status,message)=>{throw Object.assign(Error(message),{status});};
 const validId=id=>typeof id==='string'&&/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/.test(id);
-const fields=['name','date','subject','headline','salutation','body','closing','theme'];
+const fields=['name','date','subject','headline','salutation','body','closing','theme','formatting'];
 function ready(env){if(!env.CMS_BUCKET)fail(503,'Das Mailarchiv ist gerade nicht erreichbar.');return env.CMS_BUCKET;}
 function clean(data){
  const out={};
@@ -12,14 +12,15 @@ function clean(data){
   const value=data[key].replace(/\r\n?/g,'\n').normalize('NFC');
   if(value.length>max||/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/.test(value))fail(400,'Ein Textfeld ist zu lang oder enthält ungültige Zeichen.');
   if((['name','subject','headline'].includes(key)&&!value.trim())||(['name','subject'].includes(key)&&/[\r\n]/.test(value)))fail(400,'Bitte Archivname, Betreff und Überschrift eintragen.');
-  out[key]=['name','subject','headline'].includes(key)?value.trim():value;
+  out[key]=['name','subject'].includes(key)?value.trim():value;
  }
  if(!out.body.trim())fail(400,'Bitte einen Nachrichtentext eintragen.');
  if(typeof data.date!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(data.date)||!Number.isFinite(Date.parse(data.date))||new Date(data.date).toISOString().slice(0,10)!==data.date)fail(400,'Bitte ein gültiges Datum wählen.');
  if(!['club','red'].includes(data.theme))fail(400,'Bitte eine gültige Farbwelt wählen.');
- return {...out,date:data.date,theme:data.theme};
+ let formatting;try{formatting=normalizeFormatting(data.formatting,out);}catch(error){fail(400,error.message);}
+ return {...out,date:data.date,theme:data.theme,...(formatting?{formatting}:{})};
 }
-const same=(a,b)=>fields.every(key=>a[key]===b[key]);
+const same=(a,b)=>fields.every(key=>key==='formatting'?JSON.stringify(a[key]||null)===JSON.stringify(b[key]||null):a[key]===b[key]);
 const result=(doc,etag)=>({...doc,etag});
 export async function memberMailList(env,member){
  const bucket=ready(env),rows=[];let cursor;
@@ -40,6 +41,7 @@ export async function memberMailSave(env,member,data){
  if(!validId(data.id))fail(400,'Ungültige Mailvorlage.');
  if(data.expectedEtag!=null&&(typeof data.expectedEtag!=='string'||!/^[a-zA-Z0-9_-]{1,128}$/.test(data.expectedEtag)))fail(400,'Ungültiger Speicherstand.');
  const bucket=ready(env),value=clean(data),key=PREFIX+data.id+'.json',object=await bucket.get(key),prior=object?await object.json():null;
+ if(prior?.formatting&&data.formatting===undefined)fail(409,'Diese Vorlage enthält Textformatierungen. Bitte die Seite neu laden, bevor du sie bearbeitest.');
  if(prior?.deletedAt)fail(409,'Diese Vorlage wurde gelöscht. Bitte als neue Vorlage speichern.');
  if(object&&object.etag!==data.expectedEtag){
   if(same(prior,value))return result(prior,object.etag); // A retry after a lost successful response.

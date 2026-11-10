@@ -1,11 +1,11 @@
-// Board letter editor and central template archive. First draft: no sending action.
+// Board letter editor, central archive and admin-only test delivery.
 (() => {
  const ui=()=>TFB.ui,esc=value=>ui().esc(String(value??'')),admin=()=>Boolean(ui()?.isAdmin());
  let draft=null,rows=[],dirty=false,busy=false,activity='',owner=null,notice='',error=false,frameObserver,fieldObserver,testAttempt=null,deleted=null,testRecipient='',testReady=false;
- const fields=['name','date','subject','headline','salutation','body','closing','theme'];
+ const fields=['name','date','subject','headline','salutation','body','closing','theme','formatting'];
  const today=()=>new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Berlin'}).format(new Date());
  const brand=()=>document.documentElement.classList.contains('tfb-logo-midnight-amber')?'club':'red';
- function example(){return {id:crypto.randomUUID(),etag:null,name:'Begrüßung zur neuen Saison',date:today(),subject:'Es geht wieder los – auf eine schöne Tennissaison!',headline:'Es geht wieder los.',salutation:'Liebe Mitglieder,',body:'die neue Saison steht vor der Tür. Wir freuen uns auf viele schöne Stunden auf unserer Anlage – auf spannende Ballwechsel, gemeinsame Matches und gute Gespräche nach dem Spiel.\n\nOb ihr schon lange dabei seid oder gerade erst zu uns gefunden habt: Schön, dass ihr Teil der Tennisfreunde Bielstein seid.\n\nAlle Informationen zu Training, Mannschaften und unseren gemeinsamen Terminen findet ihr wie gewohnt in unserer App. Weitere Neuigkeiten zur Saison geben wir euch rechtzeitig bekannt.\n\nLasst uns gemeinsam in eine schöne Tennissaison starten. Wir freuen uns auf euch!',closing:'Viele Grüße\nEuer Vorstand',theme:brand()};}
+ function example(){return {id:crypto.randomUUID(),etag:null,name:'Begrüßung zur neuen Saison',date:today(),subject:'Es geht wieder los – auf eine schöne Tennissaison!',headline:'Es geht wieder los.',salutation:'Liebe Mitglieder,',body:'die neue Saison steht vor der Tür. Wir freuen uns auf viele schöne Stunden auf unserer Anlage – auf spannende Ballwechsel, gemeinsame Matches und gute Gespräche nach dem Spiel.\n\nOb ihr schon lange dabei seid oder gerade erst zu uns gefunden habt: Schön, dass ihr Teil der Tennisfreunde Bielstein seid.\n\nAlle Informationen zu Training, Mannschaften und unseren gemeinsamen Terminen findet ihr wie gewohnt in unserer App. Weitere Neuigkeiten zur Saison geben wir euch rechtzeitig bekannt.\n\nLasst uns gemeinsam in eine schöne Tennissaison starten. Wir freuen uns auf euch!',closing:'Viele Grüße\nEuer Vorstand',theme:brand(),formatting:{salutation:[{text:'Liebe Mitglieder,',bold:true}]}};}
  async function call(path,data){if(!admin())throw Error('Bitte als Admin anmelden.');if(!TFB.directoryCall)throw Error('Das zentrale Mailarchiv ist auf der veröffentlichten Website verfügbar.');return TFB.directoryCall('/admin/member-mail'+path,data);}
  const confirmChange=()=>!dirty||confirm('Deine Änderungen sind noch nicht gespeichert. Trotzdem eine andere Mail öffnen?');
  const time=at=>new Intl.DateTimeFormat('de-DE',{dateStyle:'short',timeStyle:'short'}).format(new Date(at));
@@ -16,21 +16,30 @@
  }
  function status(){const p=document.querySelector('[data-mm-status]');if(p){p.textContent=notice||(dirty?'Ungespeicherte Änderungen':draft?.etag?'Gespeicherte Vorlage':'Beispielvorlage · noch nicht gespeichert');p.classList.toggle('is-error',error);}document.querySelectorAll('[data-mm-save], [data-mm-copy], [data-mm-new], [data-mm-load], [data-mm-delete], [data-mm-test], [data-mm-undo]').forEach(button=>button.disabled=busy);const save=document.querySelector('[data-mm-save]');if(save){save.textContent=busy&&activity==='save'?'Wird gespeichert …':'Speichern';save.disabled=busy||Boolean(draft?.etag&&!dirty);}document.querySelector('[data-mm-editor]')?.classList.toggle('mm-busy',busy);const test=document.querySelector('[data-mm-test]');if(test){test.disabled=busy||!testReady;test.textContent=busy&&activity==='test'?'Testmail wird gesendet …':'Testmail an Admin';}const undo=document.querySelector('[data-mm-undo]');if(undo)undo.hidden=!deleted;}
  function changed(){dirty=true;notice='';error=false;status();}
- function fieldText(element){
-  let text='';
-  const walk=node=>{
-   if(node.nodeType===3){text+=node.textContent;return;}
-   if(node.nodeType!==1)return;
-   if(node.tagName==='BR'){text+='\n';return;}
-   const block=['DIV','P','LI'].includes(node.tagName);
-   if(block&&text&&!text.endsWith('\n'))text+='\n';
-   for(const child of node.childNodes)walk(child);
-   if(block&&!text.endsWith('\n'))text+='\n';
+ function fieldRuns(element){
+  const runs=[];
+  const add=(text,flags={})=>{text=text.replace(/\r\n?/g,'\n');if(!text)return;const run={text,...flags},last=runs.at(-1);if(last&&['bold','italic','signature'].every(key=>Boolean(last[key])===Boolean(run[key])))last.text+=text;else runs.push(run);};
+  const endsLine=()=>runs.at(-1)?.text.endsWith('\n');
+  const walk=(node,inherited={})=>{
+   if(node.nodeType===3){add(node.textContent,inherited);return;}if(node.nodeType!==1)return;
+   if(node.tagName==='BR'){add('\n',inherited);return;}
+   const flags={...inherited},style=node.style,weight=style.fontWeight;
+   if(['B','STRONG'].includes(node.tagName)||weight==='bold'||Number(weight)>=600)flags.bold=true;
+   if(weight==='normal'||(weight&&Number(weight)<=500))delete flags.bold;
+   if(['I','EM'].includes(node.tagName)||style.fontStyle==='italic')flags.italic=true;
+   if(style.fontStyle==='normal')delete flags.italic;
+   const color=style.color.replace(/\s/g,''),background=style.backgroundColor.replace(/\s/g,'');
+   if(color==='rgb(196,85,58)'||color==='#c4553a'||background==='rgb(255,195,0)'||background==='#ffc300')flags.signature=true;
+   else if(color||background==='transparent'||background==='rgba(0,0,0,0)')delete flags.signature;
+   const block=['DIV','P','LI'].includes(node.tagName);if(block&&runs.length&&!endsLine())add('\n',flags);
+   for(const child of node.childNodes)walk(child,flags);
+   if(block&&!endsLine())add('\n',flags);
   };
   for(const child of element.childNodes)walk(child);
-  return text.replace(/\r\n?/g,'\n').replace(/\n+$/,'');
+  while(runs.length){const last=runs.at(-1);last.text=last.text.replace(/\n+$/,'');if(last.text)break;runs.pop();}
+  return runs;
  }
- function readFields(){const doc=document.querySelector('[data-mm-preview]')?.contentDocument;for(const key of ['headline','salutation','body','closing']){const el=doc?.querySelector(`[data-mail-field="${key}"]`);if(el)draft[key]=fieldText(el);}}
+ function readFields(){const doc=document.querySelector('[data-mm-preview]')?.contentDocument;for(const key of ['headline','salutation','body','closing']){const el=doc?.querySelector(`[data-mail-field="${key}"]`);if(el){const runs=fieldRuns(el);draft[key]=runs.map(run=>run.text).join('');(draft.formatting||={})[key]=runs;}}}
  function mountLetter(){
   const frame=document.querySelector('[data-mm-preview]');if(!frame||!draft)return;
   frameObserver?.disconnect();fieldObserver?.disconnect();
@@ -38,19 +47,42 @@
    if(!frame.isConnected)return;const doc=frame.contentDocument;if(!doc)return;
    const resize=()=>{frame.style.height=Math.ceil(doc.documentElement.getBoundingClientRect().height)+'px';};
    frameObserver=new ResizeObserver(resize);frameObserver.observe(doc.documentElement);resize();doc.fonts.ready.then(resize);
-   const onTextChange=()=>{if(!frame.isConnected||!draft||busy)return;const prior=['headline','salutation','body','closing'].map(key=>draft[key]);readFields();if(['headline','salutation','body','closing'].some((key,index)=>draft[key]!==prior[index]))changed();resize();};
+   const onTextChange=()=>{if(!frame.isConnected||!draft||busy)return;const prior=JSON.stringify([draft.headline,draft.salutation,draft.body,draft.closing,draft.formatting]);readFields();if(JSON.stringify([draft.headline,draft.salutation,draft.body,draft.closing,draft.formatting])!==prior)changed();resize();};
+   let savedRange=null,activeField=null;
+   const fieldOf=node=>(node?.nodeType===1?node:node?.parentElement)?.closest('[data-mail-field]');
+   const signatureAt=node=>{let el=node?.nodeType===1?node:node?.parentElement;while(el&&!el.hasAttribute('data-mail-field')){const color=el.style.color.replace(/\s/g,''),bg=el.style.backgroundColor.replace(/\s/g,'');if(color==='rgb(196,85,58)'||bg==='rgb(255,195,0)')return true;if(color||bg==='transparent'||bg==='rgba(0,0,0,0)')return false;el=el.parentElement;}return false;};
+   const selectionChanged=()=>{
+    const selection=doc.getSelection();if(!selection?.rangeCount)return;const range=selection.getRangeAt(0),field=fieldOf(range.startContainer);if(!field||field!==fieldOf(range.endContainer))return;
+    savedRange=range.cloneRange();activeField=field;
+    doc.querySelectorAll('.mm-edit-block').forEach(block=>block.classList.toggle('is-active',block.contains(field)));
+    const tools=field.closest('.mm-edit-block');for(const command of ['bold','italic','signature'])tools.querySelector(`[data-mm-command="${command}"]`).setAttribute('aria-pressed',String(command==='signature'?signatureAt(range.startContainer):doc.queryCommandState(command)));
+   };
+   doc.addEventListener('selectionchange',selectionChanged);
+   for(const type of ['focusin','mouseup','keyup','touchend'])doc.addEventListener(type,event=>{const field=fieldOf(event.target);if(field)doc.querySelectorAll('.mm-edit-block').forEach(block=>block.classList.toggle('is-active',block.contains(field)));selectionChanged();});
+   doc.addEventListener('mousedown',event=>{if(event.target.closest('[data-mm-command]')){selectionChanged();event.preventDefault();}});
+   doc.addEventListener('click',event=>{
+    const button=event.target.closest('[data-mm-command]');if(!button)return;if(busy||!savedRange||!activeField||!button.closest('.mm-edit-block').contains(activeField))return;
+    activeField.focus();const selection=doc.getSelection();selection.removeAllRanges();selection.addRange(savedRange);doc.execCommand('styleWithCSS',false,true);
+    const command=button.dataset.mmCommand;if(command==='signature'){
+     const remove=signatureAt(selection.getRangeAt(0).startContainer),ink=draft.theme==='red'?'#171717':'#001D3D';
+     if(draft.theme==='red')doc.execCommand('foreColor',false,remove?ink:'#C4553A');
+     else{doc.execCommand('foreColor',false,ink);doc.execCommand('hiliteColor',false,remove?'transparent':'#FFC300');}
+    }else doc.execCommand(command,false,null);
+    onTextChange();selectionChanged();
+   });
    doc.addEventListener('input',onTextChange,true);
    fieldObserver=new MutationObserver(onTextChange);
-   doc.querySelectorAll('[data-mail-field]').forEach(element=>fieldObserver.observe(element,{childList:true,characterData:true,subtree:true}));
-   doc.addEventListener('paste',event=>{if(!event.target.closest('[data-mail-field]'))return;event.preventDefault();doc.execCommand('insertText',false,event.clipboardData.getData('text/plain'));});
+   doc.querySelectorAll('[data-mail-field]').forEach(element=>fieldObserver.observe(element,{childList:true,characterData:true,attributes:true,attributeFilter:['style','color'],subtree:true}));
+   for(const type of ['paste','drop'])doc.addEventListener(type,event=>{if(!fieldOf(event.target))return;event.preventDefault();const text=(event.clipboardData||event.dataTransfer)?.getData('text/plain');if(text)doc.execCommand('insertText',false,text);});
    doc.addEventListener('click',event=>{if(event.target.closest('a'))event.preventDefault();});
-   doc.querySelectorAll('[data-mail-field]').forEach(element=>element.setAttribute('contenteditable','plaintext-only'));
+   doc.querySelectorAll('[data-mail-field]').forEach(element=>element.setAttribute('contenteditable','true'));
+
   };
   frame.srcdoc=TFB.memberMailTemplate.html(draft,{editable:true});
  }
  function renderEditor(){
   const panel=document.querySelector('[data-mm-editor]');if(!panel||!draft)return;
-  panel.innerHTML=`<div class="mm-meta"><label class="field"><span>Name im Archiv</span><input data-mm-field="name" maxlength="120" value="${esc(draft.name)}" autocomplete="off"></label><label class="field"><span>Datum im Brief</span><input type="date" data-mm-field="date" value="${esc(draft.date)}"></label><label class="field mm-subject"><span>E-Mail-Betreff</span><input data-mm-field="subject" maxlength="200" value="${esc(draft.subject)}" autocomplete="off"></label></div><div class="mm-actions"><button class="btn small mm-save" type="button" data-mm-save>Speichern</button><button class="btn small" type="button" data-mm-copy>Speichern unter</button></div><p class="mm-status" data-mm-status role="status" aria-live="polite"></p><button type="button" class="link small mm-undo" data-mm-undo hidden>Löschen rückgängig machen</button><p class="mm-hint">Klicke in den Brief, um Überschrift, Anrede, Text und Gruß zu bearbeiten.</p><iframe class="mm-preview" data-mm-preview title="E-Mail-Brief direkt bearbeiten" sandbox="allow-same-origin"></iframe>`;
+  panel.innerHTML=`<div class="mm-meta"><label class="field"><span>Name im Archiv</span><input data-mm-field="name" maxlength="120" value="${esc(draft.name)}" autocomplete="off"></label><label class="field"><span>Datum im Brief</span><input type="date" data-mm-field="date" value="${esc(draft.date)}"></label><label class="field mm-subject"><span>E-Mail-Betreff</span><input data-mm-field="subject" maxlength="200" value="${esc(draft.subject)}" autocomplete="off"></label></div><div class="mm-actions"><button class="btn small mm-save" type="button" data-mm-save>Speichern</button><button class="btn small" type="button" data-mm-copy>Speichern unter</button></div><p class="mm-status" data-mm-status role="status" aria-live="polite"></p><button type="button" class="link small mm-undo" data-mm-undo hidden>Löschen rückgängig machen</button><p class="mm-hint">Klicke in den Brief zum Bearbeiten. Markiere eine Passage und wähle Fett, Kursiv oder die Signature-Farbe in der kleinen Formatierungsleiste.</p><iframe class="mm-preview" data-mm-preview title="E-Mail-Brief direkt bearbeiten" sandbox="allow-same-origin allow-scripts"></iframe>`;
   mountLetter();status();paintArchive();
  }
  function paintArchive(){const list=document.querySelector('[data-mm-archive-list]');if(list)list.innerHTML=listHtml();const count=document.querySelector('[data-mm-count]');if(count)count.textContent=rows.length?String(rows.length):'';}
