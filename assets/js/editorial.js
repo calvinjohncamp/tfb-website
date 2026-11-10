@@ -70,7 +70,7 @@
  async function saveBackup(){
   if(busy)return;const root=document.querySelector('[data-cms-backup-root]');if(!root)return;const label=root.querySelector('[data-cms-backup-name]').value.trim();if(backupAttempt?.label!==label)backupAttempt={id:crypto.randomUUID(),label};
   busy++;root.querySelectorAll('button,input').forEach(el=>el.disabled=true);const status=root.querySelector('[data-cms-backup-status]');status.textContent='Dein Stand wird gesichert. Bitte einen Moment warten …';
-  try{const result=await call('/admin/site/backup',backupAttempt);backupAttempt=null;await refresh(true);await checkpoints(result.id);ui().toast('Sicherung gespeichert',true);}catch(e){status.textContent=e.message;status.classList.add('is-error');}finally{busy--;if(root.isConnected)root.querySelectorAll('button,input').forEach(el=>el.disabled=false);}
+  try{const result=await call('/admin/site/backup',backupAttempt);backupAttempt=null;await refresh(true);if(root.isConnected)await checkpoints(result.id);ui().toast('Sicherung gespeichert · unter Gesicherte Stände verfügbar',true);}catch(e){status.textContent=e.message;status.classList.add('is-error');}finally{busy--;if(root.isConnected)root.querySelectorAll('button,input').forEach(el=>el.disabled=false);}
  }
  async function checkpoints(highlight){
   const data=await call('/admin/site/history');

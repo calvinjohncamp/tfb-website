@@ -2,6 +2,14 @@
 
 ## Einheitliche Datensicherung mit Schutz laufender Daten · 10.11.2026
 
+Live-Erstprüfung: Stand „Nach Umstellung der Datensicherung“ erfolgreich angelegt
+und in der Liste sichtbar. Beide verschlüsselten Kopien bytegleich geprüft
+(24.528.461 Bytes); keine Produktivwiederherstellung und keine Mail versendet.
+Pages-Erstlauf 42812565564 / Programm 2dea3f9; Worker
+9595c3e7-88b8-4874-af23-bd5be4416002. Die erste unabhängige Kopie dauerte rund
+90 Sekunden. Geschlossene Masken werden bei späterem Abschluss nicht erneut
+geöffnet; neue ungespeicherte Formulare bleiben erhalten (Browserprüfung).
+
 Nutzer hat ausdrücklich bestätigt: Wiederherstellung der Website darf heutige
 Mitglieder, Umsätze, Chats, Seitenaufrufe und sonstige laufende Clubdaten nicht
 verlieren. Neue Bedienung deshalb nur „Jetzt sichern“ und „Gesicherte Stände“
