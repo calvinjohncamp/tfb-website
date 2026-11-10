@@ -524,8 +524,8 @@
           </section>`;
         }
         if (b.id === 's-training') return TFB.clubPeople.render(b, ref => images[ref] || ref);
-        if (b.id === 'v-history') return `<section class="block-text story-teaser">${b.title ? `<h2><a class="post-title-link" href="#club/history">${esc("History")}</a></h2>` : ''}${paragraphs("Fotos, Geschichten und Jubiläen aus unserer Clubgeschichte.")}
-          <p class="feature-more"><a class="more-link" href="#club/history">${esc(b.linkLabel || 'Mehr erfahren')} <span aria-hidden="true"><svg class="link-arrow" viewBox="0 0 806 1000" aria-hidden="true" focusable="false"><path transform="translate(0 755) scale(1 -1)" d="M528 -14 448 66 546 164 587 189 581 206 533 198H50V312H533L581 304L587 321L546 346L448 444L528 524L756 296V214Z"/></svg></span></a></p></section>`;
+        if (b.id === 'v-history') return `<section class="block-text story-teaser" data-site-content="v-history"><h2><a class="post-title-link" href="#club/history">History</a></h2>${paragraphs('Fotos, Geschichten und Jubiläen aus unserer Clubgeschichte.')}
+          <a class="btn club-archive-link club-history-link" href="#club/history">Zur History</a></section>`;
         return `<section class="block-text" data-site-content="${esc(b.id)}">${b.title ? `<h2>${esc(b.title)}</h2>` : ''}${paragraphs(b.text)}</section>`;
       }
       case 'event':
@@ -567,6 +567,7 @@
       case 'button': {
         const manageFees = editing === page && ui().state.member?.isAdmin;
         if (b.id === 'v-mitglied-btn' || b.url === '#aufnahme') return `<div class="block-button membership-actions"><button type="button" class="btn membership-fees-button" data-action="${manageFees ? 'membership-fees-edit' : 'membership-fees'}">${manageFees ? 'Beiträge bearbeiten' : 'Mitgliedsbeiträge'}</button><button type="button" class="btn membership-apply-button" data-action="membership-open">${esc(b.label || 'Zum Anmeldeformular')}</button>${b.note ? `<p class="membership-benefit">${esc(b.note)}</p>` : ''}<a class="membership-mail-preview" href="assets/docs/tfb-mitgliedsanmeldung-muster.pdf" data-action="membership-mail-preview" aria-haspopup="dialog" aria-label="Muster der E-Mail-Bestätigung öffnen">E-Mail-Bestätigung (Vorschau)&nbsp;<svg class="link-arrow" viewBox="0 0 806 1000" aria-hidden="true" focusable="false"><path transform="translate(0 755) scale(1 -1)" d="M528 -14 448 66 546 164 587 189 581 206 533 198H50V312H533L581 304L587 321L546 346L448 444L528 524L756 296V214Z"/></svg></a></div>`;
+        if (page === 'verein' && b.id === 'v-anfahrt-btn') return `<p class="block-button"><a class="btn club-archive-link club-directions-link" href="${esc(b.url || '#')}" target="_blank" rel="noopener">${esc(b.label || 'Route planen')}</a></p>`;
         const ext = /^https?:/i.test(b.url || '');
         return `<p class="block-button"><a class="btn primary" href="${esc(b.url || '#')}" ${ext ? 'target="_blank" rel="noopener"' : ''}>${esc(b.label || 'Mehr')}${ext ? ' <svg class="link-arrow" viewBox="0 0 806 1000" aria-hidden="true" focusable="false"><path transform="translate(0 755) scale(1 -1)" d="M528 -14 448 66 546 164 587 189 581 206 533 198H50V312H533L581 304L587 321L546 346L448 444L528 524L756 296V214Z"/></svg>' : ''}</a></p>`;
       }
@@ -912,6 +913,13 @@
       .find(el => (el.dataset.siteContent || el.dataset.feature || el.dataset.photoModule) === decoded);
     if (target) { target.tabIndex = -1; target.focus({ preventScroll: true }); target.scrollIntoView({ block: 'start' }); }
   };
+  function clubBlocks(blocks) {
+    const history = blocks.find(b => b.id === 'v-history');
+    if (!history || !blocks.some(b => b.id === 'v-chronik')) return blocks;
+    const ordered = blocks.filter(b => b !== history);
+    ordered.splice(ordered.findIndex(b => b.id === 'v-chronik') + 1, 0, history);
+    return ordered;
+  }
   async function pageView(key) {
     await ensure();
     const section = location.hash.split('/')[1];
@@ -952,7 +960,7 @@
     const edit = editing === key && state.member && state.member.isAdmin && !preview;
     const admin = state.member && state.member.isAdmin;
     const training = key === 'sport' && location.hash.split('/')[1] === 'training';
-    const list = (key === 'home' ? homeBlocks() : key==='aktuell'?TFB.newsroom.ordered(page.blocks):page.blocks).map(b => photoPreview?.id === b.id ? photoPreview.draft : b).filter((b) => (!b._new || (preview && b.id === preview.id) || photoPreview?.id === b.id)
+    const list = (key === 'home' ? homeBlocks() : key==='aktuell'?TFB.newsroom.ordered(page.blocks):key==='verein'?clubBlocks(page.blocks):page.blocks).map(b => photoPreview?.id === b.id ? photoPreview.draft : b).filter((b) => (!b._new || (preview && b.id === preview.id) || photoPreview?.id === b.id)
       && (key !== 'sport' || (training ? b.type !== 'teams' : b.type === 'teams')));
     const legal = key === 'impressum' || key === 'satzung';
     let newsDates = 0;
@@ -2730,20 +2738,24 @@
   }
   function historyView() {
     const early = mergeHeroIntoGallery(portraitOf('history'));
-    const anniversary = historyAnniversaryBlock();
     const jubilee = homeBlocks().find(b => b.id === 'h-50');
+    const pdf = 'assets/docs/tfb-chronik-25-jahre.pdf';
     const chapters = [
-      { href: '#club/history/anfangsjahre', title: 'Bilder aus den Anfangsjahren', kicker: 'Die ersten Jahre', text: 'Erinnerungen an die Anfänge der Tennisfreunde Bielstein.', image: early.images?.find(shownImage), action: 'Bilder ansehen' },
-      { href: 'assets/docs/tfb-chronik-25-jahre.pdf', title: '25 Jahre TFB', kicker: 'Chronik & mehr', text: 'Die Jubiläumschronik zum Lesen und Wiederentdecken. PDF · 66 Seiten · 24,8 MB', image: 'assets/docs/tfb-chronik-25-jahre-cover.png', action: 'Chronik als PDF öffnen', pdf: true },
-      { href: '#club/archiv/beitrag/8708', title: '50 Jahre TFB', kicker: 'Unser Jubiläum', text: 'Ein unvergessliches Jubiläum – der Bericht aus unserer Vereinschronik.', image: jubilee?.image, action: 'Bericht lesen' },
-      { href: '#club/history/fotos-50-jahre', title: '50 Jahre TFB · Bilder', kicker: 'Gemeinsam gefeiert', text: 'Die Impressionen unserer Jubiläumsfeier – auch weiterhin auf Home.', image: anniversary?.images?.find(shownImage), action: 'Jubiläumsbilder ansehen' },
+      { title: '50 Jahre TFB', image: jubilee?.image, href: '#club/archiv/beitrag/8708', actions: [
+        { label: 'Bericht', href: '#club/archiv/beitrag/8708' },
+        { label: 'Bildergalerie', href: '#club/history/fotos-50-jahre' },
+      ] },
+      { title: '25 Jahre TFB', image: 'assets/docs/tfb-chronik-25-jahre-cover.png', href: pdf, pdf: true, actions: [{ label: 'Zur Chronik', href: pdf, pdf: true }] },
+      { title: 'Bilder aus den Anfangsjahren', image: early.images?.find(shownImage), href: '#club/history/anfangsjahre', actions: [{ label: 'Bilder ansehen', href: '#club/history/anfangsjahre' }] },
     ];
     return `<section class="site-page history-page">
       <header class="view-head page-head"><div><p class="page-kicker">Unsere Clubgeschichte</p><h1>History</h1><p>Erinnerungen, die uns verbinden.</p></div><a class="view-close" href="#club" aria-label="Zurück zum Club">${ui().icon.close}</a></header>
-      <div class="history-chapters">${chapters.map(c => `<a class="history-chapter" href="${c.href}"${c.pdf ? ' target="_blank" rel="noopener"' : ''}>
-        ${c.image ? `<span class="history-chapter-image${c.pdf ? ' history-document' : ''}">${picture(c.image, c.image, '')}</span>` : ''}
-        <span class="history-chapter-body"><small>${esc(c.kicker)}</small><h2>${esc(c.title)}</h2><span>${esc(c.text)}</span><b>${esc(c.action)} <span aria-hidden="true">↗</span></b></span>
-      </a>`).join('')}</div>
+      <div class="history-chapters">${chapters.map(c => `<article class="history-chapter">
+        ${c.image ? `<a class="history-chapter-image${c.pdf ? ' history-document' : ''}" href="${c.href}" aria-label="${esc(c.title)} ${c.pdf ? '– Chronik öffnen' : 'ansehen'}"${c.pdf ? ' target="_blank" rel="noopener"' : ''}>${picture(c.image, c.image, c.title, true)}</a>` : ''}
+        <div class="history-chapter-body"><h2>${esc(c.title)}</h2>
+          <div class="history-chapter-actions">${c.actions.map(a => `<a class="history-pill" href="${a.href}"${a.pdf ? ' target="_blank" rel="noopener"' : ''}>${esc(a.label)}</a>`).join('')}</div>
+        </div>
+      </article>`).join('')}</div>
       ${ui().partnerSlot('verein', site.pages.verein.partnerKicker || 'Präsentiert von')}
     </section>`;
   }

@@ -1,11 +1,11 @@
 // TFB-Kiosk – Service Worker.
 // Netz zuerst, damit Änderungen sofort ankommen; ohne Netz startet die App aus dem Zwischenspeicher.
-const CACHE = 'tfb-kiosk-history-regelwerk-20261110-1';
+const CACHE = 'tfb-kiosk-history-layout-20261110-2';
 const SHELL = [
-  './assets/css/club-history.css?v=20261110-history-regelwerk-1',
+  './assets/css/club-history.css?v=20261110-history-layout-2',
   './assets/css/sport-rulebook.css?v=20261110-history-regelwerk-1',
   './assets/js/sport-rulebook.js?v=20261110-history-regelwerk-1',
-  './assets/js/site.js?v=20261110-history-regelwerk-1',
+  './assets/js/site.js?v=20261110-history-layout-2',
   './assets/docs/tfb-chronik-25-jahre-cover.png',
   './assets/css/statement-layout.css?v=20261109-statement-layout-1',
   './assets/docs/tfb-platzbelegung-sommer-2027-black-crail.pdf', './assets/docs/tfb-platzbelegung-sommer-2027-black-crail.pdf?v=20261109-statement-layout-1', './assets/docs/tfb-platzbelegung-sommer-2027-black-crail.jpg', './assets/docs/tfb-platzbelegung-sommer-2027-black-crail.jpg?v=20261109-statement-layout-1',

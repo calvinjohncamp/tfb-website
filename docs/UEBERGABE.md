@@ -1,5 +1,12 @@
 # TFB – Übergabe für die nächste Sitzung
 
+## History mit drei Karten · 10.11.2026
+
+Clubarchiv → History → Anfahrt; gelber Zur-History- und blauer Routenbutton.
+Drei Hochformatkarten mit Pills, Reihenfolge 50 Jahre / 25 Jahre / Anfangsjahre.
+Details: [History-Gestaltung](RELEASE-history-layout-20261110.md).
+
+
 ## Direkte Veröffentlichung und Regelwerk · 10.11.2026
 
 Veröffentlichung bestätigt: Programmcommit c8be699, GitHub-Pages-Lauf

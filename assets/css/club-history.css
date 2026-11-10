@@ -1,13 +1,21 @@
-/* History: responsive chapters linking to existing club memories. */
-.history-chapters { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; margin: 24px 0 32px; }
-.history-chapter { display: flex; flex-direction: column; min-width: 0; color: inherit; text-decoration: none; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--paper); }
-.history-chapter:hover { border-color: var(--signature-text); }
-.history-chapter:focus-visible { outline: 3px solid var(--signature-text); outline-offset: 4px; }
-.history-chapter-image { display: block; aspect-ratio: 16 / 9; overflow: hidden; background: var(--line); }
-.history-chapter-image img { width: 100%; height: 100%; object-fit: cover; }
-.history-chapter-image.history-document img { object-fit: contain; padding: 12px; background: #f3f0e9; }
-.history-chapter-body { display: flex; flex: 1; flex-direction: column; gap: 10px; padding: 24px; }
-.history-chapter-body small { color: var(--muted); }
-.history-chapter-body h2 { margin: 0; font-size: 1.5rem; line-height: 1.2; }
-.history-chapter-body b { margin-top: auto; padding-top: 10px; color: var(--signature-text); }
-@media (max-width: 600px) { .history-chapters { grid-template-columns: 1fr; gap: 18px; } .history-chapter-body { padding: 20px; } }
+/* History chapters: three portrait cards, stacked on smaller screens. */
+.history-chapters { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; margin: 24px 0 32px; align-items: stretch; }
+.history-chapter { display: flex; flex-direction: column; min-width: 0; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--paper); }
+.history-chapter-image { display: block; aspect-ratio: 4 / 5; overflow: hidden; background: #f3f0e9; }
+.history-chapter-image img { display: block; width: 100%; height: 100%; object-fit: contain; }
+.history-chapter-image.history-document img { padding: 12px; }
+.history-chapter-body { display: flex; flex: 1; flex-direction: column; gap: 20px; padding: 22px; }
+.history-chapter-body h2 { margin: 0; font-size: clamp(1.2rem, 1.8vw, 1.5rem); line-height: 1.2; }
+.history-chapter-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: auto; }
+.history-pill { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 8px 16px; border: 1px solid var(--ink); border-radius: 999px; color: var(--ink); background: transparent; font-size: .86rem; font-weight: 700; line-height: 1.3; text-decoration: none; }
+.history-pill:hover { background: var(--ink); color: var(--paper); }
+.history-pill:focus-visible, .history-chapter-image:focus-visible { outline: 3px solid var(--ink); outline-offset: -4px; }
+/* Match the existing Zum Archiv button geometry with the requested colors. */
+:root body .site-page .btn.club-archive-link.club-history-link { background: var(--tfb-signature-yellow, #FFC300); border-color: var(--tfb-signature-yellow, #FFC300); color: var(--tfb-midnight-blue, #001D3D); }
+:root body .site-page .btn.club-archive-link.club-directions-link { background: var(--tfb-midnight-blue, #001D3D); border-color: var(--tfb-midnight-blue, #001D3D); color: #fff; }
+@media (max-width: 1000px) {
+  .history-chapters { grid-template-columns: 1fr; gap: 24px; }
+  .history-chapter { width: 100%; max-width: 540px; margin-inline: auto; }
+  .history-chapter-body h2 { font-size: 1.5rem; }
+}
+@media (max-width: 600px) { .history-chapter-body { padding: 20px; } }
