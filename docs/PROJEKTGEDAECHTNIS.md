@@ -1,5 +1,15 @@
 # TFB-Kiosk – Projektgedächtnis und Übergabe
 
+## Datensicherung: eindeutige Vorschau · 10.11.2026
+
+„Ansehen“ in den gesicherten Ständen heißt jetzt „Vorschau“. Sowohl in der Liste
+als auch in der geöffneten Vorschau steht ausdrücklich: Die Vorschau verändert
+noch nichts. Erst mit „Website wiederherstellen“ wird der ausgewählte alte
+Website-Stand übernommen. Vorschauüberschrift ebenfalls „Vorschau“.
+Reine Beschriftungsänderung; Schutz aktueller Mitglieder, Umsätze, Chats,
+Seitenaufrufe und des Mailarchivs sowie automatische Sicherung vor Restore
+bleiben erhalten. Keine Produktivwiederherstellung für die Prüfung auslösen.
+
 ## Einheitliche Datensicherung mit Schutz laufender Daten · 10.11.2026
 
 Abschluss veröffentlicht: Programm 63c1dbc, erfolgreicher Pages-Lauf
