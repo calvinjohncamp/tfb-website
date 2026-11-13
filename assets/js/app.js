@@ -445,8 +445,10 @@
       if (KIOSK_AREA.includes(view)) {
         if (!state.member && view !== 'kiosk') { $view.innerHTML = viewHead(view==='strichliste'?'Strichliste':'Abrechnungen','Deine persönlichen Kioskdaten findest du nach der Anmeldung.',false)+'<button class="btn primary" data-action="login">Anmelden</button>'; return; }
         const body = state.member && !state.member.hasConsent ? consentMarkup() : view === 'kiosk' ? await kioskView() : view === 'strichliste' ? await tallyView() : await statementsView();
+        const shop = view === 'kiosk' && (!state.member || state.member.hasConsent)
+          ? await TFB.kioskShop.render(isEditing()) : '';
         if(request!==viewRender)return;
-        $view.innerHTML = '<div class="shared-kiosk-scope">'+body+'</div>' + (view === 'kiosk' && (!state.member || state.member.hasConsent) ? TFB.kioskShop.render() : '');
+        $view.innerHTML = '<div class="shared-kiosk-scope">'+body+'</div>' + shop;
         if (view === 'kiosk') {
           const partner = $view.querySelector('.shared-kiosk-scope > .pbsp-slot');
           if (partner) $view.appendChild(partner);
