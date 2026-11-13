@@ -1249,16 +1249,43 @@
   const blocksOf = () => site.pages[editing].blocks;
   const findBlock = (id) => blocksOf().find((b) => b.id === id);
 
-  // ---------- Fotos hochladen (verkleinert auf max. 1600 px) ----------
-  async function uploadFiles(files) {
+  function cover4kField(draft) {
+    return `<label class="meet-check"><input type="checkbox" name="allow4k" ${draft.allow4k === true ? 'checked' : ''}><span>4K erlauben (nur in Ausnahmefällen)</span></label>
+      <p class="muted small">Nur für das erste Aufmacherbild dieses Artikels. Bis zu 3.840 Pixel an der längsten Seite und 10 MB.</p>`;
+  }
+
+  async function cover4kData(file, img) {
+    const maxSide = 3840;
+    const maxBytes = 10 * 1024 * 1024;
+    if (file.size > maxBytes) throw Error('Bitte ein Aufmacherbild bis 10 MB wählen.');
+    if (Math.max(img.naturalWidth, img.naturalHeight) <= maxSide && ['image/png', 'image/jpeg', 'image/webp'].includes(file.type)) {
+      return readDataUrl(file);
+    }
+    if (file.type !== 'image/png') return ui().largeImage(img, maxSide);
+
+    const scale = maxSide / Math.max(img.naturalWidth, img.naturalHeight);
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.max(1, Math.round(img.naturalWidth * scale));
+    canvas.height = Math.max(1, Math.round(img.naturalHeight * scale));
+    const ctx = canvas.getContext('2d');
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    const png = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+    if (!png || png.size > maxBytes) throw Error('Bitte ein Aufmacherbild bis 10 MB wählen.');
+    return readDataUrl(png);
+  }
+
+  async function uploadFiles(files, firstIs4kCover = false) {
     const { api, loadImage, largeImage, toast } = ui();
     const ids = [];
     let n = 0;
     for (const file of files) {
       n++;
-      if (files.length > 1) toast(`Foto ${n} von ${files.length} wird verkleinert …`);
+      if (files.length > 1) toast(`Foto ${n} von ${files.length} wird vorbereitet …`);
       const img = await loadImage(file);
-      const dataUrl = largeImage(img, 1600);
+      const dataUrl = firstIs4kCover && n === 1 && ui().state.member?.isAdmin
+        ? await cover4kData(file, img)
+        : largeImage(img, 1600);
       const id = await api.putImage(dataUrl);
       images[id] = dataUrl;
       ids.push(id);
@@ -2187,7 +2214,7 @@
     if (!original) return;
     if (original.mediaCollection) {
       const page = editing;
-      return TFB.homeMedia.openEditor(original, {page,imageOf:ref=>images[ref] || ref,uploadFiles:async files=>{const refs=[];for(const file of files){if(file.size>10*1024*1024)throw Error('Bitte Bilder bis 10 MB wählen.');const data=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(Error('Bild konnte nicht gelesen werden.'));reader.readAsDataURL(file);});const ref=await ui().api.putImage(data);images[ref]=data;refs.push(ref);}return refs;},
+      return TFB.homeMedia.openEditor(original, {page,imageOf:ref=>images[ref] || ref,uploadFiles,cover4kField,
         onSave:async draft=>{const next=structuredClone(site);next.pages[page].blocks=next.pages[page].blocks.map(b=>b.id===id?draft:b);site=await ui().api.saveSite(next);if(detailEditing){editing=null;detailEditing=false;}ui().toast('Gespeichert',true);await ui().renderView();},
         onDelete:async()=>{const next=structuredClone(site);next.pages[page].blocks=next.pages[page].blocks.filter(b=>b.id!==id);site=await ui().api.saveSite(next);if(detailEditing){editing=null;detailEditing=false;location.hash='#'+page;}await ui().renderView();},
       });
@@ -2232,6 +2259,7 @@
             <p class="ed-hint">So erscheint das Thema auf der <b>Startseite</b>. ${wideScreen() ? 'Links siehst du jede Änderung sofort.' : 'Mit „Vorschau ansehen“ siehst du die Seite.'}</p>
             <h3 class="editor-sub">1 · Foto</h3>`
             + ((draft.images || []).length ? newsPhotoField(draft) : imageField(draft.image, draft.id, ''))
+            + (ui().state.member?.isAdmin ? cover4kField(draft) : '')
             + `<h3 class="editor-sub">2 · Überschrift</h3>`
             + field('Kleine Zeile darüber', 'kicker', draft.kicker, { placeholder: 'z. B. Ab Mai 2027 im Freibad Bielstein' })
             + field('Überschrift', 'title', draft.title)
@@ -2324,7 +2352,8 @@
                 : `<label class="btn">Bild oder PDF wählen<input type="file" accept="image/*,application/pdf" data-att-input hidden></label>`}
             </div>`;
         case 'post': return field('Überschrift', 'title', draft.title) + field('Veröffentlichungsdatum', 'date', draft.date, { type: 'date' })
-          + field('Text', 'text', draft.text, { area: true, rich: true, simple: true, rows: 9, placeholder: 'Text schreiben – Wort markieren, dann Fett, Kursiv oder Rot' }) + postPhotosField(draft);
+          + field('Text', 'text', draft.text, { area: true, rich: true, simple: true, rows: 9, placeholder: 'Text schreiben – Wort markieren, dann Fett, Kursiv oder Rot' }) + postPhotosField(draft)
+          + (ui().state.member?.isAdmin ? cover4kField(draft) : '');
         case 'image': return imageField(draft.image, draft.id) + field('Bildunterschrift', 'caption', draft.caption)
           + `<label class="meet-check"><input type="checkbox" name="imgOriginal" data-rerender ${draft.original ? 'checked' : ''}><span>Originalformat (nicht zuschneiden)</span></label>`
           + (draft.original ? `<div class="field"><span>Ausrichtung</span><div class="seg align-seg">${[['left', 'Links'], ['center', 'Mitte'], ['right', 'Rechts']].map(([v, l]) =>
@@ -2592,7 +2621,11 @@
             ui().toast('Eine Fotokollage kann höchstens 100 Bilder enthalten. Bitte weniger Fotos auswählen.');
             input.value = ''; return;
           }
-          const ids = await uploadFiles(files);
+          const firstIs4kCover = draft.allow4k === true && (
+            (draft.type === 'post' && input.matches('[data-news-input]') && !(draft.images || []).length && !draft.image)
+            || (draft.type === 'feature' && input.matches('[data-image-input]') && input.dataset.target === '')
+          );
+          const ids = await uploadFiles(files, firstIs4kCover);
           if (input.matches('[data-news-input]')) {
             draft.images = [...(draft.images || []), ...(draft.image ? [draft.image] : []), ...ids];
             draft.image = null;
@@ -2633,6 +2666,7 @@
       const f = form.elements;
       ['title', 'text', 'date', 'time', 'place', 'caption', 'label', 'url', 'kicker', 'subtitle', 'note', 'phone', 'email'].forEach((k) => { if (f[k]) draft[k] = f[k].value.trim(); });
       if (f.imgOriginal) draft.original = f.imgOriginal.checked;
+      if (f.allow4k) draft.allow4k = f.allow4k.checked;
       if (['gallery', 'collage'].includes(draft.type)) {
         if (f.showText) draft.showText = f.showText.checked;
         if (f.textPosition) draft.textPosition = f.textPosition.value === 'above' ? 'above' : 'below';
