@@ -1,6 +1,6 @@
 // TFB-Kiosk – Service Worker.
 // Netz zuerst, damit Änderungen sofort ankommen; ohne Netz startet die App aus dem Zwischenspeicher.
-const CACHE = 'tfb-kiosk-backup-preview-20261110-1';
+const CACHE = 'tfb-kiosk-home-photo-frame-20261113-1';
 const SHELL = [
   './assets/css/backup.css?v=20261110-unified-backup-1',
   './assets/css/pdf-viewer.css?v=20261110-pdf-return-1',
@@ -73,7 +73,7 @@ const SHELL = [
   './assets/css/chat-media.css', './assets/js/chat-media.js',
   './assets/css/home-media.css', './assets/js/home-media.js', './assets/js/newsroom.js',
   './assets/css/club-archive.css?v=20261110-club-return-1', './assets/js/club-archive.js?v=20261110-mail-freehand-1',
-  './assets/css/brand.css', './assets/css/app.css', './assets/css/app.css?v=20261109-statement-layout-1',
+  './assets/css/brand.css', './assets/css/app.css', './assets/css/app.css?v=20261113-home-photo-frame-1',
   './assets/css/design-preview.css?v=20261110-gallery-complete-1', './assets/js/design-preview.js',
   './assets/css/partner-visibility.css', './assets/css/partner-visibility.css?v=20261109-statement-layout-1', './assets/js/partner-visibility.js', './assets/js/partner-content.js', './assets/js/partner-admin.js?v=20261110-search-pdfs-1',
   './assets/fonts/editorial/bricolage-grotesque.ttf', './assets/fonts/editorial/dm-sans.ttf',

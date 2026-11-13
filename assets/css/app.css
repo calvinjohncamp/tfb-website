@@ -248,7 +248,7 @@ body.tfb-starting { background: #EFEFEF; transition: none; }
 .site-footer { margin: 8px 16px 0; padding: 20px 0 calc(24px + var(--safe-bottom)); border-top: 1px solid var(--line, #E5DDCD); display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 12px 28px; color: #6A7069; }
 .photo-frame.active { display: block; position: relative; overflow: hidden; width: 100%; aspect-ratio: var(--photo-ratio); }
 .photo-frame.active > img { display: block; width: 100% !important; height: 100% !important; position: absolute; inset: 0; object-fit: cover !important; object-position: var(--photo-x) var(--photo-y); transform: scale(var(--photo-zoom)); transform-origin: var(--photo-x) var(--photo-y); }
-.feature-media:has(> .photo-frame.active), .post-media:has(> .photo-frame.active), .block-image:has(> .photo-frame.active), .training-coach-photo:has(> .photo-frame.active), .story-photo:has(> .photo-frame.active), .story-side-img:has(> .photo-frame.active), .team-photo:has(> .photo-frame.active) { aspect-ratio: auto !important; height: auto !important; min-height: 0 !important; align-self: start; }
+.feature-media:where(:not(.site-page[class*="home-look-"]:not(.home-look-1) *)):has(> .photo-frame.active), .post-media:has(> .photo-frame.active), .block-image:has(> .photo-frame.active), .training-coach-photo:has(> .photo-frame.active), .story-photo:has(> .photo-frame.active), .story-side-img:has(> .photo-frame.active), .team-photo:has(> .photo-frame.active) { aspect-ratio: auto !important; height: auto !important; min-height: 0 !important; align-self: start; }
 .message-photo > .photo-frame.active, .gallery-item > .photo-frame.active, .gallery-thumb > .photo-frame.active, .story-square > .photo-frame.active, .collage-item > .photo-frame.active, .image-preview > .photo-frame.active { width: 100%; height: 100%; aspect-ratio: auto; }
 .team-thumb > .photo-frame.active, .portrait-cta-img > .photo-frame.active, .event-att > .photo-frame.active, .link-chip-img > .photo-frame.active, .link-card-img > .photo-frame.active { width: 100%; height: 100%; aspect-ratio: auto; }
 .message-collage.n1:has(.photo-frame.active) { aspect-ratio: auto; }
@@ -2327,7 +2327,6 @@ h1, h2, h3, .event h3, .feature-body h2, .story-head h1, .post-body h3 { -webkit
 .home-masthead { display: none; }
 .home-look-3 { --look-serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif; }
 .site-page[class*="home-look-"]:not(.home-look-1) .feature-media { aspect-ratio: var(--look-ratio, 3 / 2); }
-.site-page[class*="home-look-"]:not(.home-look-1) .feature-media:has(> .photo-frame.active) { aspect-ratio: var(--look-ratio, 3 / 2) !important; }
 .site-page[class*="home-look-"]:not(.home-look-1) .feature-media > .photo-frame.active { height: 100%; aspect-ratio: auto; }
 /* Keep the reset weaker than Look 6’s position-based alternation. */
 .site-page:where([class*="home-look-"]:not(.home-look-1)) .feature.img-right > :first-child { order: 0; }
