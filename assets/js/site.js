@@ -1200,15 +1200,15 @@
   const blocksOf = () => site.pages[editing].blocks;
   const findBlock = (id) => blocksOf().find((b) => b.id === id);
 
-  function cover4kField(draft) {
+  function cover4kField(draft, homeGallery = false) {
     return `<label class="meet-check"><input type="checkbox" name="allow4k" ${draft.allow4k === true ? 'checked' : ''}><span>4K erlauben (nur in Ausnahmefällen)</span></label>
-      <p class="muted small">Nur für das erste Aufmacherbild dieses Artikels. Bis zu 3.840 Pixel an der längsten Seite und 10 MB.</p>`;
+      <p class="muted small">${homeGallery ? 'Für bis zu fünf Fotos dieses Startseiten-Artikels.' : 'Nur für das erste Aufmacherbild dieses Artikels.'} Bis zu 3.840 Pixel an der längsten Seite und 10 MB.</p>`;
   }
 
   async function cover4kData(file, img) {
     const maxSide = 3840;
     const maxBytes = 10 * 1024 * 1024;
-    if (file.size > maxBytes) throw Error('Bitte ein Aufmacherbild bis 10 MB wählen.');
+    if (file.size > maxBytes) throw Error('Bitte ein Bild bis 10 MB wählen.');
     if (Math.max(img.naturalWidth, img.naturalHeight) <= maxSide && ['image/png', 'image/jpeg', 'image/webp'].includes(file.type)) {
       return readDataUrl(file);
     }
@@ -1222,11 +1222,11 @@
     ctx.imageSmoothingQuality = 'high';
     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
     const png = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
-    if (!png || png.size > maxBytes) throw Error('Bitte ein Aufmacherbild bis 10 MB wählen.');
+    if (!png || png.size > maxBytes) throw Error('Bitte ein Bild bis 10 MB wählen.');
     return readDataUrl(png);
   }
 
-  async function uploadFiles(files, firstIs4kCover = false) {
+  async function uploadFiles(files, firstIs4kCover = false, allIn4k = false) {
     const { api, loadImage, largeImage, toast } = ui();
     const ids = [];
     let n = 0;
@@ -1234,7 +1234,7 @@
       n++;
       if (files.length > 1) toast(`Foto ${n} von ${files.length} wird vorbereitet …`);
       const img = await loadImage(file);
-      const dataUrl = firstIs4kCover && n === 1 && ui().state.member?.isAdmin
+      const dataUrl = (allIn4k || firstIs4kCover && n === 1) && ui().state.member?.isAdmin
         ? await cover4kData(file, img)
         : largeImage(img, 1600);
       const id = await api.putImage(dataUrl);
@@ -2222,7 +2222,7 @@
             <p class="ed-hint">So erscheint das Thema auf der <b>Startseite</b>. ${wideScreen() ? 'Links siehst du jede Änderung sofort.' : 'Mit „Vorschau ansehen“ siehst du die Seite.'}</p>
             <h3 class="editor-sub">1 · Foto</h3>`
             + (homeFeature ? homePhotoField(draft) : (draft.images || []).length ? newsPhotoField(draft) : imageField(draft.image, draft.id, ''))
-            + (ui().state.member?.isAdmin ? cover4kField(draft) : '')
+            + (ui().state.member?.isAdmin ? cover4kField(draft, homeFeature) : '')
             + `<h3 class="editor-sub">2 · Überschrift</h3>`
             + field('Kleine Zeile darüber', 'kicker', draft.kicker, { placeholder: 'z. B. Ab Mai 2027 im Freibad Bielstein' })
             + field('Überschrift', 'title', draft.title)
@@ -2585,11 +2585,10 @@
             input.value = ''; return;
           }
           const firstIs4kCover = draft.allow4k === true && (
-            (homeUpload && !draft.images.length)
-            || (draft.type === 'post' && input.matches('[data-news-input]') && !(draft.images || []).length && !draft.image)
+            (draft.type === 'post' && input.matches('[data-news-input]') && !(draft.images || []).length && !draft.image)
             || (draft.type === 'feature' && input.matches('[data-image-input]') && input.dataset.target === '')
           );
-          const ids = await uploadFiles(files, firstIs4kCover);
+          const ids = await uploadFiles(files, firstIs4kCover, homeUpload && draft.allow4k === true);
           if (homeUpload) {
             draft.images.push(...ids);
             draft.image = draft.images[0];
@@ -3318,7 +3317,7 @@
     'post-gallery': (el) => { const p = postCache[el.dataset.id]; if (p) openGallery(p.images || [], `${p.author} · ${whenText(p.createdAt)}`, false, Number(el.dataset.index)); },
     'home-photo-gallery': (el) => {
       const block = homeBlocks().find(item => item.id === el.dataset.block);
-      if (block) openGallery(homePhotoRefs(block), block.title, true, 0);
+      if (block) openGallery(homePhotoRefs(block).slice(0, HOME_PHOTO_LIMIT), block.title, true, 0);
     },
     'news-gallery': (el) => {
       const archived = TFB.clubArchive?.photoEntry(el.dataset.block);

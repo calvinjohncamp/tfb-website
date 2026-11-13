@@ -1,6 +1,6 @@
 // TFB-Kiosk – Service Worker.
 // Netz zuerst, damit Änderungen sofort ankommen; ohne Netz startet die App aus dem Zwischenspeicher.
-const CACHE = 'tfb-editor-invite-20261113-1';
+const CACHE = 'tfb-brand-gallery-4k-20261113-1';
 const SHELL = [
   './assets/css/backup.css?v=20261110-unified-backup-1',
   './assets/css/pdf-viewer.css?v=20261110-pdf-return-1',
@@ -24,7 +24,7 @@ const SHELL = [
 
   './assets/css/kiosk-external-shop.css?v=20261110-mitgliederinfos-1',
   './assets/js/kiosk-external-shop.js?v=20261110-mitgliederinfos-1',
-  './assets/js/app.js?v=20261110-mail-freehand-1',
+  './assets/js/app.js?v=20261113-brand-gallery-4k',
   './assets/jako/jako-logo.png',
   './assets/jako/tfb-jako-sortiment-v2.png',
   './assets/css/bielstein-open.css?v=20261110-search-pdfs-1',
@@ -34,7 +34,7 @@ const SHELL = [
   './assets/css/club-history.css?v=20261110-mail-freehand-1',
   './assets/css/sport-rulebook.css?v=20261110-search-pdfs-1',
   './assets/js/sport-rulebook.js?v=20261110-search-pdfs-1',
-  './assets/js/site.js?v=20261110-pdf-return-1',
+  './assets/js/site.js?v=20261113-brand-gallery-4k',
   './assets/docs/tfb-chronik-25-jahre-cover.png',
   './assets/css/statement-layout.css?v=20261109-statement-layout-1',
   './assets/docs/tfb-platzbelegung-sommer-2027-black-crail.pdf', './assets/docs/tfb-platzbelegung-sommer-2027-black-crail.pdf?v=20261109-statement-layout-1', './assets/docs/tfb-platzbelegung-sommer-2027-black-crail.jpg', './assets/docs/tfb-platzbelegung-sommer-2027-black-crail.jpg?v=20261109-statement-layout-1',
@@ -73,16 +73,16 @@ const SHELL = [
   './assets/css/chat-media.css', './assets/js/chat-media.js',
   './assets/css/home-media.css', './assets/js/home-media.js', './assets/js/newsroom.js',
   './assets/css/club-archive.css?v=20261110-club-return-1', './assets/js/club-archive.js?v=20261110-mail-freehand-1',
-  './assets/css/brand.css', './assets/css/app.css', './assets/css/app.css?v=20261113-home-photo-frame-1',
-  './assets/css/design-preview.css?v=20261110-gallery-complete-1', './assets/js/design-preview.js',
-  './assets/css/partner-visibility.css', './assets/css/partner-visibility.css?v=20261109-statement-layout-1', './assets/js/partner-visibility.js', './assets/js/partner-content.js', './assets/js/partner-admin.js?v=20261110-search-pdfs-1',
+  './assets/css/brand.css', './assets/css/app.css?v=20261113-home-gallery', './assets/css/app.css?v=20261113-home-gallery',
+  './assets/css/design-preview.css?v=20261110-gallery-complete-1', './assets/js/design-preview.js?v=20261113-brand-gallery-4k',
+  './assets/css/partner-visibility.css', './assets/css/partner-visibility.css?v=20261109-statement-layout-1', './assets/js/partner-visibility.js?v=20261113-brand-gallery-4k', './assets/js/partner-content.js', './assets/js/partner-admin.js?v=20261110-search-pdfs-1',
   './assets/fonts/editorial/bricolage-grotesque.ttf', './assets/fonts/editorial/dm-sans.ttf',
-  './assets/js/config.js', './assets/data/partners.js', './assets/data/teams.js', './assets/data/site-seed.js', './assets/js/partner-rotation.js', './assets/js/site.js?v=20261110-pdf-return-1', './assets/js/meet.js', './assets/js/demo-backend.js', './assets/js/brand-data.js', './assets/js/art.js', './assets/js/app.js?v=20261110-mail-freehand-1', './assets/js/app.js?v=20261110-mail-freehand-1',
+  './assets/js/config.js', './assets/data/partners.js', './assets/data/teams.js', './assets/data/site-seed.js', './assets/js/partner-rotation.js', './assets/js/site.js?v=20261113-brand-gallery-4k', './assets/js/meet.js?v=20261113-invite-label', './assets/js/demo-backend.js', './assets/js/brand-data.js', './assets/js/art.js', './assets/js/app.js?v=20261113-brand-gallery-4k', './assets/js/app.js?v=20261113-brand-gallery-4k',
   './assets/icons/favicon-64.png', './assets/icons/icon-192.png',
-  './assets/js/membership.js', './assets/js/membership-fees.js', './assets/js/site.js?v=20261110-pdf-return-1',
+  './assets/js/membership.js', './assets/js/membership-fees.js', './assets/js/site.js?v=20261113-brand-gallery-4k',
   './assets/js/photo-drop.js',
   './assets/js/photo-frame.js',
-  './assets/js/photo-viewer.js',
+  './assets/js/photo-viewer.js?v=20261113-home-gallery',
   './assets/data/legal-pages.js',
   './assets/js/member-photos.js', './assets/js/board.js', './assets/js/members-import.js?v=20261110-search-pdfs-1', './assets/js/autosave.js',
   './assets/images/leon-kaufmann.jpg',
