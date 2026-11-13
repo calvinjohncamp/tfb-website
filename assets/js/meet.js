@@ -399,7 +399,7 @@
     const L = lineup(m);
     const s = myState(m, L);
     const label = s && { yes: '✓ dabei', ersatz: `Ersatz ${L.ersatz.indexOf(me().id) + 1}`, no: '✗ abgesagt', open: 'Antworten' }[s];
-    const from = m.createdBy !== me().id ? ` · von ${firstName(names[m.createdBy])}` : '';
+    const from = ` · Einladung von ${names[m.createdBy] ? firstName(names[m.createdBy]) : m.createdBy === me().id ? firstName(me().firstName) : 'einem Mitglied'}`;
     const sent = formatActionTime(m.createdAt);
     const timing = [sent && `Eingeladen am ${sent}`, answerTime(m, me().id)].filter(Boolean).join(' · ');
     const players = L.players.slice(0, 7);

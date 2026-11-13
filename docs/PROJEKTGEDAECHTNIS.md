@@ -1,5 +1,14 @@
 # TFB-Kiosk – Projektgedächtnis und Übergabe
 
+## 13.11.2026 – E-Mails zu Spielverabredungen
+
+Für Einzel und Doppel sind ergänzende Einladungs- und Bestätigungsmails
+vorgesehen. Zuerst das TFB-Muster für die Zusage ansehen und abstimmen.
+Trainings und Trainingsserien laufen weiterhin über App und Postfach.
+Wöchentliche Trainings-Erinnerungsmails bleiben eine spätere Option, falls
+die Teilnehmenden sie nach Rücksprache wünschen. Der bevorzugte Weg ist
+weiterhin die App.
+
 ## 13.11.2026 – TFB-Optik freigegeben
 
 Die sichtbare Startseite mit kühler Welt und blau-gelber TFB-Marke ist der

@@ -2236,10 +2236,8 @@
             + field('Link-Text (steht auf dem Link – leer = Adresse)', 'linkLabel', lk.label, { placeholder: 'z. B. Jetzt Platz buchen' })
             + linkTargetField((draft.link2 || {}).url, 'link2', 'Link 2 – z. B. zu einer Unterseite der App')
             + field('Link-Text (steht auf dem Link)', 'link2Label', (draft.link2 || {}).label, { placeholder: 'z. B. Zum Kiosk' })
-            + moreBox('home', `
-              <div class="field"><span>Anordnung des Fotos (nur im Look „Klassisch“)</span>${seg('layout', draft.layout || 'wide', [['wide', 'Breit oben'], ['portrait', 'Hochformat links'], ['square', 'Quadrat links'], ['portrait-right', 'Hochformat rechts'], ['square-right', 'Quadrat rechts']])}</div>`
-              + (homeFeature || (draft.images || []).length ? '' : newsPhotoField(draft))
-              + `<label class="field"><span>Klick auf Bild und Überschrift öffnet</span><select name="navigation" data-rerender>${[['detail','Eigene Detailseite'],['link','Verknüpften Link'],['none','Nichts']].map(([v,l]) => `<option value="${v}" ${v === (draft.navigation || (hasMore(draft) ? 'detail' : 'link')) ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
+            + moreBox('home', (homeFeature || (draft.images || []).length ? '' : newsPhotoField(draft))
+              + `<label class="field"><span>${homeFeature ? 'Klick auf die Überschrift öffnet' : 'Klick auf Bild und Überschrift öffnet'}</span><select name="navigation" data-rerender>${[['detail','Eigene Detailseite'],['link','Verknüpften Link'],['none','Nichts']].map(([v,l]) => `<option value="${v}" ${v === (draft.navigation || (hasMore(draft) ? 'detail' : 'link')) ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
               <label class="meet-check"><input type="checkbox" name="showMore" ${draft.showMore !== false ? 'checked' : ''}><span>„Mehr erfahren“ bei eigener Detailseite anzeigen</span></label>`
               + (() => {
                 const n = String(draft.text || '').split(/\n{2,}/).filter((x) => x.trim()).length;
@@ -2531,8 +2529,6 @@
         }
         const ts = e.target.closest('[data-textsize]');
         if (ts) { collect(form); draft.textSize = ts.dataset.textsize; render(); return; }
-        const lay = e.target.closest('[data-layout]');
-        if (lay) { collect(form); draft.layout = lay.dataset.layout; render(); return; }
         const ls = e.target.closest('[data-linkstyle]');
         if (ls) { collect(form); draft.link = { ...(draft.link || {}), style: ls.dataset.linkstyle }; render(); return; }
         const mr = e.target.closest('[data-more-remove]');
