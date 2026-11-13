@@ -2,9 +2,11 @@
 import {readFileSync} from 'node:fs';
 const root=new URL('../server/cloudflare/',import.meta.url);
 const data=source=>'data:text/javascript;base64,'+Buffer.from(source).toString('base64');
+const meetingMail=data(readFileSync(new URL("meeting-mail.mjs",root),"utf8"));
 let sync=readFileSync(new URL('app-sync.mjs',root),'utf8').replace("import catalog from './demo-catalog.json';",'const catalog='+readFileSync(new URL('demo-catalog.json',root),'utf8')+';');
 sync=sync.replace("from './kiosk-billing.mjs'",'from '+JSON.stringify(data(readFileSync(new URL('kiosk-billing.mjs',root),'utf8'))));
 sync=sync.replace("from './meet-sync.mjs'",'from '+JSON.stringify(data(readFileSync(new URL('meet-sync.mjs',root),'utf8'))));
+sync=sync.replace("from './meeting-mail.mjs'","from "+JSON.stringify(meetingMail));
 const visibility=readFileSync(new URL('partner-visibility.mjs',root),'utf8').replace("import partners from './partner-catalog.json';",'const partners='+readFileSync(new URL('partner-catalog.json',root),'utf8')+';');
 const editorial=readFileSync(new URL('editorial.mjs',root),'utf8');
 const backup=readFileSync(new URL('editorial-backup.mjs',root),'utf8').replace("from './editorial.mjs'",'from '+JSON.stringify(data(editorial)));
@@ -13,6 +15,7 @@ const email=readFileSync(new URL('email-auth.mjs',root),'utf8').replace("from '.
 const kioskAccount=data(readFileSync(new URL('kiosk-account.mjs',root),'utf8').replace("from './kiosk-domain.mjs'",'from '+JSON.stringify(data(readFileSync(new URL('kiosk-domain.mjs',root),'utf8')))));
 const bridge=data(readFileSync(new URL('padel-kiosk-bridge.mjs',root),'utf8').replace("from './kiosk-account.mjs'",'from '+JSON.stringify(kioskAccount)).replace("from './kiosk-billing.mjs'",'from '+JSON.stringify(data(readFileSync(new URL('kiosk-billing.mjs',root),'utf8')))));
 let source=readFileSync(new URL('worker.mjs',root),'utf8')
+  .replace("from './meeting-mail.mjs'",'from '+JSON.stringify(meetingMail))
   .replace("from './member-mail.mjs'",'from '+JSON.stringify(data(readFileSync(new URL('member-mail.mjs',root),'utf8').replace("from '../../assets/js/member-mail-renderer.mjs'",'from '+JSON.stringify(data(readFileSync(new URL('../../assets/js/member-mail-renderer.mjs',root),'utf8')))))))
   .replace("from './kiosk-account.mjs'",'from '+JSON.stringify(kioskAccount))
   .replace("from './padel-kiosk-bridge.mjs'",'from '+JSON.stringify(bridge))

@@ -13,6 +13,6 @@
     "database_id": "89c7e329-d351-483b-8c55-f2c0ec87c42c"
   }],
   "r2_buckets": [{"binding":"CMS_BUCKET","bucket_name":"tfb-website-private"},{"binding":"BACKUP_BUCKET","bucket_name":"tfb-website-backups"}],
-  "triggers": {"crons":["15 2 * * *"]},
+  "triggers": {"crons":["15 2 * * *","*/5 * * * *"]},
   "observability": { "enabled": false }
 }

@@ -1,3 +1,4 @@
+import {deliverMeetingMail} from './meeting-mail.mjs';
 import {memberMailList,memberMailGet,memberMailSave,memberMailDelete,memberMailRestore,memberMailTest} from './member-mail.mjs';
 import {kioskTally} from './kiosk-account.mjs';
 import {padelKioskBridge} from './padel-kiosk-bridge.mjs';
@@ -325,7 +326,14 @@ async function route(request, env, url, ctx) {
   }
   if (request.method === 'GET' && path === '/app/chat-video') return syncChatVideo(env,member,url.searchParams.get('post'),url.searchParams.get('ref'));
   if (request.method === 'GET' && path === '/app/state') return syncState(env,member);
-  if (request.method === 'POST' && path === '/app/commit') return syncCommit(env,member,await body(request,8*1024*1024));
+  if (request.method === 'POST' && path === '/app/commit') {
+    const data = await body(request,8*1024*1024);
+    const result = await syncCommit(env,member,data);
+    if (!data.importing && data.operations.some(op => op.kind === 'meet' || op.kind === 'meet-answer')) {
+      ctx?.waitUntil(deliverMeetingMail(env).catch(() => console.error('Meeting mail queue could not be processed')));
+    }
+    return result;
+  }
   if (request.method === 'GET' && path === '/auth/session') {
     const now = Date.now();
     // Renew remembered sessions on app entry, at most once a day.
@@ -374,7 +382,10 @@ async function route(request, env, url, ctx) {
 }
 
 export default {
-  async scheduled(controller,env,ctx){ctx.waitUntil((async()=>{await unifiedScheduled(env);if(env.USAGE_MEASUREMENT_ENABLED==='1'){await cleanUsage(env);await cleanSimpleUsage(env);}})());},
+  async scheduled(controller,env,ctx){
+    ctx.waitUntil(deliverMeetingMail(env).catch(() => console.error('Meeting mail queue could not be processed')));
+    if(controller.cron !== '15 2 * * *') return;
+    ctx.waitUntil((async()=>{await unifiedScheduled(env);if(env.USAGE_MEASUREMENT_ENABLED==='1'){await cleanUsage(env);await cleanSimpleUsage(env);}})());},
   async fetch(request, env, ctx) {
     const url = new URL(request.url); const origin = request.headers.get('Origin');
     const sameOrigin = origin === url.origin;

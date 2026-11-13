@@ -80,3 +80,19 @@ test('declining a group stops access and anonymous or deactivated sessions canno
  f.env.DB.sqlite.prepare('UPDATE members SET active=0 WHERE id=?').run(f.otherId);
  assert.equal((await f.state(f.otherToken)).status,401);
 });
+
+test('mail queue tracks singles and doubles, ignores training, and skips repeated answers',async()=>{
+ const f=await fixture();
+ Object.assign(f.env,{RESEND_API_KEY:'unused-in-local-test',AUTH_EMAIL_FROM:'TFB <tfb@example.invalid>'});
+ const rows=()=>f.env.DB.sqlite.prepare('SELECT * FROM meeting_mail ORDER BY rowid').all();
+ assert.equal((await f.commit([meet(f)])).status,200);
+ assert.equal((await f.commit([answer(f,f.admin.id)])).status,200);
+ assert.equal((await f.commit([answer(f)],f.otherToken)).status,200);
+ assert.equal((await f.commit([{...answer(f),revision:1,value:{...answer(f).value,note:'Bis später'}}],f.otherToken)).status,200);
+ assert.equal((await f.commit([meet(f,'training',{kind:'training',slots:null})])).status,200);
+ assert.equal((await f.commit([meet(f,'doubles',{kind:'doppel',slots:4})])).status,200);
+ const mail=rows().map(r=>[r.recipient_id,JSON.parse(r.payload)]);
+ assert.deepEqual(mail.map(([id,p])=>[id,p.kind,p.meet.kind,p.full]),[
+  [f.otherId,'invite','einzel',false],[f.admin.id,'yes','einzel',true],[f.otherId,'invite','doppel',false],
+ ]);
+});

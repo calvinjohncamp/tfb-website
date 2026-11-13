@@ -234,3 +234,14 @@ CREATE TABLE IF NOT EXISTS kiosk_messages(id TEXT PRIMARY KEY,entry_id TEXT NOT 
 CREATE INDEX IF NOT EXISTS kiosk_message_entry ON kiosk_messages(entry_id,created_at);
 CREATE TRIGGER IF NOT EXISTS kiosk_messages_no_update BEFORE UPDATE ON kiosk_messages BEGIN SELECT RAISE(ABORT,'KIOSK_HISTORY_IMMUTABLE'); END;
 CREATE TRIGGER IF NOT EXISTS kiosk_messages_no_delete BEFORE DELETE ON kiosk_messages BEGIN SELECT RAISE(ABORT,'KIOSK_HISTORY_IMMUTABLE'); END;
+CREATE TABLE IF NOT EXISTS meeting_mail (
+  id TEXT PRIMARY KEY,
+  recipient_id TEXT NOT NULL,
+  payload TEXT NOT NULL,
+  created_at INTEGER NOT NULL,
+  attempted_at INTEGER NOT NULL DEFAULT 0,
+  sent_at INTEGER,
+  provider_id TEXT,
+  status TEXT NOT NULL DEFAULT 'pending'
+);
+CREATE INDEX IF NOT EXISTS meeting_mail_pending ON meeting_mail(status, created_at);

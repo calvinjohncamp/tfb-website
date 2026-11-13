@@ -1,3 +1,4 @@
+import {meetingMailStatements} from './meeting-mail.mjs';
 // Authenticated, revision-checked demo data. No payment or SEPA processing.
 import catalog from './demo-catalog.json';
 import {kioskCommitStatements} from './kiosk-billing.mjs';
@@ -348,6 +349,7 @@ export async function syncCommit(env,member,data) {
     statements.push(env.DB.prepare('DELETE FROM app_payloads WHERE payload_id=? AND NOT EXISTS(SELECT 1 FROM app_records WHERE payload_id=?)').bind(c.map.get(key(o))?.payload_id||'',c.map.get(key(o))?.payload_id||''));
   }
   statements.push(...kioskCommitStatements(env,member,ops,c,data.id,signature));
+  if (!data.importing && env.RESEND_API_KEY && env.AUTH_EMAIL_FROM) statements.push(...meetingMailStatements(env,ops,c.map,data.id,signature));
   let result;try{result=await env.DB.batch(statements);}catch(e){if(String(e.message).includes('KIOSK_CREDIT_EXCEEDS_PURCHASE'))fail(409,'Diese Buchung wurde inzwischen korrigiert. Bitte die Abrechnung neu laden.');throw e;}
   if(!result[0].meta.changes)fail(409,'Die Daten wurden auf einem anderen Gerät geändert. Bitte neu laden.');
   // Catalog-only saves acknowledge the exact normalized catalog. No full app/media reload needed.
