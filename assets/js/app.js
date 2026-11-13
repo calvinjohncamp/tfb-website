@@ -456,7 +456,7 @@
       } else if (TFB.views && TFB.views[view]) {
         const body=await TFB.views[view]();
         if(request!==viewRender)return;
-        $view.innerHTML=view==='kioskabrechnung'?'<div class="shared-kiosk-scope">'+body+'</div>':body;
+        $view.innerHTML=['kioskabrechnung','produktbibliothek'].includes(view)?'<div class="shared-kiosk-scope">'+body+'</div>':body;
       }
       if (state.member?.isAdmin) {
         const editHome = '<button type="button" class="btn small" data-action="site-edit" data-page="home">Home</button>';

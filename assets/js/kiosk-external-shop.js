@@ -27,7 +27,7 @@
   TFB.actions = TFB.actions || {};
   TFB.actions['jako-shop-toggle'] = async (button) => {
     const ui = TFB.ui;
-    if (!ui.isAdmin() || !ui.state.editMode || button.disabled) return;
+    if (!ui.isAdmin() || (!ui.state.editMode && ui.currentView() !== 'produktbibliothek') || button.disabled) return;
     button.disabled = true;
     try {
       const site = await TFB.api.site();
