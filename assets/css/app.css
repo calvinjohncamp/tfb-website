@@ -2379,6 +2379,18 @@ h1, h2, h3, .event h3, .feature-body h2, .story-head h1, .post-body h3 { -webkit
   .home-look-6 .feature-body h2 { font-size: 2.8rem; }
 }
 
+/* A framed Home cover keeps the editor's crop at every viewport width. */
+.home-look-6 .feature > .feature-hit:has(> .feature-media > .photo-frame.active),
+.home-look-6 .feature .feature-media:has(> .photo-frame.active) {
+  height: auto;
+  align-self: center;
+}
+.home-look-6 .feature .feature-media:has(> .photo-frame.active) { aspect-ratio: auto; }
+.site-page.home-look-6 .feature .feature-media > .photo-frame.active {
+  height: auto;
+  aspect-ratio: var(--photo-ratio);
+}
+
 /* Admin: Look der Startseite wählen (im Bearbeiten-Modus von Home) */
 .look-picker { margin: 0 0 28px; padding: 18px; border-radius: 18px; background: #fff; box-shadow: var(--shadow); }
 .look-picker h2 { font-size: 1rem; margin: 0 0 12px; }
