@@ -1,7 +1,8 @@
 // TFB-Kiosk – Service Worker.
 // Netz zuerst, damit Änderungen sofort ankommen; ohne Netz startet die App aus dem Zwischenspeicher.
-const CACHE = 'tfb-kiosk-library-20261113-1';
+const CACHE = 'tfb-admin-signature-20261113-1';
 const SHELL = [
+  './assets/css/admin-signature.css?v=20261113-admin-signature',
   './assets/css/product-library.css?v=20261113-kiosk-signature',
   './assets/css/backup.css?v=20261110-unified-backup-1',
   './assets/css/pdf-viewer.css?v=20261110-pdf-return-1',
@@ -44,7 +45,7 @@ const SHELL = [
   './assets/data/court-plan.js?v=20261109-statement-layout-1', './assets/js/court-plan.js?v=20261109-statement-layout-1', './assets/css/court-plan.css?v=20261109-statement-layout-1',
   './assets/shared-kiosk/20261109-shared-1/asset-base.js',
   './assets/shared-kiosk/20261109-shared-1/art.js',
-  './assets/shared-kiosk/20261109-shared-1/kiosk.js?v=20261113-kiosk-signature',
+  './assets/shared-kiosk/20261109-shared-1/kiosk.js?v=20261113-admin-signature',
   './assets/shared-kiosk/20261109-shared-1/billing.js',
   './assets/shared-kiosk/20261109-shared-1/standalone.css',
   './assets/shared-kiosk/20261109-shared-1/native.css',

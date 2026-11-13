@@ -1,0 +1,146 @@
+/* TFB administration inherits its palette from the public brand switch. */
+:root {
+  --admin-accent: var(--tfb-signature-red);
+  --admin-on-accent: #000;
+  --admin-accent-text: #a9422c;
+  --admin-focus: var(--admin-accent-text);
+  --admin-accent-soft: color-mix(in srgb, var(--admin-accent) 14%, var(--card));
+}
+
+:root.tfb-logo-midnight-amber {
+  --admin-accent: var(--tfb-signature-yellow);
+  --admin-on-accent: var(--tfb-midnight-blue);
+  --admin-accent-text: var(--tfb-midnight-blue);
+}
+
+body :is(
+  .tfb-admin-links .btn[aria-current="page"],
+  .tfb-admin-links .btn.small.tfb-backup-button,
+  .header-admin-edit[aria-pressed="true"],
+  .member-mail .btn.mm-save,
+  .member-mail .btn.mm-test,
+  .cms-backup .btn.cms-backup-primary,
+  .usage-dashboard .seg button[aria-pressed="true"],
+  .shared-kiosk-scope [data-editor="section"] .seg button.on,
+  .memberhub .memberhub-tabs button.on,
+  .shared-kiosk-scope .pl-panel .pl-status.is-selected,
+  .shared-kiosk-scope .pl-card.is-pending .pl-status,
+  .shared-kiosk-scope .signature-product-editor .btn[data-signature-color][aria-pressed="true"],
+  .shared-kiosk-scope .editbar
+):not([aria-disabled="true"]) {
+  background: var(--admin-accent);
+  border-color: var(--admin-accent);
+  color: var(--admin-on-accent);
+}
+
+body :is(
+  .editing-page, .partner-admin, .partner-report, .member-mail, .memberhub,
+  .cms-backup, .pl-panel, [data-kb-admin-view],
+  #sheet-root .sheet:has(:is(
+    [data-editor], [data-hm-editor], [data-home-order], [data-board-editor],
+    .trainer-editor, .fees-editor, .chat-text-editor, [data-mm-copy-form]
+  )),
+  .photo-frame-dialog
+) :is(.btn.primary, .btn.signal):not(:disabled, [aria-disabled="true"]) {
+  background: var(--admin-accent);
+  border-color: var(--admin-accent);
+  color: var(--admin-on-accent);
+}
+
+:root body .shared-kiosk-scope .editbar .btn.primary:not(:disabled) {
+  background: transparent;
+  border-color: currentColor;
+  color: var(--admin-on-accent);
+}
+
+body .shared-kiosk-scope .pl-hero {
+  background: var(--admin-accent);
+  color: var(--admin-on-accent);
+}
+
+body .shared-kiosk-scope .pl-hero h1 { color: inherit; }
+body .shared-kiosk-scope .pl-art { background: var(--admin-accent-soft); }
+body .shared-kiosk-scope :is(.pl-price strong, .pl-feedback.is-saving) { color: var(--admin-accent-text); }
+body .shared-kiosk-scope .pl-card.is-pending { border-color: var(--admin-accent); }
+body .shared-kiosk-scope .pl-visibility:focus-visible { outline-color: var(--admin-focus); }
+
+body :is(
+  .member-mail .page-kicker, .memberhub .memberhub-emblem,
+  .cms-backup .cms-backup-protected > span, .cms-backup .cms-backup-back,
+  .partner-admin :is(.page-kicker, .partner-admin-actions .link:not(.danger-link)),
+  .usage-intro .auth-kicker,
+  .editor :is(.editor-sub, .ed-theme-add, .rich-group button.on)
+) { color: var(--admin-accent-text); }
+body .editor .ed-more > summary::before { color: var(--admin-accent-text); }
+body .editor .ed-themes button.on {
+  background: var(--admin-accent);
+  border-color: var(--admin-accent);
+  color: var(--admin-on-accent);
+}
+
+body .member-mail .mm-archive-item[aria-current="true"] {
+  border-color: var(--admin-accent);
+  box-shadow: inset 3px 0 var(--admin-accent);
+}
+body .cms-backup .cms-backup-new { background: var(--admin-accent-soft); }
+body .usage-dashboard .usage-metric { border-top-color: var(--admin-accent); }
+body .usage-dashboard .usage-chart-track > div { background: var(--admin-accent); }
+
+body .shared-kiosk-scope [data-kb-admin-view] .kb-panel {
+  --kb-brand: var(--admin-accent);
+  --kb-accent: var(--admin-on-accent);
+}
+
+:root body .shared-kiosk-scope [data-kb-admin-view] :is(
+  .kb-calendar-head, .kb-calendar-head :is(label, .kb-year-value, .kb-closing-label, span, b),
+  .kb-day-picker-head, .kb-day-picker-head :is(span, strong, b)
+),
+:root body .shared-kiosk-scope [data-kb-admin-view] .kb-calendar.is-closing .kb-calendar-head .kb-closing-total :is(span, b) {
+  color: var(--admin-on-accent);
+}
+
+body .shared-kiosk-scope [data-kb-admin-view] :is(
+  .kb-account-heading, .kb-month b, .kb-calendar-pair .kb-calendar-days button.has-turnover,
+  .kb-breadcrumb .kb-year-pill, .kb-export-status
+) { color: var(--admin-accent-text); }
+
+body :is(
+  .editing-page, .partner-admin, .member-mail, .memberhub, .cms-backup,
+  .usage-dashboard, .pl-panel, [data-kb-admin-view], .photo-frame-dialog,
+  #sheet-root .sheet:has(:is([data-editor], [data-hm-editor], [data-board-editor], .trainer-editor, .fees-editor))
+) :is(input[type="checkbox"], input[type="radio"], input[type="range"]) {
+  accent-color: var(--admin-accent);
+}
+
+body :is(.shared-kiosk-scope, .editor) .symbol.on {
+  border-color: var(--admin-accent);
+  box-shadow: 0 0 0 2px var(--admin-accent);
+}
+
+body :is(.editor, .member-mail) :is(.field input, .field textarea, .field select):focus {
+  border-color: var(--admin-focus);
+  box-shadow: 0 0 0 3px var(--admin-accent-soft);
+}
+
+body :is(.editor, .editing-page, .tfb-admin-links, .pl-panel, .member-mail, .usage-dashboard, .partner-admin)
+:is(button, a, input, select, textarea):focus-visible {
+  outline: 2px solid var(--admin-focus);
+  outline-offset: 2px;
+}
+
+body [data-editor="splash"] .splash-editor-check input:checked {
+  background: var(--admin-accent);
+  border-color: var(--admin-accent);
+}
+
+body [data-editor="splash"] .splash-editor-check input:checked::before {
+  border-color: var(--admin-on-accent);
+}
+
+/* Legible keyboard focus on both neutral and coloured surfaces. */
+body .shared-kiosk-scope [data-kb-admin-view] :is(button, select, input):focus-visible {
+  outline-color: var(--admin-focus);
+}
+body .shared-kiosk-scope [data-kb-admin-view] .kb-calendar-head :focus-visible {
+  outline-color: var(--admin-on-accent);
+}

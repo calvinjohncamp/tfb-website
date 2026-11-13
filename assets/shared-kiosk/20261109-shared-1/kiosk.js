@@ -456,7 +456,7 @@
   }
 
   function openSectionEditor(id) {
-    if (!rawMember?.isAdmin) return;
+    if (!(TFB.ui?.isAdmin?.() ?? state.member?.isAdmin)) return;
     const original = state.catalog.sections.find((x) => x.id === id);
     const draft = original ? { ...original } : { id: 's-' + crypto.randomUUID(), title: '', note: '', status: 'open' };
     const catalogAtOpen = JSON.stringify(state.catalog);
