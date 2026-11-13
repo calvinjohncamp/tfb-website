@@ -318,7 +318,6 @@
         <div class="topbar-row">
           <div class="brand brand-logo-controls">
             <a class="brand-home" href="#home" data-action="brand-home" aria-label="${clubName} – Startseite">${logo}</a>
-            ${TFB.designPreview.brandButton('header-brand-ball')}
           </div>
           <div class="top-actions">
             ${rawMember?.isAdmin ? `<button type="button" class="header-admin-edit" data-action="admin-toggle" aria-label="Admin-Werkzeuge" title="Admin-Werkzeuge" aria-pressed="${state.member?.isAdmin === true}"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m4 20 1.4-5.1L16.7 3.6a2.6 2.6 0 0 1 3.7 3.7L9.1 18.6 4 20Z"/><path d="m14.7 5.6 3.7 3.7M5.4 14.9l3.7 3.7"/></svg></button>` : ''}
@@ -458,7 +457,7 @@
       }
       if (state.member?.isAdmin) {
         const editHome = '<button type="button" class="btn small" data-action="site-edit" data-page="home">Home</button>';
-        $view.insertAdjacentHTML('afterbegin', `<div class="tfb-admin-design">${TFB.designPreview.buttons()}
+        $view.insertAdjacentHTML('afterbegin', `<div class="tfb-admin-design">
           <div class="tfb-admin-links"><button type="button" class="btn small" data-action="splash-edit">Splash</button>${editHome}<a class="btn small" href="#partner">Partner</a>
             <button type="button" class="btn small" data-action="members-manage">Mitglieder</button>
             <a class="btn small" href="#clubstatistik">Statistik</a>

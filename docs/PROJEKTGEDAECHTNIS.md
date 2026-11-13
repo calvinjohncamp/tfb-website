@@ -1,5 +1,26 @@
 # TFB-Kiosk – Projektgedächtnis und Übergabe
 
+## 13.11.2026 – TFB-Optik freigegeben
+
+Die sichtbare Startseite mit kühler Welt und blau-gelber TFB-Marke ist der
+verbindliche Stand. Frühere Entwürfe für warme und eigene Hintergründe sind
+archiviert. Die Umschalter und Farbfelder der Artikelpflege sind deaktiviert.
+Gespeicherte Hintergrundwerte bleiben in den Artikeldaten. Für einen späteren
+Wiedereinstieg enthält Git-Stand `898ccdf` die Umschalter in
+`assets/js/design-preview.js`, ihre Einbindung in `app.js` und
+`partner-visibility.js` sowie die Farbfelder und Pipette in `site.js`.
+
+## 13.11.2026 – Key Account: gemeinsamer Kiosk in TFB und Padel
+
+Offen für die gemeinsame Abnahme. Die Kiosk-Optik ist freigegeben. Mit demselben
+TFB-Testmitglied je einen Kauf in der TFB-App und der Padel-Buchungs-App erfassen,
+die Übertragung des Padel-Kaufs wiederholen und einen Kauf stornieren. Bierdeckel,
+TFB-Kioskjournal und Abrechnung sowie Padel-MIS abgleichen. Zwei unterschiedliche
+Käufe müssen zwei Buchungen ergeben. Eine wiederholte Übertragung darf keine
+zusätzliche Buchung erzeugen. Der vermittelte Mitgliedskauf wird im Padel-MIS
+ausgewiesen und erhöht den eigenen Padel-Umsatz nicht. Storno und Summen in beiden
+Apps prüfen. Bis zur Abnahme als offenen Key-Account-Prüfauftrag führen.
+
 ## Datensicherung: eindeutige Vorschau · 10.11.2026
 
 Live bestätigt: Programm 8cd2fb8, erfolgreicher Pages-Lauf 42815441441.

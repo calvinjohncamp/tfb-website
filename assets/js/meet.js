@@ -216,6 +216,14 @@
     if (min < 1440) return `vor ${Math.round(min / 60)} Std.`;
     return `vor ${Math.round(min / 1440)} Tagen`;
   };
+  const actionTime = new Intl.DateTimeFormat('de-DE', {
+    timeZone: 'Europe/Berlin', dateStyle: 'medium', timeStyle: 'short',
+  });
+  const formatActionTime = (value) => {
+    if (!value) return '';
+    const date = new Date(value);
+    return Number.isFinite(date.getTime()) ? actionTime.format(date) + ' Uhr' : '';
+  };
   const sendText = (iso) => (iso <= today() ? 'heute' : iso === addDays(today(), 1) ? 'morgen' : shortDate(iso));
   const linkFor = (id) => {
     const base = /^https?:/.test(location.protocol) ? location.origin + location.pathname : TFB.config.publicUrl + '/';
@@ -431,6 +439,7 @@
     ];
     const pill = (st, n) => ({ yes: '✓ dabei', ersatz: `Ersatz ${n}`, open: '○ offen', no: '✗ abgesagt' }[st]);
     const meIn = m.invitees.includes(me().id);
+    const sent = formatActionTime(m.createdAt);
     const kind = KINDS[m.kind] ? KINDS[m.kind].label : '';
     const kicker = [kind !== m.title && !m.title.startsWith(kind) ? kind : '', g ? g.name : '', s ? rhythm(s) : '']
       .filter(Boolean).join(' · ');
@@ -440,7 +449,7 @@
           <h1>${esc(m.title)}</h1>
           <p class="muted">${esc(fmtDate(m.date, { weekday: 'long', day: 'numeric', month: 'long' }))} · ${esc(m.time)} Uhr · ${esc(m.place)}</p>
           ${extraTimes(m) ? `<p class="meet-times">${esc(extraTimes(m))}</p>` : ''}
-          <p class="small muted">Eingeladen von ${isOrg ? 'dir' : esc(names[m.createdBy] || 'Mitglied')}</p></div>
+          <p class="small muted">Eingeladen von ${isOrg ? 'dir' : esc(names[m.createdBy] || 'Mitglied')}${sent ? ` · Einladung verschickt am ${esc(sent)}` : ''}</p></div>
         <a class="view-close" href="#treffen" aria-label="Zurück zur Übersicht">${ui().icon.close}</a>
       </header>
       ${m.note ? `<p class="meet-note">„${esc(m.note)}“ <span class="muted">– ${esc(firstName(names[m.createdBy]))}</span></p>` : ''}
@@ -458,7 +467,7 @@
       <section class="card meet-table" aria-label="Teilnehmer">
         ${rows.map(([p, st, n]) => {
           const resp = m.responses[p];
-          const sub = [p === m.createdBy ? 'lädt ein' : '', resp && resp.note ? `„${resp.note}“` : '', resp && resp.by ? `eingetragen von ${resp.by === me().id ? 'dir' : firstName(names[resp.by])}` : '', resp && p !== m.createdBy ? ago(resp.at) : ''].filter(Boolean).join(' · ');
+          const sub = [p === m.createdBy ? 'lädt ein' : '', resp && resp.note ? `„${resp.note}“` : '', resp && resp.by ? `eingetragen von ${resp.by === me().id ? 'dir' : firstName(names[resp.by])}` : '', resp && p !== m.createdBy ? formatActionTime(resp.at) : ''].filter(Boolean).join(' · ');
           const proxy = isOrg && p !== me().id;
           const open = proxy ? `<button type="button" class="meet-row ${st}" data-action="meet-proxy" data-id="${m.id}" data-member="${p}">` : `<div class="meet-row ${st}">`;
           return `${open}

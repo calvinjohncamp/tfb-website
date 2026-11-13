@@ -81,19 +81,6 @@
 
   // ---------- Formatierung ----------
   const esc = (s) => ui().esc(s);
-  // Hintergrund der Textseite eines Home-Themas (Look „Wechselspiel“): Standard Creme, frei wählbar.
-  const FEATURE_BG = '#F5F0E6';
-  const LINK_BG = '#FFFFFF';   // Link-Knöpfe (Pillen) im Thema
-  // Farbzeile im Editor: Farbfeld · Pipette · Farbcode · Standard (Bedienung siehe wireColorFields)
-  const colorField = (key, value, def) => {
-    const v = hexOk(value) ? value : def;
-    return `<div class="bg-row" data-color-field="${key}" data-default="${def}">
-      <label class="bg-swatch" style="--c:${v}" title="Farbe wählen"><input type="color" value="${v.toLowerCase()}" aria-label="Farbe wählen"></label>
-      ${'EyeDropper' in window ? '<button type="button" class="btn small" data-eyedrop title="Farbe irgendwo auf dem Bildschirm aufnehmen">Pipette</button>' : ''}
-      <input name="${key}" class="bg-hex" value="${v}" maxlength="7" spellcheck="false" autocomplete="off" aria-label="Farbcode">
-      <button type="button" class="link" data-color-reset ${v === def ? 'hidden' : ''}>Standard</button>
-    </div>`;
-  };
   // Abstände der Links je Thema (px): über den Links und zwischen zwei Links – Regler ▲/▼ in 2-px-Schritten
   const LINK_TOP = 26;
   const LINK_GAP = 14;
@@ -135,44 +122,6 @@
       row.querySelector('[data-gap-reset]').addEventListener('click', () => set(def));
     });
   }
-  // Gespeicherte Farbänderungen sofort in der Admin-Vorschau zeigen.
-  function markColors(before, after) {
-    if (!after || after.type !== 'feature') return;
-    if ((before?.bg || '') !== (after.bg || '') || (before?.linkBg || '') !== (after.linkBg || '')) {
-      TFB.designPreview?.selectWorld('custom');
-    }
-  }
-  function wireColorFields(form, changed) {
-    form.querySelectorAll('[data-color-field]').forEach((row) => {
-      const def = row.dataset.default;
-      const hexIn = row.querySelector('.bg-hex');
-      const set = (hex) => {
-        if (!hex) return;
-        hexIn.value = hex;
-        row.querySelector('input[type=color]').value = hex.toLowerCase();
-        row.querySelector('.bg-swatch').style.setProperty('--c', hex);
-        row.querySelector('[data-color-reset]').hidden = hex === def;
-        hexIn.classList.remove('invalid');
-        changed();
-      };
-      row.querySelector('input[type=color]').addEventListener('input', (e) => set(toHex(e.target.value)));
-      hexIn.addEventListener('input', (e) => { const hex = toHex(e.target.value); if (hex) set(hex); else e.target.classList.add('invalid'); });
-      row.querySelector('[data-color-reset]').addEventListener('click', () => set(def));
-      row.querySelector('[data-eyedrop]')?.addEventListener('click', async () => {
-        try { const r = await new window.EyeDropper().open(); set(toHex(r.sRGBHex)); } catch (_) { /* abgebrochen */ }
-      });
-    });
-  }
-  const hexOk = (v) => /^#[0-9a-f]{6}$/i.test(String(v || ''));
-  const toHex = (v) => {
-    const t = String(v || '').trim();
-    if (/^#?[0-9a-f]{6}$/i.test(t)) return ('#' + t.replace('#', '')).toUpperCase();
-    const m = t.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)/i);
-    return m ? '#' + m.slice(1, 4).map((x) => Number(x).toString(16).padStart(2, '0')).join('').toUpperCase() : '';
-  };
-  // Dunkler Grund → helle Schrift (je nachdem, was mehr Kontrast hat)
-  const lum = (hex) => { const c = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255).map((v) => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4)); return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]; };
-  const isDarkBg = (hex) => { const l = lum(hex); return (1.05 / (l + 0.05)) > ((l + 0.05) / (lum('#1C2520') + 0.05)); };
   // Fließtext mit Auszeichnungen. Im Editor gestaltet man direkt (WYSIWYG); gespeichert wird als
   // schlichter Text mit Zeichen – so bleibt alles klein, sicher und übertragbar:
   //   [Text](https://… | #seite)  Link       **Text** fett     *Text* kursiv    __Text__ unterstrichen
@@ -484,14 +433,11 @@
             ? `<button type="button" data-action="link-move" data-block="${esc(b.id)}" data-slot="${name}">${hint}</button>`
             : '<span class="link-drop" aria-hidden="true">hier ablegen</span>'}</div>`;
         };
-        const colorsOn = TFB.designPreview?.usesCustomBackgrounds();
-        const bg = colorsOn && hexOk(b.bg) ? b.bg : '';
-        const linkBg = colorsOn && hexOk(b.linkBg) ? b.linkBg : '';
         const parts = String(b.text || '').split(/\n{2,}/).filter((x) => x.trim());
         const textHtml = parts.map((p, i) => slot(`right-${i}`) + paragraphs(p)).join('');
         return `
-          <article class="feature feature-${esc(String(b.layout || 'wide').replace('-right', ''))} ${/-right$/.test(b.layout || '') ? 'img-right' : ''} ${more ? 'has-more' : ''} ${n === '01' ? 'feature-first' : ''} ${Number(n) % 2 === 0 ? 'feature-even' : ''} ${bg && isDarkBg(bg) ? 'feature-dark' : ''} ${linkBg ? (isDarkBg(linkBg) ? 'links-dark' : 'links-light') : ''}" data-feature="${esc(b.id)}"${(() => {
-            const v = [bg ? `--feature-bg:${bg}` : '', linkBg ? `--link-bg:${linkBg}` : '', gapOk(b.linkTop) ? `--link-top:${b.linkTop}px` : '', gapOk(b.linkGap) ? `--link-gap:${b.linkGap}px` : ''].filter(Boolean).join(';');
+          <article class="feature feature-${esc(String(b.layout || 'wide').replace('-right', ''))} ${/-right$/.test(b.layout || '') ? 'img-right' : ''} ${more ? 'has-more' : ''} ${n === '01' ? 'feature-first' : ''} ${Number(n) % 2 === 0 ? 'feature-even' : ''}" data-feature="${esc(b.id)}"${(() => {
+            const v = [gapOk(b.linkTop) ? `--link-top:${b.linkTop}px` : '', gapOk(b.linkGap) ? `--link-gap:${b.linkGap}px` : ''].filter(Boolean).join(';');
             return v ? ` style="${v}"` : '';
           })()}>
             ${b.mediaCollection ? TFB.homeMedia.cover(b, `#home/${b.id}`, ref => images[ref] || ref) : (b.images || []).filter(shownImage).length ? newsCollage(b) : wrap(`<div class="feature-media">${picture(b.image, b.id, b.title)}</div>`)}
@@ -2266,11 +2212,7 @@
             + field('Unterzeile darunter', 'subtitle', draft.subtitle, { placeholder: 'z. B. Zwei Outdoor-Courts, 365 Tage geöffnet' })
             + `<h3 class="editor-sub">3 · Kurzer Text</h3>`
             + field('', 'text', draft.text, { area: true, rich: true, simple: true, rows: 5, placeholder: 'Zwei, drei Sätze – Wort markieren, dann Fett, Kursiv oder Rot' })
-            + `<h3 class="editor-sub">4 · Farben</h3>
-               <div class="field bg-field"><span>Hintergrund der Textseite</span>${colorField('bg', draft.bg, FEATURE_BG)}</div>
-               <div class="field bg-field"><span>Hintergrund der Link-Knöpfe</span>${colorField('linkBg', draft.linkBg, LINK_BG)}</div>
-               <p class="muted small ed-note">Im Look „Wechselspiel“ siehst du diese Farben unter „Eigene Hintergründe“. ${'EyeDropper' in window ? 'Mit der Pipette nimmst du eine Farbe von überall auf dem Bildschirm auf – auch aus dem Foto oder einem anderen Fenster. ' : ''}Auf dunklem Grund wird die Schrift automatisch hell. „Standard“ setzt zurück.</p>`
-            + `<h3 class="editor-sub">5 · Links (freiwillig)</h3>
+            + `<h3 class="editor-sub">4 · Links (freiwillig)</h3>
                <p class="muted small ed-note">„Mehr erfahren“ zur Unterseite erscheint von selbst, sobald die Unterseite Inhalt hat.</p>
                <div class="gap-fields">${gapField('linkTop', draft.linkTop, LINK_TOP, 'Abstand über den Links')}${gapField('linkGap', draft.linkGap, LINK_GAP, 'Abstand zwischen den Links')}</div>`
             + linkTargetField(lk.url, 'link', 'Link 1')
@@ -2490,12 +2432,6 @@
         document.querySelector(`[data-editor=block] .gallery-thumb[data-list="${thumb.dataset.list}"][data-index="${index}"] .thumb-grip`)?.focus();
       });
       form.addEventListener('dragstart', e => { if (e.target.closest('.gallery-thumb.sortable')) e.preventDefault(); });
-      // Farben: Farbfeld, Pipette, Farbcode, Standard – alles mit Live-Vorschau
-      wireColorFields(form, () => {
-        if (!live) return;
-        TFB.designPreview?.selectWorld('custom');
-        schedulePreview();
-      });
       wireGapFields(form, () => { if (live) schedulePreview(); });
       if (live) {
         startLive(id, draft, () => { collect(form); return edTab; });
@@ -2676,11 +2612,6 @@
         const v = Number(f[k].value);
         if (gapOk(v) && v !== def) draft[k] = v; else delete draft[k];
       });
-      [['bg', FEATURE_BG], ['linkBg', LINK_BG]].forEach(([k, def]) => {
-        if (!f[k]) return;
-        const hex = toHex(f[k].value);
-        if (hex && hex !== def) draft[k] = hex; else if (hex === def) delete draft[k];
-      });
       if (f.navigation) { draft.navigation = f.navigation.value; draft.showMore = f.showMore.checked; }
       if (f.albumEnabled) draft.album = { ...(draft.album || {}), enabled: f.albumEnabled.checked, title: f.albumTitle.value.trim(), label: f.albumLabel.value.trim() || 'Fotos der Veranstaltung', position: f.albumPos.value, icon: f.albumIcon.value, original: f.albumOriginal.checked };
       if (form.querySelector('[data-panel=sub]') && draft.more) {
@@ -2708,7 +2639,6 @@
       if(editing==='aktuell'&&['post','event'].includes(draft.type)&&!TFB.newsroom.validDate(draft.date)){form.querySelector('.form-error').textContent='Bitte ein gültiges Datum wählen.';return;}
       delete draft._new;
       const list = blocksOf();
-      markColors(list.find((b) => b.id === id), draft);
       list[list.findIndex((b) => b.id === id)] = draft;
       endLive();
       closeSheet();
