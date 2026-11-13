@@ -409,6 +409,9 @@
     });
   }
 
+  const HOME_PHOTO_LIMIT = 5;
+  const homePhotoRefs = (block) => (block.images?.length ? block.images : [block.image]).filter(shownImage);
+
   // ---------- Bausteine darstellen ----------
   function renderBlock(b, page, accentDate = false) {
     switch (b.type) {
@@ -433,6 +436,8 @@
             ? `<button type="button" data-action="link-move" data-block="${esc(b.id)}" data-slot="${name}">${hint}</button>`
             : '<span class="link-drop" aria-hidden="true">hier ablegen</span>'}</div>`;
         };
+        const homePhotos = page === 'home' ? homePhotoRefs(b) : [];
+        const cover = `<div class="feature-media">${picture(homePhotos[0] || b.image, b.id, b.title)}</div>`;
         const parts = String(b.text || '').split(/\n{2,}/).filter((x) => x.trim());
         const textHtml = parts.map((p, i) => slot(`right-${i}`) + paragraphs(p)).join('');
         return `
@@ -440,7 +445,7 @@
             const v = [gapOk(b.linkTop) ? `--link-top:${b.linkTop}px` : '', gapOk(b.linkGap) ? `--link-gap:${b.linkGap}px` : ''].filter(Boolean).join(';');
             return v ? ` style="${v}"` : '';
           })()}>
-            ${b.mediaCollection ? TFB.homeMedia.cover(b, `#home/${b.id}`, ref => images[ref] || ref) : (b.images || []).filter(shownImage).length ? newsCollage(b) : wrap(`<div class="feature-media">${picture(b.image, b.id, b.title)}</div>`)}
+            ${b.mediaCollection ? TFB.homeMedia.cover(b, `#home/${b.id}`, ref => images[ref] || ref) : homePhotos.length ? `<button type="button" class="feature-hit home-photo-open" data-action="home-photo-gallery" data-block="${esc(b.id)}" aria-label="${esc(b.title)}: ${homePhotos.length === 1 ? 'Foto groß ansehen' : 'Fotos groß ansehen'}">${cover}</button>` : page !== 'home' && (b.images || []).some(shownImage) ? newsCollage(b) : wrap(cover)}
             <div class="feature-body">
               <div class="feature-left">
                 <div class="feature-kicker"><span class="feature-number">${n}</span><span class="feature-kicker-label">${esc(b.kicker || '')}</span>
@@ -2125,6 +2130,7 @@
   function thumbEdit(ref, list, i, n, removeAttr, format = '') {
     return `<div class="gallery-thumb sortable" draggable="false" data-list="${list}" data-index="${i}">
       ${picture(ref, ref)}${frameButton(ref, true, format)}
+      ${list === 'home' ? '<span class="home-cover-label">Aufmacher</span>' : ''}
       <button type="button" class="thumb-grip" title="Ziehen zum Sortieren" aria-label="Foto ${i + 1} verschieben (ziehen oder Pfeiltasten)">⠿</button>
       <button type="button" ${removeAttr}="${esc(ref)}" aria-label="Foto entfernen">×</button>
       <span class="thumb-move">
@@ -2132,6 +2138,15 @@
         <button type="button" data-move-list="${list}" data-move-index="${i}" data-move-dir="1" ${i === n - 1 ? 'disabled' : ''} aria-label="Nach hinten">›</button>
       </span>
     </div>`;
+  }
+  function homePhotoField(draft) {
+    const refs = homePhotoRefs(draft);
+    return `<div class="field"><span>Fotos (${refs.length} / ${HOME_PHOTO_LIMIT})</span>
+      <p class="muted small">Das erste Foto ist der Aufmacher auf Home. Ziehe ein anderes Foto an die erste Stelle, um es als Aufmacher zu verwenden.</p>
+      <div class="gallery-edit home-photo-edit">
+        ${refs.map((ref, i) => thumbEdit(ref, 'home', i, refs.length, 'data-home-photo-remove')).join('')}
+        ${refs.length < HOME_PHOTO_LIMIT ? `<label class="gallery-add">${ui().icon.plus}<span>Fotos hinzufügen</span><input type="file" accept="image/*" multiple data-home-photo-input hidden></label>` : ''}
+      </div></div>`;
   }
   function newsPhotoField(draft) {
     const refs = (draft.images || []).filter(shownImage);
@@ -2166,6 +2181,8 @@
       });
     }
     const draft = JSON.parse(JSON.stringify(original));
+    const homeFeature = editing === 'home' && draft.type === 'feature';
+    if (homeFeature && !draft.images?.length) draft.images = draft.image ? [draft.image] : [];
     if (draft.type === 'feature') { draft.more = { ...(draft.more || {}) }; initSections(draft.more); }
     if (draft.type === 'post' && !(draft.images || []).length && draft.image) { draft.images = [draft.image]; draft.image = null; }
     let edTab = startTab;
@@ -2204,7 +2221,7 @@
           const homePanel = `
             <p class="ed-hint">So erscheint das Thema auf der <b>Startseite</b>. ${wideScreen() ? 'Links siehst du jede Änderung sofort.' : 'Mit „Vorschau ansehen“ siehst du die Seite.'}</p>
             <h3 class="editor-sub">1 · Foto</h3>`
-            + ((draft.images || []).length ? newsPhotoField(draft) : imageField(draft.image, draft.id, ''))
+            + (homeFeature ? homePhotoField(draft) : (draft.images || []).length ? newsPhotoField(draft) : imageField(draft.image, draft.id, ''))
             + (ui().state.member?.isAdmin ? cover4kField(draft) : '')
             + `<h3 class="editor-sub">2 · Überschrift</h3>`
             + field('Kleine Zeile darüber', 'kicker', draft.kicker, { placeholder: 'z. B. Ab Mai 2027 im Freibad Bielstein' })
@@ -2221,7 +2238,7 @@
             + field('Link-Text (steht auf dem Link)', 'link2Label', (draft.link2 || {}).label, { placeholder: 'z. B. Zum Kiosk' })
             + moreBox('home', `
               <div class="field"><span>Anordnung des Fotos (nur im Look „Klassisch“)</span>${seg('layout', draft.layout || 'wide', [['wide', 'Breit oben'], ['portrait', 'Hochformat links'], ['square', 'Quadrat links'], ['portrait-right', 'Hochformat rechts'], ['square-right', 'Quadrat rechts']])}</div>`
-              + ((draft.images || []).length ? '' : newsPhotoField(draft))
+              + (homeFeature || (draft.images || []).length ? '' : newsPhotoField(draft))
               + `<label class="field"><span>Klick auf Bild und Überschrift öffnet</span><select name="navigation" data-rerender>${[['detail','Eigene Detailseite'],['link','Verknüpften Link'],['none','Nichts']].map(([v,l]) => `<option value="${v}" ${v === (draft.navigation || (hasMore(draft) ? 'detail' : 'link')) ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
               <label class="meet-check"><input type="checkbox" name="showMore" ${draft.showMore !== false ? 'checked' : ''}><span>„Mehr erfahren“ bei eigener Detailseite anzeigen</span></label>`
               + (() => {
@@ -2522,6 +2539,14 @@
         if (mr) { collect(form); draft.more.images = draft.more.images.filter((r) => r !== mr.dataset.moreRemove); render(); return; }
         const ar = e.target.closest('[data-album-remove]');
         if (ar) { collect(form); draft.album.images = draft.album.images.filter(r => r !== ar.dataset.albumRemove); render(); return; }
+        const homeRemove = e.target.closest('[data-home-photo-remove]');
+        if (homeRemove) {
+          collect(form);
+          draft.images.splice(Number(homeRemove.closest('[data-index]').dataset.index), 1);
+          draft.image = draft.images[0] || null;
+          render();
+          return;
+        }
         const nr = e.target.closest('[data-news-remove]');
         if (nr) { collect(form); draft.images = draft.images.filter(r => r !== nr.dataset.newsRemove); render(); return; }
         const rmImg = e.target.closest('[data-image-remove]');
@@ -2545,6 +2570,12 @@
         collect(form);
         try {
           const files = [...input.files];
+          const homeUpload = homeFeature && input.matches('[data-home-photo-input]');
+          if (homeUpload && files.length + draft.images.length > HOME_PHOTO_LIMIT) {
+            ui().toast('Höchstens fünf Fotos pro Thema.');
+            input.value = '';
+            return;
+          }
           if (input.dataset.max && files.length + (draft.images || []).length + (draft.image ? 1 : 0) > Number(input.dataset.max)) {
             ui().toast(`Höchstens ${input.dataset.max} Fotos pro Beitrag – bitte weniger auswählen.`);
             input.value = ''; return;
@@ -2558,10 +2589,15 @@
             input.value = ''; return;
           }
           const firstIs4kCover = draft.allow4k === true && (
-            (draft.type === 'post' && input.matches('[data-news-input]') && !(draft.images || []).length && !draft.image)
+            (homeUpload && !draft.images.length)
+            || (draft.type === 'post' && input.matches('[data-news-input]') && !(draft.images || []).length && !draft.image)
             || (draft.type === 'feature' && input.matches('[data-image-input]') && input.dataset.target === '')
           );
           const ids = await uploadFiles(files, firstIs4kCover);
+          if (homeUpload) {
+            draft.images.push(...ids);
+            draft.image = draft.images[0];
+          }
           if (input.matches('[data-news-input]')) {
             draft.images = [...(draft.images || []), ...(draft.image ? [draft.image] : []), ...ids];
             draft.image = null;
@@ -2594,7 +2630,10 @@
       if (list === 'album') draft.album = { ...(draft.album || {}), images: visible };
       else if (list === 'hero') draft.more = { ...(draft.more || {}), heroImages: visible };
       else if (list === 'more') draft.more = { ...(draft.more || {}), images: visible };
-      else draft.images = visible;
+      else {
+        draft.images = visible;
+        if (list === 'home') draft.image = visible[0] || null;
+      }
     }
 
     // Formularwerte in den Entwurf übernehmen
@@ -3281,6 +3320,10 @@
     'post-hide': async (el) => { await ui().api.hidePost(el.dataset.id, el.dataset.hidden === '1'); ui().toast(el.dataset.hidden === '1' ? 'Ausgeblendet' : 'Wieder sichtbar', true); ui().renderView(); },
     'post-report': async (el) => { await ui().api.reportPost(el.dataset.id); ui().toast('Danke – der Vorstand schaut sich das an.', true); },
     'post-gallery': (el) => { const p = postCache[el.dataset.id]; if (p) openGallery(p.images || [], `${p.author} · ${whenText(p.createdAt)}`, false, Number(el.dataset.index)); },
+    'home-photo-gallery': (el) => {
+      const block = homeBlocks().find(item => item.id === el.dataset.block);
+      if (block) openGallery(homePhotoRefs(block), block.title, true, 0);
+    },
     'news-gallery': (el) => {
       const archived = TFB.clubArchive?.photoEntry(el.dataset.block);
       if (archived) {

@@ -1,7 +1,7 @@
 // Shared fullscreen entry for standalone photos; gallery controls keep their own viewer.
 (function () {
   const selector = 'img[data-photo-ref], .person-dot img, .meet-avatar img, .fpost-avatar img';
-  const excluded = '.viewer, .lightbox, .photo-frame-overlay, .editor, .gallery-thumb, .image-preview, .link-chip-img, .link-card-img, .message-collage, [data-action="board-photo-open"], [data-action="hero-open"], [data-action="collage-open"], [data-action="gallery-open"], [data-action="news-gallery"], [data-action="att-open"]';
+  const excluded = '.viewer, .lightbox, .photo-frame-overlay, .editor, .gallery-thumb, .image-preview, .link-chip-img, .link-card-img, .message-collage, [data-action="board-photo-open"], [data-action="hero-open"], [data-action="collage-open"], [data-action="gallery-open"], [data-action="news-gallery"], [data-action="home-photo-gallery"], [data-action="att-open"]';
   function photo(target) {
     const img = target.closest?.(selector);
     if (!img || img.closest(excluded)) return null;

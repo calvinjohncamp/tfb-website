@@ -1538,6 +1538,9 @@ button.meet-series { cursor: pointer; }
 .more-link.back { color: var(--muted); font-weight: 700; }
 .more-link.back:hover span { transform: translateX(-3px); }
 .feature-hit { color: inherit; text-decoration: none; display: block; }
+.home-photo-open { width: 100%; padding: 0; border: 0; background: transparent; cursor: zoom-in; }
+.home-photo-edit .home-cover-label { display: none !important; position: absolute; left: 4px; bottom: 4px; padding: 2px 5px; border-radius: 4px; background: var(--ink); color: white; font-size: .7rem; font-weight: 700; }
+.home-photo-edit [data-index="0"] .home-cover-label { display: inline-block !important; }
 .feature.has-more .feature-media { transition: transform .35s ease, box-shadow .35s; }
 .feature.has-more .feature-hit:hover .feature-media { transform: scale(1.01); box-shadow: 0 14px 30px rgba(0,0,0,.12); }
 .feature .feature-hit:hover h2,
