@@ -323,7 +323,12 @@
     const rest = mine.filter((m) => !waiting.includes(m));
     const mySeries = (data.series || []).filter((s) => s.until >= today() && (s.createdBy === me().id || s.invitees.includes(me().id)));
     const allIds = [...new Set(mine.flatMap((m) => m.invitees).concat(mySeries.map((s) => s.createdBy)))];
-    const names = await ui().api.memberNames(allIds);
+    const playerIds = [...new Set(mine.flatMap(m => lineup(m).players.slice(0, 7)))];
+    const [names, photos] = await Promise.all([
+      ui().api.memberNames(allIds),
+      ui().api.memberAvatars(playerIds).catch(() => ({})),
+    ]);
+    if (me().avatar) photos[me().id] = me().avatar;
     const myGroups = data.groups.filter((g) => g.members.includes(me().id));
     const groupAsks = data.groups.filter((g) => (g.pending || []).includes(me().id));
     const gNames = await ui().api.memberNames(groupAsks.map((g) => g.createdBy));
@@ -342,9 +347,9 @@
             <span class="meet-series-icon">${kindIcon('training')}</span>
             <span class="meet-card-text"><strong>Gruppe ${esc(g.name)}</strong><small>${esc(firstName(gNames[g.createdBy]))} hat dich hinzugefügt · ${g.members.length} bestätigt</small></span>
             <span class="meet-mine open">Bestätigen</span>
-          </button>`).join('')}${waiting.map((m) => card(m, names)).join('')}</div>` : ''}
+          </button>`).join('')}${waiting.map((m) => card(m, names, photos)).join('')}</div>` : ''}
       <h2 class="block-heading">Meine kommenden Matches</h2>
-      ${rest.length ? `<div class="meet-list">${rest.map((m) => card(m, names)).join('')}</div>` : '<p class="muted">Gerade keine weiteren Verabredungen.</p>'}
+      ${rest.length ? `<div class="meet-list">${rest.map((m) => card(m, names, photos)).join('')}</div>` : '<p class="muted">Gerade keine weiteren Verabredungen.</p>'}
       <h2 class="block-heading">Regelmäßige Trainingsgruppen</h2>
       <p class="small muted meet-section-intro">Wiederkehrende Einladungen mit festem Tag und fester Uhrzeit.</p>
       <div class="meet-series-list">${mySeries.map((s) => seriesCard(s, names)).join('')}</div>
@@ -384,21 +389,36 @@
     return !r ? 'open' : r.a === 'no' ? 'no' : L.players.includes(me().id) ? 'yes' : 'ersatz';
   }
 
-  function card(m, names) {
+  function card(m, names, photos) {
     const L = lineup(m);
     const s = myState(m, L);
     const label = s && { yes: '✓ dabei', ersatz: `Ersatz ${L.ersatz.indexOf(me().id) + 1}`, no: '✗ abgesagt', open: 'Antworten' }[s];
     const from = m.createdBy !== me().id ? ` · von ${firstName(names[m.createdBy])}` : '';
+    const answered = m.responses[me().id];
+    const timestamp = formatActionTime(answered?.at);
+    const showAnswerTime = timestamp && (m.createdBy !== me().id || answered.a === 'no');
+    const players = L.players.slice(0, 7);
     return `
-      <a class="card meet-card ${L.full ? 'is-full' : ''}" href="#treffen/${m.id}">
-        <span class="date-badge"><small>${esc(fmtDate(m.date, { weekday: 'short' }))}</small><b>${esc(fmtDate(m.date, { day: 'numeric' }))}</b><small>${esc(fmtDate(m.date, { month: 'short' }).replace('.', ''))}</small></span>
-        <span class="meet-card-text">
-          <strong>${esc(m.title)}</strong>
-          <small>${esc(m.time)} Uhr · ${esc(m.place)}${extraTimes(m) ? ` · ${esc(extraTimes(m))}` : ''}${m.seriesId ? ' · wöchentlich' : ''}${esc(from)}</small>
-          <span class="meet-card-status"><b class="${L.full ? 'ok' : ''}">${esc(statusText(m, L))}</b>${slotDots(m, L, names)}</span>
-        </span>
-        ${label ? `<span class="meet-mine ${s}">${esc(label)}</span>` : ''}
-      </a>`;
+      <article class="card meet-card ${L.full ? 'is-full' : ''}">
+        <a class="meet-card-link" href="#treffen/${esc(m.id)}">
+          <span class="date-badge"><small>${esc(fmtDate(m.date, { weekday: 'short' }))}</small><b>${esc(fmtDate(m.date, { day: 'numeric' }))}</b><small>${esc(fmtDate(m.date, { month: 'short' }).replace('.', ''))}</small></span>
+          <span class="meet-card-text">
+            <strong>${esc(m.title)}</strong>
+            <small>${esc(m.time)} Uhr · ${esc(m.place)}${extraTimes(m) ? ` · ${esc(extraTimes(m))}` : ''}${m.seriesId ? ' · wöchentlich' : ''}${esc(from)}</small>
+            <span class="meet-card-status"><b class="${L.full ? 'ok' : ''}">${esc(statusText(m, L))}</b>${label ? `<span class="meet-mine ${s}">${esc(label)}</span>` : ''}</span>
+            ${showAnswerTime ? `<small class="meet-answer-time">${answered.a === 'no' ? 'Abgesagt' : 'Zugesagt'} am ${esc(timestamp)}</small>` : ''}
+          </span>
+        </a>
+        ${players.length ? `<div class="meet-card-players" role="group" aria-label="Teilnehmende">
+          ${players.map(p => {
+            const name = names[p] || 'Mitglied';
+            return photos[p]
+              ? `<button type="button" class="meet-card-avatar" data-action="meet-photo" data-member="${esc(p)}" data-name="${esc(name)}" title="${esc(name)}" aria-label="Profilfoto von ${esc(name)} groß ansehen"><img src="${esc(photos[p])}" alt=""></button>`
+              : `<span class="meet-card-avatar" title="${esc(name)}" role="img" aria-label="${esc(name)}">${esc(initials(name))}</span>`;
+          }).join('')}
+          ${L.players.length > players.length ? `<span class="meet-card-avatar">+${L.players.length - players.length}</span>` : ''}
+        </div>` : ''}
+      </article>`;
   }
 
   function seriesCard(s, names) {
@@ -467,7 +487,7 @@
       <section class="card meet-table" aria-label="Teilnehmer">
         ${rows.map(([p, st, n]) => {
           const resp = m.responses[p];
-          const sub = [p === m.createdBy ? 'lädt ein' : '', resp && resp.note ? `„${resp.note}“` : '', resp && resp.by ? `eingetragen von ${resp.by === me().id ? 'dir' : firstName(names[resp.by])}` : '', resp && p !== m.createdBy ? formatActionTime(resp.at) : ''].filter(Boolean).join(' · ');
+          const sub = [p === m.createdBy ? 'lädt ein' : '', resp && resp.note ? `„${resp.note}“` : '', resp && resp.by ? `eingetragen von ${resp.by === me().id ? 'dir' : firstName(names[resp.by])}` : '', resp && (p !== m.createdBy || resp.a === 'no') && formatActionTime(resp.at) ? `${resp.a === 'no' ? 'Abgesagt' : 'Zugesagt'} am ${formatActionTime(resp.at)}` : ''].filter(Boolean).join(' · ');
           const proxy = isOrg && p !== me().id;
           const open = proxy ? `<button type="button" class="meet-row ${st}" data-action="meet-proxy" data-id="${m.id}" data-member="${p}">` : `<div class="meet-row ${st}">`;
           return `${open}
@@ -1078,6 +1098,14 @@
   Object.assign(TFB.actions, {
     inbox: () => openInbox(),
     'meet-new': (el) => openCreate(el.dataset.kind || 'einzel', { weekly: el.dataset.repeat === 'weekly' }),
+    'meet-photo': async (el) => {
+      const preview = el.querySelector('img')?.getAttribute('src');
+      if (!preview) return;
+      const original = el.dataset.member === me()?.id
+        ? me().avatarLarge || preview
+        : await ui().api.avatarOriginal(preview).catch(() => preview);
+      if (el.isConnected && original) ui().openLightbox(original, el.dataset.name);
+    },
     'meet-invite-more': (el) => openInviteMore(el.dataset.id),
     'meet-group': (el) => openGroup(el.dataset.id),
     'group-answer': (el) => openGroupAnswer(el.dataset.id),
