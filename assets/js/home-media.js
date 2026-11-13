@@ -57,6 +57,7 @@
         if(w!==width||h!==height){
           width=w;height=h;ratio=Math.min(devicePixelRatio||1,2,Math.sqrt(3000000/Math.max(1,w*h)));
           for(const surface of [canvas,a,b]){surface.width=Math.max(1,Math.round(w*ratio));surface.height=Math.max(1,Math.round(h*ratio));}
+          left.imageSmoothingQuality=right.imageSmoothingQuality='high';
           top=parseFloat(getComputedStyle(cards[0]).top)||h*.48;
         }
         draw(left,before,poses,w,h);
@@ -210,7 +211,7 @@
         const index=Number(input.dataset.hmUpload);
         const entry=draft.mediaCollection.entries[index];
         const firstIs4kCover=index===0&&entry.images.length===0&&draft.allow4k===true;
-        try{const refs=await uploadFiles([...input.files],firstIs4kCover);if(!form.isConnected)return;entry.images.push(...refs);busy=false;render();}catch(err){form.querySelector('.form-error').textContent=err.message;busy=false;form.querySelector('[type=submit]').disabled=false;}
+        try{const refs=await uploadFiles([...input.files],firstIs4kCover,false,page==='home');if(!form.isConnected)return;entry.images.push(...refs);busy=false;render();}catch(err){form.querySelector('.form-error').textContent=err.message;busy=false;form.querySelector('[type=submit]').disabled=false;}
       });
       form.addEventListener('submit',async event=>{
         event.preventDefault();if(busy)return;collect();const error=form.querySelector('.form-error');

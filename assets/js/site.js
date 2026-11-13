@@ -1226,7 +1226,7 @@
     return readDataUrl(png);
   }
 
-  async function uploadFiles(files, firstIs4kCover = false, allIn4k = false) {
+  async function uploadFiles(files, firstIs4kCover = false, allIn4k = false, homeCarousel = false) {
     const { api, loadImage, largeImage, toast } = ui();
     const ids = [];
     let n = 0;
@@ -1236,7 +1236,7 @@
       const img = await loadImage(file);
       const dataUrl = (allIn4k || firstIs4kCover && n === 1) && ui().state.member?.isAdmin
         ? await cover4kData(file, img)
-        : largeImage(img, 1600);
+        : homeCarousel ? largeImage(img, 2560, 0.93) : largeImage(img, 1600);
       const id = await api.putImage(dataUrl);
       images[id] = dataUrl;
       ids.push(id);

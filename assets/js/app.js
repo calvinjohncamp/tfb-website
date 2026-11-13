@@ -746,13 +746,15 @@
       img.src = url;
     });
   }
-  function largeImage(img, maxSide = 1400) {
+  function largeImage(img, maxSide = 1400, quality = 0.86) {
     const scale = Math.min(1, maxSide / Math.max(img.naturalWidth, img.naturalHeight));
     const canvas = document.createElement('canvas');
     canvas.width = Math.round(img.naturalWidth * scale);
     canvas.height = Math.round(img.naturalHeight * scale);
-    canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
-    return canvas.toDataURL('image/jpeg', 0.86);
+    const ctx = canvas.getContext('2d');
+    if (quality > 0.86) ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    return canvas.toDataURL('image/jpeg', quality);
   }
   function shrinkImage(file, size = 256) {
     return new Promise((resolve, reject) => {
