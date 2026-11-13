@@ -1200,9 +1200,9 @@
   const blocksOf = () => site.pages[editing].blocks;
   const findBlock = (id) => blocksOf().find((b) => b.id === id);
 
-  function cover4kField(draft, homeGallery = false) {
+  function cover4kField(draft, homeGallery = false, carousel = false) {
     return `<label class="meet-check"><input type="checkbox" name="allow4k" ${draft.allow4k === true ? 'checked' : ''}><span>4K erlauben (nur in Ausnahmefällen)</span></label>
-      <p class="muted small">${homeGallery ? 'Für bis zu fünf Fotos dieses Startseiten-Artikels.' : 'Nur für das erste Aufmacherbild dieses Artikels.'} Bis zu 3.840 Pixel an der längsten Seite und 10 MB.</p>`;
+      <p class="muted small">${homeGallery ? (carousel ? 'Für die Fotos dieses Home-Karussells.' : 'Für bis zu fünf Fotos dieses Startseiten-Artikels.') : 'Nur für das erste Aufmacherbild dieses Artikels.'} Bis zu 3.840 Pixel an der längsten Seite und 10 MB.</p>`;
   }
 
   async function cover4kData(file, img) {

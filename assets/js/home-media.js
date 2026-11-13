@@ -34,6 +34,8 @@
     if(!out||!left||!right)return null;
     canvas.className='hm-paint';canvas.setAttribute('aria-hidden','true');
     node.querySelector('.hm-stage').prepend(canvas);
+    // The fullscreen stage needs a larger pixel budget to stay sharp on Retina displays.
+    const pixelBudget=node.classList.contains('hm-zoom-orbit')?12000000:3000000;
     let width=0,height=0,ratio=1,top=0;
     const rounded=(ctx,x,y,w,h,r)=>{
       ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();
@@ -55,7 +57,7 @@
     return {
       render(poses,before,after,weight,w,h){
         if(w!==width||h!==height){
-          width=w;height=h;ratio=Math.min(devicePixelRatio||1,2,Math.sqrt(3000000/Math.max(1,w*h)));
+          width=w;height=h;ratio=Math.min(devicePixelRatio||1,2,Math.sqrt(pixelBudget/Math.max(1,w*h)));
           for(const surface of [canvas,a,b]){surface.width=Math.max(1,Math.round(w*ratio));surface.height=Math.max(1,Math.round(h*ratio));}
           left.imageSmoothingQuality=right.imageSmoothingQuality='high';
           top=parseFloat(getComputedStyle(cards[0]).top)||h*.48;
@@ -187,7 +189,7 @@
       if(single)for(const key of ['title','kicker','subtitle','text','date'])draft.mediaCollection.entries[0][key]=draft[key]||'';
     }
     const animationField=()=>`<fieldset class="hm-animation-choice"><legend>Animation in der Übersicht</legend>${[['auto','Animation startet sofort'],['manual','Animation erst per Play starten']].map(([value,label])=>`<label><input type="radio" name="animationStart" value="${value}"${(draft.animationStart||'auto')===value?' checked':''}> ${label}</label>`).join('')}</fieldset>`;
-    const summaryFields=()=>animationField()+(ui.state.member?.isAdmin?cover4kField(draft):'')+field('Obere Themenzeile','kicker',draft.kicker)+field('Hauptüberschrift','title',draft.title)+field('Unterüberschrift','subtitle',draft.subtitle)+field(page==='home'?'Hinweistext':'Begleittext','text',draft.text,true)+field('Button-Beschriftung','mediaButtonLabel',draft.mediaButtonLabel||'Beitrag ansehen');
+    const summaryFields=()=>animationField()+(ui.state.member?.isAdmin?cover4kField(draft,page==='home',true):'')+field('Obere Themenzeile','kicker',draft.kicker)+field('Hauptüberschrift','title',draft.title)+field('Unterüberschrift','subtitle',draft.subtitle)+field(page==='home'?'Hinweistext':'Begleittext','text',draft.text,true)+field('Button-Beschriftung','mediaButtonLabel',draft.mediaButtonLabel||'Beitrag ansehen');
     function render(){
       const dateField=page==='aktuell'?`<label class="field"><span>Veröffentlichungsdatum</span><input type="date" name="date" value="${esc(draft.date||draft.mediaCollection.entries[0]?.date)}"></label>`:'';
       const posts=()=>draft.mediaCollection.entries.map((entry,i)=>`<section class="hm-edit-entry"><h3>Beitrag ${i+1}</h3>${field('Obere Themenzeile',`entry_${i}_kicker`,entry.kicker ?? draft.kicker)}${field('Überschrift',`entry_${i}_title`,entry.title)}${field('Unterüberschrift (freiwillig)',`entry_${i}_subtitle`,entry.subtitle)}<label class="field"><span>Datum</span><input type="date" name="entry_${i}_date" value="${esc(entry.date)}"></label>${field('Begleittext',`entry_${i}_text`,entry.text,true)}${formats(entry,i)}${field('Instagram-Link (freiwillig)',`entry_${i}_instagramUrl`,entry.instagramUrl)}${pictures(entry,i)}<div class="hm-entry-actions"><button type="button" class="btn small" data-hm-entry-move="${i}:-1"${i===0?' disabled':''}>Beitrag nach oben</button><button type="button" class="btn small" data-hm-entry-move="${i}:1"${i===draft.mediaCollection.entries.length-1?' disabled':''}>Nach unten</button><button type="button" class="link" data-hm-entry-remove="${i}">Beitrag entfernen</button></div></section>`).join('')+'<button type="button" class="btn block" data-hm-add>Beitrag hinzufügen</button>';
@@ -210,8 +212,9 @@
         busy=true;form.querySelector('[type=submit]').disabled=true;
         const index=Number(input.dataset.hmUpload);
         const entry=draft.mediaCollection.entries[index];
+        const allIn4k=page==='home'&&draft.allow4k===true;
         const firstIs4kCover=index===0&&entry.images.length===0&&draft.allow4k===true;
-        try{const refs=await uploadFiles([...input.files],firstIs4kCover,false,page==='home');if(!form.isConnected)return;entry.images.push(...refs);busy=false;render();}catch(err){form.querySelector('.form-error').textContent=err.message;busy=false;form.querySelector('[type=submit]').disabled=false;}
+        try{const refs=await uploadFiles([...input.files],firstIs4kCover,allIn4k,page==='home');if(!form.isConnected)return;entry.images.push(...refs);busy=false;render();}catch(err){form.querySelector('.form-error').textContent=err.message;busy=false;form.querySelector('[type=submit]').disabled=false;}
       });
       form.addEventListener('submit',async event=>{
         event.preventDefault();if(busy)return;collect();const error=form.querySelector('.form-error');
