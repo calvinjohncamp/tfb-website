@@ -2,6 +2,7 @@
 // Netz zuerst, damit Änderungen sofort ankommen; ohne Netz startet die App aus dem Zwischenspeicher.
 const CACHE = 'tfb-kiosk-library-20261113-1';
 const SHELL = [
+  './assets/css/product-library.css?v=20261113-kiosk-signature',
   './assets/css/backup.css?v=20261110-unified-backup-1',
   './assets/css/pdf-viewer.css?v=20261110-pdf-return-1',
   './assets/js/pdf-viewer.js?v=20261110-pdf-return-1',
@@ -23,8 +24,8 @@ const SHELL = [
   './assets/docs/tfb-jugendkonzept.pdf?v=20261110-mitgliederinfos-1',
 
   './assets/css/kiosk-external-shop.css?v=20261110-mitgliederinfos-1',
-  './assets/js/kiosk-external-shop.js?v=20261113-kiosk-library',
-  './assets/js/app.js?v=20261113-kiosk-library',
+  './assets/js/kiosk-external-shop.js?v=20261113-kiosk-signature',
+  './assets/js/app.js?v=20261113-kiosk-signature',
   './assets/jako/jako-logo.png',
   './assets/jako/tfb-jako-sortiment-v2.png',
   './assets/css/bielstein-open.css?v=20261110-search-pdfs-1',
@@ -43,7 +44,7 @@ const SHELL = [
   './assets/data/court-plan.js?v=20261109-statement-layout-1', './assets/js/court-plan.js?v=20261109-statement-layout-1', './assets/css/court-plan.css?v=20261109-statement-layout-1',
   './assets/shared-kiosk/20261109-shared-1/asset-base.js',
   './assets/shared-kiosk/20261109-shared-1/art.js',
-  './assets/shared-kiosk/20261109-shared-1/kiosk.js',
+  './assets/shared-kiosk/20261109-shared-1/kiosk.js?v=20261113-kiosk-signature',
   './assets/shared-kiosk/20261109-shared-1/billing.js',
   './assets/shared-kiosk/20261109-shared-1/standalone.css',
   './assets/shared-kiosk/20261109-shared-1/native.css',
@@ -53,7 +54,7 @@ const SHELL = [
   './assets/shared-kiosk/20261109-shared-1/kiosk-domain.mjs',
   './assets/shared-kiosk/20261109-shared-1/manifest.json',
   './assets/js/club-people.js', './assets/css/club-people.css',
-  './assets/js/product-library.js?v=20261113-kiosk-library',
+  './assets/js/product-library.js?v=20261113-kiosk-signature',
   './assets/css/kiosk-billing.css', './assets/js/kiosk-billing.js', './assets/js/kiosk-export.js', './assets/js/kiosk-day-image.js',
   './assets/css/club-usage.css', './assets/js/club-usage.js',
   './assets/css/member-access.css', './assets/js/app-install.js',
@@ -77,7 +78,7 @@ const SHELL = [
   './assets/css/design-preview.css?v=20261110-gallery-complete-1', './assets/js/design-preview.js?v=20261113-brand-gallery-4k',
   './assets/css/partner-visibility.css', './assets/css/partner-visibility.css?v=20261109-statement-layout-1', './assets/js/partner-visibility.js?v=20261113-brand-gallery-4k', './assets/js/partner-content.js', './assets/js/partner-admin.js?v=20261110-search-pdfs-1',
   './assets/fonts/editorial/bricolage-grotesque.ttf', './assets/fonts/editorial/dm-sans.ttf',
-  './assets/js/config.js', './assets/data/partners.js', './assets/data/teams.js', './assets/data/site-seed.js', './assets/js/partner-rotation.js', './assets/js/site.js?v=20261113-retina-carousel', './assets/js/meet.js?v=20261113-invite-label', './assets/js/demo-backend.js', './assets/js/brand-data.js', './assets/js/art.js', './assets/js/app.js?v=20261113-kiosk-library', './assets/js/app.js?v=20261113-kiosk-library',
+  './assets/js/config.js', './assets/data/partners.js', './assets/data/teams.js', './assets/data/site-seed.js', './assets/js/partner-rotation.js', './assets/js/site.js?v=20261113-retina-carousel', './assets/js/meet.js?v=20261113-invite-label', './assets/js/demo-backend.js', './assets/js/brand-data.js', './assets/js/art.js', './assets/js/app.js?v=20261113-kiosk-signature', './assets/js/app.js?v=20261113-kiosk-signature',
   './assets/icons/favicon-64.png', './assets/icons/icon-192.png',
   './assets/js/membership.js', './assets/js/membership-fees.js', './assets/js/site.js?v=20261113-retina-carousel',
   './assets/js/photo-drop.js',

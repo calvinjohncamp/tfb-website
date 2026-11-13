@@ -328,15 +328,20 @@
   const priceText = (cents) => (cents / 100).toFixed(2).replace('.', ',');
 
   function openProductEditor(id, sectionId, copy = null) {
+    const signatureArt = env.signatureArt;
     const original = state.catalog.products.find((x) => x.id === id);
     const draft = original
       ? { ...original }
-      : { ...(copy||{}), id: 'p-' + crypto.randomUUID(), section: sectionId, name: '', detail: '', price: 200, art: 'bottle', color: '#C4553A', active: true,archived:false,unit:'Stück',kind:'sale' };
+      : { ...(copy||{}), id: 'p-' + crypto.randomUUID(), section: sectionId, name: '', detail: '', price: 200, art: 'bottle', color: signatureArt?.find(option => option.art === 'bottle')?.color || '#C4553A', active: true,archived:false,unit:'Stück',kind:'sale' };
     if(copy)Object.assign(draft,copy,{id:draft.id,active:true,archived:false});
+    const options = signatureArt || TFB.artKinds.map(([art, label]) => ({ art, label }));
+    let selected = options.findIndex(option => option.art === draft.art && same(option.color, draft.color));
+    if (selected < 0) selected = options.findIndex(option => option.art === draft.art);
+    let useSignature = !!signatureArt && (!original && !copy || same(options[selected]?.color, draft.color));
     const catalogAtOpen=JSON.stringify(state.catalog);
     const sections = state.catalog.sections;
     openSheet(`
-      <form class="editor" data-editor="product" novalidate>
+      <form class="editor${signatureArt ? ' signature-product-editor' : ''}" data-editor="product" novalidate>
         <h2>${original ? 'Artikel bearbeiten' : 'Neuer Artikel'}</h2>
         <div class="editor-preview" data-preview></div>
         <label class="field"><span>Name</span>
@@ -357,11 +362,12 @@
         <p class="fineprint">Die Kategorie bestimmt die Gruppe im Kiosk und in der Produktbibliothek. Änderungen gelten für neue Buchungen; frühere Namen und Preise bleiben erhalten.</p>
         <div class="field"><span>Symbol</span>
           <div class="symbol-grid">
-            ${TFB.artKinds.map(([kind, label]) => `<button type="button" class="symbol ${kind === draft.art ? 'on' : ''}" data-art="${kind}" title="${label}" aria-label="${label}">${TFB.art(kind, draft.color)}</button>`).join('')}
+            ${options.map(({art, label, color}, index) => `<button type="button" class="symbol" data-art="${art}" data-symbol-index="${index}" title="${label}" aria-label="${label}">${TFB.art(art, color || draft.color)}${signatureArt ? `<span>${label}</span>` : ''}</button>`).join('')}
           </div>
         </div>
         <div class="field"><span>Farbe</span>
           <div class="swatches">
+            ${signatureArt ? '<button type="button" class="btn small" data-signature-color>Signature-Farbe</button>' : ''}
             ${PRODUCT_COLORS.map((hex) => `<button type="button" class="swatch ${same(hex, draft.color) ? 'on' : ''}" style="--c:${hex}" data-color="${hex}" aria-label="Farbe ${hex}"></button>`).join('')}
             <label class="swatch empty" title="Eigene Farbe oder Pipette">${icon.plus}<input type="color" value="${esc(draft.color)}" data-color-picker aria-label="Eigene Farbe"></label>
           </div>
@@ -376,17 +382,25 @@
     const preview = () => {
       form.querySelector('[data-preview]').innerHTML = tile(draft, false).replace('data-action="pick"', 'tabindex="-1"');
       form.querySelectorAll('.symbol').forEach((b) => {
-        b.classList.toggle('on', b.dataset.art === draft.art);
-        b.innerHTML = TFB.art(b.dataset.art, draft.color);
+        const active = Number(b.dataset.symbolIndex) === selected;
+        b.classList.toggle('on', active);
+        b.setAttribute('aria-pressed', String(active));
+        if (!signatureArt) b.innerHTML = TFB.art(b.dataset.art, draft.color);
       });
-      form.querySelectorAll('[data-color]').forEach((b) => b.classList.toggle('on', same(b.dataset.color, draft.color)));
+      form.querySelectorAll('[data-color]').forEach((b) => b.classList.toggle('on', !useSignature && same(b.dataset.color, draft.color)));
+      const signatureButton = form.querySelector('[data-signature-color]');
+      if (signatureButton) {
+        signatureButton.setAttribute('aria-pressed', String(useSignature));
+        signatureButton.disabled = selected < 0;
+        form.querySelector('[data-color-picker]').value = draft.color;
+      }
     };
     preview();
     form.addEventListener('input', (e) => {
       const t = e.target;
       if (t.name === 'name' || t.name === 'detail' || t.name === 'unit') draft[t.name] = t.value;
       if (t.name === 'price') { const c = parsePrice(t.value); if (Number.isFinite(c)) draft.price = c; }
-      if (t.matches('[data-color-picker]')) draft.color = t.value;
+      if (t.matches('[data-color-picker]')) { draft.color = t.value; useSignature = false; }
       preview();
     });
     form.addEventListener('change', (e) => {
@@ -397,8 +411,21 @@
     form.addEventListener('click', (e) => {
       const sym = e.target.closest('[data-art]');
       const col = e.target.closest('[data-color]');
-      if (sym) { draft.art = sym.dataset.art; preview(); }
-      if (col) { draft.color = col.dataset.color; preview(); }
+      if (sym) {
+        selected = Number(sym.dataset.symbolIndex);
+        draft.art = sym.dataset.art;
+        if (signatureArt) {
+          useSignature = true;
+          draft.color = options[selected].color;
+        }
+        preview();
+      }
+      if (e.target.closest('[data-signature-color]') && options[selected]) {
+        useSignature = true;
+        draft.color = options[selected].color;
+        preview();
+      }
+      if (col) { draft.color = col.dataset.color; useSignature = false; preview(); }
       const del = e.target.closest('[data-delete]');
       if (del) {
         if (!del.dataset.armed) { del.dataset.armed = '1'; del.textContent = 'Entfernen? Frühere Buchungen bleiben erhalten'; return; }

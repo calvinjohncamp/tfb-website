@@ -503,7 +503,26 @@
   // ---------- Kiosk ----------
   TFB.attachKioskSurface=()=> $sheet.classList.add('shared-kiosk-scope');
   function openKioskSheet(html){openSheet(html);TFB.attachKioskSurface();}
-  const kiosk=ClubKiosk.create({TFB,cfg,api,state,icon,logo,esc,euro,monthName,nextMonthDebit,timeOf,dayKey,dayLabel,visual,strokesWord,same,viewHead,partnerSlot,showAuth,consentMarkup,openSheet:openKioskSheet,closeSheet,toast,renderView,$sheet});
+  const signatureColors = {
+    flutlicht: '#E9C857', tennisspieler: '#558D83', 'koelsch-flasche': '#E9B949',
+    'weizen-flasche': '#D88A2E', apfelschorle: '#DDBB54', fassbrause: '#B6C85D',
+    aperol: '#F27736', wein: '#8FA86D', 'wurst-brot': '#B5462F',
+    grillfleisch: '#A75A49', 'grillwurst-brot': '#C68C50', stange: '#E9B949',
+    kranz: '#E9B949', weizen: '#D88A2E', beer: '#E9B949', bottle: '#5A3825',
+    malz: '#3B2314', sportsfreund: '#5A2A1A', radler: '#E9CD70', cola: '#B7282E',
+    gerolsteiner: '#CFE6E0', water: '#7FB7D9', can: '#C4553A', slimcan: '#2E4E9E',
+    redbull: '#2E4E9E', cup: '#5A3825', bar: '#5A3825', snickers: '#5A3825',
+    mars: '#C8202F', wafer: '#1E4FA0', bag: '#E07A2F', tube: '#C8202F',
+    bear: '#E8B22B', hotdog: '#B5462F', sausage: '#C68C50', cone: '#D9A066',
+    ball: '#F2D21B', padel: '#C4553A', grip: '#F4F1EA', shirt: '#2A2D2E', cap: '#1F2A44',
+  };
+  const signatureArt = TFB.artKinds.flatMap(([art, label]) => {
+    const option = { art, label, color: signatureColors[art] };
+    if (art === 'cola') return [option, { art, label: 'Fanta', color: '#F08A24' }];
+    if (art === 'ball') return [option, { art, label: 'Padelball', color: '#F08A24' }];
+    return [option];
+  });
+  const kiosk=ClubKiosk.create({signatureArt,TFB,cfg,api,state,icon,logo,esc,euro,monthName,nextMonthDebit,timeOf,dayKey,dayLabel,visual,strokesWord,same,viewHead,partnerSlot,showAuth,consentMarkup,openSheet:openKioskSheet,closeSheet,toast,renderView,$sheet});
   const {isEditing,coasterMarkup,kioskView,openPick,tallyView,statementsView,openProductEditor,openSectionEditor,moveProduct,moveSection}=kiosk;
 
   // ---------- Profil ----------
