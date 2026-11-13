@@ -224,6 +224,12 @@
     const date = new Date(value);
     return Number.isFinite(date.getTime()) ? actionTime.format(date) + ' Uhr' : '';
   };
+  const answerTime = (meeting, person) => {
+    const answer = meeting.responses[person];
+    if (!answer || (person === meeting.createdBy && answer.a !== 'no')) return '';
+    const timestamp = formatActionTime(answer.at);
+    return timestamp ? `${answer.a === 'no' ? 'Abgesagt' : 'Zugesagt'} am ${timestamp}` : '';
+  };
   const sendText = (iso) => (iso <= today() ? 'heute' : iso === addDays(today(), 1) ? 'morgen' : shortDate(iso));
   const linkFor = (id) => {
     const base = /^https?:/.test(location.protocol) ? location.origin + location.pathname : TFB.config.publicUrl + '/';
@@ -394,9 +400,8 @@
     const s = myState(m, L);
     const label = s && { yes: '✓ dabei', ersatz: `Ersatz ${L.ersatz.indexOf(me().id) + 1}`, no: '✗ abgesagt', open: 'Antworten' }[s];
     const from = m.createdBy !== me().id ? ` · von ${firstName(names[m.createdBy])}` : '';
-    const answered = m.responses[me().id];
-    const timestamp = formatActionTime(answered?.at);
-    const showAnswerTime = timestamp && (m.createdBy !== me().id || answered.a === 'no');
+    const sent = formatActionTime(m.createdAt);
+    const timing = [sent && `Eingeladen am ${sent}`, answerTime(m, me().id)].filter(Boolean).join(' · ');
     const players = L.players.slice(0, 7);
     return `
       <article class="card meet-card ${L.full ? 'is-full' : ''}">
@@ -406,7 +411,7 @@
             <strong>${esc(m.title)}</strong>
             <small>${esc(m.time)} Uhr · ${esc(m.place)}${extraTimes(m) ? ` · ${esc(extraTimes(m))}` : ''}${m.seriesId ? ' · wöchentlich' : ''}${esc(from)}</small>
             <span class="meet-card-status"><b class="${L.full ? 'ok' : ''}">${esc(statusText(m, L))}</b>${label ? `<span class="meet-mine ${s}">${esc(label)}</span>` : ''}</span>
-            ${showAnswerTime ? `<small class="meet-answer-time">${answered.a === 'no' ? 'Abgesagt' : 'Zugesagt'} am ${esc(timestamp)}</small>` : ''}
+            ${timing ? `<small class="meet-answer-time">${esc(timing)}</small>` : ''}
           </span>
         </a>
         ${players.length ? `<div class="meet-card-players" role="group" aria-label="Teilnehmende">
@@ -469,7 +474,7 @@
           <h1>${esc(m.title)}</h1>
           <p class="muted">${esc(fmtDate(m.date, { weekday: 'long', day: 'numeric', month: 'long' }))} · ${esc(m.time)} Uhr · ${esc(m.place)}</p>
           ${extraTimes(m) ? `<p class="meet-times">${esc(extraTimes(m))}</p>` : ''}
-          <p class="small muted">Eingeladen von ${isOrg ? 'dir' : esc(names[m.createdBy] || 'Mitglied')}${sent ? ` · Einladung verschickt am ${esc(sent)}` : ''}</p></div>
+          <p class="small muted">Eingeladen von ${isOrg ? 'dir' : esc(names[m.createdBy] || 'Mitglied')}</p></div>
         <a class="view-close" href="#treffen" aria-label="Zurück zur Übersicht">${ui().icon.close}</a>
       </header>
       ${m.note ? `<p class="meet-note">„${esc(m.note)}“ <span class="muted">– ${esc(firstName(names[m.createdBy]))}</span></p>` : ''}
@@ -487,12 +492,19 @@
       <section class="card meet-table" aria-label="Teilnehmer">
         ${rows.map(([p, st, n]) => {
           const resp = m.responses[p];
-          const sub = [p === m.createdBy ? 'lädt ein' : '', resp && resp.note ? `„${resp.note}“` : '', resp && resp.by ? `eingetragen von ${resp.by === me().id ? 'dir' : firstName(names[resp.by])}` : '', resp && (p !== m.createdBy || resp.a === 'no') && formatActionTime(resp.at) ? `${resp.a === 'no' ? 'Abgesagt' : 'Zugesagt'} am ${formatActionTime(resp.at)}` : ''].filter(Boolean).join(' · ');
+          const timing = [
+            p === m.createdBy && (sent ? `Eingeladen am ${sent}` : 'Lädt ein'),
+            answerTime(m, p),
+          ].filter(Boolean).join(' · ');
+          const sub = [
+            resp?.note && `„${resp.note}“`,
+            resp?.by && `eingetragen von ${resp.by === me().id ? 'dir' : firstName(names[resp.by])}`,
+          ].filter(Boolean).join(' · ');
           const proxy = isOrg && p !== me().id;
           const open = proxy ? `<button type="button" class="meet-row ${st}" data-action="meet-proxy" data-id="${m.id}" data-member="${p}">` : `<div class="meet-row ${st}">`;
           return `${open}
             <span class="meet-avatar">${pics[p] ? `<img src="${esc(pics[p])}" alt="">` : esc(initials(names[p]))}</span>
-            <span class="meet-who"><b>${esc(names[p] || 'Mitglied')}${p === me().id ? ' <em>du</em>' : ''}</b>${sub ? `<small>${esc(sub)}</small>` : ''}</span>
+            <span class="meet-who"><b>${esc(names[p] || 'Mitglied')}${p === me().id ? ' <em>du</em>' : ''}</b>${timing ? `<small class="meet-answer-time">${esc(timing)}</small>` : ''}${sub ? `<small>${esc(sub)}</small>` : ''}</span>
             <span class="meet-pill ${st}">${pill(st, n)}</span>
           ${proxy ? '</button>' : '</div>'}`;
         }).join('')}
