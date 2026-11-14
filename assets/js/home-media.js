@@ -13,15 +13,14 @@
   const magnifier='<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="m15.5 15.5 5 5"></path></svg>';
   const playbackIcon = playing => `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">${playing?'<rect x="7" y="5" width="3.5" height="14" rx=".7"/><rect x="13.5" y="5" width="3.5" height="14" rx=".7"/>':'<path d="M8 5.5v13l10-6.5z"/>'}</svg>`;
   let zoom=null;
-  function cover(block, href, imageOf, homeLead = null, fitPhotos = homeLead !== null) {
+  function cover(block, imageOf, homeLead = null, fitPhotos = homeLead !== null) {
     const caption = entries(block)[0]?.title || block.title || '';
     const refs = homeLead === null && block.mediaCollection ? entries(block)[0]?.images || [] : photos(block);
     const manual=block.animationStart==='manual';
     if (!refs.length) return `<div class="feature-media hm-empty">Noch keine Bilder veröffentlicht.</div>`;
-    return `<div class="feature-media hm-orbit" data-hm-orbit${fitPhotos ? ' data-hm-fit-photos' : ''} data-hm-start="${block.animationStart==='manual'?'manual':'auto'}" aria-label="Karussell zu ${esc(block.title)}"><div class="hm-stage">${refs.map((ref,i) => {
-      const tag = href ? 'a' : 'div';
-      return `<${tag} class="hm-card"${href ? ` href="${esc(href)}" aria-label="Bild ${i+1}: Unterseite öffnen"` : ''}>${image(ref,imageOf,caption,i===0&&homeLead!==false,homeLead!==null&&(!homeLead||i>0))}</${tag}>`;
-    }).join('')}</div><div class="hm-footer">${href ? `<a class="hm-caption" href="${esc(href)}"><span>${esc(caption)}</span></a>` : `<span class="hm-caption">${esc(caption)}</span>`}<button type="button" class="hm-zoom-button" aria-label="Karussell vergrößern" title="Karussell vergrößern">${magnifier}</button><button type="button" class="hm-pause" aria-label="${manual?'Bildbewegung starten':'Bildbewegung pausieren'}" aria-pressed="${manual}"${refs.length<2?' hidden':''}>${playbackIcon(!manual)}</button></div></div>`;
+    return `<div class="feature-media hm-orbit" data-hm-orbit${fitPhotos ? ' data-hm-fit-photos' : ''} data-hm-start="${block.animationStart==='manual'?'manual':'auto'}" aria-label="Karussell zu ${esc(block.title)}"><div class="hm-stage">${refs.map((ref,i) =>
+      `<button type="button" class="hm-card" aria-label="Bild ${i+1}: Karussell vergrößern">${image(ref,imageOf,caption,i===0&&homeLead!==false,homeLead!==null&&(!homeLead||i>0))}</button>`
+    ).join('')}</div><div class="hm-footer"><span class="hm-caption">${esc(caption)}</span><button type="button" class="hm-zoom-button" aria-label="Karussell vergrößern" title="Karussell vergrößern">${magnifier}</button><button type="button" class="hm-pause" aria-label="${manual?'Bildbewegung starten':'Bildbewegung pausieren'}" aria-pressed="${manual}"${refs.length<2?' hidden':''}>${playbackIcon(!manual)}</button></div></div>`;
   }
   function slideshow(studio, block, imageOf, animationStart = 'auto', firstPriority = 'lazy', originalSlides = false) {
     const sizes = {'4:5':[4,5],'9:16':[9,16],'16:9':[16,9],'5:4':[5,4]};
@@ -196,19 +195,20 @@
     if(!source)return;
     const dialog=document.createElement('dialog');dialog.className='hm-zoom-dialog';dialog.setAttribute('aria-label','Karussell in großer Ansicht');
     const enlarged=node.cloneNode(true);enlarged.className='hm-orbit hm-zoom-orbit';enlarged.querySelectorAll('.hm-paint,.hm-transition-card,.hm-zoom-button').forEach(el=>el.remove());
+    enlarged.querySelectorAll('.hm-card').forEach(card => { card.disabled = true; });
     enlarged.querySelectorAll('img').forEach(img=>img.loading='eager');
     const close=document.createElement('button');close.type='button';close.className='hm-zoom-close';close.setAttribute('aria-label','Große Ansicht schließen');close.textContent='×';
     dialog.append(enlarged,close);document.body.append(dialog);document.body.classList.add('hm-zoom-open');dialog.showModal();
     mounted.add(enlarged);const controller=mountOrbit(enlarged,source.getState());zoom={dialog,node:enlarged,controller,source,trigger};controllers.add(controller);
     for(const c of controllers)c.refresh?.();
     close.addEventListener('click',()=>closeZoom());dialog.addEventListener('cancel',e=>{e.preventDefault();closeZoom();});
-    dialog.addEventListener('click', e => {
-      if (e.target.closest('a.hm-card,a.hm-caption')) closeZoom(false);
-      else if (!e.target.closest('button')) closeZoom();
-    });
+    dialog.addEventListener('click', e => { if (!e.target.closest('button')) closeZoom(); });
     close.focus({preventScroll:true});
   }
-  document.addEventListener('click',e=>{const trigger=e.target.closest('.hm-zoom-button');if(trigger){e.preventDefault();e.stopPropagation();openZoom(trigger);}});
+  document.addEventListener('click', event => {
+    const trigger = event.target.closest('.hm-zoom-button, .hm-card:not(:disabled)');
+    if (trigger) openZoom(trigger);
+  });
   window.addEventListener('hashchange',()=>closeZoom(false));
 
   let queued=false;

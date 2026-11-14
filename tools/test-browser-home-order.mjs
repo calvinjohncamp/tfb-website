@@ -252,8 +252,10 @@ try{
  assert.equal((await photoLink.boundingBox()).height,38);
  assert.equal((await detailLinks.getByRole('link',{name:'Zum Club'}).boundingBox()).height,38);
  const articleCarousel = page.locator('.story .hm-orbit');
- await articleCarousel.getByRole('button',{name:'Karussell vergrößern'}).click();
+ const detailRoute = await page.evaluate(() => location.hash);
+ await articleCarousel.locator('.hm-card[data-hm-loaded]').first().click();
  await page.getByRole('dialog',{name:'Karussell in großer Ansicht'}).waitFor();
+ assert.equal(await page.evaluate(() => location.hash), detailRoute);
  await page.keyboard.press('Escape');
  await page.getByRole('link',{name:'Fotos der Veranstaltung'}).click();
  await page.locator('.album-page .hm-orbit').waitFor();
@@ -350,11 +352,21 @@ try{
    const article = page.locator('[data-feature="' + item.id + '"]');
    await article.getByRole('heading',{name:title}).waitFor();
    if (mode === 'orbit') {
-     assert.equal(await article.locator('a.hm-card').count(),2);
-     await article.locator('.hm-caption').click();
+     assert.equal(await article.locator('button.hm-card').count(),2);
+     const photo = article.locator('.hm-card[data-hm-loaded]').first();
+     await photo.click();
+     const zoom = page.getByRole('dialog',{name:'Karussell in großer Ansicht'});
+     await zoom.waitFor();
+     assert.equal(await page.evaluate(() => location.hash), '#home');
+     await page.keyboard.press('Escape');
+     assert.equal(await photo.evaluate(button => button === document.activeElement), true);
+     await article.locator('.feature-more a').click();
      await page.locator('.hm-entry-copy').getByText('Text zur Diashow').waitFor();
      assert.equal(await page.getByRole('region',{name:'Diashow'}).count(),1);
      assert.equal(await page.locator('.hm-entry-gallery [data-cs-published-page]').count(),2);
+     await page.getByRole('link',{name:'Zurück zur Startseite'}).click();
+     await article.getByRole('link',{name:title,exact:true}).click();
+     await page.locator('.hm-entry-copy').getByText('Text zur Diashow').waitFor();
      await page.getByRole('link',{name:'Zurück zur Startseite'}).click();
    } else {
      assert.equal(await article.locator('a:has(h2), .feature-more').count(),0);
@@ -380,9 +392,13 @@ try{
  const inlineArticle = page.locator(`[data-feature="${inlineOrbit.id}"]`);
  await inlineArticle.locator('.hm-zoom-button').waitFor();
  assert.equal(await inlineArticle.locator('a.hm-card, .feature-more').count(),0);
- await inlineArticle.getByRole('button',{name:'Karussell vergrößern'}).click();
- await page.getByRole('dialog',{name:'Karussell in großer Ansicht'}).waitFor();
- await page.keyboard.press('Escape');
+ const zoom = page.getByRole('dialog',{name:'Karussell in großer Ansicht'});
+ for (const control of [inlineArticle.locator('.hm-card[data-hm-loaded]').first(), inlineArticle.getByRole('button',{name:'Karussell vergrößern',exact:true})]) {
+   await control.click();
+   await zoom.waitFor();
+   assert.equal(await page.evaluate(() => location.hash), '#home');
+   await page.keyboard.press('Escape');
+ }
  const testCover = async ({ratio, heroCount=1, grid, width}) => {
    await page.setViewportSize({width,height:900});
    await page.evaluate(async ({ratio, heroCount, grid}) => {

@@ -548,7 +548,7 @@
         const textHtml = parts.map((p, i) => slot(`right-${i}`) + paragraphs(p)).join('');
         return `
           <article class="feature feature-${esc(String(b.layout || 'wide').replace('-right', ''))} ${/-right$/.test(b.layout || '') ? 'img-right' : ''} ${more ? 'has-more' : ''} ${n === '01' ? 'feature-first' : ''} ${Number(n) % 2 === 0 ? 'feature-even' : ''}" data-feature="${esc(b.id)}">
-            ${orbit ? TFB.homeMedia.cover(b, more, ref => images[ref] || ref, n === '01') : slideshow ? `<div class="home-topic-photos home-topic-slideshow">${TFB.homeMedia.slideshow(photoStudio, b, ref => images[ref] || ref, b.animationStart || 'auto', n === '01' ? 'high' : 'lazy', true)}</div>` : formattedPhotos ? `<div class="home-topic-photos">${photoDisplay(b, homePhotos, b.photoDisplay, 'home-photo-gallery')}</div>` : homePhotos.length ? `<button type="button" class="feature-hit home-photo-open" data-action="home-photo-gallery" data-block="${esc(b.id)}" aria-label="${esc(b.title)}: ${homePhotos.length === 1 ? 'Foto groß ansehen' : 'Fotos groß ansehen'}">${cover}</button>` : page !== 'home' && (b.images || []).some(shownImage) ? newsCollage(b) : wrap(cover)}
+            ${orbit ? TFB.homeMedia.cover(b, ref => images[ref] || ref, n === '01') : slideshow ? `<div class="home-topic-photos home-topic-slideshow">${TFB.homeMedia.slideshow(photoStudio, b, ref => images[ref] || ref, b.animationStart || 'auto', n === '01' ? 'high' : 'lazy', true)}</div>` : formattedPhotos ? `<div class="home-topic-photos">${photoDisplay(b, homePhotos, b.photoDisplay, 'home-photo-gallery')}</div>` : homePhotos.length ? `<button type="button" class="feature-hit home-photo-open" data-action="home-photo-gallery" data-block="${esc(b.id)}" aria-label="${esc(b.title)}: ${homePhotos.length === 1 ? 'Foto groß ansehen' : 'Fotos groß ansehen'}">${cover}</button>` : page !== 'home' && (b.images || []).some(shownImage) ? newsCollage(b) : wrap(cover)}
             <div class="feature-body">
               <div class="feature-left">
                 <div class="feature-kicker"><span class="feature-number">${n}</span><span class="feature-kicker-label">${esc(b.kicker || '')}</span>
@@ -798,7 +798,7 @@
     // Aktuell uses the regular news hierarchy; keep Home copy intact for transfers.
     const isNews = page === 'aktuell';
     const title = isNews ? String(b.title || '').trim().replace(/\.+$/u, '') : b.title;
-    return `<article class="post card media-news" data-site-content="${esc(b.id)}">${TFB.homeMedia.cover(b,href,ref=>images[ref]||ref)}<div class="post-body">${TFB.newsroom.creationDate(b)?`<p class="post-date">${signatureText(fmt(TFB.newsroom.creationDate(b),{day:'numeric',month:'long',year:'numeric'}))}</p>`:''}${!isNews&&b.kicker?`<p class="media-news-kicker">${signatureText(b.kicker)}</p>`:''}<h3><a class="post-title-link" href="${href}">${esc(title)}</a></h3>${!isNews&&b.subtitle?`<p class="media-news-subtitle">${signatureText(b.subtitle)}</p>`:''}${paragraphs(b.text)}${isNews ? newsLinkMarkup(b) : ''}${linkMarkup({...b.detailLink, url:href, label:b.detailLink?.label || b.mediaButtonLabel || 'Beitrag ansehen'})}</div></article>`;
+    return `<article class="post card media-news" data-site-content="${esc(b.id)}">${TFB.homeMedia.cover(b,ref=>images[ref]||ref)}<div class="post-body">${TFB.newsroom.creationDate(b)?`<p class="post-date">${signatureText(fmt(TFB.newsroom.creationDate(b),{day:'numeric',month:'long',year:'numeric'}))}</p>`:''}${!isNews&&b.kicker?`<p class="media-news-kicker">${signatureText(b.kicker)}</p>`:''}<h3><a class="post-title-link" href="${href}">${esc(title)}</a></h3>${!isNews&&b.subtitle?`<p class="media-news-subtitle">${signatureText(b.subtitle)}</p>`:''}${paragraphs(b.text)}${isNews ? newsLinkMarkup(b) : ''}${linkMarkup({...b.detailLink, url:href, label:b.detailLink?.label || b.mediaButtonLabel || 'Beitrag ansehen'})}</div></article>`;
   }
   const mediaDetail = (block,page='aktuell',backHref,readonly=false) => {
     const extra = [...(block.more?.heroImages || []), ...(block.more?.images || [])].filter(shownImage);
@@ -1000,7 +1000,7 @@
       const media = { id:block.id, title:block.title, images:refs, animationStart:photos.animationStart || 'manual' };
       const imageOf = ref => images[ref] || TFB.clubArchive?.mediaUrl?.(ref) || ref;
       return `<div class="story-photo-presentation ${mode}">${mode === 'carousel'
-        ? TFB.homeMedia.cover(media, '', imageOf, false, true)
+        ? TFB.homeMedia.cover(media, imageOf, false, true)
         : TFB.homeMedia.slideshow(photoStudio, media, imageOf, media.animationStart, 'lazy', true)}</div>`;
     }
     if (mode === 'gallery') return photoDisplay(block, refs, mode, 'collage-open');
