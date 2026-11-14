@@ -1,5 +1,24 @@
 # TFB – Übergabe für die nächste Sitzung
 
+## Live-Stand vom 14.11.2026
+
+GitHub Pages hat Commit `b258c4456ae1d5107f976b53ae2763c9e7aaf677` veröffentlicht.
+Cloudflare-Worker `tfb-api` läuft mit Version `c83973a1-64b4-4456-b587-22cdd6e9b852`.
+Im Live-Browser wurden bei 390 px Home, die gespeicherte Navigation, der
+Dating-Einstieg und der aktive Kiosk geprüft. Die geschützten Schreibvorgänge
+wurden isoliert mit Testkonten geprüft.
+
+- Home öffnet die Bearbeitung direkt über den Bleistift. „Menü bearbeiten“
+  übernimmt gespeicherte Namen und verlangt beim Löschen zwei Bestätigungen.
+- Der Bleistift auf der Dating-Übersicht öffnet die redaktionellen Überschriften.
+  Serienverantwortliche können Serien pausieren, wieder aktivieren und löschen.
+  Das Löschen sagt kommende Termine ab. Die Teilnehmenden erhalten einen
+  Hinweis im Postfach. Beim Pausieren gelten bereits verschickte Termine weiter.
+- „Kiosk aktiv“ in der Kiosk-Abrechnung steuert Anzeige und Bestellungen der
+  TFB-Website. Die Bestellsperre gilt auch für einen noch offenen Kiosk-Tab.
+  Der Kiosk war zum Zeitpunkt der Live-Prüfung aktiv.
+
+
 ## Datensicherung: eindeutige Vorschau · 10.11.2026
 
 Live bestätigt: Programm 8cd2fb8, erfolgreicher Pages-Lauf 42815441441.
