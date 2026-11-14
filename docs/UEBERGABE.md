@@ -1,5 +1,24 @@
 # TFB – Übergabe für die nächste Sitzung
 
+## Aktuell und Karussellgrenze · live am 14.11.2026
+
+GitHub Pages hat Commit `c844551` veröffentlicht (Lauf 43575445020).
+News, Termine und Fotos haben eigene Einstiege. Fotoartikel erscheinen
+mit Datum in den News. Die Vorschau einer Collage zeigt bis zu vier
+Fotos auf höchstens 280 px Höhe. Der Bleistift schaltet die Bearbeitung.
+News und Fotoartikel unterstützen interne und externe Links.
+
+Neue Beiträge speichern den Erstellungszeitpunkt. Beim Verschieben
+übernimmt Aktuell das vorhandene ursprüngliche Datum. Nur wenn es
+fehlt, fragt der Dialog danach. Die 15-Foto-Grenze gilt auch für
+Karussells auf Home, Unterseiten, Fotoseiten und in Mediensammlungen.
+Vorhandene Fotos bleiben erhalten. Galerie und Collage erlauben je
+100 Bilder.
+
+Veröffentlichte Dateien bytegenau verglichen und die öffentlichen
+News samt Artikelansicht bei 1440 und 390 px geprüft. Uploadgrenzen,
+Sortierung, Links, Erstellungsdatum und Archiv mit Testdaten geprüft.
+
 ## Bildansichten und Fotos unter dem Artikeltext · live am 14.11.2026
 
 GitHub Pages hat Commit `84bab09` veröffentlicht (Lauf 43574541208).
