@@ -486,7 +486,7 @@
           <div class="tfb-admin-links"><button type="button" class="btn small" data-action="splash-edit">Splash</button><a class="btn small" href="#partner">Partner</a>
             <button type="button" class="btn small" data-action="members-manage">Mitglieder</button>
             <a class="btn small" href="#clubstatistik">Statistik</a>
-            <a class="btn small" href="#kioskabrechnung">Kiosk Buchungen</a>
+            <a class="btn small" href="#kioskabrechnung">Kiosk-Buchungen</a>
             <a class="btn small" href="#membermail">E-Mail an alle Mitglieder</a><button type="button" class="btn small tfb-backup-button" data-action="admin-backup">Datensicherung / Time Machine</button></div></div>`);
         const activeAdmin = $view.querySelector(`.tfb-admin-links a[href="#${view==='produktbibliothek'?'kioskabrechnung':view}"]`);
         if(activeAdmin) activeAdmin.setAttribute('aria-current','page');
