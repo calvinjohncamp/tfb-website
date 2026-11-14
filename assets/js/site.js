@@ -1288,18 +1288,18 @@
         const type = b.type === 'feature' ? b.mediaCollection ? 'Thema mit Karussell' : 'Thema'
           : photoDisplays.get(b.type) || BLOCK_TYPES.find(([key]) => key === b.type)?.[1] || 'Inhalt';
         const ref = b.mediaCollection?.entries?.[0]?.images?.[0] || b.images?.[0] || b.image;
-        const step = (direction, label, atEnd) => `<button class="btn small" type="button" data-action="home-order-step" data-id="${esc(id)}" data-dir="${direction}" aria-label="${esc(title)} ${label}"${atEnd || busy ? ' disabled' : ''}>${direction < 0 ? '↑' : '↓'} <span>${label}</span></button>`;
+        const step = (direction, label, atEnd) => `<button class="btn small home-order-icon" type="button" data-action="home-order-step" data-id="${esc(id)}" data-dir="${direction}" title="${label}" aria-label="${esc(title)} ${label}"${atEnd || busy ? ' disabled' : ''}>${direction < 0 ? ui().icon.up : ui().icon.down}</button>`;
         return `<li class="home-order-row${newHomeId === id ? ' is-new' : ''}" data-order-id="${esc(id)}" data-edit-block="${esc(id)}">
-          <span class="home-order-thumb">${ref && shownImage(ref) ? picture(ref, ref, '', true) : ''}</span>
-          <span class="home-order-info"><strong>${esc(title)}</strong><small>${numberLabel}${esc(type)}</small></span>
           <label class="home-order-position"><span>Position</span><select data-order-position aria-label="Position für ${esc(title)}"${busy}>${visible.map((_, i) =>
             `<option value="${i}"${i === index ? ' selected' : ''}>${i + 1}</option>`).join('')}</select></label>
+          <span class="home-order-thumb">${ref && shownImage(ref) ? picture(ref, ref, '', true) : ''}</span>
+          <span class="home-order-info"><strong>${esc(title)}</strong><small>${numberLabel}${esc(type)}</small></span>
           <div class="home-order-tools">
             ${step(-1, 'Nach oben', index === 0)}${step(1, 'Nach unten', index === visible.length - 1)}
             <button type="button" class="btn small" data-action="block-edit" data-id="${esc(id)}"${busy}>Bearbeiten</button>
+            <button type="button" class="btn small danger home-order-icon" data-action="home-order-remove" data-id="${esc(id)}" title="Löschen" aria-label="${esc(title)} löschen"${busy}>${ui().icon.close}</button>
             ${b.album?.enabled && !b.mediaCollection ? `<button type="button" class="btn small" data-action="block-album-edit" data-id="${esc(id)}"${busy}>Fotoseite</button>` : ''}
             ${b.mediaCollection ? `<button type="button" class="btn small" data-action="media-transfer" data-page="home" data-id="${esc(id)}"${busy}>Nach Aktuell</button>` : ''}
-            <button type="button" class="btn small danger" data-action="home-order-remove" data-id="${esc(id)}"${busy}>Löschen</button>
           </div>
         </li>`;
       }).join('')}</ol>

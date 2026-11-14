@@ -117,16 +117,20 @@ body.hm-zoom-open{overflow:hidden}
 .hm-painted .hm-card img{visibility:hidden}
 
 .home-editor-add .add-feature { gap: 12px; font-weight: 750; }
-.home-editor-add .add-feature svg { width: 23px; height: 23px; stroke-width: 3; }
+.home-editor-add .add-feature svg { width: 23px; height: 23px; fill: none; stroke: currentColor; stroke-width: 3; stroke-linecap: round; }
 .home-editor-add .add-limit { margin: 0; }
 .home-order-inline .home-order-list { max-height: none; overflow: visible; margin-top: 12px; padding: 0; }
-.home-order-inline .home-order-row { grid-template-columns: 48px minmax(0, 1fr) 66px auto; }
+.home-editor-settings .nav-card > .nav-preview { margin-bottom: 16px; }
+.home-order-inline .home-order-row { grid-template-columns: 66px 48px minmax(0, 1fr) minmax(0, 350px); }
 .home-order-inline .home-order-thumb { display: block; width: 48px; height: 48px; background: var(--bg); overflow: hidden; }
 .home-order-inline .home-order-thumb img { width: 100%; height: 100%; object-fit: cover; }
 .home-order-inline .home-order-row.is-new { border-color: var(--signal); background: color-mix(in srgb, var(--signal) 9%, var(--card)); }
 .home-order-tools, .home-topic-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
 .home-topic-actions { margin: 18px 0; gap: 8px; }
 .home-order-tools .btn { margin: 0; }
+.home-order-tools .home-order-icon { flex: 0 0 38px; width: 38px; padding: 0; }
+.home-order-tools .home-order-icon svg { width: 21px; height: 21px; stroke-width: 2.5; stroke-linejoin: round; }
+.home-order-tools .home-order-icon:disabled { opacity: .35; }
 .home-order-save { position: sticky; bottom: 10px; z-index: 2; display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 8px; padding: 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--card); box-shadow: 0 4px 20px #0002; }
 .home-order-save[hidden] { display: none; }
 .home-order-save p { margin: 0 auto 0 0; font-size: .86rem; }
@@ -136,7 +140,7 @@ body.hm-zoom-open{overflow:hidden}
 .home-look-6 .feature > .home-topic-photos { padding: 12px; }
 .home-order-inline .form-error:empty { display: none; }
 @media (max-width: 780px) {
-  .home-order-inline .home-order-row { grid-template-columns: 42px minmax(0, 1fr) 60px; }
+  .home-order-inline .home-order-row { grid-template-columns: 60px 42px minmax(0, 1fr); }
   .home-order-inline .home-order-thumb { width: 42px; }
   .home-order-tools { grid-column: 1 / -1; }
 }

@@ -54,6 +54,17 @@ try{
  for (const width of [1440,390,320]) {
    await page.setViewportSize({width,height:900});
    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
+   const aligned = await form.locator('li').evaluateAll(rows => {
+     const lefts = selector => new Set(rows.map(row => row.querySelector(selector).getBoundingClientRect().left));
+     return lefts('[data-order-position]').size === 1 && lefts('[data-action=home-order-step]').size === 1;
+   });
+   assert.ok(aligned, 'Position and arrow columns align on every row');
+   assert.equal(await form.locator('[data-action=home-order-step]').first().textContent(), '');
+   assert.equal(await form.locator('[data-action=home-order-remove]').first().textContent(), '');
+   const menuGap = await page.locator('.nav-card').evaluate(card =>
+     card.querySelector('[data-action=nav-edit]').getBoundingClientRect().top -
+     card.querySelector('.nav-preview').getBoundingClientRect().bottom);
+   assert.ok(menuGap >= 12, 'Menu edit button has breathing room');
  }
  await page.setViewportSize({width:390,height:880});
  await page.getByRole('button',{name:'Neues Thema'}).click();
@@ -96,7 +107,7 @@ try{
  await row(photo.id).getByRole('button',{name:/Nach unten/}).click();
  await row('gallery').locator('select').selectOption('0');
  answer();
- await row('topic').getByRole('button',{name:'Löschen'}).click();
+ await row('topic').getByRole('button',{name:/ löschen$/}).click();
  assert.equal((await state()).pages.home.blocks[0].id,photo.id);
  assert.ok((await state()).pages.home.blocks.some(b=>b.id==='topic'));
  answer();
@@ -106,7 +117,7 @@ try{
 
  // Test an intervening edit before a staged removal is committed.
  answer();
- await row('legacy').getByRole('button',{name:'Löschen'}).click();
+ await row('legacy').getByRole('button',{name:/ löschen$/}).click();
  await page.evaluate(async () => {
    const site = await TFB.api.site();
    site.pages.home.blocks.find(b=>b.id==='legacy').title='Zwischenzeitlich geändert';
