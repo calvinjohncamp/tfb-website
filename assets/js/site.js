@@ -12,7 +12,7 @@
   let editing = null;       // Seite, die gerade bearbeitet wird
   let detailEditing = false; // Thema wird direkt auf seiner Unterseite bearbeitet
   let preview = null;        // Live-Vorschau beim Bearbeiten eines Themas: { id, draft, tab }
-  let homeOrder = null;
+  let homeListBusy = false;
   let newHomeId = '';
   let photoPreview = null;   // Ungespeicherte Galerie-/Collagenreihenfolge auf der Seite.
   const ui = () => TFB.ui;
@@ -354,8 +354,7 @@
   }
 
   function newsroomTools() {
-    const hasHome=['home','aktuell'].some(page=>site.pages[page].blocks.some(b=>!b._new&&b.mediaCollection));
-    return `<section class="newsroom-tools" aria-label="Aktuell verwalten"><div class="newsroom-create"><button class="btn" data-action="aktuell-new" data-kind="event">Termin hinzufügen</button><button class="btn" data-action="aktuell-new" data-kind="post">News hinzufügen</button><button class="btn" data-action="aktuell-new" data-kind="media">Karussell hinzufügen</button>${hasHome?'<button class="btn" data-action="aktuell-transfer">Karussell kopieren / verschieben</button>':''}</div><details class="newsroom-more"><summary>Weitere Inhalte</summary><p>Galerien, einzelne Fotos und zusätzliche Texte bleiben verfügbar.</p><button class="link" data-action="aktuell-more">Weitere Inhalte hinzufügen</button></details></section>`;
+    return `<section class="newsroom-tools" aria-label="Aktuell verwalten"><div class="newsroom-create"><button class="btn" data-action="aktuell-new" data-kind="event">Termin hinzufügen</button><button class="btn" data-action="aktuell-new" data-kind="post">News hinzufügen</button><button class="btn" data-action="aktuell-new" data-kind="media">Karussell hinzufügen</button></div><details class="newsroom-more"><summary>Weitere Inhalte</summary><p>Galerien, einzelne Fotos und zusätzliche Texte bleiben verfügbar.</p><button class="link" data-action="aktuell-more">Weitere Inhalte hinzufügen</button></details></section>`;
   }
   async function newNewsroomItem(kind) {
     await ensure();if(!ui().state.member?.isAdmin||!['event','post','media'].includes(kind))return;
@@ -364,43 +363,56 @@
     if(kind==='media')Object.assign(block,{kicker:'',subtitle:'',mediaButtonLabel:'Beitrag ansehen',mediaSingle:true,mediaCollection:{entries:[{id:crypto.randomUUID(),title:'',subtitle:'',kicker:'',date:block.date,text:'',format:'4:5',images:[],instagramUrl:''}]}});
     TFB.newsroom.insert(blocksOf(),block);openBlockEditor(block.id,true);
   }
-  async function openHomeTransfer({from,id}={}) {
-    await ensure();if(!ui().state.member?.isAdmin)return;
-    const pages=from?[from]:['aktuell','home'];
-    const sources=pages.flatMap(page=>site.pages[page].blocks.filter(b=>!b._new&&b.mediaCollection&&(!id||b.id===id)).map(b=>({b,page})));
-    ui().openSheet(`<section class="editor newsroom-transfer"><h2>${from === 'aktuell' ? 'Karussell aus Aktuell übernehmen' : 'Karussell kopieren oder verschieben'}</h2><p>Kopieren lässt das Original auf seiner Seite stehen. Verschieben entfernt es dort.</p>${sources.map(({b,page})=>{
-      const target=page==='home'?'Aktuell':'Home';
-      return `<section class="newsroom-source" data-transfer-source="${esc(b.id)}" data-transfer-from="${page}"><p class="muted small">${page==='home'?'Home':'Aktuell'} → ${target}</p><h3>${esc(b.title)}</h3><p class="muted small">${b.mediaCollection.entries.reduce((n,e)=>n+e.images.length,0)} Bildseiten · ${b.mediaCollection.entries.length} ${b.mediaCollection.entries.length===1?'Beitrag':'Beiträge'}</p>${page==='home'?`<label class="field"><span>Veröffentlichungsdatum in Aktuell</span><input type="date" data-transfer-date="${esc(b.id)}" value="${esc(TFB.newsroom.dateOf(b)||today())}"></label>`:`<label class="field"><span>Auf Home anzeigen als</span><select data-transfer-format><option value="topic">Neues Thema</option><option value="photoBlock">Eigenständiger Fotoblock</option></select></label>`}<div class="newsroom-transfer-actions"><button class="btn primary" data-transfer-mode="copy">Nach ${target} kopieren</button><button class="btn" data-transfer-mode="move"${page==='home'?` data-transfer-home="${esc(b.id)}"`:''}>Nach ${target} verschieben</button></div></section>`;
-    }).join('')||'<p>Derzeit gibt es keine Karussells zum Übernehmen.</p>'}<p class="form-error" role="alert"></p></section>`);
-    const panel=document.querySelector('.newsroom-transfer');let busy=false;
-    panel.addEventListener('click',async e=>{const button=e.target.closest('[data-transfer-mode]');if(!button||busy)return;busy=true;panel.querySelectorAll('button').forEach(b=>b.disabled=true);
+  function confirmHomeMove(id) {
+    const block = site.pages.home.blocks.find(b => b.id === id);
+    if (!block || homeListBusy || !ui().state.member?.isAdmin) return;
+    ui().openSheet(`<form class="editor" data-home-move>
+      <h2>Nach Aktuell verschieben</h2>
+      <p>„${esc(block.title || block.caption || 'Ohne Überschrift')}“ erscheint als datierter Beitrag unter Aktuell und verschwindet von Home.</p>
+      <label class="field"><span>Veröffentlichungsdatum</span><input name="date" type="date" value="${esc(TFB.newsroom.validDate(block.date) ? block.date : today())}" required></label>
+      <p class="form-error" role="alert"></p>
+      <button type="submit" class="btn primary block">Nach Aktuell verschieben</button>
+      <button type="button" class="btn block" data-action="close-sheet">Abbrechen</button>
+    </form>`);
+    const form = document.querySelector('[data-home-move]');
+    form.addEventListener('submit', async event => {
+      event.preventDefault();
+      const button = form.querySelector('[type=submit]');
+      if (button.disabled || homeListBusy) return;
+      button.disabled = true;
+      homeListBusy = true;
       try {
-        const row = button.closest('[data-transfer-source]');
-        const { transferSource: id, transferFrom: from } = row.dataset;
-        const mode = button.dataset.transferMode;
-        const date = row.querySelector('[data-transfer-date]')?.value;
-        const format = row.querySelector('[data-transfer-format]')?.value;
-        if (mode === 'move' && !confirm(`Karussell verschieben? Es wird aus ${from === 'aktuell' ? 'Aktuell' : 'Home'} entfernt.`)) return;
         const fresh = await ui().api.site();
-        const next = TFB.newsroom.transfer(fresh, id, date, { from, mode, format, maxHome: MAX_HOME_FEATURES });
-        site = await ui().api.saveSite(next);
-        if (from === 'aktuell' && editing === 'home') {
-          const newId = site.pages.home.blocks[0].id;
-          if (homeOrder && site.pages.home.blocks.slice(1).map(b => b.id).join() === homeOrder.expected.join()) { homeOrder.expected.unshift(newId); homeOrder.order.unshift(newId); }
-          highlightHome(newId);
-        } else editing = null;
-        detailEditing = false;
-        ui().closeSheet();
-        aktuellTab = 'news';
+        if (JSON.stringify(fresh.pages.home.blocks.find(b => b.id === id)) !== JSON.stringify(block)) {
+          throw Error('Der Artikel wurde inzwischen geändert. Bitte öffne den Dialog erneut.');
+        }
+        site = await ui().api.saveSite(TFB.newsroom.moveToNews(fresh, id, form.elements.date.value));
+        homeListBusy = false;
+        if (form.isConnected) ui().closeSheet();
+        ui().toast('Nach Aktuell verschoben', true);
         await ui().renderView();
-        ui().toast(mode === 'copy' ? 'Karussell kopiert' : 'Karussell verschoben', true);
       } catch (error) {
-        panel.querySelector('.form-error').textContent = error.message;
+        form.querySelector('.form-error').textContent = error.message;
       } finally {
-        busy = false;
-        panel.querySelectorAll('button').forEach(b => { b.disabled = false; });
+        button.disabled = false;
+        homeListBusy = false;
       }
     });
+  }
+  async function archiveNewsItem(id, original, ask = true) {
+    if (!original || !ui().state.member?.isAdmin) return false;
+    if (ask && !confirm(`„${original.title || 'Ohne Überschrift'}“ ins Clubarchiv verschieben? Der Eintrag verschwindet aus Aktuell und bleibt im Clubarchiv abrufbar.`)) return false;
+    const fresh = await ui().api.site();
+    if (JSON.stringify(fresh.pages.aktuell.blocks.find(b => b.id === id)) !== JSON.stringify(original)) {
+      throw Error('Der Eintrag wurde inzwischen geändert. Bitte öffne ihn erneut.');
+    }
+    site = await ui().api.saveSite(TFB.newsroom.archiveNews(fresh, id));
+    const inDetail = detailEditing || location.hash.split('/').length > 1;
+    detailEditing = false;
+    if (inDetail) { editing = null; location.hash = '#aktuell'; }
+    await ui().renderView();
+    ui().toast('Im Clubarchiv gespeichert', true);
+    return true;
   }
 
   const HOME_PHOTO_LIMIT = 100;
@@ -510,7 +522,7 @@
         if (!list.length && editing !== page) return '';
         return `
           <section class="block-gallery${mosaic ? ' block-collage' : ''}${b.date && !b.hideDate ? ' has-date' : ''}" data-photo-module="${esc(b.id)}" data-site-content="${esc(b.id)}">
-            ${b.title ? `<h2>${esc(b.title)}</h2>` : ''}
+            ${b.title ? `<h2>${page === 'aktuell' && b.sourceHomeId ? `<a class="post-title-link" href="#aktuell/${encodeURIComponent(b.id)}">${esc(b.title)}</a>` : esc(b.title)}</h2>` : ''}
             ${b.textPosition === 'above' ? text : ''}
             ${list.length
               ? `<div class="gallery-media">${photoDisplay(b, list, b.type, 'gallery-open')}${b.date && !b.hideDate && !['aktuell', 'verein'].includes(page) ? dateBadge(b.date, accentDate) : ''}</div>`
@@ -643,13 +655,14 @@
 
   // ---------- Unterseite eines Home-Themas („Mehr erfahren“) ----------
   const hasMore = b => Boolean(b.mediaCollection || b.more && ((b.more.text || '').trim() || (b.more.images || []).length || b.more.quote || (b.more.heroImages || []).length || b.more.sections?.some(section => section.text?.trim())));
+  const archiveHref = b => '#club/archiv/beitrag/' + encodeURIComponent('aktuell-' + b.id);
   const hasPublishedDetail = b => b.detailEnabled !== false && hasMore(b);
   const safeLink = (url) => /^(#|https?:\/\/)/i.test(url || '') ? url : '';
-  function featureLinks(b) {
+  function featureLinks(b, page = 'home') {
     const list = [];
     if (safeLink(b.link?.url)) list.push({ key: 'main', link: b.link });
     if (safeLink(b.link2?.url)) list.push({ key: 'second', link: { style: b.link?.style || 'chip', ...b.link2, position: b.link2.position || b.link?.position || 'right', order: b.link2.order ?? ((b.link?.order || 0) + 0.5) } });
-    if (b.album?.enabled) list.push({ key: 'album', link: { ...b.album, label: b.album.label || 'Fotos der Veranstaltung', url: `#home/${b.id}/fotos`, style: 'chip', icon: b.album.icon || 'camera' } });
+    if (b.album?.enabled) list.push({ key: 'album', link: { ...b.album, label: b.album.label || 'Fotos der Veranstaltung', url: `#${page}/${b.id}/fotos`, style: 'chip', icon: b.album.icon || 'camera' } });
     return list.sort((a, z) => (a.link.order || 0) - (z.link.order || 0));
   }
   const shownImage = (ref) => ref && (images[ref] || /^assets\//.test(ref) || /^ph:/.test(ref));
@@ -684,16 +697,31 @@
   }
 
   function mediaNewsPost(b, {page='aktuell'} = {}) {
-    const href=`#${page}/${encodeURIComponent(b.id)}`;
+    const href = b.archived ? archiveHref(b) : `#${page}/${encodeURIComponent(b.id)}`;
     // Aktuell uses the regular news hierarchy; keep Home copy intact for transfers.
     const isNews = page === 'aktuell';
     const title = isNews ? String(b.title || '').trim().replace(/\.+$/u, '') : b.title;
     return `<article class="post card media-news" data-site-content="${esc(b.id)}">${TFB.homeMedia.cover(b,href,ref=>images[ref]||ref)}<div class="post-body">${b.date?`<p class="post-date">${signatureText(fmt(b.date,{day:'numeric',month:'long',year:'numeric'}))}</p>`:''}${!isNews&&b.kicker?`<p class="media-news-kicker">${signatureText(b.kicker)}</p>`:''}<h3><a class="post-title-link" href="${href}">${esc(title)}</a></h3>${!isNews&&b.subtitle?`<p class="media-news-subtitle">${signatureText(b.subtitle)}</p>`:''}${paragraphs(b.text)}<p><a class="media-news-link" href="${href}">${esc(b.mediaButtonLabel||'Beitrag ansehen')}</a></p></div></article>`;
   }
-  const mediaDetail = (block,page='aktuell',backHref) => TFB.homeMedia.detail(block,{imageOf:ref=>images[ref]||ref,paragraphs,admin:ui().state.member?.isAdmin,page,backHref});
+  const mediaDetail = (block,page='aktuell',backHref,readonly=false) => TFB.homeMedia.detail(block,{imageOf:ref=>images[ref]||ref,paragraphs,admin:!readonly&&ui().state.member?.isAdmin,page,backHref});
+
+  async function newsArticleDetail(block, archive = false) {
+    if (block.archived && !archive) return `<p>Dieser Artikel ist im Clubarchiv.</p><a class="btn" href="${archiveHref(block)}">Zum Artikel im Clubarchiv</a>`;
+    const back = archive ? '#club/archiv' : '#aktuell';
+    if (block.type === 'event') return `<div class="site-page archive-reading">${ui().viewHead(esc(block.title), 'Termin', false)}${eventCard(block)}<a class="btn" href="${back}">Zurück</a></div>`;
+    if (block.mediaCollection) return mediaDetail(block, 'aktuell', archive ? back : undefined, archive);
+    if (!photoStudio && showInlineCarousel(block)) photoStudio = await import('./chat-media.js?v=20261114-home-editor-1');
+    return storyHtml({ ...block, noPlaceholder: true }, {closeHref:back, backLabel:archive ? 'Zum Clubarchiv' : 'Zu Aktuell',
+      editHtml: !archive && ui().state.member?.isAdmin ? `<button type="button" class="view-close" data-action="feature-edit" data-page="aktuell" data-id="${esc(block.id)}" aria-label="Bearbeiten">${ui().icon.pencil}</button>` : '',
+      gallery: photoTypes.includes(block.type) || photoDisplays.has(block.photoDisplay) ? photoDisplay(block, (block.images || []).filter(shownImage), block.photoDisplay || block.type, 'gallery-open') : '',
+      linkPage: 'aktuell',
+    });
+  }
 
   function newsPost(b, archive = null, accentDate = false, showDateBadge = false) {
-    const photos = postPhotos(b, Boolean(archive), accentDate, showDateBadge);
+    const photos = !archive && photoDisplays.has(b.photoDisplay) && b.images?.length
+      ? photoDisplay(b, b.images.filter(shownImage), b.photoDisplay, 'gallery-open') : postPhotos(b, Boolean(archive), accentDate, showDateBadge);
+    const transferred = !archive && b.sourceHomeId;
     const fullDate = fmt(b.date, { day: 'numeric', month: 'long', year: 'numeric' }) || archive?.year || '';
     return `
       <article class="post card" data-site-content="${esc(b.id)}">
@@ -701,8 +729,9 @@
         <div class="post-body">
           ${showDateBadge && archive && !photos && b.date ? `<div class="archive-date-standalone">${dateBadge(b.date)}</div>` : ''}
           ${!archive || fullDate ? `<p class="post-date">${signatureText(fullDate)}</p>` : ''}
-          <h3>${archive?.href ? `<a class="post-title-link" href="${esc(archive.href)}">${esc(b.title)}</a>` : esc(b.title)}</h3>
+          <h3>${archive?.href || transferred ? `<a class="post-title-link" href="${esc(archive?.href || '#aktuell/' + encodeURIComponent(b.id))}">${esc(b.title)}</a>` : esc(b.title)}</h3>
           ${archive ? archive.body : paragraphs(b.text)}
+          ${transferred ? `<p><a class="more-link" href="#aktuell/${encodeURIComponent(b.id)}">Beitrag ansehen</a></p>` : ''}
         </div>
       </article>`;
   }
@@ -751,7 +780,7 @@
 
   // Magazin-Seite (Unterseite der Home-Themen und Mannschaftsporträt) aus einem Block mit `more`
   const storyIndex = {};   // Block je Kennung – für Großansicht von Titelfotos und Kollage
-  function storyHtml(b, { n = '', editHtml = '', closeHref = '#home', backLabel = 'Zur Startseite', partner = '' } = {}) {
+  function storyHtml(b, { n = '', editHtml = '', closeHref = '#home', backLabel = 'Zur Startseite', partner = '', gallery = '', linkPage = 'home' } = {}) {
     const { icon } = ui();
     storyIndex[b.id] = b;
     const more = b.more || {};
@@ -763,8 +792,11 @@
     const seed = own.length ? own[0] : b.id;
     const sideImage = !own.length && mode === 'wide' && /^(portrait|square)/.test(b.layout || '');
     let heroHtml = '';
-    if (!own.length && !b.image && b.noPlaceholder) heroHtml = '';
-    else if ((b.images || []).filter(shownImage).length && !own.length) {
+    if (!own.length && !b.image && b.noPlaceholder && !gallery && !(b.images || []).some(shownImage)) heroHtml = '';
+    else if (gallery && !own.length) {
+      heroHtml = gallery;
+      gallery = '';
+    } else if ((b.images || []).filter(shownImage).length && !own.length) {
       heroHtml = newsCollage(b);
     } else if (mode === 'squares' && heroRefs.length >= 2) {
       heroHtml = `<div class="story-squares n${heroRefs.length}">${heroRefs.map((r, i) => `<button type="button" class="story-square" data-action="hero-open" data-block="${esc(b.id)}" data-index="${i}" aria-label="Foto groß ansehen">${picture(r, r)}</button>`).join('')}</div>`;
@@ -773,6 +805,7 @@
     } else if (!sideImage) {
       heroHtml = `<div class="story-photo">${picture(heroRefs[0], seed, b.title)}</div>`;
     }
+    const extraLinks = linkPage === 'aktuell' ? featureLinks(b, linkPage).map(({link}) => linkMarkup(link)).join('') : '';
     return `
       <article class="story">
         <div class="story-tools">
@@ -786,7 +819,7 @@
             <p class="feature-kicker">${n ? `<span>${esc(n)}</span>` : ''}${esc(b.kicker || '')}</p>
             <h1>${esc(b.title)}</h1>
             ${b.subtitle ? `<p class="feature-sub">${signatureText(b.subtitle)}</p>` : ''}
-            ${b.link && b.link.url ? `<div class="story-link">${linkMarkup(b.link)}</div>` : ''}
+            ${linkPage === 'home' && b.link && b.link.url ? `<div class="story-link">${linkMarkup(b.link)}</div>` : ''}
           </header>
           <div class="story-body">
             ${(() => {
@@ -809,6 +842,7 @@
           </div>
         </div>
         ${collage(more.images || [], b.id, Boolean(more.original), more.collageAlign)}
+        ${gallery}${extraLinks ? `<div class="story-links">${extraLinks}</div>` : ''}
         <div class="story-foot">
           <a class="more-link back" href="${esc(closeHref)}"><span aria-hidden="true">←</span> ${esc(backLabel)}</a>
         </div>
@@ -818,8 +852,11 @@
 
   async function featureDetail(id) {
     const { icon, state, partnerSlot } = ui();
-    const b = homeBlocks().find((x) => x.id === id);
-    if (!b) { const moved=site.pages.aktuell.blocks.find(x=>x.id===id&&x.mediaCollection); if(moved)return mediaDetail(moved); }
+    const b = homeBlocks().find(x => x.id === id);
+    if (!b) {
+      const moved = site.pages.aktuell.blocks.find(x => x.id === id && (x.sourceHomeId || x.mediaCollection));
+      if (moved) return newsArticleDetail(moved);
+    }
     if (!b) return `${ui().viewHead('Home', 'Diesen Beitrag gibt es nicht mehr.', false)}<p><a class="btn" href="#home">Zur Startseite</a></p>`;
     const admin = state.member && state.member.isAdmin;
     if (b.mediaCollection) return TFB.homeMedia.detail(b, {imageOf:ref=>images[ref] || ref,paragraphs,admin});
@@ -830,16 +867,17 @@
     });
   }
 
-  function albumDetail(id) {
-    const b = homeBlocks().find((x) => x.id === id);
-    if (!b?.album?.enabled && !(preview?.tab === 'album' && b?.album)) return `<p>Diese Fotoseite ist nicht verfügbar.</p><a href="#home">Zur Startseite</a>`;
+  function albumDetail(id, page = 'home') {
+    const b = (page === 'home' ? homeBlocks() : site.pages.aktuell.blocks).find(x => x.id === id);
+    const back = page === 'home' ? '#home' : b?.archived ? archiveHref(b) : '#aktuell';
+    if (!b?.album?.enabled && !(preview?.tab === 'album' && b?.album)) return `<p>Diese Fotoseite ist nicht verfügbar.</p><a href="${back}">Zurück</a>`;
     const album = b.album;
     const gallery = { id: `album-${b.id}`, title: album.title || b.title, animationStart: album.animationStart, more: { images: (album.images || []).slice(0, 100) } };
     storyIndex[gallery.id] = gallery;
     const admin = ui().state.member?.isAdmin;
-    return `<article class="story album-page"><div class="story-tools">${admin ? `<button type="button" class="view-close" data-action="album-edit" data-id="${esc(b.id)}" aria-label="Fotoseite bearbeiten">${ui().icon.pencil}</button>` : ''}<a class="view-close" href="#home" aria-label="Zurück zur Startseite">${ui().icon.close}</a></div><h1>${esc(album.title || b.title)}</h1>${gallery.more.images.length ? (album.photoDisplay && album.photoDisplay !== 'collage'
+    return `<article class="story album-page"><div class="story-tools">${admin && page === 'home' ? `<button type="button" class="view-close" data-action="album-edit" data-id="${esc(b.id)}" aria-label="Fotoseite bearbeiten">${ui().icon.pencil}</button>` : ''}<a class="view-close" href="${back}" aria-label="Zurück">${ui().icon.close}</a></div><h1>${esc(album.title || b.title)}</h1>${gallery.more.images.length ? (album.photoDisplay && album.photoDisplay !== 'collage'
       ? photoDisplay(gallery, gallery.more.images.filter(shownImage), album.photoDisplay, 'collage-open')
-      : collage(gallery.more.images, gallery.id, Boolean(album.original))) : '<p class="muted">Noch keine Fotos veröffentlicht.</p>'}<div class="story-foot"><a class="more-link" href="#home">Zur Startseite</a></div></article>`;
+      : collage(gallery.more.images, gallery.id, Boolean(album.original))) : '<p class="muted">Noch keine Fotos veröffentlicht.</p>'}<div class="story-foot"><a class="more-link" href="${back}">Zurück</a></div></article>`;
   }
 
   const memberPdfUrl = key => {
@@ -853,8 +891,8 @@
 
   // ---------- Seite ----------
   const CONTENT_TYPES = [['feature', 'Themen'], ['post', 'Beiträge'], ['gallery', 'Galerien'], ['collage', 'Collagen'], ['carousel', 'Karussells'], ['text', 'Texte'], ['image', 'Fotos']];
-  function contentBlocks(key) {
-    return (key === 'home' ? homeBlocks() : site.pages[key].blocks).filter(b => !b._new
+  function contentBlocks(key, includeArchived = false) {
+    return (key === 'home' ? homeBlocks() : site.pages[key].blocks).filter(b => !b._new && (includeArchived || !b.archived)
       && CONTENT_TYPES.some(([type]) => type === b.type)
       && (!photoTypes.includes(b.type) || (b.images || []).some(shownImage)));
   }
@@ -905,7 +943,7 @@
   }
   async function pageView(key) {
     await ensure();
-    if (site.pages[key]?.deleted) {
+    if (site.pages[key]?.deleted && !(key === 'aktuell' && location.hash.split('/').length > 1 && !location.hash.startsWith('#aktuell/alle'))) {
       return '<section class="card"><h1>Seite entfernt</h1><a class="btn" href="#home">Zur Startseite</a></section>';
     }
     const section = location.hash.split('/')[1];
@@ -914,25 +952,43 @@
       editing = null;
       return TFB.clubArchive.view(location.hash, {
         blocks: [
-          ...[...contentBlocks('aktuell'), ...site.pages.aktuell.blocks.filter(b => b.type === 'event' && !b._new)].map(b => ({ b, page: 'aktuell' })),
+          ...[...contentBlocks('aktuell', true), ...site.pages.aktuell.blocks.filter(b => b.type === 'event' && !b._new)].map(b => ({ b, page: 'aktuell' })),
           ...contentBlocks('home').map(b => ({ b, page: 'home' })),
         ],
-        newsPost, eventCard, newsDatesLayout, contentOverviewLink, paragraphs, picture, shownImage, openGallery, mediaPost:mediaNewsPost, mediaDetail:(b,page)=>mediaDetail(b,page,'#club/archiv'),
+        newsPost, eventCard, newsDatesLayout, contentOverviewLink, paragraphs, picture, shownImage, openGallery, newsArticleDetail, mediaPost:mediaNewsPost, mediaDetail:(b,page)=>mediaDetail(b,page,'#club/archiv', Boolean(b.archived)),
       });
     }
     if (['home', 'aktuell'].includes(key) && section === 'alle') { editing = null; return contentOverview(key); }
     if (key === 'aktuell' && section === 'beitrag') aktuellTab = 'news';
-    if (key === 'aktuell' && section && section !== 'alle') {
-      const id=section==='beitrag'?location.hash.split('/')[2]:section;
-      const media=site.pages.aktuell.blocks.find(b=>b.id===decodeURIComponent(id||'')&&b.mediaCollection);
-      if(media)return mediaDetail(media);
-      const moved = homeBlocks().find(b => b.id === decodeURIComponent(id || '') && (b.mediaCollection || b.photoDisplay === 'carousel' || b.type === 'carousel'));
-      if (moved?.mediaCollection) return mediaDetail(moved, 'home');
+    if (key === 'aktuell' && section) {
+      const parts = location.hash.split('/');
+      let id;
+      try { id = decodeURIComponent((section === 'beitrag' ? parts[2] : section) || ''); } catch (_) { id = ''; }
+      const article = site.pages.aktuell.blocks.find(b => b.id === id);
+      if (article && parts[2] === 'fotos') {
+        if (!photoStudio && showInlineCarousel(article)) photoStudio = await import('./chat-media.js?v=20261114-home-editor-1');
+        return albumDetail(id, 'aktuell');
+      }
+      if (article?.archived) return newsArticleDetail(article);
+      if (article && (article.mediaCollection || (article.sourceHomeId && section !== 'beitrag'))) return newsArticleDetail(article);
+    }
+    if (key === 'home' && section === 'beitrag') {
+      let id;
+      try { id = decodeURIComponent(location.hash.split('/')[2] || ''); } catch (_) { id = ''; }
+      const moved = site.pages.aktuell.blocks.find(b => b.sourceHomeId === id);
+      if (moved) return newsArticleDetail(moved);
+    }
+    if (key === 'home' && section && location.hash.split('/')[2] === 'fotos' && !homeBlocks().some(b => b.id === section)) {
+      const moved = site.pages.aktuell.blocks.find(b => b.sourceHomeId === section);
       if (moved) {
-        const href = moved.type === 'carousel' || !hasPublishedDetail(moved) ? `#home/beitrag/${encodeURIComponent(moved.id)}` : `#home/${encodeURIComponent(moved.id)}`;
-        return `<p>Dieser Beitrag ist jetzt auf Home.</p><a class="btn" href="${href}">Zum Beitrag</a>`;
+        if (!photoStudio && showInlineCarousel(moved)) photoStudio = await import('./chat-media.js?v=20261114-home-editor-1');
+        return albumDetail(section, 'aktuell');
       }
     }
+    if (key === 'aktuell' && !photoStudio && site.pages.aktuell.blocks.some(b => !b.archived && showInlineCarousel(b))) {
+      photoStudio = await import('./chat-media.js?v=20261114-home-editor-1');
+    }
+    if (key === 'aktuell' && site.pages.aktuell.deleted) return '<section class="card"><h1>Seite entfernt</h1><a class="btn" href="#club/archiv">Zum Clubarchiv</a></section>';
     if (key === 'home' && !photoStudio && (site.pages.home.blocks.some(showInlineCarousel) || (preview && showInlineCarousel(preview.draft)))) {
       photoStudio ||= await import('./chat-media.js?v=20261114-home-editor-1');
     }
@@ -957,7 +1013,7 @@
     const admin = state.member && state.member.isAdmin;
     const training = key === 'sport' && location.hash.split('/')[1] === 'training';
     const list = (key === 'home' ? homeBlocks() : key==='aktuell'?TFB.newsroom.ordered(page.blocks):key==='verein'?clubBlocks(page.blocks):page.blocks).map(b => photoPreview?.id === b.id ? photoPreview.draft : b).filter((b) => (!b._new || (preview && b.id === preview.id) || photoPreview?.id === b.id)
-      && (key !== 'sport' || (training ? b.type !== 'teams' : b.type === 'teams')));
+      && (key !== 'aktuell' || !b.archived) && (key !== 'sport' || (training ? b.type !== 'teams' : b.type === 'teams')));
     const legal = key === 'impressum' || key === 'satzung';
     let newsDates = 0;
     let eventDates = 0;
@@ -974,8 +1030,8 @@
       <div class="site-page ${edit ? 'editing-page' : ''} ${key === 'home' ? 'home-look-6' : ''}" data-page="${key}">
         ${edit ? `
           <div class="editbar">
-            <div><strong>${esc(page.title)} bearbeiten</strong><span>${key==='aktuell'?'News und Termine bearbeiten · Reihenfolge nach Datum':key==='home'?'Themen und Fotoblöcke bearbeiten':'Bausteine antippen zum Ändern · Pfeile zum Sortieren'}</span></div>
-            <div class="home-edit-actions"><button type="button" class="btn primary" data-action="site-done">Fertig</button></div>
+            <div><strong>${esc(page.title)} bearbeiten</strong><span>${key==='aktuell'?'News und Termine bearbeiten · Reihenfolge nach Datum':key==='home'?'Positionen werden sofort gespeichert. Inhalte speicherst du im Editor.':'Bausteine antippen zum Ändern · Pfeile zum Sortieren'}</span></div>
+            ${key === 'home' ? '' : '<div class="home-edit-actions"><button type="button" class="btn primary" data-action="site-done">Fertig</button></div>'}
           </div>` : ''}
         ${key === 'home' && !edit
           ? ''
@@ -1148,7 +1204,11 @@
             if (x.id === 'treffen' && x.target === '#treffen') x.customLabel = true;
             return x;
           });
-          for (const page of removedPages) next.pages[page] = { title: originalSite.pages[page].title, blocks: [], deleted: true };
+          for (const page of removedPages) {
+            const previous = originalSite.pages[page];
+            const blocks = page === 'aktuell' ? previous.blocks.filter(TFB.newsroom.canArchive).map(b => ({ ...b, archived: true })) : [];
+            next.pages[page] = { title: previous.title, blocks, deleted: true };
+          }
           site = await api.saveSite(next);
           if (form.isConnected) closeSheet();
           TFB.refreshNav?.();
@@ -1169,6 +1229,7 @@
         && originalSite.pages[page] && !originalSite.pages[page].deleted ? page : null;
     }
     function removalLabel({label, page}) {
+      if (page === 'aktuell') return `„${label}“ und die Seite „${originalSite.pages[page].title}“. Beiträge und Termine kommen ins Clubarchiv.`;
       return page ? `„${label}“ und die Seite „${originalSite.pages[page].title}“ mit allen redaktionellen Seiteninhalten` : `Menüpunkt „${label}“`;
     }
     render();
@@ -1180,7 +1241,6 @@
     return `<div class="home-editor-add">
       <button type="button" class="btn primary add-feature" data-action="block-add" data-type="feature"${count >= MAX_HOME_FEATURES ? ' disabled' : ''}>${ui().icon.plus} Neues Thema</button>
       <button type="button" class="btn" data-action="home-add-photos">Fotoblock hinzufügen</button>
-      ${site.pages.aktuell.blocks.some(b => b.mediaCollection && !b._new) ? '<button type="button" class="btn" data-action="aktuell-transfer">Karussell aus Aktuell übernehmen</button>' : ''}
       ${count >= MAX_HOME_FEATURES ? `<p class="muted small add-limit">Auf Home sind bereits ${MAX_HOME_FEATURES} Themen veröffentlicht.</p>` : ''}
     </div>`;
   }
@@ -1266,107 +1326,75 @@
   function editWrap(b, i, total, inner) {
     const { icon } = ui(), editorial = editing === 'aktuell';
     const label = b.mediaCollection?'Karussell':editing==='aktuell'&&b.type==='post'?'News':(BLOCK_TYPES.find(([t]) => t === b.type) || [0, b.type])[1];
-    const actions=`${editing!=='aktuell'?`<button type="button" data-action="block-move" data-id="${esc(b.id)}" data-dir="-1" ${i===0?'disabled':''} aria-label="Nach oben">${icon.up}</button><button type="button" data-action="block-move" data-id="${esc(b.id)}" data-dir="1" ${i===total-1?'disabled':''} aria-label="Nach unten">${icon.down}</button>`:''}${b.mediaCollection?`<button type="button" class="block-tool-text" data-action="media-transfer" data-page="${esc(editing)}" data-id="${esc(b.id)}">Kopieren / verschieben</button>`:''}<button type="button"${editorial?' class="block-tool-text"':''} data-action="block-edit" data-id="${esc(b.id)}" aria-label="Bearbeiten">${editorial?'Bearbeiten':icon.pencil}</button>`;
+    const actions=`${editing!=='aktuell'?`<button type="button" data-action="block-move" data-id="${esc(b.id)}" data-dir="-1" ${i===0?'disabled':''} aria-label="Nach oben">${icon.up}</button><button type="button" data-action="block-move" data-id="${esc(b.id)}" data-dir="1" ${i===total-1?'disabled':''} aria-label="Nach unten">${icon.down}</button>`:''}<button type="button"${editorial?' class="block-tool-text"':''} data-action="block-edit" data-id="${esc(b.id)}" aria-label="Bearbeiten">${editorial?'Bearbeiten':icon.pencil}</button>${editorial && TFB.newsroom.canArchive(b) ? `<button type="button" class="block-tool-text" data-action="aktuell-archive" data-id="${esc(b.id)}">Ins Clubarchiv</button>` : ''}`;
     return `<div class="block-edit" data-edit-block="${esc(b.id)}"><div class="block-tools"><span class="block-type">${esc(label)}</span><div class="block-tool-actions">${actions}</div></div>${inner||`<p class="muted small empty-hint">${esc(label)} – noch leer</p>`}</div>`;
   }
 
-  const orderChanged = () => homeOrder && (homeOrder.removed.size || homeOrder.order.some((id, i) => id !== homeOrder.expected[i]));
   function homeOrderForm() {
     const blocks = site.pages.home.blocks.filter(b => !b._new);
-    const byId = new Map(blocks.map(b => [b.id, b]));
-    const order = homeOrder?.order || blocks.map(b => b.id);
-    const removed = homeOrder?.removed || new Map();
-    const visible = order.filter(id => byId.has(id) && !removed.has(id));
+    const { icon } = ui();
     let number = 0;
-    const busy = homeOrder?.busy ? ' disabled' : '';
-    return `<form class="home-order home-order-inline" data-home-order>
+    return `<section class="home-order home-order-inline" data-home-order>
       <h2>Inhalte auf Home</h2>
-      <ol class="home-order-list">${visible.map((id, index) => {
-        const b = byId.get(id);
-        const title = b.title || b.caption || b.label || 'Ohne Überschrift';
-        const numberLabel = b.type === 'feature' ? String(++number).padStart(2, '0') + ' · ' : '';
-        const type = b.type === 'feature' ? b.mediaCollection ? 'Thema mit Karussell' : 'Thema'
-          : photoDisplays.get(b.type) || BLOCK_TYPES.find(([key]) => key === b.type)?.[1] || 'Inhalt';
-        const ref = b.mediaCollection?.entries?.[0]?.images?.[0] || b.images?.[0] || b.image;
-        const step = (direction, label, atEnd) => `<button class="btn small home-order-icon" type="button" data-action="home-order-step" data-id="${esc(id)}" data-dir="${direction}" title="${label}" aria-label="${esc(title)} ${label}"${atEnd || busy ? ' disabled' : ''}>${direction < 0 ? ui().icon.up : ui().icon.down}</button>`;
-        return `<li class="home-order-row${newHomeId === id ? ' is-new' : ''}" data-order-id="${esc(id)}" data-edit-block="${esc(id)}">
-          <label class="home-order-position"><span>Position</span><select data-order-position aria-label="Position für ${esc(title)}"${busy}>${visible.map((_, i) =>
+      <ol class="home-order-list">${blocks.map((block, index) => {
+        const { id } = block;
+        const title = block.title || block.caption || block.label || 'Ohne Überschrift';
+        const numberLabel = block.type === 'feature' ? String(++number).padStart(2, '0') + ' · ' : '';
+        const type = block.type === 'feature' ? block.mediaCollection || block.photoDisplay === 'carousel' ? 'Thema mit Karussell' : 'Thema'
+          : photoDisplays.get(block.type) || BLOCK_TYPES.find(([key]) => key === block.type)?.[1] || 'Inhalt';
+        const ref = block.mediaCollection?.entries?.[0]?.images?.[0] || block.images?.[0] || block.image;
+        const step = (direction, label, atEnd) => `<button class="btn small home-order-icon" type="button" data-action="home-order-step" data-id="${esc(id)}" data-dir="${direction}" title="${label}" aria-label="${esc(title)} ${label}"${atEnd ? ' disabled' : ''}>${direction < 0 ? icon.up : icon.down}</button>`;
+        return `<li class="home-order-row${newHomeId === id ? ' is-new' : ''}" data-order-id="${esc(id)}">
+          <label class="home-order-position"><span>Position</span><select data-order-position aria-label="Position für ${esc(title)}">${blocks.map((_, i) =>
             `<option value="${i}"${i === index ? ' selected' : ''}>${i + 1}</option>`).join('')}</select></label>
           <span class="home-order-thumb">${ref && shownImage(ref) ? picture(ref, ref, '', true) : ''}</span>
           <span class="home-order-info"><strong>${esc(title)}</strong><small>${numberLabel}${esc(type)}</small></span>
+          <div class="home-order-arrows">${step(-1, 'Nach oben', index === 0)}${step(1, 'Nach unten', index === blocks.length - 1)}</div>
           <div class="home-order-tools">
-            ${step(-1, 'Nach oben', index === 0)}${step(1, 'Nach unten', index === visible.length - 1)}
-            <button type="button" class="btn small" data-action="block-edit" data-id="${esc(id)}"${busy}>Bearbeiten</button>
-            <button type="button" class="btn small danger home-order-icon" data-action="home-order-remove" data-id="${esc(id)}" title="Löschen" aria-label="${esc(title)} löschen"${busy}>${ui().icon.close}</button>
-            ${b.album?.enabled && !b.mediaCollection ? `<button type="button" class="btn small" data-action="block-album-edit" data-id="${esc(id)}"${busy}>Fotoseite</button>` : ''}
-            ${b.mediaCollection ? `<button type="button" class="btn small" data-action="media-transfer" data-page="home" data-id="${esc(id)}"${busy}>Nach Aktuell</button>` : ''}
+            <button type="button" class="btn small" data-action="block-edit" data-id="${esc(id)}">Bearbeiten</button>
+            ${TFB.newsroom.canMoveToNews(block) ? `<button type="button" class="btn small" data-action="home-move-news" data-id="${esc(id)}">Nach Aktuell verschieben</button>` : ''}
+            <button type="button" class="btn small danger" data-action="home-order-remove" data-id="${esc(id)}" aria-label="Artikel löschen: ${esc(title)}">Artikel löschen</button>
           </div>
         </li>`;
       }).join('')}</ol>
-      ${removed.size ? `<p class="muted small">Zum Löschen vorgemerkt · ${[...removed.values()].map(b => `<span>${esc(b.title || b.caption || 'Ohne Überschrift')} <button class="link" type="button" data-action="home-order-restore" data-id="${esc(b.id)}"${busy}>Rückgängig</button></span>`).join(' · ')}</p>` : ''}
-      <p class="form-error" role="alert">${esc(homeOrder?.error || '')}</p>
-      <div class="home-order-save"${orderChanged() ? '' : ' hidden'}>
-        <p role="status">Ungespeicherte Änderungen</p>
-        <button type="button" class="btn" data-action="home-order-reset"${busy}>Verwerfen</button>
-        <button type="submit" class="btn primary"${busy}>Änderungen speichern</button>
-      </div>
-    </form>`;
+    </section>`;
   }
-  function orderDraft() {
-    if (!homeOrder) {
-      const expected = site.pages.home.blocks.filter(b => !b._new).map(b => b.id);
-      homeOrder = { expected, order: [...expected], removed: new Map() };
+  async function saveHomeList(change, message) {
+    if (homeListBusy || !ui().state.member?.isAdmin) return false;
+    homeListBusy = true;
+    const controls = [...document.querySelectorAll('[data-home-order] button:not(:disabled), [data-home-order] select:not(:disabled), .home-editor-add button:not(:disabled)')];
+    for (const control of controls) control.disabled = true;
+    try {
+      const fresh = await ui().api.site();
+      site = await ui().api.saveSite(change(fresh));
+      ui().toast(message, true);
+      return true;
+    } catch (error) {
+      ui().toast(error.message);
+      try { site = await ui().api.site(); } catch (_) {}
+      return false;
+    } finally {
+      homeListBusy = false;
+      for (const control of controls) control.disabled = false;
+      await ui().renderView();
     }
-    return homeOrder;
   }
   async function moveHomeRow(id, position, control) {
-    const draft = orderDraft();
-    if (draft.busy) return;
-    const order = draft.order.filter(item => !draft.removed.has(item));
-    const at = order.indexOf(id);
-    if (at < 0 || position < 0 || position >= order.length || at === position) return;
-    order.splice(at, 1);
-    order.splice(position, 0, id);
-    draft.order = [...order, ...draft.removed.keys()];
-    draft.error = '';
-    await ui().renderView();
+    const expected = site.pages.home.blocks.filter(b => !b._new).map(b => b.id);
+    const at = expected.indexOf(id);
+    if (at < 0 || position < 0 || position >= expected.length || at === position) return;
+    const desired = [...expected];
+    desired.splice(at, 1);
+    desired.splice(position, 0, id);
+    await saveHomeList(fresh => TFB.newsroom.reorder(fresh, 'home', expected, desired), 'Position gespeichert');
     const row = [...document.querySelectorAll('[data-order-id]')].find(node => node.dataset.orderId === id);
     (row?.querySelector(`${control}:not([disabled])`) || row?.querySelector('select'))?.focus({preventScroll:true});
     row?.scrollIntoView({block:'nearest'});
-  }
-  function withHomeOrder(next, draft) {
-    const current = next.pages.home.blocks;
-    if (current.some(b => draft.removed.has(b.id) && JSON.stringify(b) !== JSON.stringify(draft.removed.get(b.id)))) {
-      throw Error('Home wurde inzwischen geändert. Bitte verwirf den Entwurf und prüfe den aktuellen Stand.');
-    }
-    const sorted = TFB.newsroom.reorder(next, 'home', draft.expected, draft.order);
-    sorted.pages.home.blocks = sorted.pages.home.blocks.filter(b => !draft.removed.has(b.id));
-    return sorted;
   }
   document.addEventListener('change', event => {
     if (!event.target.matches('[data-home-order] [data-order-position]')) return;
     moveHomeRow(event.target.closest('[data-order-id]').dataset.orderId, Number(event.target.value), 'select');
   });
-  document.addEventListener('submit', async event => {
-    const form = event.target;
-    if (!form.matches('[data-home-order]')) return;
-    event.preventDefault();
-    const draft = homeOrder;
-    if (!orderChanged() || draft.busy) return;
-    if (draft.removed.size && !confirm('Änderungen speichern und vorgemerkte Inhalte endgültig von Home entfernen?')) return;
-    draft.busy = true;
-    for (const control of form.elements) control.disabled = true;
-    try {
-      site = await ui().api.saveSite(withHomeOrder(await ui().api.site(), draft));
-      homeOrder = null;
-      ui().toast('Änderungen gespeichert', true);
-    } catch (error) {
-      draft.error = error.message;
-      draft.busy = false;
-    }
-    await ui().renderView();
-  });
-  const confirmHomeOrderDiscard = () => !homeOrder?.busy && (!orderChanged() || confirm('Ungespeicherte Änderungen auf Home verwerfen?'));
   function highlightHome(id) {
     newHomeId = id;
     setTimeout(() => {
@@ -2367,28 +2395,28 @@
     const { openSheet, closeSheet } = ui();
     const original = findBlock(id);
     if (!original) return;
-    const originalSiteRevision = site._cms?.versions['page:home'];
+    const originalSiteRevision = site._cms?.versions['page:' + editing];
     const originalValue = JSON.stringify(original);
     if (original.mediaCollection) {
       const page = editing;
       return TFB.homeMedia.openEditor(original, {page,imageOf:ref=>images[ref] || ref,uploadFiles,cover4kField,
         onSave:async draft=>{const next=structuredClone(site);next.pages[page].blocks=next.pages[page].blocks.map(b=>b.id===id?draft:b);site=await ui().api.saveSite(next);if(detailEditing){editing=null;detailEditing=false;}ui().toast('Gespeichert',true);await ui().renderView();},
-        onDelete:async()=>{const next=structuredClone(site);next.pages[page].blocks=next.pages[page].blocks.filter(b=>b.id!==id);site=await ui().api.saveSite(next);if(detailEditing){editing=null;detailEditing=false;location.hash='#'+page;}await ui().renderView();},
+        onDelete:page === 'aktuell' && !isNew ? () => archiveNewsItem(id, original, false) : null,
       });
     }
     const draft = JSON.parse(JSON.stringify(original));
-    const homeFeature = editing === 'home' && draft.type === 'feature';
+    const homeFeature = draft.type === 'feature' || (editing === 'aktuell' && draft.sourceHomeId && draft.type === 'post' && !draft.mediaCollection);
     if (homeFeature && !draft.images?.length) draft.images = draft.image ? [draft.image] : [];
-    if (draft.type === 'feature') { draft.more = { ...(draft.more || {}) }; initSections(draft.more); }
-    if (draft.type === 'post' && !(draft.images || []).length && draft.image) { draft.images = [draft.image]; draft.image = null; }
-    let edTab = startTab;
+    if (homeFeature) { draft.more = { ...(draft.more || {}) }; initSections(draft.more); }
+    if (!homeFeature && draft.type === 'post' && !(draft.images || []).length && draft.image) { draft.images = [draft.image]; draft.image = null; }
+    let edTab = homeFeature ? startTab : 'home';
     let linksOpen = Boolean(draft.link?.url || draft.link2?.url);
     let detailOpen = startTab === 'sub' || draft.detailEnabled !== undefined || hasMore(draft);
     if (draft.type === 'feature' && draft.detailEnabled === undefined && detailOpen) {
       draft.detailEnabled = !['none', 'link'].includes(draft.navigation);
     }
     let albumOpen = startTab === 'album' || Boolean(draft.album?.enabled || draft.album?.images?.length);
-    const live = draft.type === 'feature';   // Themen: Seitenleiste mit Live-Vorschau
+    const live = editing === 'home' && homeFeature;   // Themen: Seitenleiste mit Live-Vorschau
     const photoModule = photoTypes.includes(draft.type);
     const refreshPhotoPreview = () => {
       if (!photoModule || editing === 'home') return;
@@ -2403,7 +2431,7 @@
     const label = photoModule && draft.photoBlock ? 'Fotoblock' : photoModule ? photoDisplays.get(draft.type) :editing==='aktuell'&&draft.type==='post'?'News-Artikel':(BLOCK_TYPES.find(([t]) => t === draft.type) || [0, 'Inhalt'])[1];
 
     const body = () => {
-      switch (draft.type) {
+      switch (homeFeature ? 'feature' : draft.type) {
         case 'feature': {
           const lk = draft.link || {};
           const ext = /^https?:/i.test(lk.url || '');
@@ -2420,6 +2448,7 @@
           const homePanel = `
             <h3 class="editor-sub">Titel und Text</h3>`
             + field('Überschrift', 'title', draft.title)
+            + (editing === 'aktuell' ? field('Veröffentlichungsdatum', 'date', draft.date, {type:'date'}) : '')
             + field('Kurztext', 'text', draft.text, { area: true, rich: true, simple: true, rows: 5 })
             + field('Kleine Zeile darüber (freiwillig)', 'kicker', draft.kicker)
             + field('Unterüberschrift (freiwillig)', 'subtitle', draft.subtitle)
@@ -2563,7 +2592,7 @@
             <button type="submit" class="btn primary block">Speichern</button>
             ${live ? '<button type="button" class="btn block ed-peek" data-ed-peek>Vorschau ansehen</button>' : ''}
           </div>
-          ${editing === 'home' && !detailEditing ? '' : `<button type="button" class="btn block danger" data-delete>${live ? 'Thema löschen' : editing==='aktuell'?esc(label)+' löschen':'Baustein löschen'}</button>`}
+          ${isNew || editing === 'home' || (editing === 'aktuell' && !TFB.newsroom.canArchive(draft)) ? '' : `<button type="button" class="btn block danger" data-delete>${editing === 'aktuell' ? 'Ins Clubarchiv verschieben' : 'Baustein löschen'}</button>`}
         </form>`);
       const form = document.querySelector('[data-editor=block]');
       bindRichFields(form, draft, draft.more?.sections);
@@ -2685,6 +2714,13 @@
         }
         const del = e.target.closest('[data-delete]');
         if (del) {
+          if (editing === 'aktuell') {
+            del.disabled = true;
+            try { if (await archiveNewsItem(id, original)) closeSheet(); }
+            catch (error) { form.querySelector('.form-error').textContent = error.message; }
+            finally { del.disabled = false; }
+            return;
+          }
           if (!del.dataset.armed) { del.dataset.armed = '1'; del.textContent = 'Wirklich löschen? Nochmal tippen'; return; }
           site.pages[editing].blocks = blocksOf().filter((b) => b.id !== id);
           closeSheet();
@@ -2733,7 +2769,7 @@
           form.querySelectorAll('[data-edtab]').forEach((x) => x.classList.toggle('on', x === tabBtn));
           form.querySelectorAll('.ed-panel').forEach((x) => { x.hidden = x.dataset.panel !== edTab; });
           document.querySelector('#sheet-root .sheet').scrollTop = 0;
-          refreshPreview(true);
+          if (live) refreshPreview(true);
           return;
         }
         if (e.target.closest('[data-ed-peek]')) { togglePeek(e.target.closest('[data-ed-peek]')); return; }
@@ -2919,37 +2955,35 @@
         value: f['fact_value_' + i].value.trim(), label: f['fact_label_' + i].value.trim(),
       }));
     };
-    async function saveHomeBlock(form, value, isNew) {
+    async function saveEditorialBlock(form, value, isNew) {
+      const page = editing;
       const button = form.querySelector('[type=submit]');
       if (button.disabled) return;
       const controls = [...form.elements].filter(control => !control.disabled);
       for (const control of controls) control.disabled = true;
       try {
         const next = await ui().api.site();
-        const blocks = next.pages.home.blocks;
+        const blocks = next.pages[page].blocks;
         const index = blocks.findIndex(block => block.id === id);
         if (!isNew && (index < 0 || (originalSiteRevision !== undefined
-          ? next._cms?.versions['page:home'] !== originalSiteRevision
+          ? next._cms?.versions['page:' + page] !== originalSiteRevision
           : JSON.stringify(blocks[index]) !== originalValue))) {
           throw Error('Der Inhalt wurde inzwischen geändert. Bitte öffne ihn erneut.');
         }
-        if (isNew && value.type === 'feature' && blocks.filter(block => block.type === 'feature').length >= MAX_HOME_FEATURES) {
+        if (page === 'home' && isNew && value.type === 'feature' && blocks.filter(block => block.type === 'feature').length >= MAX_HOME_FEATURES) {
           throw Error(`Auf Home sind bereits ${MAX_HOME_FEATURES} Themen veröffentlicht.`);
         }
         const { _new, ...saved } = value;
-        if (isNew) blocks.unshift(saved);
+        if (isNew && page === 'home') blocks.unshift(saved);
+        else if (isNew) TFB.newsroom.insert(blocks, saved);
         else blocks[index] = saved;
         site = await ui().api.saveSite(next);
-        if (isNew && homeOrder && blocks.slice(1).map(b => b.id).join() === homeOrder.expected.join()) {
-          homeOrder.expected.unshift(id);
-          homeOrder.order.unshift(id);
-        }
-        if (isNew) highlightHome(id);
+        if (isNew && page === 'home') highlightHome(id);
         if (detailEditing) { editing = null; detailEditing = false; }
         endLive();
         if (form.isConnected) closeSheet();
         await ui().renderView();
-        ui().toast(isNew ? 'Oben auf Home hinzugefügt' : 'Gespeichert', true);
+        ui().toast(isNew && page === 'home' ? 'Oben auf Home hinzugefügt' : 'Gespeichert', true);
       } catch (error) {
         form.querySelector('.form-error').textContent = error.message;
       } finally { for (const control of controls) control.disabled = false; }
@@ -2960,7 +2994,7 @@
       if(editing==='aktuell'&&['post','event'].includes(draft.type)&&!TFB.newsroom.validDate(draft.date)){form.querySelector('.form-error').textContent='Bitte ein gültiges Datum wählen.';return;}
       if (photoModule && (isNew || draft.photoBlock) && !(draft.images || []).length) { form.querySelector('.form-error').textContent = 'Bitte mindestens ein Foto hinzufügen.'; return; }
       if (draft.album?.enabled && !draft.album.images?.length && (albumOpen || isNew)) { form.querySelector('.form-error').textContent = 'Bitte auf der Fotoseite mindestens ein Foto hinzufügen oder die Verlinkung ausschalten.'; return; }
-      if (editing === 'home') return saveHomeBlock(form, draft, isNew);
+      if (editing === 'home' || editing === 'aktuell') return saveEditorialBlock(form, draft, isNew);
       delete draft._new;
       const list = blocksOf();
       list[list.findIndex((b) => b.id === id)] = draft;
@@ -2982,7 +3016,7 @@
       </div>`);
   }
 
-  const today = () => new Date().toISOString().slice(0, 10);
+  const today = () => new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Berlin' });
   const newBlock = (type) => {
     const id = 'b-' + crypto.randomUUID();
     const defaults = {
@@ -3540,7 +3574,7 @@
       } catch (error) { ui().toast(error.message); }
       finally { el.disabled = false; }
     },
-    'site-done': () => { if (!confirmHomeOrderDiscard()) return; homeOrder = null; editing = null; ui().renderView(); window.scrollTo(0, 0); },
+    'site-done': () => { editing = null; ui().renderView(); window.scrollTo(0, 0); },
     'block-move': (el) => {
       const list = blocksOf();
       const a = list.findIndex((b) => b.id === el.dataset.id);
@@ -3552,31 +3586,30 @@
     'block-edit': (el) => openBlockEditor(el.dataset.id),
     'home-add-photos': () => openPhotoPicker(),
     'home-order-step': el => {
-      const draft = orderDraft();
-      const visible = draft.order.filter(id => !draft.removed.has(id));
-      return moveHomeRow(el.dataset.id, visible.indexOf(el.dataset.id) + Number(el.dataset.dir), `[data-dir="${el.dataset.dir}"]`);
+      const index = site.pages.home.blocks.filter(b => !b._new).findIndex(b => b.id === el.dataset.id);
+      return moveHomeRow(el.dataset.id, index + Number(el.dataset.dir), `[data-dir="${el.dataset.dir}"]`);
     },
+    'home-move-news': el => confirmHomeMove(el.dataset.id),
     'home-order-remove': el => {
-      const draft = orderDraft();
       const block = site.pages.home.blocks.find(b => b.id === el.dataset.id);
-      if (draft.busy || !block || !confirm(`„${block.title || 'Ohne Überschrift'}“ zum Löschen vormerken? Die Änderung wird erst beim Speichern veröffentlicht.`)) return;
-      draft.removed.set(block.id, structuredClone(block));
-      ui().renderView();
+      if (!block || homeListBusy || !confirm(`„${block.title || 'Ohne Überschrift'}“ von Home löschen? Der Artikel wird dabei nicht ins Clubarchiv übernommen.`)) return;
+      return saveHomeList(fresh => {
+        if (JSON.stringify(fresh.pages.home.blocks.find(b => b.id === block.id)) !== JSON.stringify(block)) {
+          throw Error('Der Artikel wurde inzwischen geändert. Bitte prüfe den aktuellen Stand.');
+        }
+        fresh.pages.home.blocks = fresh.pages.home.blocks.filter(b => b.id !== block.id);
+        return fresh;
+      }, 'Artikel von Home gelöscht');
     },
-    'home-order-restore': el => {
-      if (!homeOrder || homeOrder.busy) return;
-      homeOrder.removed.delete(el.dataset.id);
-      ui().renderView();
-    },
-    'home-order-reset': async () => {
-      if (homeOrder?.busy || !confirmHomeOrderDiscard()) return;
-      homeOrder = null;
-      await TFB.refreshSite();
+    'aktuell-archive': async el => {
+      const block = site.pages.aktuell.blocks.find(b => b.id === el.dataset.id);
+      el.disabled = true;
+      try { await archiveNewsItem(el.dataset.id, block); }
+      catch (error) { ui().toast(error.message); }
+      finally { el.disabled = false; }
     },
     'block-new': () => openBlockPicker(),
     'aktuell-new': el=>newNewsroomItem(el.dataset.kind),
-    'aktuell-transfer': () => openHomeTransfer(ui().currentView() === 'home' ? { from: 'aktuell' } : {}),
-    'media-transfer': el=>openHomeTransfer({from:el.dataset.page,id:el.dataset.id}),
     'aktuell-more': ()=>{editing='aktuell';openBlockPicker();},
     'block-add': (el) => {
       if (!editing || !ui().state.member?.isAdmin) return;
@@ -3710,7 +3743,7 @@
 
   // Bearbeitungsmodus verlassen, wenn eine andere Seite geöffnet wird.
   window.addEventListener('hashchange', () => {
-    if (detailEditing || (editing && location.hash.replace('#', '') !== routeOf(editing))) { editing = null; detailEditing = false; homeOrder = null; }
+    if (detailEditing || (editing && location.hash.replace('#', '') !== routeOf(editing))) { editing = null; detailEditing = false; }
   });
 
   // Link eines Home-Themas an den anderen Platz setzen

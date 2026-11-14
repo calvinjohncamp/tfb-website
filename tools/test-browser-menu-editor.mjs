@@ -93,10 +93,10 @@ try {
 
   const original = await publicDocs();
   const removePage = () => row('#aktuell').getByRole('button', { name: 'Mit Seiteninhalten löschen' }).click();
-  answer(false, /Aktuell.*allen redaktionellen Seiteninhalten/);
+  answer(false, /Aktuell.*Clubarchiv/);
   await removePage();
   assert.equal(await row('#aktuell').count(), 1);
-  answer(true, /Aktuell.*allen redaktionellen Seiteninhalten/);
+  answer(true, /Aktuell.*Clubarchiv/);
   await removePage();
   answer(false, /Jetzt speichern.*Einträge löschen/);
   await save();
@@ -112,7 +112,7 @@ try {
   assert.deepEqual((await publicDocs())['page:aktuell'].value, newer);
   await page.locator('.sheet-close').click();
   await edit();
-  answer(true, /Aktuell mit Änderung.*allen redaktionellen Seiteninhalten/);
+  answer(true, /Aktuell mit Änderung.*Clubarchiv/);
   await removePage();
   answer(true, /Menüpunkt „Chat“/);
   await row('#chat').getByRole('button', { name: 'Menüpunkt löschen' }).click();
@@ -121,7 +121,10 @@ try {
   await form.waitFor({ state: 'detached' });
 
   const saved = await publicDocs();
-  assert.deepEqual(saved['page:aktuell'].value, { title: newer.title, blocks: [], deleted: true });
+  assert.equal(saved['page:aktuell'].value.title, newer.title);
+  assert.equal(saved['page:aktuell'].value.deleted, true);
+  assert.ok(saved['page:aktuell'].value.blocks.length);
+  assert.ok(saved['page:aktuell'].value.blocks.every(b => b.archived));
   assert.deepEqual(saved['page:home'], original['page:home']);
   assert.deepEqual(saved['global:nav'].value.map(x => x.id), ['kiosk', 'treffen']);
   await guest.reload();

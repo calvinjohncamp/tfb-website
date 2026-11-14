@@ -117,6 +117,7 @@
 
   function articleView(item) {
     if (!item) return `<section class="club-archive">${heading(overviewRoute)}<p>Beitrag nicht gefunden.</p></section>`;
+    if (item.editorialBlock?.archived || (item.editorialBlock?.sourceHomeId && !item.mediaBlock)) return render.newsArticleDetail(item.editorialBlock, true);
     if(item.mediaBlock)return render.mediaDetail(item.mediaBlock,item.mediaPage);
     const related = item.series ? entries.filter(other => other.id !== item.id && other.series === item.series) : [];
     return `<section class="site-page club-archive archive-reading">
@@ -178,7 +179,7 @@
       .map(link => `<p><a class="more-link" href="${esc(link.url)}">${esc(link.label || 'Mehr erfahren')}</a></p>`).join('') : '';
     const body = (text ? render.paragraphs(text) : '') + links;
     const summary = text.replace(/\{\/?[a-z]+\}|\*\*/g, '').replace(/\s+/g, ' ').trim();
-    return { id: prior?.id || `${b.archivePage||(b.sourceHomeId?'home':page)}-${b.id}`, ...(b.mediaCollection?{mediaBlock:b,mediaPage:page}:{}), title, date: b.date || b.mediaCollection?.entries?.[0]?.date || '', year, sortYear, gallery, photos, topics,
+    return { editorialBlock: b, archiveAliases: page === 'aktuell' ? ['aktuell-' + b.id] : [], id: prior?.id || `${b.archivePage||(b.sourceHomeId?'home':page)}-${b.id}`, ...(b.mediaCollection?{mediaBlock:b,mediaPage:page}:{}), title, date: b.date || b.mediaCollection?.entries?.[0]?.date || '', year, sortYear, gallery, photos, topics,
       body, fullBody: body, source: prior?.source, search: normalize(`${title} ${b.kicker || ''} ${TFB.search.plain(render.paragraphs(text))} ${more.quote || ''} ${more.by || ''} ${mediaText} ${topics.join(' ')} ${year}`),
       summary: summary.length > 180 ? summary.slice(0, 180).replace(/\s+\S*$/, '') + ' …' : summary };
   }
@@ -194,9 +195,10 @@
       const item = editorial(entry, prior, newest);
       if (prior) replaced.add(prior.id);
       // Copies retain article identity; legacy copies retain their entry IDs.
-      const keys=b=>b.mediaCollection ? [b.id,b.articleId,b.sourceHomeId].filter(Boolean).map(id=>'article:'+id).concat(
-        b.mediaCollection.entries?.length&&b.mediaCollection.entries.every(e=>e.id)
-          ? ['entries:'+JSON.stringify(b.mediaCollection.entries.map(e=>e.id).sort())] : []) : [];
+      const keys = b => (b.mediaCollection || b.articleId || b.sourceHomeId)
+        ? [b.id, b.articleId, b.sourceHomeId].filter(Boolean).map(id => 'article:' + id).concat(
+          b.mediaCollection?.entries?.length && b.mediaCollection.entries.every(e => e.id)
+            ? ['entries:' + JSON.stringify(b.mediaCollection.entries.map(e => e.id).sort())] : []) : [];
       item.identityKeys=keys(entry.b);
       const duplicates=current.filter(other=>item.identityKeys.some(key=>other.identityKeys?.includes(key)) ||
         item.gallery&&item.date&&item.photos.length&&other.gallery&&other.date===item.date&&item.photos.every(ref=>other.photos.includes(ref)));
@@ -273,7 +275,7 @@
       const [, , mode, id] = path.split('/');
       const { items } = await loadArchive();
       render = toolkit;
-      entries = combine(items.filter(item => !item.event), toolkit.blocks.filter(({ b }) => b.type !== 'event'));
+      entries = combine(items.filter(item => !item.event), toolkit.blocks.filter(({ b }) => b.type !== 'event' || b.archived));
       byId = new Map(entries.flatMap(item => [item.id,...(item.archiveAliases||[])].map(id=>[id,item])));
       const historical = items.filter(item => item.event).map(historicalDate);
       const historicalById = new Map(historical.map(item => [item.id, item]));

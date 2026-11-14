@@ -36,7 +36,6 @@ try{
    await page.locator('[data-action=site-edit][data-page=home]').click();
    await form.waitFor();
  };
- const saveChanges = () => form.getByRole('button', { name: 'Änderungen speichern' }).click();
  const answer = () => page.once('dialog', dialog => dialog.accept());
  const png = Buffer.from(await page.evaluate(() => {
    const canvas = document.createElement('canvas');
@@ -60,7 +59,7 @@ try{
    });
    assert.ok(aligned, 'Position and arrow columns align on every row');
    assert.equal(await form.locator('[data-action=home-order-step]').first().textContent(), '');
-   assert.equal(await form.locator('[data-action=home-order-remove]').first().textContent(), '');
+   assert.equal(await form.locator('[data-action=home-order-remove]').first().textContent(), 'Artikel löschen');
    const menuGap = await page.locator('.nav-card').evaluate(card =>
      card.querySelector('[data-action=nav-edit]').getBoundingClientRect().top -
      card.querySelector('.nav-preview').getBoundingClientRect().bottom);
@@ -105,59 +104,48 @@ try{
  await row(photo.id).waitFor();
  assert.match(await form.locator('li').first().textContent(), /Ohne Überschrift/);
  await row(photo.id).getByRole('button',{name:/Nach unten/}).click();
+ await page.waitForFunction(id => document.querySelectorAll('[data-order-id]')[1]?.dataset.orderId === id, photo.id);
  await row('gallery').locator('select').selectOption('0');
+ await page.waitForFunction(() => document.querySelector('[data-order-id]').dataset.orderId === 'gallery');
+ assert.equal((await state()).pages.home.blocks[0].id,'gallery');
+ await row('topic').getByRole('button',{name:/Artikel löschen/}).click();
+ assert.ok((await state()).pages.home.blocks.some(b=>b.id==='topic'), 'Dismissed dialog keeps the article');
  answer();
- await row('topic').getByRole('button',{name:/ löschen$/}).click();
- assert.equal((await state()).pages.home.blocks[0].id,photo.id);
- assert.ok((await state()).pages.home.blocks.some(b=>b.id==='topic'));
- answer();
- await saveChanges();
- await form.getByRole('button',{name:'Änderungen speichern'}).waitFor({state:'hidden'});
- assert.deepEqual((await state()).pages.home.blocks.map(b=>b.id),['gallery',topic.id,photo.id,'legacy']);
+ await row('topic').getByRole('button',{name:/Artikel löschen/}).click();
+ await row('topic').waitFor({state:'detached'});
+ assert.ok(!(await state()).pages.home.blocks.some(b=>b.id==='topic'));
+ assert.equal(await page.getByRole('button',{name:'Fertig'}).count(),0);
+ assert.equal(await page.getByRole('button',{name:'Karussell aus Aktuell übernehmen'}).count(),0);
 
- // Test an intervening edit before a staged removal is committed.
- answer();
- await row('legacy').getByRole('button',{name:/ löschen$/}).click();
- await page.evaluate(async () => {
-   const site = await TFB.api.site();
-   site.pages.home.blocks.find(b=>b.id==='legacy').title='Zwischenzeitlich geändert';
-   await TFB.api.saveSite(site);
- });
- answer();
- await saveChanges();
- await form.getByText(/inzwischen geändert/).waitFor();
- answer();
- await form.getByRole('button',{name:'Verwerfen'}).click();
- await row('legacy').getByText('Zwischenzeitlich geändert').waitFor();
- await row('legacy').getByRole('button',{name:'Bearbeiten'}).click();
- await page.locator('[data-hm-editor]').waitFor();
+ await row(topic.id).getByRole('button',{name:'Nach Aktuell verschieben'}).click();
+ const move = page.locator('[data-home-move]');
+ await move.locator('[name=date]').fill('2026-11-14');
+ await move.getByRole('button',{name:'Nach Aktuell verschieben'}).click();
+ await row(topic.id).waitFor({state:'detached'});
+ const moved = (await state()).pages.aktuell.blocks.find(b=>b.id===topic.id);
+ assert.equal(moved.type,'post');
+ assert.deepEqual(moved.album,topic.album);
+ assert.deepEqual(moved.more,topic.more);
+ await page.evaluate(() => location.hash = '#aktuell');
+ await page.locator('[data-action=site-edit][data-page=aktuell]').first().click();
+ const article = page.locator('[data-edit-block="' + topic.id + '"]');
+ await article.getByRole('button',{name:'Bearbeiten'}).click();
+ await editor.locator('[data-edtab=sub]').click();
+ await editor.getByText('Ausführlicher Inhalt zum Test.').first().waitFor();
  await page.locator('.sheet-close').click();
-
- await page.getByRole('button',{name:'Karussell aus Aktuell übernehmen'}).click();
- await page.locator('[data-transfer-format]').selectOption('photoBlock');
- await page.getByRole('button',{name:'Nach Home kopieren'}).click();
- await page.locator('.newsroom-transfer').waitFor({state:'detached'});
- const copied = await state();
- assert.equal(copied.pages.home.blocks[0].type,'carousel');
- assert.equal(copied.pages.home.blocks[0].title,'Anlage');
- assert.equal(copied.pages.aktuell.blocks[0].id,'news');
- await page.getByRole('button',{name:'Fertig'}).click();
- await page.locator('.editing-page').waitFor({state:'detached'});
- assert.deepEqual(await page.locator('.feature-number').allTextContents(),['01','02']);
- const first = page.locator('[data-photo-module="' + copied.pages.home.blocks[0].id + '"]');
- await first.getByRole('button',{name:'Nächstes Bild'}).click();
- assert.match(await first.locator('.cs-carousel-status').textContent(), /2 von 2/);
- const bare = page.locator('[data-photo-module="' + photo.id + '"]');
- await bare.getByRole('region',{name:'Bilderkarussell'}).waitFor();
- assert.equal(await bare.locator('h2').count(),0);
- const feature = page.locator('[data-feature="' + topic.id + '"]');
- await feature.getByRole('link',{name:'Fotos der Veranstaltung'}).click();
- await page.locator('.album-page .gallery-grid').waitFor();
- await page.goBack();
- await feature.getByRole('link',{name:'Mehr erfahren'}).click();
+ answer();
+ await article.getByRole('button',{name:'Ins Clubarchiv'}).click();
+ await article.waitFor({state:'detached'});
+ assert.equal((await state()).pages.aktuell.blocks.find(b=>b.id===topic.id).archived,true);
+ await page.evaluate(id => location.hash = '#home/' + id,topic.id);
+ const archive = page.getByRole('link',{name:'Zum Artikel im Clubarchiv'});
+ await archive.click();
+ await page.getByRole('heading',{name:'Neuer Beitrag',exact:true}).waitFor();
  await page.getByText('Ausführlicher Inhalt zum Test.').waitFor();
+ await page.getByRole('link',{name:'Fotos der Veranstaltung'}).click();
+ await page.locator('.album-page .gallery-grid').waitFor();
  await page.goto(origin+'/?tfbPresentation=1#home');
  await page.locator('[data-photo-module="' + photo.id + '"]').waitFor();
  assert.deepEqual(errors,[]);
- console.log('PASS: Home editors, inline order and staged deletion, legacy content, imports and public mobile layout.');
+ console.log('PASS: Home editor, immediate order and deletion, transfer, archive and old links.');
 } finally { await browser.close(); }

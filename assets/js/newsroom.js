@@ -16,49 +16,31 @@
     blocks.splice(index<0?blocks.length:index,0,block);
   }
   const validDate=value=>/^\d{4}-\d{2}-\d{2}$/.test(value||'')&&Number.isFinite(Date.parse(value+'T12:00:00Z'))&&new Date(value+'T12:00:00Z').toISOString().slice(0,10)===value;
-  function transfer(input,id,date,{from='home',mode='move',format,maxHome=10}={}) {
-    if(!['home','aktuell'].includes(from)||!['move','copy'].includes(mode))throw Error('Ungültige Übernahme.');
-    const to=from==='home'?'aktuell':'home';
-    if(to==='aktuell'&&!validDate(date))throw Error('Bitte ein gültiges Veröffentlichungsdatum wählen.');
-    const next=structuredClone(input),source=next.pages[from].blocks.find(b=>b.id===id&&!b._new&&b.mediaCollection);
-    if(!source)throw Error('Dieses Karussell ist nicht mehr verfügbar. Bitte die Seite neu laden.');
-    const target=next.pages[to].blocks;
-    if(mode==='move'&&target.some(b=>b.id===id))throw Error('Dieser Beitrag ist bereits auf der Zielseite vorhanden.');
-    if(to==='home'&&format!=='photoBlock'&&target.filter(b=>b.type==='feature'&&!b._new).length>=maxHome)throw Error(`Home zeigt höchstens ${maxHome} Themen. Bitte zuerst Platz schaffen.`);
-    const item={...structuredClone(source),articleId:source.articleId||source.sourceHomeId||source.id,type:to==='home'?'feature':'post'};
-    if(mode==='copy'){item.id='b-'+crypto.randomUUID();item.archivePage=to;}
-    else if(from==='aktuell'&&!item.sourceHomeId&&!item.archivePage)item.archivePage='aktuell';
-    if(to==='aktuell')Object.assign(item,{date,sourceHomeId:source.sourceHomeId||source.id});
-    else Object.assign(item,{layout:source.layout||'wide',navigation:'detail'});
-    if (to === 'home' && format) {
-      const entries = item.mediaCollection.entries;
-      const refs = entries.flatMap(entry => entry.images || []);
-      if (!refs.length) throw Error('Dieses Karussell enthält keine Fotos.');
-      if (format === 'photoBlock') {
-        item.type = 'carousel';
-        item.photoBlock = true;
-      } else {
-        item.photoDisplay = 'carousel';
-        item.navigation = 'none';
-        const detailText = entries.map(entry => [entry.title !== item.title && entry.title, entry.subtitle, entry.text,
-          entry.instagramUrl && `[Instagram](${entry.instagramUrl})`].filter(Boolean).join('\n\n')).filter(Boolean).join('\n\n');
-        if (detailText) {
-          item.more = { ...item.more, text: detailText };
-          item.detailEnabled = true;
-          item.navigation = 'detail';
-        }
-      }
-      item.images = refs;
-      item.image = refs[0];
-      item.animationStart ||= 'auto';
-      delete item.mediaCollection;
-      // Keep the source date for chronological views.
-      if (format === 'photoBlock') item.hideDate = true;
-    }
-    // Home's summary and detail may subsequently be edited independently.
-    delete item.mediaSingle;
-    if(mode==='move')next.pages[from].blocks=next.pages[from].blocks.filter(b=>b.id!==id);
-    if(to==='home')target.unshift(item);else insert(target,item);
+  const homeTypes = new Set(['feature', 'post', 'gallery', 'collage', 'carousel', 'text', 'image']);
+  const canMoveToNews = block => homeTypes.has(block.type);
+  function moveToNews(input, id, date) {
+    if (!validDate(date)) throw Error('Bitte ein gültiges Veröffentlichungsdatum wählen.');
+    if (input.pages.aktuell.deleted) throw Error('Die Seite Aktuell wurde entfernt.');
+    const next = structuredClone(input);
+    const source = next.pages.home.blocks.find(b => b.id === id && !b._new && canMoveToNews(b));
+    if (!source) throw Error('Der Artikel ist auf Home nicht mehr verfügbar.');
+    const target = next.pages.aktuell.blocks;
+    if (target.some(b => b.id === id)) throw Error('Der Artikel ist bereits unter Aktuell oder im Archiv vorhanden.');
+    const type = ['gallery', 'collage', 'carousel'].includes(source.type) ? source.type : 'post';
+    const title = source.title || source.caption || ({gallery:'Galerie',collage:'Collage',carousel:'Karussell'})[type] || 'Artikel';
+    const article = { ...source, type, title, date, sourceHomeId: id, articleId: source.articleId || id };
+    if (source.type === 'feature' && article.image && !article.images?.length) article.images = [article.image];
+    delete article.hideDate;
+    next.pages.home.blocks = next.pages.home.blocks.filter(b => b.id !== id);
+    insert(target, article);
+    return next;
+  }
+  const canArchive = block => block.type === 'event' || canMoveToNews(block);
+  function archiveNews(input, id) {
+    const next = structuredClone(input);
+    const article = next.pages.aktuell.blocks.find(b => b.id === id && !b._new);
+    if (!article || article.archived || !canArchive(article)) throw Error('Der Eintrag ist unter Aktuell nicht mehr verfügbar.');
+    article.archived = true;
     return next;
   }
   function reorder(input,page,expected,desired) {
@@ -67,5 +49,5 @@
     if(desired.length!==expected.length||new Set(desired).size!==desired.length||desired.some(id=>!expected.includes(id)))throw Error('Die Reihenfolge ist unvollständig. Bitte die Übersicht neu öffnen.');
     const byId=new Map(blocks.map(b=>[b.id,b]));next.pages[page].blocks=desired.map(id=>byId.get(id));return next;
   }
-  TFB.newsroom={ordered,dateOf,validDate,insert,transfer,reorder};
+  TFB.newsroom={ordered,dateOf,validDate,insert,canMoveToNews,moveToNews,canArchive,archiveNews,reorder};
 })();
