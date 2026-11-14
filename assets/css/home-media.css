@@ -25,9 +25,6 @@
 .media-news-link:focus-visible{outline:2px solid var(--signal);outline-offset:3px}
 .newsroom-tools{margin:0 0 28px;padding:20px;border:1px solid var(--line);border-radius:8px;background:var(--card)}
 .newsroom-create{display:flex;flex-wrap:wrap;gap:10px}
-.newsroom-more{margin-top:16px;font-size:.8rem;color:var(--muted)}
-.newsroom-more summary{cursor:pointer;width:fit-content}
-.newsroom-more p{margin:12px 0 8px}
 .newsroom-source{display:grid;gap:8px;border-top:1px solid var(--line);margin-top:24px;padding-top:22px}
 .site-page[data-page="aktuell"] .block-edit{min-width:0}
 .site-page[data-page="aktuell"] .block-tools{justify-content:flex-end}
@@ -172,3 +169,17 @@ body.hm-zoom-open{overflow:hidden}
 }
 .detail-link-editor { min-width: 0; margin: 0 0 12px; padding: 8px 12px 12px; border: 1px solid var(--line); border-radius: 8px; }
 .detail-link-editor > legend { padding-inline: 4px; }
+
+.newsroom-create > .btn.primary { background: var(--signal); color: var(--ink); }
+.news-compact-collage > .collage {
+  margin: 0;
+  gap: 6px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+  height: clamp(140px, 23vw, 280px);
+}
+.news-compact-collage .collage-item { grid-column: span 2; grid-row: span 1; min-height: 0; }
+.news-compact-collage .collage-1 .collage-item { grid-column: 1 / -1; grid-row: 1 / -1; }
+.news-compact-collage .collage-2 .collage-item { grid-row: 1 / -1; }
+.news-compact-collage .collage-3 .collage-item:first-child { grid-row: 1 / -1; }
+.news-compact-collage .collage-item img { height: 100%; object-fit: cover; }

@@ -172,11 +172,13 @@ try{
 
  await row(topic.id).getByRole('button',{name:'Nach Aktuell verschieben'}).click();
  const move = page.locator('[data-home-move]');
- await move.locator('[name=date]').fill('2026-11-14');
+ assert.equal(await move.locator('[name=date]').count(),0);
+ assert.equal(await move.locator('time').getAttribute('datetime'),topic.createdOn);
  await move.getByRole('button',{name:'Nach Aktuell verschieben'}).click();
  await row(topic.id).waitFor({state:'detached'});
  const moved = (await state()).pages.aktuell.blocks.find(b=>b.id===topic.id);
  assert.equal(moved.type,'post');
+ assert.equal(moved.date,topic.createdOn);
  assert.deepEqual(moved.album,topic.album);
  assert.deepEqual(moved.more,topic.more);
  await page.evaluate(() => location.hash = '#aktuell');
@@ -226,6 +228,34 @@ try{
  }
  await page.evaluate(() => location.hash = '#home');
  await page.locator('.story').waitFor({state:'detached'});
+ // The same carousel cap applies in each Home editor, including format changes.
+ await page.evaluate(async image => {
+   const site = await TFB.api.site();
+   const photos = Array(16).fill(image);
+   site.pages.home.blocks.push({
+     id:'carousel-limit', type:'feature', title:'Karussell-Grenze', image, images:photos,
+     photoDisplay:'gallery', detailEnabled:true, more:{images:photos,photoDisplay:'gallery'},
+     album:{enabled:true,images:photos,photoDisplay:'gallery'},
+   });
+   const legacy = site.pages.home.blocks.find(block => block.id === 'legacy');
+   legacy.mediaCollection.entries[0].images = Array(14).fill(image);
+   await TFB.api.saveSite(site);
+   await TFB.refreshSite(true);
+ }, image);
+ await editHome();
+ await row('carousel-limit').getByRole('button',{name:'Bearbeiten'}).click();
+ for(const [tab, name] of [['home','photoDisplay'],['sub','detailPhotoDisplay'],['album','albumPhotoDisplay']]){
+   await editor.locator('[data-edtab="' + tab + '"]').click();
+   assert.equal(await editor.locator('[name="' + name + '"] option[value=carousel]').evaluate(option => option.disabled),true,name);
+ }
+ await page.locator('.sheet-close').click();
+ await row('legacy').getByRole('button',{name:'Bearbeiten'}).click();
+ const collection = page.locator('[data-hm-editor]');
+ await collection.locator('[data-hm-tab=posts]').click();
+ await collection.locator('[data-hm-upload="0"]').setInputFiles(photos);
+ await collection.getByText('Ein Karussell kann höchstens 15 Fotos enthalten.').waitFor();
+ assert.equal(await collection.locator('.gallery-thumb').count(),14);
+ await page.locator('.sheet-close').click();
  const testCover = async ({ratio, heroCount=1, grid, width}) => {
    await page.setViewportSize({width,height:900});
    await page.evaluate(async ({ratio, heroCount, grid}) => {

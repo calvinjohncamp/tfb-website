@@ -18,9 +18,13 @@ test('Moving a topic preserves its identity, photos, links and detail', () => {
  const start = { pages:{home:{blocks:[topic]},aktuell:{blocks:[]}} };
  const result = plain(moveToNews(start, 'topic', '2026-11-14'));
  assert.deepEqual(result.pages.home.blocks, []);
- assert.deepEqual(result.pages.aktuell.blocks[0], { ...topic, type:'post', images:['cover'], date:'2026-11-14', sourceHomeId:'topic', articleId:'topic' });
+ assert.deepEqual(result.pages.aktuell.blocks[0], { ...topic, type:'post', images:['cover'], date:'2026-11-14', createdOn:'2026-11-14', sourceHomeId:'topic', articleId:'topic' });
  assert.deepEqual(start.pages.home.blocks, [topic]);
- assert.throws(() => moveToNews(start, 'topic', '2026-02-30'), /Veröffentlichungsdatum/);
+ const dated = {...topic, createdOn:'2026-09-11', createdAt:'2026-09-11T08:15:00Z'};
+ const knownDate = plain(moveToNews({pages:{home:{blocks:[dated]},aktuell:{blocks:[]}}}, 'topic', '2026-11-14')).pages.aktuell.blocks[0];
+ assert.equal(knownDate.date, '2026-09-11');
+ assert.equal(knownDate.createdAt, dated.createdAt);
+ assert.throws(() => moveToNews(start, 'topic', '2026-02-30'), /Erstellungsdatum/);
 });
 test('Archiving changes only the publication state and keeps the article in the CMS', () => {
  const article = { id:'news', type:'post', title:'News', date:'2026-11-01', mediaCollection:{entries:[{images:['photo']}] }};
