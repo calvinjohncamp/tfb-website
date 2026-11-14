@@ -1,5 +1,22 @@
 # TFB – Übergabe für die nächste Sitzung
 
+## Home-Unterseiten und Sortierpfeile · live am 14.11.2026
+
+GitHub Pages hat Commit `a5fd9fe` veröffentlicht (Lauf 43573754335).
+Im Home-Admin stehen die Sortierpfeile mittig zwischen Infobereich und
+Bearbeiten. Bei schmalen Ansichten wechseln die Artikelaktionen in eine
+eigene Zeile. Einzelne Kopfbilder füllen die Inhaltsbreite im Originalformat.
+Alternativ passen 2:1, 3:1 und 4:1 das Bild in einen Rahmen ein. Bis zu vier
+eigene Kopfbilder lassen sich als Kacheln oder in Originalformaten zeigen.
+Unterseiten haben eigene interne und externe Links. Die Einstellung für die
+Collage unter dem Text wirkt nur auf deren Fotos.
+
+Die veröffentlichten Dateien wurden bytegenau verglichen. Das 1600 × 800 px
+große Kopfbild von „TEST“ wurde im Live-Browser bei 1440 und 390 px in der
+vollen Inhaltsbreite ohne Zuschnitt geprüft. Sortieren, Bildformate, Links,
+Collage sowie Verschieben und Archivieren wurden mit isolierten Testdaten
+geprüft. Die Veröffentlichung hat keine redaktionellen Inhalte geändert.
+
 ## Home → Aktuell → Clubarchiv · live am 14.11.2026
 
 GitHub Pages hat Commit `3ab44bc` veröffentlicht (Lauf 43572883664).
