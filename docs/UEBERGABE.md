@@ -1,5 +1,19 @@
 # TFB – Übergabe für die nächste Sitzung
 
+## Redaktionelle Links · live am 14.11.2026
+
+GitHub Pages hat Commit `6d331e1` veröffentlicht (Lauf 43579651940).
+Home, Aktuell und Unterseiten verwenden gleich hohe Link-Buttons mit
+Text als Voreinstellung. Ein eigener Linktext ist möglich. Ist das Feld
+leer, wird der Seitenname oder die Domain angezeigt. Optionale Symbole
+stammen aus den vorhandenen App-Symbolen. Eigene Linkfotos können im
+runden Rahmen verschoben und gezoomt werden. Der Ausschnitt wird mit
+dem Link gespeichert.
+
+Home und Aktuell wurden bei 1440 und 390 px live geprüft. Symbole,
+Fotoausschnitte, Speichern, Neuladen und die 38-px-Buttonhöhe sind
+in den Browser-Tests mit Testdaten geprüft.
+
 ## Aktuell direkt über den Kopf-Bleistift · live am 14.11.2026
 
 GitHub Pages hat Commit `e01a6e6` veröffentlicht (Lauf 43577386205).
