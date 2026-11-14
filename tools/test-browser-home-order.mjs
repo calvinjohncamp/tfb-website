@@ -104,6 +104,8 @@ try{
  await editor.locator('[data-linkfor=link2][data-linkkind=app]').click();
  await editor.locator('[name=link2App]').selectOption('#sport');
  await editor.locator('[name=link2Label]').fill('Zum Sport');
+ await editor.locator('[name=link2Appearance]').selectOption('symbol');
+ await editor.locator('[name=link2Symbol]').selectOption('sport');
  await upload('[data-home-photo-input]');
  await editor.locator('[name=photoDisplay]').selectOption('carousel');
  await editor.getByRole('button',{name:'Unterseite anlegen'}).click();
@@ -119,6 +121,13 @@ try{
  await addDetailLink.click();
  await sub.locator('[name=detailLink1Url]').fill('https://example.net/extern');
  await sub.locator('[name=detailLink1Label]').fill('Externer Detaillink');
+ await sub.locator('[name=detailLink1Appearance]').selectOption('photo');
+ await sub.locator('[data-link-photo=detailLink1]').setInputFiles(photos[0]);
+ await sub.locator('[data-link-crop=detailLink1]').click();
+ const crop = page.locator('.photo-frame-overlay');
+ await crop.locator('[data-frame-zoom]').fill('2');
+ await crop.getByRole('button',{name:'Übernehmen'}).click();
+ await crop.waitFor({state:'detached'});
  await addDetailLink.click();
  await sub.locator('[data-detail-link-remove="2"]').click();
  await sub.locator('[data-heroratio="3"]').click();
@@ -141,6 +150,10 @@ try{
  assert.equal(topic.photoDisplay,'carousel');
  assert.equal(topic.album.photoDisplay,'gallery');
  assert.equal(topic.link2.url,'#sport');
+ assert.equal(topic.link2.appearance,'symbol');
+ assert.equal(topic.link2.icon,'sport');
+ assert.equal(topic.more.links[1].appearance,'photo');
+ assert.equal(topic.more.links[1].crop.zoom,2);
  assert.equal(topic.more.heroRatio,'3');
  assert.equal(topic.more.original,true);
  assert.equal(topic.more.photoDisplay,'carousel');
@@ -201,6 +214,10 @@ try{
  const detailLinks = page.locator('.story-detail-links');
  assert.equal(await detailLinks.getByRole('link',{name:'Zum Club'}).getAttribute('href'), '#club');
  assert.equal(await detailLinks.getByRole('link',{name:'Externer Detaillink'}).getAttribute('target'), '_blank');
+ const photoLink=detailLinks.getByRole('link',{name:'Externer Detaillink'});
+ assert.equal(await photoLink.locator('.photo-frame').evaluate(el=>el.style.getPropertyValue('--photo-zoom')),'2');
+ assert.equal((await photoLink.boundingBox()).height,38);
+ assert.equal((await detailLinks.getByRole('link',{name:'Zum Club'}).boundingBox()).height,38);
  const articleCarousel = page.locator('.story .cs-carousel');
  await articleCarousel.locator('[data-cs-published-page]:not([hidden]) [data-cs-published-full]').first().click();
  await dismissByBackdrop(page.locator('.cs-viewer'));

@@ -49,13 +49,14 @@ try{
  await form.getByRole('button',{name:'Link hinzufügen'}).click();
  await form.locator('[data-linkfor=link][data-linkkind=app]').click();
  await form.locator('[name=linkApp]').selectOption('#sport');
- await form.locator('[name=linkLabel]').fill('Zum Sport');
+ await form.locator('[name=linkAppearance]').selectOption('symbol');
+ await form.locator('[name=linkSymbol]').selectOption('sport');
  await form.locator('[name=link2Url]').fill('ungültige Adresse');
  await form.locator('[type=submit]').click();
  await form.getByText('Bitte eine gültige Website-Adresse eingeben.').waitFor();
  await form.locator('[name=link2Url]').fill('www.example.org/news');
  await form.locator('[name=link2Label]').fill('Externer News-Link');
- await page.locator('.news-draft-preview .post').getByRole('link',{name:'Zum Sport'}).waitFor();
+ await page.locator('.news-draft-preview .post').getByRole('link',{name:'Sport',exact:true}).waitFor();
  await form.getByRole('button',{name:'Artikelansicht'}).click();
  const draftStory = page.locator('.news-draft-preview .story');
  await draftStory.getByRole('link',{name:'Externer News-Link'}).waitFor();
@@ -63,12 +64,15 @@ try{
  assert.equal(await form.locator('[type=submit]').innerText(),'Veröffentlichen');
  await form.locator('[type=submit]').click();
  await form.waitFor({state:'detached'});
- await page.locator('.col-news .post').filter({hasText:'Neue News'}).getByRole('link',{name:'Zum Sport'}).waitFor();
+ await page.locator('.col-news .post').filter({hasText:'Neue News'}).getByRole('link',{name:'Sport',exact:true}).waitFor();
  assert.equal(await page.getByRole('link',{name:'Externer News-Link'}).getAttribute('href'),'https://www.example.org/news');
+ const dimensions=await page.locator('.col-news .post').filter({hasText:'Neue News'}).locator('.editorial-link').evaluateAll(links=>
+   links.map(link=>[link.getBoundingClientRect().height, Boolean(link.querySelector('.editorial-link-mark'))]));
+ assert.deepEqual(dimensions,[[38,true],[38,false]]);
  await page.reload();
- assert.equal(await page.locator('.col-news .post').filter({hasText:'Neue News'}).getByRole('link',{name:'Zum Sport'}).getAttribute('href'),'#sport');
+ assert.equal(await page.locator('.col-news .post').filter({hasText:'Neue News'}).getByRole('link',{name:'Sport',exact:true}).getAttribute('href'),'#sport');
  await page.getByRole('link',{name:'Neue News'}).click();
- assert.equal(await page.getByRole('link',{name:'Zum Sport'}).getAttribute('href'),'#sport');
+ assert.equal(await page.locator('.story').getByRole('link',{name:'Sport',exact:true}).getAttribute('href'),'#sport');
  assert.equal(await page.getByRole('link',{name:'Externer News-Link'}).getAttribute('target'),'_blank');
  await page.locator('.story-tools a[href="#aktuell"]').click();
  await page.evaluate(async()=>{TFB.ui.state.member=TFB.api.attachDirectoryMember({id:'home-media-admin',firstName:'Home',lastName:'Test',isAdmin:true,active:true,email:'home@example.invalid',teams:[]});TFB.api.secureDirectory=true;TFB.api.mode='test';await TFB.ui.renderView('aktuell');});

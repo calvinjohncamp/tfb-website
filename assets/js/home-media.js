@@ -177,7 +177,7 @@
   document.addEventListener('click',e=>{const all=e.target.closest('[data-hm-all]');if(all){all.closest('.hm-collection').querySelectorAll('.hm-entry[hidden]').forEach(el=>el.hidden=false);all.parentElement.remove();}});
 
   function fresh() { return {title:'Einblicke in unser Projekt.',intro:'',entries:[]}; }
-  function openEditor(original, {imageOf,uploadFiles,cover4kField,linkFields,readLinks,switchLink,onSave,onDelete,page='home'}) {
+  function openEditor(original, {imageOf,uploadFiles,cover4kField,links,onSave,onDelete,page='home'}) {
     const ui=TFB.ui,draft=structuredClone(original),single=page==='aktuell'&&draft.mediaSingle;
     let tab='home',busy=false,armed=false;
     let linksOpen = Boolean(draft.link?.url || draft.link2?.url);
@@ -188,7 +188,7 @@
     function collect(){
       const form=document.querySelector('[data-hm-editor]');if(!form)return;
       for(const key of ['title','kicker','subtitle','text','mediaButtonLabel','date'])if(form.elements[key])draft[key]=form.elements[key].value.trim();
-      if (page === 'aktuell') readLinks?.(form, draft);
+      links?.read(form, draft);
       if(form.elements.animationStart)draft.animationStart=form.elements.animationStart.value;
       if(form.elements.allow4k)draft.allow4k=form.elements.allow4k.checked;
       draft.mediaCollection.entries.forEach((entry,i)=>{for(const key of ['kicker','title','subtitle','date','text','format','instagramUrl'])if(form.elements[`entry_${i}_${key}`])entry[key]=form.elements[`entry_${i}_${key}`].value.trim();});
@@ -199,17 +199,18 @@
     function render(){
       const date = TFB.newsroom.creationDate(draft);
       const dateField = page === 'aktuell' && date ? `<p class="muted small">Erstellt am <time datetime="${esc(date)}">${new Date(date+'T12:00:00').toLocaleDateString('de-DE')}</time></p>` : '';
-      const links = page !== 'aktuell' || !linkFields ? '' : linksOpen
-        ? '<h3 class="editor-sub">Links</h3>' + linkFields(draft)
+      const linkControls = !links ? '' : linksOpen
+        ? '<h3 class="editor-sub">Links</h3>' + links.fields(draft)
         : '<button type="button" class="btn small" data-hm-links>Link hinzufügen</button>';
       const posts=()=>draft.mediaCollection.entries.map((entry,i)=>`<section class="hm-edit-entry"><h3>Beitrag ${i+1}</h3>${field('Obere Themenzeile',`entry_${i}_kicker`,entry.kicker ?? draft.kicker)}${field('Überschrift',`entry_${i}_title`,entry.title)}${field('Unterüberschrift (freiwillig)',`entry_${i}_subtitle`,entry.subtitle)}<label class="field"><span>Datum</span><input type="date" name="entry_${i}_date" value="${esc(entry.date)}"></label>${field('Begleittext',`entry_${i}_text`,entry.text,true)}${formats(entry,i)}${field('Instagram-Link (freiwillig)',`entry_${i}_instagramUrl`,entry.instagramUrl)}${pictures(entry,i)}<div class="hm-entry-actions"><button type="button" class="btn small" data-hm-entry-move="${i}:-1"${i===0?' disabled':''}>Beitrag nach oben</button><button type="button" class="btn small" data-hm-entry-move="${i}:1"${i===draft.mediaCollection.entries.length-1?' disabled':''}>Nach unten</button><button type="button" class="link" data-hm-entry-remove="${i}">Beitrag entfernen</button></div></section>`).join('')+'<button type="button" class="btn block" data-hm-add>Beitrag hinzufügen</button>';
       const singleFields=()=>summaryFields()+dateField+formats(draft.mediaCollection.entries[0],0)+pictures(draft.mediaCollection.entries[0],0)+field('Instagram-Link (freiwillig)','entry_0_instagramUrl',draft.mediaCollection.entries[0].instagramUrl);
-      ui.openSheet(`<form class="editor hm-editor" data-hm-editor novalidate><h2>${page==='aktuell'?(draft._new?'Karussell hinzufügen':'Karussell bearbeiten'):(draft._new?'Medien-Collage hinzufügen':'Medien-Collage bearbeiten')}</h2>${single?'':`<div class="ed-tabs"><button type="button" data-hm-tab="home" class="${tab==='home'?'on':''}">${page==='home'?'Startseite':'News-Übersicht'}</button><button type="button" data-hm-tab="posts" class="${tab==='posts'?'on':''}">Beiträge</button></div>`}${single?singleFields()+links:tab==='home'?summaryFields()+dateField+links:posts()}<p class="form-error" role="alert"></p><button type="submit" class="btn primary block">Speichern</button>${onDelete ? `<button type="button" class="btn block danger" data-hm-delete>${armed ? 'Archivieren bestätigen' : 'Ins Clubarchiv verschieben'}</button>` : ''}</form>`);
+      ui.openSheet(`<form class="editor hm-editor" data-hm-editor novalidate><h2>${page==='aktuell'?(draft._new?'Karussell hinzufügen':'Karussell bearbeiten'):(draft._new?'Medien-Collage hinzufügen':'Medien-Collage bearbeiten')}</h2>${single?'':`<div class="ed-tabs"><button type="button" data-hm-tab="home" class="${tab==='home'?'on':''}">${page==='home'?'Startseite':'News-Übersicht'}</button><button type="button" data-hm-tab="posts" class="${tab==='posts'?'on':''}">Beiträge</button></div>`}${single?singleFields()+linkControls:tab==='home'?summaryFields()+dateField+linkControls:posts()}<p class="form-error" role="alert"></p><button type="submit" class="btn primary block">Speichern</button>${onDelete ? `<button type="button" class="btn block danger" data-hm-delete>${armed ? 'Archivieren bestätigen' : 'Ins Clubarchiv verschieben'}</button>` : ''}</form>`);
       const form=document.querySelector('[data-hm-editor]');
       form.addEventListener('click',async event=>{
         const b=event.target.closest('button');if(!b||busy)return;collect();
         if (b.hasAttribute('data-hm-links')) { linksOpen = true; render(); }
-        else if (b.dataset.linkkind) { switchLink(draft, b.dataset.linkfor, b.dataset.linkkind === 'app'); render(); }
+        else if (b.dataset.linkkind) { links.switchTarget(draft, b.dataset.linkfor, b.dataset.linkkind === 'app'); render(); }
+        else if (b.dataset.linkCrop) { links.crop(draft[b.dataset.linkCrop], b, render); }
         else if(b.dataset.hmTab){tab=b.dataset.hmTab;render();}
         else if(b.hasAttribute('data-hm-add')){if(draft.mediaCollection.entries.length>=50)return;draft.mediaCollection.entries.push({id:crypto.randomUUID(),kicker:draft.kicker||'',title:'',subtitle:'',date:new Date().toISOString().slice(0,10),text:'',format:'4:5',images:[],instagramUrl:''});render();}
         else if(b.dataset.hmRemove){const[i,j]=b.dataset.hmRemove.split(':').map(Number);draft.mediaCollection.entries[i].images.splice(j,1);render();}
@@ -219,7 +220,25 @@
         else if(b.hasAttribute('data-hm-delete')){if(!armed){armed=true;b.textContent='Archivieren bestätigen';return;}busy=true;try{await onDelete();ui.closeSheet();}catch(err){form.querySelector('.form-error').textContent=err.message;busy=false;}}
       });
       form.addEventListener('change',async event=>{
-        const input=event.target;if(!input.matches('[data-hm-upload]')||!input.files.length||busy)return;collect();
+        const input=event.target;
+        if (busy) return;
+        if (input.matches('[data-link-refresh]')) { collect(); render(); return; }
+        if (input.dataset.linkPhoto && input.files.length) {
+          collect();
+          busy = true;
+          const submit = form.querySelector('[type=submit]');
+          submit.disabled = true;
+          try {
+            const [image] = await uploadFiles([input.files[0]]);
+            if (form.isConnected) {
+              Object.assign(draft[input.dataset.linkPhoto], {image, crop:null, appearance:'photo'});
+              render();
+            }
+          } catch (error) { ui.toast(error.message); }
+          finally { busy = false; submit.disabled = false; }
+          return;
+        }
+        if(!input.matches('[data-hm-upload]')||!input.files.length)return;collect();
         if(draft.mediaCollection.entries.reduce((sum,e)=>sum+e.images.length,0)+input.files.length>100){form.querySelector('.form-error').textContent='Pro Sammlung sind höchstens 100 Bilder möglich.';return;}
         const index=Number(input.dataset.hmUpload);
         const entry=draft.mediaCollection.entries[index];
@@ -235,6 +254,7 @@
       });
       form.addEventListener('submit',async event=>{
         event.preventDefault();if(busy)return;collect();const error=form.querySelector('.form-error');
+        if (links && !links.validate(form, draft)) return;
         if(!draft.title){error.textContent='Bitte eine Hauptüberschrift eingeben.';return;}
         if(!draft.mediaCollection.entries.length||draft.mediaCollection.entries.some(e=>!e.title||!e.images.length)){error.textContent='Jeder Beitrag braucht eine Überschrift und mindestens ein Bild.';return;}
         if(draft.mediaCollection.entries.some(e=>e.instagramUrl&&!link(e.instagramUrl))){error.textContent='Bitte einen gültigen Instagram-Link mit https:// eingeben.';return;}

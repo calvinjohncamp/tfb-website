@@ -317,40 +317,46 @@
     if (seed === 'h-50') return '<div class="ph ph-50" aria-hidden="true"><b>50</b><span class="tfb-mark"></span><small>1976 – 2026</small></div>';
     return placeholder(seed);
   }
-  // Symbol für Links innerhalb der App (rundes Zeichen wie beim Padel-Link)
-  function pageIcon(url) {
-    const { icon } = ui();
-    const key = String(url || '').replace('#', '').split('/')[0];
-    const map = { kiosk: icon.kiosk, strichliste: icon.tally, abrechnungen: icon.receipt, aktuell: icon.news, sport: icon.sport, club: icon.club, verein: icon.club, treffen: icon.news, team: icon.sport };
-    return map[key] || icon.chevron;
-  }
-  const hostOf = (url) => { try { return new URL(url).hostname.replace(/^www\./, ''); } catch (_) { return ''; } };
+  const linkSymbols = [
+    ['kiosk','Kiosk'], ['news','Aktuell'], ['sport','Sport'], ['club','Club'], ['padel','Padel'], ['tally','Strichliste'], ['camera','Fotos'], ['user','Person'],
+    ['receipt','Dokument'], ['chevron','Pfeil'],
+  ];
+  const pageSymbols = { home:'club', kiosk:'kiosk', strichliste:'tally', abrechnungen:'receipt', chat:'user', aktuell:'news',
+    sport:'sport', club:'club', verein:'club', treffen:'news', team:'sport' };
+  const hostOf = url => { try { return new URL(url).hostname.replace(/^www\./, ''); } catch (_) { return ''; } };
 
-  // Link als Knopf – bei Websites mit Vorschau-Karte wie in einer Mail oder in WhatsApp.
-  function linkMarkup(link) {
-    if (!link || !link.url) return '';
-    const ext = /^https?:/i.test(link.url);
-    const label = esc(link.label || 'Mehr erfahren');
-    const style = link.style || 'chip';
-    const target = ext ? ' target="_blank" rel="noopener"' : '';
-    if (style === 'button' || (!ext && style === 'card')) return `<p class="feature-link"><a class="btn signal" href="${esc(link.url)}"${target} title="${esc(ext ? hostOf(link.url) : label)}">${label} <span aria-hidden="true"><svg class="link-arrow" viewBox="0 0 806 1000" aria-hidden="true" focusable="false"><path transform="translate(0 755) scale(1 -1)" d="M528 -14 448 66 546 164 587 189 581 206 533 198H50V312H533L581 304L587 321L546 346L448 444L528 524L756 296V214Z"/></svg></span></a></p>`;
-    if (style === 'chip') return `
-      <p class="feature-link"><a class="link-chip" href="${esc(link.url)}"${target} title="${esc(ext ? hostOf(link.url) : label)}">
-        ${link.image ? `<span class="link-chip-img">${picture(link.image, link.url)}</span>`
-          : link.icon && ui().icon[link.icon] ? `<span class="link-chip-img icon">${ui().icon[link.icon]}</span>` : !ext ? `<span class="link-chip-img icon">${pageIcon(link.url)}</span>` : ''}
-        <span class="link-chip-label">${ext && !link.label ? esc(hostOf(link.url)) : label}</span>
-        <small aria-hidden="true"><svg class="link-arrow" viewBox="0 0 806 1000" aria-hidden="true" focusable="false"><path transform="translate(0 755) scale(1 -1)" d="M528 -14 448 66 546 164 587 189 581 206 533 198H50V312H533L581 304L587 321L546 346L448 444L528 524L756 296V214Z"/></svg></small>
-      </a></p>`;
-    return `
-      <a class="link-card" href="${esc(link.url)}" target="_blank" rel="noopener">
-        ${link.image ? `<span class="link-card-img">${picture(link.image, link.url)}</span>` : ''}
-        <span class="link-card-body">
-          <small>${esc(hostOf(link.url))}</small>
-          ${link.title ? `<b>${esc(link.title)}</b>` : ''}
-          ${link.text ? `<span>${esc(link.text)}</span>` : ''}
-          <em>${label} <span aria-hidden="true"><svg class="link-arrow" viewBox="0 0 806 1000" aria-hidden="true" focusable="false"><path transform="translate(0 755) scale(1 -1)" d="M528 -14 448 66 546 164 587 189 581 206 533 198H50V312H533L581 304L587 321L546 346L448 444L528 524L756 296V214Z"/></svg></span></em>
-        </span>
-      </a>`;
+  function linkLabel(link) {
+    if (link.label?.trim()) return link.label.trim();
+    const url = link.url || '';
+    if (!url.startsWith('#')) return hostOf(url) || 'Website';
+    const target = url.split('?')[0];
+    const nav = navAll().find(item => item.target === target);
+    return nav?.label || appTargets().find(([href]) => href === target)?.[1]?.split(' · ').at(-1)
+      || 'Seite öffnen';
+  }
+
+  const linkAppearance = link => link.appearance || (link.image ? 'photo' : link.icon ? 'symbol' : 'text');
+  function linkDecoration(link) {
+    const appearance = linkAppearance(link);
+    if (appearance === 'photo' && shownImage(link.image)) {
+      const frame = TFB.photoFrame?.normalize(link.crop || site?.photoFrames?.[link.image]);
+      const photo = picture(link.image, link.url, '', true);
+      return `<span class="editorial-link-mark" aria-hidden="true">${frame
+        ? `<span class="photo-frame active" style="${TFB.photoFrame.style({...frame, format:'square'})}">${photo}</span>` : photo}</span>`;
+    }
+    if (appearance === 'symbol') {
+      const key = pageSymbols[link.url?.slice(1).split('/')[0]];
+      const symbol = ui().icon[link.icon === 'auto' || !link.icon ? key : link.icon] || ui().icon.chevron;
+      return `<span class="editorial-link-mark is-symbol" aria-hidden="true">${symbol}</span>`;
+    }
+    return '';
+  }
+
+  function linkMarkup(link, wrapper = 'feature-link') {
+    if (!safeLink(link.url)) return '';
+    const external = /^https?:/i.test(link.url);
+    return `<p class="${wrapper}"><a class="editorial-link" href="${esc(link.url)}"${external ? ' target="_blank" rel="noopener"' : ''}>
+      ${linkDecoration(link)}<span class="editorial-link-label">${esc(linkLabel(link))}</span></a></p>`;
   }
 
   function newsroomTools() {
@@ -492,7 +498,7 @@
               <div class="feature-right">
                 <div class="feature-text">${textHtml}</div>
                 ${slot('right', 'Link hierher')}
-                ${more && b.showMore !== false ? `<p class="feature-more"><a class="more-link" href="${esc(more)}">${esc(b.mediaButtonLabel || 'Mehr erfahren')} <span aria-hidden="true"><svg class="link-arrow" viewBox="0 0 806 1000" aria-hidden="true" focusable="false"><path transform="translate(0 755) scale(1 -1)" d="M528 -14 448 66 546 164 587 189 581 206 533 198H50V312H533L581 304L587 321L546 346L448 444L528 524L756 296V214Z"/></svg></span></a></p>` : ''}
+                ${more && b.showMore !== false ? linkMarkup({ ...b.detailLink, url: more, label: b.detailLink?.label || b.mediaButtonLabel || 'Mehr erfahren' }, 'feature-more') : ''}
               </div>
             </div>
           </article>`;
@@ -685,8 +691,8 @@
   function featureLinks(b, page = 'home') {
     const list = [];
     if (safeLink(b.link?.url)) list.push({ key: 'main', link: b.link });
-    if (safeLink(b.link2?.url)) list.push({ key: 'second', link: { style: b.link?.style || 'chip', ...b.link2, position: b.link2.position || b.link?.position || 'right', order: b.link2.order ?? ((b.link?.order || 0) + 0.5) } });
-    if (b.album?.enabled) list.push({ key: 'album', link: { ...b.album, label: b.album.label || 'Fotos der Veranstaltung', url: `#${page}/${b.id}/fotos`, style: 'chip', icon: b.album.icon || 'camera' } });
+    if (safeLink(b.link2?.url)) list.push({ key: 'second', link: { ...b.link2, position: b.link2.position || b.link?.position || 'right', order: b.link2.order ?? ((b.link?.order || 0) + 0.5) } });
+    if (b.album?.enabled) list.push({ key: 'album', link: { ...b.album, label: b.album.label || 'Fotos der Veranstaltung', url: `#${page}/${b.id}/fotos`, appearance: b.album.appearance || 'text' } });
     return list.sort((a, z) => (a.link.order || 0) - (z.link.order || 0));
   }
   const shownImage = (ref) => ref && (images[ref] || /^assets\//.test(ref) || /^ph:/.test(ref));
@@ -725,9 +731,9 @@
     // Aktuell uses the regular news hierarchy; keep Home copy intact for transfers.
     const isNews = page === 'aktuell';
     const title = isNews ? String(b.title || '').trim().replace(/\.+$/u, '') : b.title;
-    return `<article class="post card media-news" data-site-content="${esc(b.id)}">${TFB.homeMedia.cover(b,href,ref=>images[ref]||ref)}<div class="post-body">${TFB.newsroom.creationDate(b)?`<p class="post-date">${signatureText(fmt(TFB.newsroom.creationDate(b),{day:'numeric',month:'long',year:'numeric'}))}</p>`:''}${!isNews&&b.kicker?`<p class="media-news-kicker">${signatureText(b.kicker)}</p>`:''}<h3><a class="post-title-link" href="${href}">${esc(title)}</a></h3>${!isNews&&b.subtitle?`<p class="media-news-subtitle">${signatureText(b.subtitle)}</p>`:''}${paragraphs(b.text)}${isNews ? newsLinkMarkup(b) : ''}<p><a class="media-news-link" href="${href}">${esc(b.mediaButtonLabel||'Beitrag ansehen')}</a></p></div></article>`;
+    return `<article class="post card media-news" data-site-content="${esc(b.id)}">${TFB.homeMedia.cover(b,href,ref=>images[ref]||ref)}<div class="post-body">${TFB.newsroom.creationDate(b)?`<p class="post-date">${signatureText(fmt(TFB.newsroom.creationDate(b),{day:'numeric',month:'long',year:'numeric'}))}</p>`:''}${!isNews&&b.kicker?`<p class="media-news-kicker">${signatureText(b.kicker)}</p>`:''}<h3><a class="post-title-link" href="${href}">${esc(title)}</a></h3>${!isNews&&b.subtitle?`<p class="media-news-subtitle">${signatureText(b.subtitle)}</p>`:''}${paragraphs(b.text)}${isNews ? newsLinkMarkup(b) : ''}${linkMarkup({...b.detailLink, url:href, label:b.detailLink?.label || b.mediaButtonLabel || 'Beitrag ansehen'})}</div></article>`;
   }
-  const mediaDetail = (block,page='aktuell',backHref,readonly=false) => TFB.homeMedia.detail(block,{imageOf:ref=>images[ref]||ref,paragraphs,admin:!readonly&&page !== 'aktuell'&&ui().state.member?.isAdmin,page,backHref,links:page === 'aktuell' ? newsLinkMarkup(block) : ''});
+  const mediaDetail = (block,page='aktuell',backHref,readonly=false) => TFB.homeMedia.detail(block,{imageOf:ref=>images[ref]||ref,paragraphs,admin:!readonly&&page !== 'aktuell'&&ui().state.member?.isAdmin,page,backHref,links:newsLinkMarkup(block)});
 
   async function newsArticleDetail(block, archive = false, draftPreview = false) {
     if (block.archived && !archive) return `<p>Dieser Artikel ist im Clubarchiv.</p><a class="btn" href="${archiveHref(block)}">Zum Artikel im Clubarchiv</a>`;
@@ -770,7 +776,7 @@
           ${archive ? archive.body : paragraphs(b.text)}
           ${!archive ? newsLinkMarkup(b) : ''}
           ${compactCollage && refs.length > 4 ? `<button type="button" class="link" data-action="gallery-open" data-overview data-block="${esc(b.id)}">Alle ${refs.length} Fotos ansehen</button>` : ''}
-          ${transferred ? `<p><a class="more-link" href="#aktuell/${encodeURIComponent(b.id)}">Beitrag ansehen</a></p>` : ''}
+          ${transferred ? linkMarkup({...b.detailLink, url:'#aktuell/' + encodeURIComponent(b.id), label:b.detailLink?.label || 'Beitrag ansehen'}) : ''}
         </div>
       </article>`;
   }
@@ -869,7 +875,7 @@
               : `<p class="feature-kicker">${n ? `<span>${esc(n)}</span>` : ''}${esc(b.kicker || '')}</p>`}
             <h1>${esc(b.title)}</h1>
             ${b.subtitle ? `<p class="feature-sub">${signatureText(b.subtitle)}</p>` : ''}
-            ${linkPage === 'home' && b.link && b.link.url ? `<div class="story-link">${linkMarkup(b.link)}</div>` : ''}
+            ${linkPage === 'home' ? `<div class="story-link">${featureLinks(b).filter(({key}) => key !== 'album').map(({link}) => linkMarkup(link)).join('')}</div>` : ''}
           </header>
           <div class="story-body">
             ${(() => {
@@ -910,7 +916,7 @@
     }
     if (!b) return `${ui().viewHead('Home', 'Diesen Beitrag gibt es nicht mehr.', false)}<p><a class="btn" href="#home">Zur Startseite</a></p>`;
     const admin = state.member && state.member.isAdmin;
-    if (b.mediaCollection) return TFB.homeMedia.detail(b, {imageOf:ref=>images[ref] || ref,paragraphs,admin});
+    if (b.mediaCollection) return TFB.homeMedia.detail(b, {imageOf:ref=>images[ref] || ref,paragraphs,admin,links:newsLinkMarkup(b)});
     return storyHtml(b, {
       topicHero: true,
       n: String(homeBlocks().filter((x) => x.type === 'feature').indexOf(b) + 1).padStart(2, '0'),
@@ -2394,6 +2400,8 @@
     (site.pages.home.blocks || []).filter((x) => x.type === 'feature' && hasPublishedDetail(x) && (x.detailEnabled || !x.navigation || x.navigation === 'detail'))
       .forEach((x) => list.push([`#home/${x.id}`, `Home · ${x.title}`]));
     (site.pages.home.blocks || []).filter(x => x.album?.enabled).forEach(x => list.push([`#home/${x.id}/fotos`, `Fotos · ${x.title}`]));
+    (site.pages.aktuell.blocks || []).filter(x => !x.archived && !x._new && (x.type === 'post' || photoTypes.includes(x.type)))
+      .forEach(x => list.push([`#aktuell/${encodeURIComponent(x.id)}`, `Aktuell · ${x.title || photoDisplays.get(x.type) || 'Beitrag'}`]));
     return list.filter(([target]) => navTargetAvailable(target));
   }
   function linkTargetField(url, prefix = 'link', label = 'Ziel') {
@@ -2406,22 +2414,62 @@
           <button type="button" class="${isApp ? 'on' : ''}" data-linkkind="app" data-linkfor="${prefix}">Seite der App</button>
         </div>
         ${isApp
-          ? `<select name="${prefix}App" aria-label="Seite der App">${targets.map(([v, l]) => `<option value="${esc(v)}" ${v === url ? 'selected' : ''}>${esc(l)}</option>`).join('')}${targets.some(([v]) => v === url) ? '' : `<option value="${esc(url)}" selected>${esc(url)}</option>`}</select>
+          ? `<select name="${prefix}App" data-link-refresh aria-label="Seite der App">${targets.map(([v, l]) => `<option value="${esc(v)}" ${v === url ? 'selected' : ''}>${esc(l)}</option>`).join('')}${targets.some(([v]) => v === url) ? '' : `<option value="${esc(url)}" selected>${esc(url)}</option>`}</select>
              <input type="hidden" name="${prefix}Url" value="${esc(url)}">`
           : `<input name="${prefix}Url" type="url" aria-label="Website-Adresse" inputmode="url" value="${esc(url || '')}" placeholder="https://www.beispiel.de">`}
       </div>`;
   }
-  function newsLinkFields(draft) {
-    return ['link', 'link2'].map((key, i) => linkTargetField(draft[key]?.url, key, 'Link ' + (i + 1))
-      + field('Link-Text', key + 'Label', draft[key]?.label)).join('');
+  function linkAppearanceFields(link, key) {
+    const mode = linkAppearance(link);
+    const previewLink = { ...link, url: link.url || '', label: link.label || (link.url ? '' : 'Link') };
+    return `<div class="editorial-link-settings" data-link-settings="${key}">
+      <label class="field"><span>Darstellung</span><select name="${key}Appearance" data-link-refresh>
+        ${[['text','Nur Text'],['symbol','Mit Symbol'],['photo','Mit eigenem Foto']].map(([value,label]) =>
+          `<option value="${value}"${mode === value ? ' selected' : ''}>${label}</option>`).join('')}
+      </select></label>
+      ${mode === 'symbol' ? `<label class="field"><span>Symbol aus der Bibliothek</span><select name="${key}Symbol" data-link-refresh>
+        ${[['auto','Symbol der Zielseite'], ...linkSymbols.filter(([id]) => ui().icon[id])].map(([id,label]) =>
+          `<option value="${id}"${(link.icon || 'auto') === id ? ' selected' : ''}>${label}</option>`).join('')}
+      </select></label>` : ''}
+      ${mode === 'photo' ? `<div class="editorial-link-photo-tools">
+        <label class="btn small">${link.image ? 'Foto ersetzen' : 'Foto auswählen'}<input type="file" accept="image/*" data-link-photo="${key}" hidden></label>
+        ${link.image && shownImage(link.image) ? `<button type="button" class="btn small" data-link-crop="${key}">Ausschnitt anpassen</button>` : ''}
+      </div>` : ''}
+      <div class="editorial-link-example"><span class="editorial-link">${linkDecoration(previewLink)}<span class="editorial-link-label">${esc(linkLabel(previewLink))}</span></span></div>
+    </div>`;
   }
-  function readEditorialLink(formFields, draft, key) {
-    if (!formFields[key + 'Url']) return;
-    const url = formFields[key + 'App']?.value ?? formFields[key + 'Url'].value.trim();
-    const isNews = Boolean(formFields[key + 'Url'].closest('.news-link-row'));
-    draft[key] = { ...draft[key], url: isNews ? editorialUrl(url) : url && !/^(https?:\/\/|#)/i.test(url) ? 'https://' + url : url,
-      label: formFields[key + 'Label'].value.trim(), ...(isNews ? {pendingUrl: url} : {}) };
+
+  function editorialLinkFields(link = {}, key, label = 'Linkziel') {
+    return `<div class="news-link-row">
+      ${linkTargetField(link.pendingUrl ?? link.url, key, label)}
+      ${field('Linktext', key + 'Label', link.label, { placeholder: 'Automatisch aus dem Ziel' })}
+      ${linkAppearanceFields(link, key)}
+      <p class="form-error" data-link-error="${key}" role="alert"></p>
+    </div>`;
   }
+
+  function readLinkAppearance(fields, link, key) {
+    if (fields[key + 'Appearance']) link.appearance = fields[key + 'Appearance'].value;
+    if (fields[key + 'Symbol']) link.icon = fields[key + 'Symbol'].value;
+  }
+
+  function readEditorialLink(fields, links, key, prefix = key) {
+    if (!fields[prefix + 'Url']) return;
+    const url = fields[prefix + 'App']?.value ?? fields[prefix + 'Url'].value.trim();
+    links[key] = { ...links[key], url: editorialUrl(url), label: fields[prefix + 'Label'].value.trim(), pendingUrl: url };
+    readLinkAppearance(fields, links[key], prefix);
+  }
+
+  function editLinkCrop(link, trigger, redraw) {
+    const ref = link?.image;
+    const src = images[ref] || (/^assets\//.test(ref || '') ? ref : '');
+    if (!src) return;
+    TFB.photoFrame.open(src, link.crop || site?.photoFrames?.[ref], frame => {
+      link.crop = frame ? { ...frame, format: 'square' } : { format: 'square', zoom: 1, x: .5, y: .5 };
+      redraw();
+    }, trigger, { format: 'square' });
+  }
+
   function editorialUrl(value) {
     const target = value.trim();
     if (/^#[a-z0-9][^\s]*$/i.test(target)) return target;
@@ -2431,19 +2479,22 @@
       return url.hostname.includes('.') ? url.href : '';
     } catch (_) { return ''; }
   }
-  function validateNewsLinks(form, draft, keys) {
+  function validateEditorialLinks(form, draft, keys, prefixFor = key => key) {
     let invalid;
     for (const key of keys) {
-      const input = form.elements[key + 'App'] || form.elements[key + 'Url'];
+      const prefix = prefixFor(key);
+      const app = form.elements[prefix + 'App'];
+      const input = app || form.elements[prefix + 'Url'];
       if (!input) continue;
       const link = draft[key];
       const target = editorialUrl(input.value);
-      const error = (!target && (input.value.trim() || link?.label))
-        ? (form.elements[key + 'App'] ? 'Bitte eine Seite auswählen.' : 'Bitte eine gültige Website-Adresse eingeben.') : '';
+      const error = !target && (input.value.trim() || link?.label)
+        ? (app ? 'Bitte eine Seite auswählen.' : 'Bitte eine gültige Website-Adresse eingeben.')
+        : target && linkAppearance(link) === 'photo' && !link.image ? 'Bitte ein Foto auswählen oder die Darstellung ändern.' : '';
       input.toggleAttribute('aria-invalid', Boolean(error));
-      const message = form.querySelector(`[data-link-error="${key}"]`);
+      const message = form.querySelector(`[data-link-error="${prefix}"]`);
       if (message) {
-        message.id = 'news-error-' + key;
+        message.id = 'editorial-link-error-' + prefix;
         message.textContent = error;
         if (error) input.setAttribute('aria-describedby', message.id);
         else input.removeAttribute('aria-describedby');
@@ -2519,7 +2570,13 @@
     if (original.mediaCollection) {
       const page = editing;
       return TFB.homeMedia.openEditor(original, {page,imageOf:ref=>images[ref] || ref,uploadFiles,cover4kField,
-        linkFields: newsLinkFields, switchLink: switchEditorialLink, readLinks: (form, draft) => ['link','link2'].forEach(key => readEditorialLink(form.elements, draft, key)),
+        links: {
+          fields: draft => ['link','link2'].map((key,i) => editorialLinkFields(draft[key], key, 'Link ' + (i + 1))).join(''),
+          read: (form,draft) => ['link','link2'].forEach(key => readEditorialLink(form.elements, draft, key)),
+          validate: (form,draft) => validateEditorialLinks(form, draft, ['link','link2']),
+          switchTarget: switchEditorialLink,
+          crop: editLinkCrop,
+        },
         onSave:async draft=>{const next=await ui().api.site();
           const current=next.pages[page].blocks.find(b=>b.id===id);
           if (originalSiteRevision !== undefined ? next._cms?.versions['page:' + page] !== originalSiteRevision : JSON.stringify(current) !== originalValue) throw Error('Der Inhalt wurde inzwischen geändert. Bitte öffne ihn erneut.');
@@ -2548,14 +2605,19 @@
     let formBaseline;
     const articleDateField = () => TFB.newsroom.creationDate(draft) ? `<p class="muted small">Erstellt am ${esc(fmt(TFB.newsroom.creationDate(draft),{day:'numeric',month:'long',year:'numeric'}))}</p>` : '';
     const articleLinks = () => `<fieldset class="news-editor-links"><legend>Links</legend>
-      ${[...articleLinksOpen].map(key => `<div class="news-link-row">
-        ${linkTargetField(draft[key]?.pendingUrl ?? draft[key]?.url, key, 'Linkziel')}
-        ${field('Linktext', key + 'Label', draft[key]?.label)}
-        <p class="form-error" data-link-error="${key}" role="alert"></p>
+      ${[...articleLinksOpen].map(key => `<div>
+        ${editorialLinkFields(draft[key], key)}
         <button type="button" class="btn small" data-news-link-remove="${key}">Link entfernen</button>
       </div>`).join('')}
       ${articleLinksOpen.size < 2 ? '<button type="button" class="btn small" data-news-link-add>+ Link hinzufügen</button>' : ''}
     </fieldset>`;
+    const setLink = (key, update) => {
+      const match = /^detailLink(\d+)$/.exec(key);
+      if (match) return update(draft.more.links[Number(match[1])]);
+      if (key === 'albumButton') return update(draft.album ||= {});
+      if (key === 'detailButton') return update(draft.detailLink ||= {});
+      return update(draft[key] ||= {});
+    };
     const refreshPhotoPreview = () => {
       if (!photoModule || editing === 'home' || newsroom) return;
       photoPreview = { id, draft };
@@ -2569,7 +2631,6 @@
       switch (homeFeature ? 'feature' : draft.type) {
         case 'feature': {
           const lk = draft.link || {};
-          const ext = /^https?:/i.test(lk.url || '');
           const more = draft.more || {};
           const heroSrc = more.heroSource === 'own' ? 'own' : 'same';
           const heroImgs = (more.heroImages || []).filter(shownImage);
@@ -2577,7 +2638,6 @@
           const album = draft.album || {};
           const positions = () => [['left', 'Unter der Unterzeile'], ...String(draft.text || '').split(/\n{2,}/).filter(x => x.trim()).map((_, i) => [`right-${i}`, i ? `Nach Absatz ${i}` : 'Vor dem Text']), ['right', 'Unter dem Text']];
           const positionField = (name, value) => `<label class="field"><span>Position auf der Startseite</span><select name="${name}">${positions().map(([v, label]) => `<option value="${v}" ${v === (value || 'right') ? 'selected' : ''}>${label}</option>`).join('')}</select></label>`;
-          const iconField = (name, value) => `<label class="field"><span>Symbol</span><select name="${name}">${[['', 'Automatisch'], ['kiosk', 'Kiosk'], ['club', 'Club'], ['sport', 'Sport'], ['news', 'Aktuell'], ['camera', 'Fotos'], ['user', 'Person'], ['receipt', 'Dokument'], ['chevron', 'Pfeil']].map(([v,l]) => `<option value="${v}" ${v === (value || '') ? 'selected' : ''}>${l}</option>`).join('')}</select></label>`;
           const seg = (attr, cur, opts) => `<div class="seg">${opts.map(([v, l, off]) =>
             `<button type="button" class="${cur === v ? 'on' : ''}" data-${attr}="${v}" ${off ? 'disabled' : ''}>${l}</button>`).join('')}</div>`;
           const homePanel = `
@@ -2599,23 +2659,15 @@
               <button type="button" class="btn small" data-topic-open="album">${albumOpen ? 'Fotoseite bearbeiten' : 'Fotoseite anlegen'}</button>
             </div>`
             + (linksOpen && !liveNews ? '<h3 class="editor-sub">Links</h3>'
-              + linkTargetField(lk.url, 'link', 'Link 1')
-              + field('Link-Text', 'linkLabel', lk.label, { placeholder: 'z. B. Jetzt Platz buchen' })
-              + linkTargetField((draft.link2 || {}).url, 'link2', 'Link 2 (freiwillig)')
-              + field('Link-Text', 'link2Label', (draft.link2 || {}).label)
+              + editorialLinkFields(lk, 'link', 'Link 1')
+              + editorialLinkFields(draft.link2, 'link2', 'Link 2')
               + `<label class="field"><span>Beim Antippen der Überschrift</span><select name="navigation" data-rerender>${[['none','Auf Home bleiben'],['detail','Eigene Unterseite öffnen'],['link','Ersten Link öffnen']].map(([v,l]) => `<option value="${v}" ${v === (draft.navigation || (hasMore(draft) ? 'detail' : 'link')) ? 'selected' : ''}>${l}</option>`).join('')}</select></label>`
  + (() => {
                 const n = String(draft.text || '').split(/\n{2,}/).filter((x) => x.trim()).length;
                 const cur = lk.position || 'right';
                 const opts = [['left', 'Links unter der Unterzeile'], ...Array.from({ length: n }, (_, i) => [`right-${i}`, i === 0 ? 'Rechts vor dem Text' : `Rechts nach Absatz ${i}`]), ['right', 'Rechts unter dem Text']];
                 return `<label class="field"><span>Platz der Links (oder auf der Seite mit der Maus ziehen)</span><select name="linkPos">${opts.map(([v, l]) => `<option value="${v}" ${v === cur ? 'selected' : ''}>${l}</option>`).join('')}</select></label>`;
-              })()
-              + `<div class="field"><span>Link-Darstellung</span>${seg('linkstyle', lk.style || 'chip', [['chip', 'Dezent'], ['button', 'Knopf'], ['card', 'Vorschau-Karte']])}</div>`
-              + iconField('linkIcon', lk.icon)
-              + (ext ? `<p class="muted small">Für die Vorschau (kleines Bild beim dezenten Link, große Karte): im Echtbetrieb holt die App Bild, Titel und Text automatisch von der Website – bis dahin hier eintragen.</p>`
-                + field('Vorschau: Titel', 'linkTitle', lk.title) + field('Vorschau: Text', 'linkText', lk.text, { area: true, rows: 3 })
-                + imageField(lk.image, lk.url, 'Vorschau: Bild', 'link')
-                : imageField(lk.image, lk.url || 'intern', 'Rundes Bild im Link (leer = Symbol der Seite)', 'link')) : '');
+              })() : '');
           const ownHero = heroSrc === 'own' ? heroImgs.slice(0, 4) : [];
           const detailPhotos = (more.images || []).filter(shownImage);
           const subPanel = `
@@ -2637,10 +2689,12 @@
             <h3 class="editor-sub">Inhalt</h3>
             ${sectionsEditor(more.sections)}
             <div class="field"><span>Großer Textanfang (rot)</span>${seg('dropcap', String(more.dropcap == null ? 1 : more.dropcap), [['0', 'Aus'], ['1', '1 Zeichen'], ['2', '2 Zeichen'], ['3', '3 Zeichen']])}</div>
+            <h3 class="editor-sub">Button zur Unterseite</h3>
+            ${field('Linktext', 'detailButtonLabel', draft.detailLink?.label || draft.mediaButtonLabel, { placeholder: 'Mehr erfahren' })}
+            ${linkAppearanceFields({ ...draft.detailLink, label:draft.detailLink?.label || draft.mediaButtonLabel || 'Mehr erfahren', url:'#home/' + id }, 'detailButton')}
             <h3 class="editor-sub">Links auf der Unterseite</h3>
             ${(more.links || []).map((link, i) => `<fieldset class="detail-link-editor"><legend>Link ${i + 1}</legend>
-              ${linkTargetField(link.url, 'detailLink' + i)}
-              ${field('Link-Text', 'detailLink' + i + 'Label', link.label)}
+              ${editorialLinkFields(link, 'detailLink' + i)}
               <button type="button" class="btn small" data-detail-link-remove="${i}">Link entfernen</button>
             </fieldset>`).join('')}
             <button type="button" class="btn small" data-detail-link-add>Link hinzufügen</button>
@@ -2659,7 +2713,8 @@
             ${field('Link-Text', 'albumLabel', album.label || 'Fotos der Veranstaltung')}
             ${photoFormatField('albumPhotoDisplay', album.photoDisplay || 'collage', false, album.images?.length)}
             ${album.photoDisplay === 'carousel' ? photoStartField('albumAnimationStart', album.animationStart) : ''}
-            ${positionField('albumPos', album.position)}${iconField('albumIcon', album.icon || 'camera')}
+            ${positionField('albumPos', album.position)}
+            ${linkAppearanceFields({ ...album, appearance:album.appearance || 'text', url:'#home/' + id + '/fotos' }, 'albumButton')}
             <label class="meet-check"><input type="checkbox" name="albumOriginal" data-rerender ${album.original ? 'checked' : ''}><span>Originalformate erhalten</span></label>
             <div class="field"><span>Fotos (${(album.images || []).length} / 100)</span><div class="gallery-edit">${(album.images || []).filter(shownImage).map((ref,i,list) => thumbEdit(ref, 'album', i, list.length, 'data-album-remove')).join('')}
             ${(album.images || []).length < photoLimit(album.photoDisplay) ? `<label class="gallery-add">${ui().icon.plus}<span>Fotos</span><input type="file" accept="image/*" multiple data-album-input hidden></label>` : ''}</div></div>`;
@@ -2853,6 +2908,20 @@
         form.addEventListener('input', () => schedulePreview());
         form.addEventListener('change', () => schedulePreview());
       }
+      form.addEventListener('input', event => {
+        const row = event.target.closest('.news-link-row');
+        const settings = row?.querySelector('[data-link-settings]');
+        if (!settings) return;
+        const key = settings.dataset.linkSettings;
+        const fields = form.elements;
+        const target = fields[key + 'App']?.value ?? fields[key + 'Url'].value;
+        const label = fields[key + 'Label'].value;
+        settings.querySelector('.editorial-link-label').textContent = linkLabel({ url: editorialUrl(target), label });
+        setLink(key, link => {
+          const mark = settings.querySelector('.editorial-link-mark');
+          if (mark?.classList.contains('is-symbol')) mark.outerHTML = linkDecoration({...link,url:editorialUrl(target)});
+        });
+      });
       form.addEventListener('submit', (e) => { e.preventDefault(); save(form); });
       form.addEventListener('click', async (e) => {
         if (isSectionsClick(e) && draft.more) {
@@ -2915,7 +2984,7 @@
         if (addLink || removeLink) {
           collect(form);
           const key = removeLink ? removeLink.dataset.newsLinkRemove : ['link','link2'].find(key => !articleLinksOpen.has(key));
-          if (removeLink) { articleLinksOpen.delete(key); if (draft[key]) draft[key] = { ...draft[key], url: '', label: '', memo: {}, pendingUrl: '' }; }
+          if (removeLink) { articleLinksOpen.delete(key); if (draft[key]) draft[key] = { ...draft[key], url: '', label: '', memo: {}, pendingUrl: '', appearance: 'text', image: null, crop: null }; }
           else articleLinksOpen.add(key);
           render();
           if (addLink) document.querySelector(`[data-editor=block] [name="${key}Url"]`)?.focus();
@@ -2954,6 +3023,12 @@
           return;
         }
         if (e.target.closest('[data-ed-peek]')) { togglePeek(e.target.closest('[data-ed-peek]')); return; }
+        const linkCrop = e.target.closest('[data-link-crop]');
+        if (linkCrop) {
+          collect(form);
+          setLink(linkCrop.dataset.linkCrop, link => editLinkCrop(link, linkCrop, render));
+          return;
+        }
         const photoLayout = e.target.closest('[data-heroratio], [data-herogrid], [data-collagestyle]');
         if (photoLayout) {
           collect(form);
@@ -2994,8 +3069,6 @@
         }
         const ts = e.target.closest('[data-textsize]');
         if (ts) { collect(form); draft.textSize = ts.dataset.textsize; render(); return; }
-        const ls = e.target.closest('[data-linkstyle]');
-        if (ls) { collect(form); draft.link = { ...(draft.link || {}), style: ls.dataset.linkstyle }; render(); return; }
         const mr = e.target.closest('[data-more-remove]');
         if (mr) { collect(form); draft.more.images = draft.more.images.filter((r) => r !== mr.dataset.moreRemove); render(); return; }
         const ar = e.target.closest('[data-album-remove]');
@@ -3011,13 +3084,13 @@
         const nr = e.target.closest('[data-news-remove]');
         if (nr) { collect(form); draft.images = draft.images.filter(r => r !== nr.dataset.newsRemove); render(); return; }
         const rmImg = e.target.closest('[data-image-remove]');
-        if (rmImg) { collect(form); if (rmImg.dataset.imageRemove === 'link') draft.link.image = null; else draft.image = null; render(); }
+        if (rmImg) { collect(form); draft.image = null; render(); }
         const rm = e.target.closest('[data-gallery-remove]');
         if (rm) { collect(form); draft.images = draft.images.filter((r) => r !== rm.dataset.galleryRemove); render(); }
       });
       form.addEventListener('change', async (e) => {
         const input = e.target;
-        if (input.matches('[data-rerender]')) { collect(form); render(); return; }
+        if (input.matches('[data-rerender], [data-link-refresh]')) { collect(form); render(); return; }
         if (input.matches('[data-att-input]') && input.files && input.files[0]) {
           collect(form);
           try {
@@ -3060,6 +3133,10 @@
             || (draft.type === 'feature' && input.matches('[data-image-input]') && input.dataset.target === '')
           );
           const ids = await uploadFiles(files, firstIs4kCover, homeUpload && draft.allow4k === true);
+          if (!form.isConnected) return;
+          if (input.dataset.linkPhoto) setLink(input.dataset.linkPhoto, link => Object.assign(link, {
+            image: ids[0], crop: null, appearance: 'photo',
+          }));
           if (homeUpload) {
             draft.images.push(...ids);
             draft.image = draft.images[0];
@@ -3070,8 +3147,7 @@
           }
           if (input.matches('[data-album-input]')) draft.album = { ...(draft.album || {}), images: [...(draft.album?.images || []), ...ids] };
           if (input.matches('[data-image-input]')) {
-            if (input.dataset.target === 'link') draft.link = { ...(draft.link || {}), image: ids[0] };
-            else draft.image = ids[0];
+            draft.image = ids[0];
           }
           if (input.matches('[data-gallery-input]')) draft.images = [...(draft.images || []), ...ids];
           if (input.matches('[data-hero-input]')) {
@@ -3134,7 +3210,7 @@
       if (f.albumEnabled) draft.album = {
         ...draft.album, enabled: f.albumEnabled.checked, title: f.albumTitle.value.trim(),
         label: f.albumLabel.value.trim() || 'Fotos der Veranstaltung', position: f.albumPos.value,
-        icon: f.albumIcon.value, original: f.albumOriginal.checked, photoDisplay: f.albumPhotoDisplay.value,
+        original: f.albumOriginal.checked, photoDisplay: f.albumPhotoDisplay.value,
         animationStart: f.albumAnimationStart ? (f.albumAnimationStart.checked ? 'auto' : 'manual') : draft.album?.animationStart,
       };
       if (form.querySelector('[data-panel=sub]') && draft.more) {
@@ -3142,18 +3218,16 @@
         draft.more = { ...draft.more, sections: secs, ...sectionsDerived(secs) };
         if (f.detailPhotoDisplay) draft.more.photoDisplay = f.detailPhotoDisplay.value;
         if (f.detailAnimationStart) draft.more.animationStart = f.detailAnimationStart.checked ? 'auto' : 'manual';
-        draft.more.links?.forEach((link, i) => {
-          const prefix = 'detailLink' + i;
-          const url = f[prefix + 'App']?.value ?? f[prefix + 'Url'].value.trim();
-          link.url = url && !/^(https?:\/\/|#)/i.test(url) ? 'https://' + url : url;
-          link.label = f[prefix + 'Label'].value.trim();
-        });
+        draft.more.links?.forEach((_, i, links) => readEditorialLink(f, links, i, 'detailLink' + i));
       }
+      if (f.detailButtonLabel) {
+        draft.detailLink = { ...draft.detailLink, label: f.detailButtonLabel.value.trim() };
+        readLinkAppearance(f, draft.detailLink, 'detailButton');
+      }
+      if (draft.album) readLinkAppearance(f, draft.album, 'albumButton');
       readEditorialLink(f, draft, 'link2');
       readEditorialLink(f, draft, 'link');
       if (f.linkPos) draft.link.position = f.linkPos.value;
-      if (f.linkIcon) draft.link.icon = f.linkIcon.value;
-      if (f.linkTitle) Object.assign(draft.link, { title: f.linkTitle.value.trim(), text: f.linkText.value.trim() });
       if (f.people) draft.people = f.people.value.split('\n').map((l) => l.trim()).filter(Boolean)
         .map((l) => { const [role, ...rest] = l.split(':'); return { role: role.trim(), name: rest.join(':').trim() || '–' }; });
       if (draft.type === 'facts') draft.items = Array.from(form.querySelectorAll('[data-fact-row]'), (_, i) => ({
@@ -3179,7 +3253,7 @@
           throw Error(`Auf Home sind bereits ${MAX_HOME_FEATURES} Themen veröffentlicht.`);
         }
         const { _new, ...saved } = value;
-        for (const link of [saved.link, saved.link2]) if (link) delete link.pendingUrl;
+        for (const link of [saved.link, saved.link2, ...(saved.more?.links || [])]) if (link) delete link.pendingUrl;
         if (isNew && saved.type !== 'event') {
           saved.createdAt = new Date().toISOString();
           saved.createdOn = today();
@@ -3205,7 +3279,22 @@
       if(newsroom && draft.type === 'event' && !TFB.newsroom.validDate(draft.date)){form.querySelector('[data-block-error]').textContent='Bitte ein gültiges Datum wählen.';return;}
       if (photoModule && (isNew || draft.photoBlock) && !(draft.images || []).length) { form.querySelector('[data-block-error]').textContent = 'Bitte mindestens ein Foto hinzufügen.'; return; }
       if (draft.album?.enabled && !draft.album.images?.length && (albumOpen || isNew)) { form.querySelector('[data-block-error]').textContent = 'Bitte auf der Fotoseite mindestens ein Foto hinzufügen oder die Verlinkung ausschalten.'; return; }
-      if (liveNews && !validateNewsLinks(form, draft, articleLinksOpen)) return;
+      if ([['detailButton', draft.detailLink], ['albumButton', draft.album]].some(([key, link]) =>
+        form.elements[key + 'Appearance'] && link.appearance === 'photo' && !link.image)) {
+        const key = draft.detailLink?.appearance === 'photo' && !draft.detailLink.image ? 'sub' : 'album';
+        form.querySelector(`[data-edtab="${key}"]`)?.click();
+        form.querySelector('[data-block-error]').textContent = 'Bitte ein Foto für den Link auswählen oder die Darstellung ändern.';
+        return;
+      }
+      const detailLinks = draft.more?.links || [];
+      const validArticle = validateEditorialLinks(form, draft, ['link','link2']);
+      const validDetail = validateEditorialLinks(form, detailLinks, detailLinks.keys(), i => 'detailLink' + i);
+      if (!validArticle || !validDetail) {
+        const panel = form.querySelector('[aria-invalid]')?.closest('[data-panel]');
+        if (panel?.hidden) form.querySelector(`[data-edtab="${panel.dataset.panel}"]`)?.click();
+        form.querySelector('[aria-invalid]')?.focus();
+        return;
+      }
       const groups = block => [[photoTypes.includes(block.type) ? block.type : block.photoDisplay, block.images], [block.more?.photoDisplay, block.more?.images], [block.album?.photoDisplay, block.album?.images]];
       const before = groups(original);
       if (groups(draft).some(([format, refs], i) => format === 'carousel' && (refs?.length || 0) > carouselLimit()
