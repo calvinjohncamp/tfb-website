@@ -1,9 +1,14 @@
 # TFB-Website
 
-## Chat-Karussell v277
+## Vollständige Funktionsprüfung
 
-Manuell blätterbare Bildbeiträge in Clubgeflüster. Bedienung und Prüfungen:
-[Release v277](docs/RELEASE-v277.md).
+`npm test` führt die Fachtests, die isolierten Mitgliedsantragsprüfungen und alle
+Browserprüfungen aus. Der lokale Vorschau-Server wird automatisch auf einem freien
+Port gestartet und wieder beendet. Voraussetzung: Node.js mit SQLite-Unterstützung,
+Python 3 und `npm ci` sowie `npx playwright install chromium`.
+Protokolle liegen privat unter `.private/test-runs/` und werden nicht veröffentlicht.
+Am 27.10.2026 bestanden alle 27 Prüfgruppen. Live-Daten werden in den schreibenden
+Testfällen nicht verwendet.
 
 ## Gemeinsame Splash Gestaltung und Projektordnung vom 27.10.2026
 
@@ -457,3 +462,39 @@ und die Abstände gleichmäßig verteilt. Die dezente aktive Markierung ist nur
 32 px hoch, während die Tippfläche 44 px behält. Der rote Strich liegt näher am
 Begriff und ist mit 2,25 statt 3 px um 25 Prozent dünner.
 Geprüft in beiden Farbwelten von 320 bis 1440 px, mit angemeldetem Testkonto.
+
+## Corporate Design vom 29.10.2026
+
+Zentrale Vorgaben liegen in `assets/css/corporate.css`: Signature #C55A40
+(RGB 197, 90, 64), dunklere Text-/Hoverfarbe, Fokus und Disabled-Zustände.
+Schwarze Schrift auf dem Signature-Rot erreicht 4,91:1; kleine Akzenttexte
+nutzen eine dunklere Abstufung. Original-Logo aus `tfb-logo-mojo.png` unverändert
+unter `assets/brand/tfb-logo-original.png`, transparent zugeschnitten unter
+`assets/brand/tfb-logo.png`; Kopfzeile, Splash und Antragsbestätigung verwenden
+das Original. Bestehende unsichtbare Ball-Bedienflächen bleiben erhalten.
+Service-Worker-Cache v237. Keine fachlichen JavaScript-/Serveränderungen.
+
+Prüfungen: Desktop/Mobil (320–1440 px), kein horizontaler Seitenüberlauf in
+den geprüften Ansichten; Logo und CTA visuell geprüft. `npm test`: 18/28
+Prüfgruppen erfolgreich, alle Fach-/Mitgliedschafts-/Exportprüfungen bestanden.
+Zehn Browsergruppen scheitern an nicht geschlossenen Splash-Overlays bzw.
+mehrdeutigen `.tfb-logo-ball`-Selektoren. Admin-Toggle, Original-Avatar und
+Design-Preview auch in einer temporären Kopie mit dem bisherigen Design
+reproduziert. Testdateien und Anwendungslogik hierfür nicht geändert.
+Responsive Finetuning-Prüfung nach letzter Kontrastkorrektur erneut erfolgreich.
+Protokoll: `.private/test-runs/20261029T070010604148Z/results.json`.
+Lokale Umsetzung, keine Veröffentlichung ausgelöst.
+
+## Gemeinsamer Padel-Kiosk · 09.11.2026
+
+Freigegebene Servererweiterung: geschützte Padel-Brücke mit eindeutiger
+Personenzuordnung, idempotenter Übernahme in das bestehende Kioskjournal und
+Rückübernahme von Korrekturen. Padel-Käufe erscheinen in persönlichem Bierdeckel
+und normaler TFB-Abrechnung; die Herkunft bleibt padel_app. Mitgliederkäufe
+werden im Padel-MIS als vermittelte TFB-Käufe getrennt ausgewiesen.
+Schlägerverleih jetzt 3 EUR/Stunde; sämtliche übrigen Mitgliederpreise und
+historischen Buchungen bleiben erhalten. Neue Migration: 0014-padel-kiosk-bridge.
+Die Brücke verarbeitet aktuell ausschließlich Testpositionen. Echte Bankeinzüge
+und Mandatsaktivierung bleiben gesperrt. Prüfungen: test-padel-bridge.mjs und
+bestehende Kiosk-/Export-/Produktbibliotheksprüfungen. Ausführlicher Nachweis im
+Padel-Projekt unter output/tfb-kiosk-integration-20261109.

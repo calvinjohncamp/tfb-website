@@ -10,3 +10,5 @@ Chromium und WebKit: alle texttragenden Elemente einzeln auf berechnete
 Farbe und Deckkraft geprüft; rote/gelbe Ball- und Strichfarbe sowie blauer Name
 in Gelb geprüft. Normaler und langer Name, 25 Striche, 320/390/834/1440px,
 keine Browserfehler oder Überläufe. Diffcheck und öffentliches Paket erfolgreich.
+
+Live: b00afea35486d85c6f116ade6683f996a391dc7a; Pages-Lauf https://github.com/calvinjohncamp/tfb-website/actions/runs/42457409147 erfolgreich. CSS und Service Worker live bytegleich geprüft.

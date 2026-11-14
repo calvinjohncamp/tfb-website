@@ -1,5 +1,235 @@
 # TFB – Übergabe für die nächste Sitzung
 
+## Mannschaftsporträt in Signature Gelb · live am 14.11.2026
+
+Die Porträtkarte hat jetzt einen dunkelblauen Hintergrund, weiße Schrift und
+gelbe Akzente. In Chromium und WebKit wurden beide Farbwelten bei 390 und
+1440 Pixeln sowie der Porträtlink geprüft. Commit `baac89b`,
+[Pages-Lauf 43611893247](https://github.com/calvinjohncamp/tfb-website/actions/runs/43611893247).
+Die Live-Seite bindet die neue CSS-Version ein. CSS und Service Worker wurden
+bytegenau mit dem Release abgeglichen.
+
+## Einstieg in die nächste Sitzung · Tagesabschluss 14.11.2026
+
+Der Nutzer hat den heutigen Stand abgenommen. Als Ausgangspunkt für
+den nächsten Auftrag gilt der veröffentlichte Commit
+`17fe5675e7133195cac88d73ec23b9c8c1c117ef` auf `main`.
+Der [Pages-Lauf 43591566602](https://github.com/calvinjohncamp/tfb-website/actions/runs/43591566602)
+war erfolgreich. Live-Cache `tfb-20261114-training-status-1`.
+Die zuletzt bestätigte Worker-Version für Autorenrechte und
+Kiosk-Bestellsperre ist `f88089ec-864a-4fb2-ad81-48d276ed7930`.
+
+- **Home und Unterseiten.** Fotoformate werden automatisch erkannt.
+  Bildklick und Lupe öffnen die große Karussellansicht. Für die
+  Unterseite sind die verlinkte Überschrift und der Beitragslink
+  vorgesehen. Eine Unterseite wird ausdrücklich angelegt.
+- **Redaktion.** Eigene aktive Artikel auf Home und Aktuell können
+  nach Bestätigung gelöscht werden. Archivierte Beiträge und
+  nicht zugeordnete Übernahmen bleiben geschützt.
+- **Kiosk.** Statuswahl links von „Produktbibliothek“, oberhalb des
+  Bearbeiten-Balkens. Bei inaktivem Kiosk führt „Kiosk bearbeiten“
+  in der Admin-Leiste zurück zum Schalter. Der Server sperrt neue
+  Bestellungen bei inaktivem Status.
+- **Verabreden.** Saisonkopien starten inaktiv. Laufzeit und
+  Aktivmarke sind in der Serienübersicht sichtbar. Die Bestätigung
+  der Farben und der Serienlogik erfolgte mit Testdaten.
+
+Zum Wiederaufnehmen zuerst den nächsten Auftrag und den Live-Stand
+prüfen. Der lokale Arbeitsbaum enthält weitere Änderungen. Für einen
+Release nur die beauftragten Dateien übernehmen und den Arbeitsbaum
+des Nutzers erhalten. Die bestehende Freigabe für direkte
+Veröffentlichungen nach Prüfung gilt weiter.
+
+Für Regressionen sind `tools/test-browser-home-order.mjs`,
+`tools/test-browser-meet-series-copy.mjs` und
+`tools/test-meet-sync.mjs` die zuletzt erfolgreich ausgeführten
+Prüfungen für diese Bereiche. Die zwölf Fehler im älteren
+`tools/test-home-features.mjs` waren bereits im Vergleichsstand vorhanden.
+
+## Verabreden mit Trainingslaufzeit und Aktivmarke · live am 14.11.2026
+
+Commit `17fe567`, Pages-Lauf `43591566602`, Cache
+`tfb-20261114-training-status-1`. Datums- und Aktivmarken sind in
+Signature Red rot mit weißer Schrift und in Signature Gelb dunkelblau
+mit gelber Schrift. Serien zeigen den Zeitraum von bis. Die Aktivmarke
+steht bei eingeschalteten laufenden Serien und erscheint vor dem
+Start, sobald bereits ein kommender Termin dieser Serie sichtbar ist.
+Die Terminplanung und bereits verschickte Einladungen folgen der
+bestehenden Logik.
+
+Desktop und Mobilbreite mit zwei Testserien geprüft. Der Sync-Test
+bestand. HTML, JavaScript, CSS und Service Worker stimmen mit der
+veröffentlichten Fassung überein.
+
+## Karussellbilder öffnen die Zoom-Ansicht · live am 14.11.2026
+
+Commit `ec00df1`, Pages-Lauf `43591321669`, Cache
+`tfb-20261114-carousel-zoom-1`. Bild und Lupe öffnen dieselbe große
+Karussellansicht auf Home und Unterseiten. Der Bildtitel im Karussell
+ist eine Beschriftung. Die verlinkte Artikelüberschrift und der
+Beitragslink öffnen die Unterseite, sofern eingerichtet.
+
+„Musik liegt in der Luft“ und „TFB-Upgrade 2027“ wurden live per Klick
+am Desktop und per Antippen bei 390 Pixeln geprüft. Der Browsertest
+deckt auch den Bildklick auf einer Unterseite und die Rückkehr zum
+angeklickten Bild nach Escape ab.
+
+## Automatische Bildformate und Kiosk-Buttonzeile · live am 14.11.2026
+
+Commit `62ccb30`, Pages-Lauf `43590921500`, Cache
+`tfb-20261114-auto-photo-fit-1`. Die ausgelieferten Dateien stimmen
+mit dem Pages-Build überein.
+
+Die Home-Themenpflege verwendet die Originalproportionen der Fotos.
+Das Feld „Format der Diashow“ ist dort entfernt. Die Bildfläche passt
+sich bei einheitlichen Formaten an. Bei einem Mix zeigt sie jedes Bild
+vollständig in einer gemeinsamen Fläche mit fester Bedienleiste.
+Das gilt für die Diashow auf Home, auf der Home-Unterseite und für dort
+erneut verwendete Karussellfotos. Startverhalten und Unterseite bleiben
+im Editor wählbar.
+
+Im Kiosk stehen „Kiosk aktiv“, „Kiosk inaktiv“ und „Produktbibliothek“
+im Bearbeiten-Modus zusammen oberhalb des farbigen Balkens. Der Abstand
+beträgt 24 Pixel. Die Schalter wurden in Chromium und WebKit mit
+Testdaten geprüft. Die Home-Formatprüfung lief ab 390 und bei 1440 Pixeln.
+„Eine Idee nimmt Gestalt an.“ und ihre Unterseite wurden bei beiden
+Breiten live geprüft. Der ältere Test `test-home-features.mjs` meldet
+dieselben 12 Fehler wie vor der Änderung.
+
+## Home-Fotos, Artikelrechte und Kiosk · 14.11.2026
+
+Veröffentlicht mit `e9c3184` (Formate auf Home-Unterseiten) und `2b7847d`
+(Autoren und Kiosk). Pages-Lauf `43590090521`, Cache
+`tfb-20261114-kiosk-status-1`, Worker `f88089ec-864a-4fb2-ad81-48d276ed7930`.
+Die ausgelieferten Dateien stimmten mit dem Pages-Build überein.
+
+- Jörn hat die Autorenschaft für den damaligen Home-Bestand bestätigt,
+  mit Ausnahme von „Oktoberfest“ (Sebastian). Unter Aktuell gehört ihm
+  auch das Original „Eine Idee nimmt Gestalt an.“ vom 7. November
+  (`b-mw61khx5`). Die Serverprüfung erlaubt Admins das Löschen eigener
+  aktiver Artikel. Clubarchiv und nicht zugeordnete Übernahmen bleiben
+  geschützt. Es wurden keine Live-Beiträge gelöscht.
+- Der Kiosk-Status steht nur im Bearbeiten-Modus der Kiosk-Seite links
+  neben „Produktbibliothek“. „Aktiv“ zeigt den Kiosk und erlaubt Käufe.
+  „Inaktiv“ blendet ihn aus und sperrt auch Bestellungen aus offenen Tabs.
+  Bei ausgeblendetem Kiosk öffnet „Kiosk bearbeiten“ in der Admin-Leiste
+  den Schalter erneut. Chromium und WebKit prüften die Bedienung mit
+  Testdaten. Die Bestellsperre und die Artikelrechte wurden serverseitig
+  mit Testdaten geprüft.
+- Ein Home-Karussell legt nur auf ausdrückliche Auswahl eine Unterseite an.
+  Auf Home-Unterseiten stehen Karussell und Diashow als unterschiedliche
+  Darstellungen zur Verfügung. Vorhandene Karussellartikel können die
+  Fotos der Übersicht in einer Diashow auf der Unterseite zeigen.
+
+Der lokale Arbeitsbaum enthält weitere Änderungen. Für Veröffentlichungen
+den Live-Stand und den konkreten Umfang prüfen. Projektdateien gezielt
+aktualisieren und den Arbeitsbaum des Nutzers erhalten.
+
+## Karussell-Unterseite und Artikelrechte · live am 14.11.2026
+
+Programm `a827c10`, Pages-Lauf `43585874574`, Cache
+`tfb-20261114-article-ownership-1`, Worker
+`b9eea039-675c-4f26-b4eb-e681ab2ac40b`. Mehrere Karussells können auf
+derselben Unterseite stehen. „Einblick“ ist aus den Aktionen entfernt.
+Entfernen ist bei mehreren Karussells nach Rückfrage möglich.
+
+Eigene aktive Home- und Aktuell-Artikel können Admins nach zwei
+Bestätigungen löschen. Die Serverprüfung erhält die Autorenkennung
+beim Verschieben. Historische Artikel ohne belegte Zuordnung und
+archivierte Beiträge sind vor dem Löschen geschützt. Archivierte
+Beiträge sind in der regulären Redaktion schreibgeschützt.
+Der Aktuell-Testbeitrag vom 14.11. ist dem zeitlich passenden
+Redaktionsvorgang zugeordnet. Der erwähnte Test vom 07.11. ließ sich
+im aktuellen öffentlichen Bestand nicht eindeutig bestimmen.
+Es wurden keine Live-Beiträge gelöscht. Browser- und API-Tests
+verwendeten Testdaten. Der bereitgestellte Code wurde live abgeglichen.
+
+## Sport, Club und Home-Einstieg · live am 14.11.2026
+
+Veröffentlicht mit `3ed5528`, Pages-Lauf `43584823011` und Cache
+`tfb-20261114-home-start-2`. Der Kopf-Bleistift öffnet Sport (einschließlich
+Training) und Club direkt zur Bearbeitung. Der zweite Klick schließt die
+Bearbeitung samt Admin-Leiste. Chromium und WebKit haben den Wechsel geprüft.
+
+Die öffentliche Startseite lädt bereits während der Anmeldung und des
+Mitgliederabgleichs. Profil und Admin-Werkzeuge erscheinen nach bestätigter
+Sitzung. Der Browser-Test hält den Mitgliederabgleich gezielt zurück und prüft,
+dass Home trotzdem sichtbar wird. Die veröffentlichten Dateien wurden gegen
+das getestete Paket abgeglichen. Im öffentlichen Live-Test erschienen die
+Home-Inhalte 66 ms nach dem Splash-Klick. Das ist eine Einzelmessung.
+
+Auf Home führt der Titel standardmäßig zur veröffentlichten Unterseite,
+danach gegebenenfalls zur Foto-Unterseite. Der Editor bietet unter
+„Linkziel der Überschrift“ ein eigenes Ziel. Ältere Beiträge ohne Unterseite
+können ihr bisheriges Titelziel weiter nutzen. Der Kiosk-Titel öffnete im
+Live-Test `#home/h-kiosk`. Sein separater Link zum Kiosk bleibt verfügbar.
+
+## Frühere Übergabe zur Redaktion · 14.11.2026
+
+**Damals veröffentlicht:** Commit `dd96521` auf `main` in
+`calvinjohncamp/tfb-website`. Pages-Lauf `43582582426` war erfolgreich.
+HTML, Service Worker, `site.js` und `home-media.js` wurden bytegenau gegen
+das vorbereitete Paket geprüft. Der Cache heißt
+`tfb-20261114-editor-sections-1`.
+
+Die letzten veröffentlichten Änderungen vereinheitlichen die Reiter
+„Übersicht“ und „Unterseite“ auf Home und Aktuell. Bei Karussells enthält
+die Unterseite einen oder mehrere „Einblicke“. Die „Foto-Unterseite“
+bleibt separat verlinkbar und nutzt dieselben Textabschnitte. Browsertests
+`tools/test-browser-home-order.mjs` und
+`tools/test-browser-newsroom.mjs` prüfen unter anderem Textlinks,
+Formatierungen, Zitate, Fotos und bestehende Links beim Verschieben.
+Link-Buttons bleiben gleich hoch, mit Text als Voreinstellung und
+wahlweise Symbol oder Fotoausschnitt. Das TFB-Home-Symbol ist ein
+zentriertes Vektorzeichen. In Signature Red erscheinen die Link-Symbole weiß.
+
+### Untersuchung vor Umsetzung in 3ed5528
+
+1. **Sport und Club direkt bearbeiten.** Der Kopf-Bleistift schaltet
+   `hideAdmin` in `assets/js/app.js` um. Home und Aktuell öffnen ihren
+   Editor direkt. Sport und Club zeigen bisher erst die Admin-Leiste,
+   danach einen weiteren Seiten-Bleistift. Die Club-Seite heißt intern
+   `verein`. Bei der Umsetzung die Sport-Unterseite „Training“ und
+   den Wechsel zwischen Seiten im Bearbeitungsmodus prüfen. Die
+   eigenständigen Ansichten wie Platzbelegung und Clubarchiv haben
+   eigene Bearbeitungsabläufe. Einstieg für Regressionstests:
+   `tools/test-browser-admin-toggle.mjs`.
+2. **Splash → Home weiter beschleunigen.** In `app.js` wartet `boot()`
+   heute auf `api.session()` und `api.catalog()`, bevor die Seite
+   gerendert wird. Die Anmeldung kann über `member-directory.js` auf
+   `cloud-sync.js` und `/app/state` warten. `editorial.js` lädt für
+   erkannte Admins zusätzlich `/admin/site`. Ein früher Klick auf
+   „Weiter“ wird in `partner-visibility.js` bis `ready()` vorgemerkt.
+   Diese Wartezeiten mit Kaltstart und bestehender Anmeldung messen.
+   Prüfen, ob die öffentliche Startseite bereits während des
+   Sitzungsabgleichs gerendert werden kann. Die vorhandene
+   Bildpriorisierung aus `ea76498` und die späteren
+   Karussellbilder beim Sichtbarwerden berücksichtigen.
+   Einstieg: `tools/test-browser-splash-reload.mjs` und
+   `tools/test-browser-carousel-loading.mjs`.
+3. **Home-Titel zur Unterseite.** Gewünscht ist „eigene Unterseite,
+   falls vorhanden“ als Voreinstellung. Der Admin kann gezielt ein
+   anderes Linkziel wählen. Öffentliche CMS-Daten bestätigen:
+   „Eine Idee nimmt Gestalt an.“ hat `navigation: detail`;
+   „Im TFB-Kiosk brennt noch Licht“ hat `navigation: link`,
+   `detailEnabled: true` und `link.url: #kiosk`. Auch andere ältere
+   Beiträge haben `navigation: link`. In `assets/js/site.js` sowohl
+   die Zielwahl im Editor als auch `renderBlock`, die Erkennung
+   veröffentlichter Unterseiten und die alten CMS-Werte berücksichtigen.
+   Foto-Unterseiten und separat gesetzte Link-Buttons beim Umstellen
+   mitprüfen. Der Benutzer erwartet eine Option für bewusst abweichende
+   Titelziele und hat die genaue Darstellung im Editor offengelassen.
+
+Die drei Punkte wurden in dieser Sitzung noch nicht implementiert.
+Das Dropbox-Arbeitsverzeichnis `01 Software` enthält bestehende lokale
+Änderungen. Veröffentlichungen aus einem sauberen Checkout des
+aktuellen `origin/main` vorbereiten und Änderungen gezielt zurück in
+das Arbeitsverzeichnis übernehmen. Der temporäre Release-Checkout
+`/private/tmp/tfb-admin-release-20261114` war bei der Übergabe auf
+`dd96521`. Beauftragte Änderungen nach der Prüfung direkt
+veröffentlichen und live verifizieren. Die dauerhafte Freigabe ist im
+[Projektgedächtnis](PROJEKTGEDAECHTNIS.md) festgehalten.
+
 ## Redaktionelle Links · live am 14.11.2026
 
 GitHub Pages hat Commit `6d331e1` veröffentlicht (Lauf 43579651940).
@@ -120,7 +350,7 @@ Aktuell wurden mit isolierten Browserdaten geprüft.
   „Änderungen speichern“ veröffentlicht sie gemeinsam. Die Linkabstände
   kommen aus dem Layout. Bestehende Medien-Collagen sind weiterhin editierbar.
 
-## Live-Stand vom 14.11.2026
+## Früherer Live-Stand vom 14.11.2026
 
 GitHub Pages hat Commit `b258c4456ae1d5107f976b53ae2763c9e7aaf677` veröffentlicht.
 Cloudflare-Worker `tfb-api` läuft mit Version `c83973a1-64b4-4456-b587-22cdd6e9b852`.
@@ -138,6 +368,59 @@ wurden isoliert mit Testkonten geprüft.
   TFB-Website. Die Bestellsperre gilt auch für einen noch offenen Kiosk-Tab.
   Der Kiosk war zum Zeitpunkt der Live-Prüfung aktiv.
 
+## Admin-Farbwelten · live am 13.11.2026
+
+Commit `ba85bbc` ist auf TFB-`main` und über den
+[GitHub-Pages-Lauf 43409382666](https://github.com/calvinjohncamp/tfb-website/actions/runs/43409382666)
+veröffentlicht. Service Worker `tfb-admin-signature-20261113-1`.
+Die Farbkorrektur und der Fix für das Öffnen der Kategoriemaske sind auch
+in die betreffenden Dateien des lokalen TFB-Ordners eingearbeitet.
+Die vollständigen Browserprüfungen liefen auf dem separaten Release-Stand.
+Chromium und WebKit bestanden den Admin-Farbwechsel, die Admin-Rechte,
+die Produktbibliothek, die Kiosk-Abrechnung und die Mitglieder-Mail.
+In der Live-Produktbibliothek wurden der Kopf, „Neues Produkt“ und
+„Datensicherung / Time Machine“ in beiden Farbwelten geprüft.
+Die ursprüngliche gelbe Browserauswahl wurde wiederhergestellt.
+Künftige beauftragte Website-Änderungen direkt nach der Prüfung
+veröffentlichen. Die dauerhafte Freigabe steht im
+[Projektgedächtnis](PROJEKTGEDAECHTNIS.md#veröffentlichungsfreigabe-für-die-tfb-website--13112026).
+
+## Übergabe · vorheriger Live-Stand vom 13.11.2026
+
+**Veröffentlichte Basis:** TFB `main`, Commit `a236b41`,
+Service Worker `tfb-kiosk-library-20261113-1`. Die Live-Seite lädt Bibliothek,
+Shop-Modul, TFB-Adapter und gemeinsamen Kiosk-Editor mit
+`v=20261113-kiosk-signature`. Der Stand wurde aus der Sitzung
+„8. Padel Bielstein 2027“ ins TFB-Repository veröffentlicht. Der vollständige
+fachliche Abgleich seit `86fe9ac` steht im
+[Projektgedächtnis](PROJEKTGEDAECHTNIS.md#live-abgleich-vom-13112026).
+
+- **Bedienung:** Im Kiosk als Admin „Produktbibliothek“ öffnen. „Bearbeiten“
+  öffnet die Artikelmaske mit Vorschau, beschrifteten farbigen Kiosk-Motiven und
+  „Signature-Farbe“. Unter „Zur Kiosk-Abrechnung“ steht ganz unten
+  „JAKO-Shop ausblenden“ bzw. „JAKO-Shop einblenden“. Bei der Live-Sichtung
+  war der Shop eingeblendet. [Produktbibliothek](https://joern-kaemper.de/#produktbibliothek)
+- **Nächste Codearbeit:** Der lokale Checkout `01 Software` steht auf
+  `codex/editorial-snapshots` mit vielen vorhandenen Arbeitsänderungen. Sein
+  `origin/main`-Verweis endete beim Abgleich auf `ffdfa7a` vom 10.11.
+  Vor einer Veröffentlichung den aktuellen TFB-`main` als Basis verwenden
+  und die lokalen Änderungen beim Abgleich erhalten. Der Vergleichscheckout
+  `/private/tmp/tfb-jako-toggle` enthielt `a236b41` und diente als Nachweis.
+- **Gemeinsame Kiosk-Assets:** Die veröffentlichte `kiosk.js` weicht von der
+  Padel-Quelle und dem Hashmanifest vom 09.11. ab. Beim nächsten gemeinsamen
+  Release die freigegebene Änderung in die gemeinsame Quelle übernehmen,
+  ein neues Paket mit passendem Manifest bauen und beide Einstiege prüfen.
+  [Technischer Stand](SHARED_KIOSK.md#veröffentlichter-stand-vom-13112026)
+- **Weitere Änderungen:** Home-Galerien mit bis zu fünf Bildern, 4K-Option
+  und schärfere Karussells, wieder aktiver Markenfarbumschalter, Einladungs-
+  und Antwortzeiten mit Teilnehmenden in Dating 2.0. Der Mail-Code für
+  Einzel und Doppel liegt in `e003c8b`, einschließlich D1-Migration
+  `0015-meeting-mail.sql` und Versandwarteschlange. Server- und
+  Migrationsstand vor einer erneuten Worker-Veröffentlichung abgleichen.
+- **Offene Abnahme:** Der gemeinsame Key-Account-Test für Einkauf,
+  Wiederholung, Storno, Abrechnung und MIS steht noch aus. Dieser Abgleich
+  hat Live-Oberfläche und Quellstände geprüft und keine Produktivbuchung
+  oder Testmail ausgelöst.
 
 ## Datensicherung: eindeutige Vorschau · 10.11.2026
 

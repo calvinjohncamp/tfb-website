@@ -25,3 +25,8 @@ Initiale, Buttonfarben, Schriftfamilien, Chat/Dating/Rot-Ansichten sowie
 Editor-Speichern/Wiederöffnen bestanden. Screenshots visuell kontrolliert.
 Zusätzliche lesende Vorschau mit den echten öffentlichen Inhalten bei 834 px
 bestanden. Service-Worker-Cache v304; Marker-SVG im Offline-Paket.
+
+Live am 07.11.2026: Commit 37dfb7ad80c373dda1c2e0119a21b0edcbe5e4c4.
+Pages-Lauf https://github.com/calvinjohncamp/tfb-website/actions/runs/42405153831
+erfolgreich; fünf ausgelieferte Dateien bytegleich zum geprüften Paket.
+Nachweis: .private/release-v304/live-proof.json.

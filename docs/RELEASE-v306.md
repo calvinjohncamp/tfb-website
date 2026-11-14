@@ -41,3 +41,8 @@ Zusätzliches Menü-/Aktuell-Finetuning aus derselben Freigabe:
 WebKit-Regressionsprüfung bei 390, 834, 1024, 1194, 1366 und 1440 px mit echten
 Touch-/Ausrichtungs-Medienabfragen: Abstand, Pill-Entfall, Schrift-/Rahmenfarben,
 Datumsfarben und Karussellüberschriften bestanden.
+
+Live veröffentlicht am 07.11.2026: f9fa7133f0b8abfac65c7e3e2a0f7557ae2a69a0.
+Pages-Lauf https://github.com/calvinjohncamp/tfb-website/actions/runs/42408618034
+erfolgreich; fünf Webdateien inklusive beider Mailvarianten live bytegleich
+zum geprüften Paket. Nachweis: .private/release-v306/live-proof.json.

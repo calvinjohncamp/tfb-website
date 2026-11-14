@@ -30,3 +30,7 @@ gespeicherte rote/gelbe Farbauswahl und neue Icon-Referenzen bestanden.
 Datumsmarkierung und Datumsfelder geprüft. Alle PNGs deckend, alte Abmessungen
 und exakte Signaturfarbe bestätigt; sechs ICO-Größen geprüft. CMS-Nachweise
 liegen privat unter .private/release-v305/.
+
+Live veröffentlicht am 07.11.2026: 7d52eb4453ee8089c471de077ca53c59b306b131.
+Pages-Lauf: https://github.com/calvinjohncamp/tfb-website/actions/runs/42407081634
+Nachweis der ausgelieferten Dateien: .private/release-v305/live-proof.json.

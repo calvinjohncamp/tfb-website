@@ -23,12 +23,19 @@ Vor Veröffentlichung private D1-Sicherung und Worker-Versionsstand festgehalten
 Passendes Git-Quellarchiv für die redaktionelle Gesamtsicherung registrieren.
 Keine echten Testbeiträge oder Mitgliedsdaten für die Funktionsprüfung anlegen.
 
-## Veraltete Galerieprüfung bereinigt
+## Veröffentlichung bestätigt
 
-Auf Folgeauftrag wurde die oben genannte alte Testerwartung korrigiert.
-Der Test prüft jetzt den direkten Einstieg beim angeklickten Foto, die Rückkehr
-über „Alle Fotos“, die Auswahl aus der Übersicht, Tastatur, Bildnavigation,
-Wischgesten und das Verhindern eines zusätzlichen Klicks nach dem Wischen.
-Sechs unterschiedliche Bildquellen prüfen zusätzlich die richtige Fotoauswahl.
-Alle 91 Fachtests bestehen. Ausschließlich Testkorrektur; keine neue Website-
-oder Worker-Veröffentlichung und keine Änderung an der Galeriebedienung nötig.
+Live geprüft am 07.11.2026: Cache `tfb-kiosk-v277`, Quellstand
+`e46e50994ed87e0dad098b0ad275b82558e4d609`, Worker-Version
+`24b72482-3179-463c-92b6-70537712248d`.
+[Erfolgreicher Pages-Lauf](https://github.com/calvinjohncamp/tfb-website/actions/runs/42341856985).
+Fünf Live-Dateien bytegleich, Live-Karussell mit lokalen DOM-Testdaten geprüft,
+geschützter Endpunkt anonym weiterhin 401. Kein Live-Beitrag angelegt.
+Private D1-Sicherung, Quellarchiv und Nachweise unter `.private/release-v277/`.
+
+## Veraltete Galerieprüfung anschließend bereinigt
+
+Nur Test und Dokumentation korrigiert, Repository-Commit `9432a54`.
+Direkter Einstieg beim angeklickten Foto sowie „Alle Fotos“, Motivauswahl,
+Tastatur, Pfeile und Wischen werden geprüft. Alle 91 Fachtests bestanden.
+Live-Anwendungsstand bleibt e46e509 / v277; kein erneutes Deployment erforderlich.

@@ -29,3 +29,10 @@ Browsertests der zentralen Redaktion (echter isolierter Worker, Konflikte,
 Snapshot/Export/Import/Restore/offline) und Chat-Karussell erfolgreich.
 Frontend-Cache v282. Freigegebenen Umkleidebeitrag erst nach Code-Veröffentlichung
 über den normalen Adminbereich anlegen; andere Home-Inhalte erhalten.
+
+Live-Abschluss: Commit eb30c292c0541cbde62e0bd23ed9089f7618763a, Pages-Lauf
+42348456842 erfolgreich. Neuer Home-Block b-mw61khx5 über normalen
+Admineditor mit Original-PNGs angelegt, CMS-Revision 36. Alle fünf Dateien
+bytegleich zu den 1080×1350-Upload-PNGs, richtige Reihenfolge. Vorige fünf
+Home-Blöcke identisch, andere CMS-Dokumentrevisionen unverändert. Live-Prüfung
+Desktop/Mobil, Bewegung, Kartenziele, Miniaturen, Umlauf/Großansicht erfolgreich.

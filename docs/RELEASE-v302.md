@@ -28,3 +28,9 @@ Veröffentlichungspaket aus dem isolierten Live-Stand v301 erstellt.
 Die gezielte Browserprüfung gegen dieses Paket besteht ebenfalls bei 390 und
 1440 px; rote Bestandsfarbe #C4553A bleibt erhalten. Nur die neuen gelben Regeln
 und der Maildialog ergänzen das bestehende öffentliche Stylesheet.
+
+Live veröffentlicht am 07.11.2026: Commit 43bddb5f206e446ec8b7c7a05829a549ce611977.
+GitHub Pages: https://github.com/calvinjohncamp/tfb-website/actions/runs/42400393672
+Sechs geänderte Webdateien inklusive neuer Mailvorlage live bytegleich zum
+Prüfpaket; Browserprüfung auf https://joern-kaemper.de/ bei 390/1440 px bestanden.
+Nachweis: .private/release-v302/live-proof.json.

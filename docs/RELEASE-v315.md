@@ -23,3 +23,5 @@ Archiv ohne Tabs/Terminspalte; einspaltig und ohne Überlauf bei 390/834/1440px.
 Aktuell in beiden Welten mit dunklen Feldern und weißen Texten, mobile Termin-
 Umschaltung weiterhin funktionsfähig. Keine Browserfehler. Zwei Identitätstests,
 JS-Syntax, Diffcheck und Paket aus 274 öffentlichen Dateien erfolgreich.
+
+Live: cd40fda005511097db4a420469e412a06948ac7d, Pages-Lauf https://github.com/calvinjohncamp/tfb-website/actions/runs/42456591412 erfolgreich. Alle fünf Webdateien bytegleich zum geprüften Release.

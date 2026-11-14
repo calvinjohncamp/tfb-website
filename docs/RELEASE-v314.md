@@ -12,3 +12,5 @@ TFB-Kommentar, Blau/Rot/Blau ohne Neuladen, gespeicherte Autorschaft,
 Bearbeiten/Wechsel zum persönlichen Absender, erneutes Laden, Gastansicht und
 Adminbeschränkung erfolgreich. Mobile Darstellung visuell geprüft; JS-Syntax,
 Diffprüfung und öffentliches Paket (274 Dateien) erfolgreich.
+
+Chromium und WebKit erfolgreich. Live: 70f87d77ec69d61e257c80d6bf246eabab1b5cb9; Pages-Lauf https://github.com/calvinjohncamp/tfb-website/actions/runs/42456272559. Alle drei veröffentlichten Webdateien live bytegleich geprüft.

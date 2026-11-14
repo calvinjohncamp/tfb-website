@@ -20,3 +20,5 @@ auf Handy und Desktop, Bilddekodierung, vollständiger Schlussabsatz, Position
 in den neuesten Archiveinträgen, kein Überlauf und keine Browserfehler.
 Bestehende Archivinhalte byteinhaltlich unverändert; 274 öffentliche Dateien
 inklusive Bild erfolgreich vorbereitet. Keine Änderungen an CMS oder Datenbank.
+
+Live: a41d7350601b2fbecd34ff7aeed03d7fd75db941; Pages-Lauf https://github.com/calvinjohncamp/tfb-website/actions/runs/42456051704. Archivbestand, Bild, CSS und Service Worker live bytegleich geprüft.

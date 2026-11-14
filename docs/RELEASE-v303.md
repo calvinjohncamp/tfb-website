@@ -30,3 +30,8 @@ Chat/Dating in Gelb sowie öffentlichen Seiten in Rot stimmen mit dem bisherigen
 Stand überein. Öffentliche CMS-Inhalte vorab bei 834 px lesend geprüft: keine
 gelbe Textfarbe in Home/Aktuell/Club, Padel-Initiale und Sport-Platzierungen
 bleiben gelb. Service-Worker-Cache v303.
+
+Live am 07.11.2026 veröffentlicht: c2f4e39c68899a8b562e7b0046b15ca30ed5f772.
+Pages-Lauf: https://github.com/calvinjohncamp/tfb-website/actions/runs/42403099987
+Fünf ausgelieferte Programmdateien bytegleich zum geprüften Paket.
+Nachweis: .private/release-v303/live-proof.json.

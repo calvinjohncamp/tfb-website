@@ -12,3 +12,5 @@ Desktop und Handy visuell geprüft. Karussell-Browsertest erfolgreich, JS-Syntax
 Diffprüfung und öffentliches Paket (273 Dateien) erfolgreich. Service Worker v312.
 Veröffentlichung vom Nutzer ausdrücklich beauftragt; künftige fertige Änderungen
 sollen ohne zusätzliche Rückfrage direkt deployt werden.
+
+Live: Commit 17c038f61a04b8cd81343783d95f0cee21942d7c, Pages-Lauf https://github.com/calvinjohncamp/tfb-website/actions/runs/42455707584. Alle vier veröffentlichten Webdateien am 08.11.2026 live bytegleich geprüft.

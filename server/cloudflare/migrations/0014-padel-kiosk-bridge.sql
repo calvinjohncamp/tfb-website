@@ -1,0 +1,4 @@
+CREATE TABLE IF NOT EXISTS padel_kiosk_links(auth_id TEXT PRIMARY KEY,member_id TEXT NOT NULL REFERENCES members(id));
+CREATE TABLE IF NOT EXISTS padel_kiosk_receipts(event_id TEXT PRIMARY KEY,entry_id TEXT NOT NULL,fingerprint TEXT NOT NULL,payload TEXT NOT NULL,created_at TEXT NOT NULL);
+CREATE TRIGGER IF NOT EXISTS padel_kiosk_receipts_no_update BEFORE UPDATE ON padel_kiosk_receipts BEGIN SELECT RAISE(ABORT,'KIOSK_HISTORY_IMMUTABLE'); END;
+CREATE TRIGGER IF NOT EXISTS padel_kiosk_receipts_no_delete BEFORE DELETE ON padel_kiosk_receipts BEGIN SELECT RAISE(ABORT,'KIOSK_HISTORY_IMMUTABLE'); END;

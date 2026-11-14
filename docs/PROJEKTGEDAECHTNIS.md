@@ -1,5 +1,162 @@
 # TFB-Kiosk – Projektgedächtnis und Übergabe
 
+## Verbindlicher Veröffentlichungsablauf für die TFB-Website
+
+Jörn hat am 14.11.2026 bestätigt: Beauftragte Änderungen und Fehlerkorrekturen
+an der TFB-Website direkt umsetzen, prüfen und live veröffentlichen. Eine
+zusätzliche Rückfrage zur Veröffentlichung entfällt. Auf dem aktuellen
+GitHub-Stand von `main` ein isoliertes Release mit den beauftragten Änderungen
+vorbereiten. Nach dem GitHub-Pages-Lauf den ausgelieferten Stand prüfen.
+
+## Mannschaftsporträt in Signature Gelb · live am 14.11.2026
+
+Die Porträtkarte hat jetzt einen dunkelblauen Hintergrund, weiße Schrift und
+gelbe Akzente. In Chromium und WebKit wurden beide Farbwelten bei 390 und
+1440 Pixeln sowie der Porträtlink geprüft. Commit `baac89b`,
+[Pages-Lauf 43611893247](https://github.com/calvinjohncamp/tfb-website/actions/runs/43611893247).
+Die Live-Seite bindet die neue CSS-Version ein. CSS und Service Worker wurden
+bytegenau mit dem Release abgeglichen.
+
+## Tagesabschluss · 14.11.2026
+
+- Der Zweiseiter für die Admin-Übergabe am 17.11. liegt in der gemeinsamen
+  Dropbox-Ablage und ist in beiden Projektgedächtnissen verlinkt.
+- Das Mannschaftsporträt in Signature Gelb ist live korrigiert (`baac89b`).
+- Für die Stellvertretung dienen die Projektgedächtnisse und die Git-Historie
+  als gemeinsame Referenz. Ausgewählte Codex-Chats können bei Bedarf als
+  schreibgeschützte Schnappschüsse ergänzen.
+- Nach dem Gespräch die Beschlüsse, Verantwortlichen, Termine und
+  Prüfnachweise im Übergabeeintrag ergänzen.
+
+## 17.11.2026 – Admin-Übergabe TF Bielstein und Padel Bielstein
+
+[Gemeinsame Gesprächsfassung vom 17.11.2026 (PDF, zwei Seiten)](../../02%20Betrieb%20und%20Veroeffentlichung/Admin-%C3%9Cbergabe/2026-11-17%20Admin-%C3%9Cbergabe%20TFB%20und%20Padel%20Bielstein.pdf)
+
+Die Gesprächsgrundlage enthält die Dienste und Konten beider Apps, die
+Vereinsablage in Dropbox, den Notfallzugriff, die Windows-Abnahme und den
+vorgeschlagenen Pilotstart am 01.01.2027. Seite 2 enthält auch den
+KI-Prüfablauf mit ChatGPT, Claude und Gemini.
+
+**Beschlüsse und Abnahmen** werden nach dem Gespräch ergänzt.
+
+| Entscheidung oder Aufgabe | Verantwortlich | Termin | Prüfnachweis |
+| --- | --- | --- | --- |
+| Nach dem Termin ergänzen | | | |
+
+## Verabreden mit Trainingslaufzeit und Aktivmarke · live am 14.11.2026
+
+Commit `17fe567`, Pages-Lauf `43591566602`, Cache
+`tfb-20261114-training-status-1`. Datums- und Aktivmarken sind in
+Signature Red rot mit weißer Schrift und in Signature Gelb dunkelblau
+mit gelber Schrift. Serien zeigen den Zeitraum von bis. Die Aktivmarke
+steht bei eingeschalteten laufenden Serien und erscheint vor dem
+Start, sobald bereits ein kommender Termin dieser Serie sichtbar ist.
+Die Terminplanung und bereits verschickte Einladungen folgen der
+bestehenden Logik.
+
+Desktop und Mobilbreite mit zwei Testserien geprüft. Der Sync-Test
+bestand. HTML, JavaScript, CSS und Service Worker stimmen mit der
+veröffentlichten Fassung überein.
+
+## Karussellbilder öffnen die Zoom-Ansicht · live am 14.11.2026
+
+Commit `ec00df1`, Pages-Lauf `43591321669`, Cache
+`tfb-20261114-carousel-zoom-1`. Bild und Lupe öffnen dieselbe große
+Karussellansicht auf Home und Unterseiten. Der Bildtitel im Karussell
+ist eine Beschriftung. Die verlinkte Artikelüberschrift und der
+Beitragslink öffnen die Unterseite, sofern eingerichtet.
+
+„Musik liegt in der Luft“ und „TFB-Upgrade 2027“ wurden live per Klick
+am Desktop und per Antippen bei 390 Pixeln geprüft. Der Browsertest
+deckt auch den Bildklick auf einer Unterseite und die Rückkehr zum
+angeklickten Bild nach Escape ab.
+
+## Automatische Bildformate und Kiosk-Buttonzeile · live am 14.11.2026
+
+Commit `62ccb30`, Pages-Lauf `43590921500`, Cache
+`tfb-20261114-auto-photo-fit-1`. Die ausgelieferten Dateien stimmen
+mit dem Pages-Build überein.
+
+Die Home-Themenpflege verwendet die Originalproportionen der Fotos.
+Das Feld „Format der Diashow“ ist dort entfernt. Die Bildfläche passt
+sich bei einheitlichen Formaten an. Bei einem Mix zeigt sie jedes Bild
+vollständig in einer gemeinsamen Fläche mit fester Bedienleiste.
+Das gilt für die Diashow auf Home, auf der Home-Unterseite und für dort
+erneut verwendete Karussellfotos. Startverhalten und Unterseite bleiben
+im Editor wählbar.
+
+Im Kiosk stehen „Kiosk aktiv“, „Kiosk inaktiv“ und „Produktbibliothek“
+im Bearbeiten-Modus zusammen oberhalb des farbigen Balkens. Der Abstand
+beträgt 24 Pixel. Die Schalter wurden in Chromium und WebKit mit
+Testdaten geprüft. Die Home-Formatprüfung lief ab 390 und bei 1440 Pixeln.
+„Eine Idee nimmt Gestalt an.“ und ihre Unterseite wurden bei beiden
+Breiten live geprüft. Der ältere Test `test-home-features.mjs` meldet
+dieselben 12 Fehler wie vor der Änderung.
+
+## Home-Fotos, Artikelrechte und Kiosk · 14.11.2026
+
+Veröffentlicht mit `e9c3184` (Formate auf Home-Unterseiten) und `2b7847d`
+(Autoren und Kiosk). Pages-Lauf `43590090521`, Cache
+`tfb-20261114-kiosk-status-1`, Worker `f88089ec-864a-4fb2-ad81-48d276ed7930`.
+Die ausgelieferten Dateien stimmten mit dem Pages-Build überein.
+
+- Jörn hat die Autorenschaft für den damaligen Home-Bestand bestätigt,
+  mit Ausnahme von „Oktoberfest“ (Sebastian). Unter Aktuell gehört ihm
+  auch das Original „Eine Idee nimmt Gestalt an.“ vom 7. November
+  (`b-mw61khx5`). Die Serverprüfung erlaubt Admins das Löschen eigener
+  aktiver Artikel. Clubarchiv und nicht zugeordnete Übernahmen bleiben
+  geschützt. Es wurden keine Live-Beiträge gelöscht.
+- Der Kiosk-Status steht nur im Bearbeiten-Modus der Kiosk-Seite links
+  neben „Produktbibliothek“. „Aktiv“ zeigt den Kiosk und erlaubt Käufe.
+  „Inaktiv“ blendet ihn aus und sperrt auch Bestellungen aus offenen Tabs.
+  Bei ausgeblendetem Kiosk öffnet „Kiosk bearbeiten“ in der Admin-Leiste
+  den Schalter erneut. Chromium und WebKit prüften die Bedienung mit
+  Testdaten. Die Bestellsperre und die Artikelrechte wurden serverseitig
+  mit Testdaten geprüft.
+- Ein Home-Karussell legt nur auf ausdrückliche Auswahl eine Unterseite an.
+  Auf Home-Unterseiten stehen Karussell und Diashow als unterschiedliche
+  Darstellungen zur Verfügung. Vorhandene Karussellartikel können die
+  Fotos der Übersicht in einer Diashow auf der Unterseite zeigen.
+
+## Karussell-Unterseite und Artikelrechte · live am 14.11.2026
+
+Programm `a827c10`, Pages-Lauf `43585874574`, Cache
+`tfb-20261114-article-ownership-1`, Worker
+`b9eea039-675c-4f26-b4eb-e681ab2ac40b`. Mehrere Karussells können auf
+derselben Unterseite stehen. „Einblick“ ist aus den Aktionen entfernt.
+Entfernen ist bei mehreren Karussells nach Rückfrage möglich.
+
+Eigene aktive Home- und Aktuell-Artikel können Admins nach zwei
+Bestätigungen löschen. Die Serverprüfung erhält die Autorenkennung
+beim Verschieben. Historische Artikel ohne belegte Zuordnung und
+archivierte Beiträge sind vor dem Löschen geschützt. Archivierte
+Beiträge sind in der regulären Redaktion schreibgeschützt.
+Der Aktuell-Testbeitrag vom 14.11. ist dem zeitlich passenden
+Redaktionsvorgang zugeordnet. Der erwähnte Test vom 07.11. ließ sich
+im aktuellen öffentlichen Bestand nicht eindeutig bestimmen.
+Es wurden keine Live-Beiträge gelöscht. Browser- und API-Tests
+verwendeten Testdaten. Der bereitgestellte Code wurde live abgeglichen.
+
+## Sport, Club und Home-Einstieg · live am 14.11.2026
+
+Veröffentlicht mit `3ed5528`, Pages-Lauf `43584823011` und Cache
+`tfb-20261114-home-start-2`. Der Kopf-Bleistift öffnet Sport (einschließlich
+Training) und Club direkt zur Bearbeitung. Der zweite Klick schließt die
+Bearbeitung samt Admin-Leiste. Chromium und WebKit haben den Wechsel geprüft.
+
+Die öffentliche Startseite lädt bereits während der Anmeldung und des
+Mitgliederabgleichs. Profil und Admin-Werkzeuge erscheinen nach bestätigter
+Sitzung. Der Browser-Test hält den Mitgliederabgleich gezielt zurück und prüft,
+dass Home trotzdem sichtbar wird. Die veröffentlichten Dateien wurden gegen
+das getestete Paket abgeglichen. Im öffentlichen Live-Test erschienen die
+Home-Inhalte 66 ms nach dem Splash-Klick. Das ist eine Einzelmessung.
+
+Auf Home führt der Titel standardmäßig zur veröffentlichten Unterseite,
+danach gegebenenfalls zur Foto-Unterseite. Der Editor bietet unter
+„Linkziel der Überschrift“ ein eigenes Ziel. Ältere Beiträge ohne Unterseite
+können ihr bisheriges Titelziel weiter nutzen. Der Kiosk-Titel öffnete im
+Live-Test `#home/h-kiosk`. Sein separater Link zum Kiosk bleibt verfügbar.
+
 ## Veröffentlichungsfreigabe für die TFB-Website · bestätigt am 14.11.2026
 
 Der Nutzer hat dauerhaft freigegeben, dass beauftragte Änderungen an der
@@ -11,35 +168,164 @@ ausdrückliche Anweisung für einen Entwurf oder eine reine Prüfung bestimmt de
 jeweiligen Auftrags. Nach der Veröffentlichung den betroffenen Bereich live
 prüfen und den bestätigten Stand in der Übergabe festhalten.
 
-## 13.11.2026 – E-Mails zu Spielverabredungen
+## Redaktion und Admin-Modus · Stand 14.11.2026
 
-Für Einzel und Doppel sind ergänzende Einladungs- und Bestätigungsmails
-vorgesehen. Zuerst das TFB-Muster für die Zusage ansehen und abstimmen.
-Trainings und Trainingsserien laufen weiterhin über App und Postfach.
-Wöchentliche Trainings-Erinnerungsmails bleiben eine spätere Option, falls
-die Teilnehmenden sie nach Rücksprache wünschen. Der bevorzugte Weg ist
-weiterhin die App.
+Bestätigter Programmstand auf [joern-kaemper.de](https://joern-kaemper.de/)
+ist `dd96521` (Pages-Lauf `43582582426`, Cache
+`tfb-20261114-editor-sections-1`). Home und Aktuell verwenden „Übersicht“
+und „Unterseite“. Bei älteren Karussells hieß der zweite Reiter „Beiträge“.
+Die dort gepflegten Einblicke bleiben Teil derselben Unterseite. Die
+separat verlinkte „Foto-Unterseite“ kann Begleittext aufnehmen. Die
+Textwerkzeuge des Kiosk-Beitrags stehen auch in diesen Editoren bereit:
+Fett, Kursiv, Hervorhebung, interne und externe Textlinks sowie
+verschiebbare Abschnitte für Text, Überschrift und Zitat. Speichern,
+Veröffentlichen und bestehende Unterseiten beim Verschieben von Home nach
+Aktuell wurden im Browser mit Testdaten geprüft. Der Benutzer wünscht
+weiterhin höchstens 15 Bilder pro Karussell. Galerie und Collage erlauben
+bis zu 100 Bilder. Beim Verschieben bleibt das ursprüngliche
+Erstellungsdatum erhalten.
 
-## 13.11.2026 – TFB-Optik freigegeben
+`ea76498` hat das Schließen der Admin-Leiste über den Kopf-Bleistift
+vereinheitlicht. Beim Verlassen des Bearbeitungsmodus auf einer reinen
+Admin-Seite geht es zurück zu Home. Beim Einstieg lädt Home ohne die
+Clubgeflüster-Abfrage. Das erste Karussellbild wird bevorzugt, weitere
+Bilder folgen bei Sichtbarkeit. Der damalige Vergleich mit künstlich
+verzögertem Clubgeflüster ergab 1,36 s vorher und 0,26 s nachher.
+Eine einzelne Live-Kontrollmessung ergab 0,09 s. Der Nutzer meldet
+weiterhin eine spürbare Verzögerung. Diese Messungen bilden seine
+aktuelle Erfahrung daher nur teilweise ab.
 
-Die sichtbare Startseite mit kühler Welt und blau-gelber TFB-Marke ist der
-verbindliche Stand. Frühere Entwürfe für warme und eigene Hintergründe sind
-archiviert. Die Umschalter und Farbfelder der Artikelpflege sind deaktiviert.
-Gespeicherte Hintergrundwerte bleiben in den Artikeldaten. Für einen späteren
-Wiedereinstieg enthält Git-Stand `898ccdf` die Umschalter in
-`assets/js/design-preview.js`, ihre Einbindung in `app.js` und
-`partner-visibility.js` sowie die Farbfelder und Pipette in `site.js`.
+Die Symbolgalerie zeigt beschriftete Symbole. Link-Buttons sind gleich
+hoch und verwenden standardmäßig Text. Symbol oder zugeschnittenes
+eigenes Foto sind optional. In Signature Red erscheinen die Link-Symbole
+weiß. Das Home-Zeichen besteht aus den drei zentrierten Original-Vektor-
+pfaden des TFB-Wortzeichens und ist in der gelben Welt dunkelblau
+(`7891d0b`, `bceb09d`, `6dce31e`).
 
-## 13.11.2026 – Key Account: gemeinsamer Kiosk in TFB und Padel
+### Auftrag vor Umsetzung in 3ed5528
 
-Offen für die gemeinsame Abnahme. Die Kiosk-Optik ist freigegeben. Mit demselben
-TFB-Testmitglied je einen Kauf in der TFB-App und der Padel-Buchungs-App erfassen,
-die Übertragung des Padel-Kaufs wiederholen und einen Kauf stornieren. Bierdeckel,
-TFB-Kioskjournal und Abrechnung sowie Padel-MIS abgleichen. Zwei unterschiedliche
-Käufe müssen zwei Buchungen ergeben. Eine wiederholte Übertragung darf keine
-zusätzliche Buchung erzeugen. Der vermittelte Mitgliedskauf wird im Padel-MIS
-ausgewiesen und erhöht den eigenen Padel-Umsatz nicht. Storno und Summen in beiden
-Apps prüfen. Bis zur Abnahme als offenen Key-Account-Prüfauftrag führen.
+- Sport und Club direkt über den Kopf-Bleistift bearbeiten. Die
+  zusätzlichen Seiten-Bleistifte sollen entfallen. Der zweite Klick
+  schließt den Bearbeitungsmodus einschließlich der Admin-Leiste.
+- Splash → Home weiter beschleunigen. Kaltstart, Wiederaufruf und
+  angemeldeten Einstieg prüfen und mit gedrosseltem Netz nachstellen.
+- Auf Home soll die Überschrift standardmäßig die eigene Unterseite
+  öffnen, sofern diese vorhanden ist. Ein bewusst gewähltes anderes
+  Linkziel bleibt als Ausnahme möglich. Der Kiosk-Beitrag an Position 7
+  demonstriert den bisherigen Unterschied. Der Titel führt zum Kiosk,
+  obwohl eine Unterseite existiert.
+
+Der aktuelle Auftrag war die Dokumentation. Die drei offenen Punkte
+wurden untersucht und stehen noch zur Umsetzung aus. Technische
+Einstiegspunkte stehen in [der Übergabe](UEBERGABE.md).
+
+## Admin-Farbwelten · 13.11.2026
+
+Der Nutzer möchte die gewählte Signature-Welt von der Website in allen
+Admin-Ansichten wiederfinden. `assets/css/admin-signature.css` leitet
+die Akzente vom bestehenden Markenfarbumschalter ab. Gelb nutzt
+Signature-Gelb mit dunkelblauer Beschriftung, Rot Signature-Rot mit
+kontrastreicher schwarzer Beschriftung. Farbig hervorgehobene Texte auf
+hellen Flächen verwenden Dunkelblau beziehungsweise ein dunkleres Rot.
+Die Admin-Leiste, Produktbibliothek, Abrechnung, Statistikauswahl,
+Mitgliederpflege, Mitglieder-Mail, Time Machine und Bearbeitungsdialoge
+folgen derselben Auswahl. Produktillustrationen behalten ihre eigenen
+Farben, Warnungen und Statusanzeigen ihre Bedeutung.
+
+Der Kiosk-Kategorieeditor nutzt wieder die Admin-Prüfung des jeweiligen
+Adapters. Der vorherige Verweis auf `rawMember` lag außerhalb des
+Gültigkeitsbereichs und verhinderte das Öffnen. Die Änderung ist auf dem
+TFB-Stand `a236b41` aufgebaut und in Chromium und WebKit geprüft.
+Veröffentlicht mit `ba85bbc`. Der Farbwechsel in der Produktbibliothek
+wurde auf der Live-Website in beiden Farbwelten bestätigt.
+Der gemeinsame Kiosk-Quellabgleich mit Padel bleibt offen.
+
+## Live-Abgleich vom 13.11.2026
+
+Der in der Sitzung „8. Padel Bielstein 2027“ bearbeitete Kiosk-Stand ist im TFB-Repository
+`calvinjohncamp/tfb-website` veröffentlicht. Der Nutzer hat ihn für TFB bestätigt.
+Abgeglichen wurden alle 15 TFB-Commits seit dem dokumentierten Stand `86fe9ac` bis
+`a236b41`, der lokale Padel-Quellstand und der sichtbare TFB-Live-Kiosk.
+Der [Übergabeabschnitt vom 13.11.](UEBERGABE.md#übergabe--live-stand-vom-13112026)
+nennt die Basis für die nächste Sitzung.
+
+### Kiosk und Produktbibliothek
+
+- **JAKO-Shop:** In der [Produktbibliothek](https://joern-kaemper.de/#produktbibliothek)
+  am Seitenende unter „Zur Kiosk-Abrechnung“ können Admins den externen Shop
+  ein- oder ausblenden. Die Einstellung gilt zentral für die Website und wird als
+  `pages.home.showJakoShop` im CMS gespeichert. Bei älteren Daten ohne das Feld ist
+  der Shop standardmäßig sichtbar. Ein Lesefehler blendet den Block vorübergehend aus.
+  Die Vorschau verlinkt zum externen Shop. Kauf und Zahlung erfolgen dort getrennt
+  vom TFB-Bierdeckel und vom internen Katalogbereich „Vereinsshop“.
+- **Produktübersicht:** Aktive Artikel folgen den Kiosk-Kategorien und ihrer
+  Reihenfolge. Das Raster zeigt je nach Breite drei, zwei oder eine Karte.
+  Größere Motive, Name, Zusatzzeile, Preis und Einheit erleichtern die Übersicht.
+  Inaktive und archivierte Artikel lassen sich separat einklappen. Die
+  vorhandene Kategoriepflege, Suche und Katalogaktionen stehen weiterhin bereit.
+- **Artikel bearbeiten:** Die Vorschau und die größeren, beschrifteten Symbole
+  verwenden die Kiosk-Illustrationen. Jedes Auswahlmotiv erscheint in seiner
+  eigenen Signature-Farbe. Ein neu gewähltes Motiv übernimmt diese Farbe.
+  Über Palette oder Pipette lässt sich die Artikelfarbe anpassen, während die
+  Auswahlmotive ihre typische Farbe behalten. „Signature-Farbe“ stellt die
+  Vorgabe für das gewählte Motiv wieder her. Fanta und Padelball stehen als
+  eigene Auswahlvarianten zur Verfügung. Bestehende Buchungen behalten ihre
+  damaligen Artikelangaben; die Pflege wirkt auf künftige Buchungen.
+- **Nachweis:** Die Commits `fc0ee21`, `a3f8a43` und `a236b41` bilden die
+  Kiosk-Änderung ab. Im Live-Admin wurden der Schalter, die sichtbare Shop-Vorschau
+  und die geöffnete Artikelmaske geprüft. Die ursprüngliche Veröffentlichung
+  dokumentierte Chromium- und WebKit-Tests für beide Shop-Zustände sowie
+  die Symbol- und Farbauswahl mit Testdaten. Beim Abgleich wurden keine
+  Live-Einstellungen oder Artikel gespeichert.
+
+### Home, Farbwelt und Dating 2.0
+
+- **Home-Fotos:** Der veröffentlichte Bildrahmen folgt dem eingestellten
+  Ausschnitt auch auf unterschiedlichen Bildschirmgrößen. Home-Themen haben
+  bis zu fünf Fotos. Das erste ist der Aufmacher und lässt sich durch Umsortieren
+  wechseln. Klick auf das Bild öffnet die Galerie, die Überschrift folgt der
+  eingestellten Navigation. Der Editor zeigt die Fotopflege an einer Stelle.
+  Commits `ba414e4`, `18ac362`, `3365d8b`, `b7eebdd`.
+- **Bildqualität:** Admins können pro Artikel 4K bis 3.840 px Kantenlänge und
+  10 MB pro Bild erlauben. Auf Home gilt die Ausnahme für die Galerie und
+  Karussellfotos, außerhalb von Home für das erste Aufmacherbild. Reguläre
+  Home-Karussell-Uploads werden bis 2.560 px in höherer JPEG-Qualität gespeichert;
+  die vergrößerte Ansicht rendert mit höherer Auflösung für Retina-Displays.
+  Commits `898ccdf`, `ba42247`, `87fca86`, `c28e925`.
+- **TFB-Optik:** Die kühle Grundgestaltung bleibt der freigegebene Stand.
+  Der Umschalter „Farbwelt wechseln“ für die TFB-Markenfarben ist wieder aktiv
+  und merkt sich die Auswahl im Browser. Die früheren warmen und eigenen
+  Seitenhintergründe sind als Entwürfe archiviert; bestehende Hintergrundwerte
+  bleiben gespeichert. Der frühere Editor ist in `898ccdf` nachvollziehbar.
+  Commits `dbfc726`, `ba42247`.
+- **Verabredungen:** Die Dating-Übersicht zeigt den Einladenden, Teilnehmende
+  mit Foto oder Initialen und den Zeitpunkt der Einladung sowie der eigenen
+  Antwort. Die Detailseite ordnet Antwortzeiten den jeweiligen Personen zu.
+  Zeitangaben verwenden die Zeitzone Europe/Berlin. Profilfotos lassen sich
+  aus der Übersicht vergrößern. Commits `dbfc726`, `214c575`, `8cea919`, `b7eebdd`.
+- **Spielmails:** Worker-Commit `e003c8b` ergänzt den E-Mail-Versand für neu
+  eingeladene Mitglieder bei Einzel und Doppel und informiert Einladende bei
+  einer neuen persönlichen Zusage. Trainings und Trainingsserien laufen
+  über App und Postfach. Die Warteschlange `meeting_mail` gehört zur Migration
+  `0015-meeting-mail.sql`; der Worker versucht offene Nachrichten nach App-Sync
+  und zusätzlich alle fünf Minuten zu versenden. `node --test tools/test-meet-sync.mjs`
+  bestand mit sieben Tests. Eine echte Zustellung wurde bei diesem Abgleich
+  nicht neu geprüft.
+
+### Gemeinsamer Kiosk mit Padel
+
+Der TFB-Release änderte die veröffentlichte `kiosk.js` im bestehenden
+gemeinsamen Asset-Pfad. Padel verweist im lokalen Einstieg auf denselben Pfad.
+Die Signature-Auswahl aktiviert der TFB-Adapter über `signatureArt`. Details
+zur Abweichung zwischen Auslieferung, Manifest und gemeinsamer Quelle stehen
+in [SHARED_KIOSK.md](SHARED_KIOSK.md).
+
+Die gemeinsame Key-Account-Abnahme bleibt offen. Mit demselben TFB-Testmitglied
+je einen Kauf in TFB und Padel prüfen, den Padel-Transfer wiederholen und einen
+Kauf stornieren. Bierdeckel, TFB-Journal, Abrechnung und Padel-MIS abgleichen.
+Zwei Käufe ergeben zwei Buchungen; die Wiederholung erzeugt keine dritte.
+Der vermittelte TFB-Mitgliedskauf wird im Padel-MIS ausgewiesen und zählt nicht
+als eigener Padel-Umsatz.
 
 ## Datensicherung: eindeutige Vorschau · 10.11.2026
 

@@ -1,4 +1,111 @@
-# TFB – Projektupdate vom 09.11.2026
+# TFB – Projektupdate vom 14.11.2026
+
+## Tagesabschluss · 14.11.2026
+
+Der Nutzer hat das heutige Ergebnis abgenommen. Website und App sind
+auf dem veröffentlichten Stand `17fe567`. Der
+[Pages-Lauf 43591566602](https://github.com/calvinjohncamp/tfb-website/actions/runs/43591566602)
+ist erfolgreich abgeschlossen. Die Website liefert den Cache
+`tfb-20261114-training-status-1` aus.
+
+- **Home.** Themen können als Einzelfoto, Karussell oder Diashow
+  erscheinen. Fotoformate werden automatisch erkannt. Bei gemischten
+  Formaten bleibt die Bedienleiste an ihrer Position. Bild und Lupe
+  öffnen die große Karussellansicht. Verlinkte Überschrift und
+  Beitragslink führen zur eingerichteten Unterseite.
+- **Redaktion.** Home und Aktuell verwenden gemeinsame Text- und
+  Linkwerkzeuge. Links können als Text, mit einem Symbol oder einem
+  eigenen Foto erscheinen. Der Kopf-Bleistift öffnet die Bearbeitung
+  direkt und schließt sie beim zweiten Klick wieder. Das Clubarchiv
+  bleibt in der regulären Redaktion schreibgeschützt. Eigene aktive
+  Beiträge lassen sich nach Bestätigung löschen.
+- **Kiosk.** Die Statuswahl und „Produktbibliothek“ stehen oberhalb
+  des Bearbeiten-Balkens. Inaktiv blendet den Kiosk aus und sperrt
+  neue Bestellungen auch aus offenen Tabs.
+- **Verabreden.** Trainingsserien lassen sich als inaktive Vorlage
+  für eine zweite Saison kopieren. Die Übersicht zeigt die Laufzeit
+  von bis und kennzeichnet aktive Serien. Datums- und Aktivmarken
+  folgen der gewählten Signature-Farbwelt.
+
+Die Karussellbedienung wurde live auf Desktop- und Mobilbreite geprüft.
+Kioskstatus und Trainingsserien wurden mit Testdaten geprüft. Die
+zwölf bereits vorhandenen Fehler in `test-home-features.mjs` sind
+in den Einzelnotizen festgehalten.
+
+## Verabreden mit Trainingslaufzeit und Aktivmarke · live am 14.11.2026
+
+Commit `17fe567`, Pages-Lauf `43591566602`, Cache
+`tfb-20261114-training-status-1`. Datums- und Aktivmarken sind in
+Signature Red rot mit weißer Schrift und in Signature Gelb dunkelblau
+mit gelber Schrift. Serien zeigen den Zeitraum von bis. Die Aktivmarke
+steht bei eingeschalteten laufenden Serien und erscheint vor dem
+Start, sobald bereits ein kommender Termin dieser Serie sichtbar ist.
+Die Terminplanung und bereits verschickte Einladungen folgen der
+bestehenden Logik.
+
+Desktop und Mobilbreite mit zwei Testserien geprüft. Der Sync-Test
+bestand. HTML, JavaScript, CSS und Service Worker stimmen mit der
+veröffentlichten Fassung überein.
+
+## Karussellbilder öffnen die Zoom-Ansicht · live am 14.11.2026
+
+Commit `ec00df1`, Pages-Lauf `43591321669`, Cache
+`tfb-20261114-carousel-zoom-1`. Bild und Lupe öffnen dieselbe große
+Karussellansicht auf Home und Unterseiten. Der Bildtitel im Karussell
+ist eine Beschriftung. Die verlinkte Artikelüberschrift und der
+Beitragslink öffnen die Unterseite, sofern eingerichtet.
+
+„Musik liegt in der Luft“ und „TFB-Upgrade 2027“ wurden live per Klick
+am Desktop und per Antippen bei 390 Pixeln geprüft. Der Browsertest
+deckt auch den Bildklick auf einer Unterseite und die Rückkehr zum
+angeklickten Bild nach Escape ab.
+
+## Automatische Bildformate und Kiosk-Buttonzeile · live am 14.11.2026
+
+Commit `62ccb30`, Pages-Lauf `43590921500`, Cache
+`tfb-20261114-auto-photo-fit-1`. Die ausgelieferten Dateien stimmen
+mit dem Pages-Build überein.
+
+Die Home-Themenpflege verwendet die Originalproportionen der Fotos.
+Das Feld „Format der Diashow“ ist dort entfernt. Die Bildfläche passt
+sich bei einheitlichen Formaten an. Bei einem Mix zeigt sie jedes Bild
+vollständig in einer gemeinsamen Fläche mit fester Bedienleiste.
+Das gilt für die Diashow auf Home, auf der Home-Unterseite und für dort
+erneut verwendete Karussellfotos. Startverhalten und Unterseite bleiben
+im Editor wählbar.
+
+Im Kiosk stehen „Kiosk aktiv“, „Kiosk inaktiv“ und „Produktbibliothek“
+im Bearbeiten-Modus zusammen oberhalb des farbigen Balkens. Der Abstand
+beträgt 24 Pixel. Die Schalter wurden in Chromium und WebKit mit
+Testdaten geprüft. Die Home-Formatprüfung lief ab 390 und bei 1440 Pixeln.
+„Eine Idee nimmt Gestalt an.“ und ihre Unterseite wurden bei beiden
+Breiten live geprüft. Der ältere Test `test-home-features.mjs` meldet
+dieselben 12 Fehler wie vor der Änderung.
+
+## Home-Fotos, Artikelrechte und Kiosk · 14.11.2026
+
+Veröffentlicht mit `e9c3184` (Formate auf Home-Unterseiten) und `2b7847d`
+(Autoren und Kiosk). Pages-Lauf `43590090521`, Cache
+`tfb-20261114-kiosk-status-1`, Worker `f88089ec-864a-4fb2-ad81-48d276ed7930`.
+Die ausgelieferten Dateien stimmten mit dem Pages-Build überein.
+
+- Jörn hat die Autorenschaft für den damaligen Home-Bestand bestätigt,
+  mit Ausnahme von „Oktoberfest“ (Sebastian). Unter Aktuell gehört ihm
+  auch das Original „Eine Idee nimmt Gestalt an.“ vom 7. November
+  (`b-mw61khx5`). Die Serverprüfung erlaubt Admins das Löschen eigener
+  aktiver Artikel. Clubarchiv und nicht zugeordnete Übernahmen bleiben
+  geschützt. Es wurden keine Live-Beiträge gelöscht.
+- Der Kiosk-Status steht nur im Bearbeiten-Modus der Kiosk-Seite links
+  neben „Produktbibliothek“. „Aktiv“ zeigt den Kiosk und erlaubt Käufe.
+  „Inaktiv“ blendet ihn aus und sperrt auch Bestellungen aus offenen Tabs.
+  Bei ausgeblendetem Kiosk öffnet „Kiosk bearbeiten“ in der Admin-Leiste
+  den Schalter erneut. Chromium und WebKit prüften die Bedienung mit
+  Testdaten. Die Bestellsperre und die Artikelrechte wurden serverseitig
+  mit Testdaten geprüft.
+- Ein Home-Karussell legt nur auf ausdrückliche Auswahl eine Unterseite an.
+  Auf Home-Unterseiten stehen Karussell und Diashow als unterschiedliche
+  Darstellungen zur Verfügung. Vorhandene Karussellartikel können die
+  Fotos der Übersicht in einer Diashow auf der Unterseite zeigen.
 
 ## Absatzabstände Über uns und Trainernamen · v365 · 09.11.2026
 
