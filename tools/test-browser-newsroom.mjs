@@ -95,9 +95,22 @@ try{
  await form.locator('[name=link2Url]').fill('www.example.org/news');
  await form.locator('[name=link2Label]').fill('Externer News-Link');
  await page.locator('.news-draft-preview .post').getByRole('link',{name:'Sport',exact:true}).waitFor();
- await form.getByRole('button',{name:'Artikelansicht'}).click();
+ await form.getByRole('button',{name:'Unterseite',exact:true}).click();
  const draftStory = page.locator('.news-draft-preview .story');
  await draftStory.getByRole('link',{name:'Externer News-Link'}).waitFor();
+ await form.locator('[data-rich-for=sec_0]').fill('Intern und extern');
+ const text = form.locator('[data-rich-for=sec_0]');
+ await text.evaluate(el=>{const selection=getSelection();selection.setBaseAndExtent(el.firstChild,0,el.firstChild,6);});
+ page.once('dialog',dialog=>dialog.accept('#club'));
+ await form.locator('[data-panel=sub] [data-rich=link]').click();
+ await text.evaluate(el=>{const walker=document.createTreeWalker(el,NodeFilter.SHOW_TEXT);let node;while((node=walker.nextNode())){const at=node.textContent.indexOf('extern');if(at>=0){getSelection().setBaseAndExtent(node,at,node,at+6);return;}}throw Error(el.innerHTML);});
+ page.once('dialog',dialog=>dialog.accept('https://example.com/bericht'));
+ await form.locator('[data-panel=sub] [data-rich=link]').click();
+ await form.locator('[data-secadd=h]').last().click();
+ await form.locator('[name=sec_1]').fill('Zwischenüberschrift im Artikel');
+ await form.locator('[data-secadd=quote]').last().click();
+ await form.locator('[name=sec_2]').fill('Ein Zitat im Artikel');
+
  assert.equal(await draftStory.locator('.lead-letters').count(),0);
  assert.equal(await form.locator('[type=submit]').innerText(),'Veröffentlichen');
  await form.locator('[type=submit]').click();
@@ -112,6 +125,11 @@ try{
  await page.getByRole('link',{name:'Neue News'}).click();
  assert.equal(await page.locator('.story').getByRole('link',{name:'Sport',exact:true}).getAttribute('href'),'#sport');
  assert.equal(await page.getByRole('link',{name:'Externer News-Link'}).getAttribute('target'),'_blank');
+ assert.equal(await page.locator('.story-body').getByRole('link',{name:'Intern',exact:true}).getAttribute('href'),'#club');
+ assert.equal(await page.locator('.story-body').getByRole('link',{name:'extern',exact:true}).getAttribute('href'),'https://example.com/bericht');
+ assert.equal(await page.locator('.story-body h2').innerText(),'Zwischenüberschrift im Artikel');
+ assert.equal(await page.locator('.story-body blockquote').innerText(),'Ein Zitat im Artikel');
+
  await page.locator('.story-tools a[href="#aktuell"]').click();
  await page.evaluate(async()=>{TFB.ui.state.member=TFB.api.attachDirectoryMember({id:'home-media-admin',firstName:'Home',lastName:'Test',isAdmin:true,active:true,email:'home@example.invalid',teams:[]});TFB.api.secureDirectory=true;TFB.api.mode='test';await TFB.ui.renderView('aktuell');});
  await headerPencil.click();
@@ -152,7 +170,8 @@ try{
  assert.deepEqual(await page.locator('.col-news .post h3').allTextContents(),['Unsere Galerie','Unsere Collage','Unser neues Karussell','Neue News','Ältere News']);
  // Failure cannot remove Home content or leave a half-moved contribution.
  await page.evaluate(() => location.hash = '#home');
- await page.locator('[data-action=site-edit][data-page=home]').click();
+ if (!await page.locator('.site-page[data-page=home].editing-page').count() && !await page.locator('[data-action=site-edit][data-page=home]').count()) await headerPencil.click();
+ if (!await page.locator('.site-page[data-page=home].editing-page').count()) await page.locator('[data-action=site-edit][data-page=home]').click();
  await page.locator('[data-action=home-move-news][data-id=home-source]').click();
  const moving = page.locator('[data-home-move]');
  assert.equal(await moving.locator('time').getAttribute('datetime'),'2026-11-07');
@@ -178,6 +197,26 @@ try{
  // Reload preserves media and old Home URLs still reach the transferred content.
  await page.reload();await page.locator('.media-news').first().waitFor();assert.equal(await page.locator('.media-news').count(),1);await page.evaluate(async()=>{location.hash='#home/home-source';await TFB.ui.renderView('home');});await page.locator('.hm-entry').waitFor();assert.equal(await page.locator('.hm-entry-copy h1').innerText(),'Nach dem Match');assert.equal(await page.locator('.hm-entry-intro').innerText(),'Wohlfühlen');
  await page.evaluate(async()=>{location.hash='#aktuell/alle';await TFB.ui.renderView('aktuell');});assert.equal(await page.locator('a.mini[href="#aktuell/beitrag/'+newId+'"]').count(),1);await page.locator('a.mini[href="#aktuell/beitrag/'+newId+'"]').click();await page.locator('.story .cs-carousel').waitFor();
+ // Edit a legacy carousel through the shared Underseite tools and reopen the published result.
+ if (await headerPencil.getAttribute('aria-pressed') === 'false') await headerPencil.click();
+ const movedArticle = page.locator('[data-edit-block=home-source]');
+ await page.evaluate(()=>location.hash='#aktuell');
+ await movedArticle.getByRole('button',{name:'Bearbeiten'}).click();
+ const mediaEditor = page.locator('[data-hm-editor]');
+ await mediaEditor.getByRole('tab',{name:'Unterseite'}).click();
+ const mediaText = mediaEditor.locator('[data-rich-for=entry_0_section_0]');
+ await mediaText.fill('Fetter Einblick');
+ await mediaText.evaluate(el=>getSelection().selectAllChildren(el));
+ await mediaEditor.locator('[data-rich=bold]').click();
+ await mediaEditor.locator('[data-secadd=quote]').last().click();
+ await mediaEditor.locator('[name=entry_0_section_1]').fill('Zitat im Karussell');
+ await mediaEditor.getByRole('tab',{name:'Übersicht'}).click();
+ await mediaEditor.locator('[data-rich-for=text]').fill('Überblick zum Karussell');
+ await mediaEditor.locator('[type=submit]').click();
+ await mediaEditor.waitFor({state:'detached'});
+ await page.evaluate(()=>location.hash='#aktuell/home-source');
+ await page.locator('.hm-entry-copy strong').getByText('Fetter Einblick').waitFor();
+ assert.equal(await page.locator('.hm-entry-copy blockquote').innerText(),'Zitat im Karussell');
  // The legacy collection keeps its own detail layout and all five photos.
  await page.evaluate(async()=>{location.hash='#club/archiv';await TFB.ui.renderView('club');});await page.locator('.archive-home').waitFor();assert.equal(await page.locator('.archive-home .media-news').count(),1);assert.equal(await page.locator('.archive-home .media-news .hm-card').count(),5);
  await page.evaluate(async()=>{location.hash='#club/archiv/beitrag/home-home-source';await TFB.ui.renderView('club');});await page.locator('.hm-entry').waitFor();assert.equal(await page.locator('.hm-entry-copy h1').innerText(),'Nach dem Match');assert.equal(await page.locator('.story-tools a[href="#club/archiv"]').count(),1);
@@ -198,6 +237,7 @@ try{
  assert.equal(await page.locator('.tfb-admin-links').count(),0);
  await headerPencil.click();
  assert.equal(await form.locator('[type=submit]').innerText(),'Änderungen speichern');
+ await form.getByRole('button',{name:'Übersicht',exact:true}).click();
  await form.locator('[name=title]').fill('Nicht veröffentlichte Änderung');
  page.once('dialog',dialog=>dialog.dismiss());
  await page.locator('.sheet-close').click();

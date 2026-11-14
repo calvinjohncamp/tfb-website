@@ -188,8 +188,22 @@
       quote: q.text || '', quoteBy: q.by || '',
     };
   }
+  function renderTextSections(sections, drop = 0) {
+    let first = true;
+    return sections.filter(x => (x.text || '').trim()).map((x) => {
+      const color = x.color === 'signature' ? ' is-signature' : '';
+      if (x.type === 'h') return `<h2 class="story-h${color}">${color ? signatureText(x.text) : esc(x.text)}</h2>`;
+      if (x.type === 'quote') {
+        const by = (x.by || '').trim();
+        return `<blockquote class="story-quote${color}"><p>${color ? signatureText(x.text) : esc(x.text)}</p>${by ? `<div class="story-quote-source"><span aria-hidden="true">→</span> ${esc(by)}</div>` : ''}</blockquote>`;
+      }
+      const html = first ? leadLetters(paragraphs(x.text), drop) : paragraphs(x.text);
+      first = false;
+      return `<div class="story-text">${html}</div>`;
+    }).join('');
+  }
   const SECTION_LABELS = { text: 'Text', h: 'Überschrift', quote: 'Zitat' };
-  function sectionsEditor(list) {
+  function sectionsEditor(list, prefix = 'sec_') {
     const { icon } = ui();
     const inserter = (at) => `<div class="sec-insert" data-sec-insert>
         <button type="button" class="sec-insert-btn" data-sec-open aria-label="Hier einen Abschnitt einfügen" title="Hier einfügen">+</button>
@@ -198,7 +212,7 @@
     return `<div class="secs">${list.map((x, i) => `${inserter(i)}
       <div class="sec sec-${x.type}" data-sec="${x.type}">
         <div class="sec-bar"><span>${SECTION_LABELS[x.type]}</span>
-          ${x.type === 'h' || x.type === 'quote' ? `<select class="sec-color" name="sec_${i}_color" aria-label="Hervorhebung für ${SECTION_LABELS[x.type]}">
+          ${x.type === 'h' || x.type === 'quote' ? `<select class="sec-color" name="${prefix}${i}_color" aria-label="Hervorhebung für ${SECTION_LABELS[x.type]}">
             <option value="black">Schwarz</option>
             <option value="signature" ${x.color === 'signature' ? 'selected' : ''}>${document.documentElement?.classList.contains('tfb-logo-midnight-amber') ? 'Textmarker' : 'Signature-Rot'}</option>
           </select>` : ''}
@@ -206,27 +220,27 @@
           <button type="button" data-secmove="1" data-sec-i="${i}" ${i === list.length - 1 ? 'disabled' : ''} aria-label="Nach unten">${icon.down}</button>
           <button type="button" data-secdel="${i}" aria-label="Abschnitt löschen" title="Abschnitt löschen">×</button>
         </div>
-        ${x.type === 'text' ? field('', `sec_${i}`, x.text, { area: true, rich: true, simple: true, rows: 6, placeholder: 'Text schreiben – Wort markieren, dann Fett, Kursiv oder Rot' })
-          : x.type === 'h' ? `<textarea class="sec-h-input" name="sec_${i}" rows="1" placeholder="z. B. 365 Tage geöffnet">${esc(x.text || '')}</textarea>`
-          : `<textarea class="sec-q-input" name="sec_${i}" rows="2" placeholder="z. B. Eat. Sleep. Padel. Repeat.">${esc(x.text || '')}</textarea>
+        ${x.type === 'text' ? field('', `${prefix}${i}`, x.text, { area: true, rich: true, simple: true, rows: 6, placeholder: 'Text schreiben – Wort markieren, dann Fett, Kursiv oder Rot' })
+          : x.type === 'h' ? `<textarea class="sec-h-input" name="${prefix}${i}" rows="1" placeholder="z. B. 365 Tage geöffnet">${esc(x.text || '')}</textarea>`
+          : `<textarea class="sec-q-input" name="${prefix}${i}" rows="2" placeholder="z. B. Eat. Sleep. Padel. Repeat.">${esc(x.text || '')}</textarea>
              <details class="sec-q-source"${(x.by || '').trim() ? ' open' : ''}>
                <summary>Herkunft des Zitats</summary>
-               <input class="sec-q-by" name="sec_${i}_by" value="${esc(x.by || '')}" aria-label="Herkunft des Zitats" placeholder="z. B. Seneca">
+               <input class="sec-q-by" name="${prefix}${i}_by" value="${esc(x.by || '')}" aria-label="Herkunft des Zitats" placeholder="z. B. Seneca">
              </details>`}
       </div>`).join('')}</div>
       <div class="sec-add"><b>Abschnitt hinzufügen</b>
         <span><button type="button" data-secadd="text">+ Text</button>
         <button type="button" data-secadd="h">+ Überschrift</button>
         <button type="button" data-secadd="quote">+ Zitat</button></span>
-        <small>Zwischen zwei Abschnitten einfügen: auf das rote + dazwischen tippen.</small>
+        <small>Mit dem Plus zwischen zwei Abschnitten fügst du dort einen Abschnitt ein.</small>
       </div>`;
   }
-  function readSections(form, list) {
+  function readSections(form, list, prefix = 'sec_') {
     return list.map((x, i) => {
-      const el = form.elements[`sec_${i}`];
+      const el = form.elements[`${prefix}${i}`];
       const text = el ? (x.type === 'h' ? el.value.replace(/\s*\n\s*/g, ' ') : el.value).trim() : (x.text || '');
-      const section = x.type === 'quote' ? { type: 'quote', text, by: (form.elements[`sec_${i}_by`]?.value || '').trim() } : { type: x.type, text };
-      const color = form.elements[`sec_${i}_color`]?.value ?? x.color;
+      const section = x.type === 'quote' ? { type: 'quote', text, by: (form.elements[`${prefix}${i}_by`]?.value || '').trim() } : { type: x.type, text };
+      const color = form.elements[`${prefix}${i}_color`]?.value ?? x.color;
       if ((x.type === 'h' || x.type === 'quote') && color === 'signature') section.color = color;
       const history = richHistories.get(x);
       if (history) richHistories.set(section, history);
@@ -741,7 +755,7 @@
         <div class="event-body">
           <h3>${href ? `<a class="post-title-link" href="${esc(href)}">${esc(b.title)}</a>` : esc(b.title)}</h3>
           <p class="muted small">${[b.time && `${esc(b.time)} Uhr`, esc(b.place)].filter(Boolean).join(' · ')}</p>
-          ${body ?? (b.text ? `<p class="event-text">${esc(b.text)}</p>` : '')}
+          ${body ?? (b.text ? `<div class="event-text">${paragraphs(b.text)}</div>` : '')}
         </div>
       </article>`;
   }
@@ -753,7 +767,7 @@
     const title = isNews ? String(b.title || '').trim().replace(/\.+$/u, '') : b.title;
     return `<article class="post card media-news" data-site-content="${esc(b.id)}">${TFB.homeMedia.cover(b,href,ref=>images[ref]||ref)}<div class="post-body">${TFB.newsroom.creationDate(b)?`<p class="post-date">${signatureText(fmt(TFB.newsroom.creationDate(b),{day:'numeric',month:'long',year:'numeric'}))}</p>`:''}${!isNews&&b.kicker?`<p class="media-news-kicker">${signatureText(b.kicker)}</p>`:''}<h3><a class="post-title-link" href="${href}">${esc(title)}</a></h3>${!isNews&&b.subtitle?`<p class="media-news-subtitle">${signatureText(b.subtitle)}</p>`:''}${paragraphs(b.text)}${isNews ? newsLinkMarkup(b) : ''}${linkMarkup({...b.detailLink, url:href, label:b.detailLink?.label || b.mediaButtonLabel || 'Beitrag ansehen'})}</div></article>`;
   }
-  const mediaDetail = (block,page='aktuell',backHref,readonly=false) => TFB.homeMedia.detail(block,{imageOf:ref=>images[ref]||ref,paragraphs,admin:!readonly&&page !== 'aktuell'&&ui().state.member?.isAdmin,page,backHref,links:newsLinkMarkup(block)});
+  const mediaDetail = (block,page='aktuell',backHref,readonly=false) => TFB.homeMedia.detail(block,{imageOf:ref=>images[ref]||ref,paragraphs,renderTextSections,admin:!readonly&&page !== 'aktuell'&&ui().state.member?.isAdmin,page,backHref,links:newsLinkMarkup(block)});
 
   async function newsArticleDetail(block, archive = false, draftPreview = false) {
     if (block.archived && !archive) return `<p>Dieser Artikel ist im Clubarchiv.</p><a class="btn" href="${archiveHref(block)}">Zum Artikel im Clubarchiv</a>`;
@@ -901,19 +915,8 @@
             ${(() => {
               const drop = more.dropcap == null ? (simpleNews ? 0 : 1) : Number(more.dropcap);
               const secs = storySections(more).filter((x) => (x.text || '').trim());
-              if (!secs.some((x) => x.type === 'text') && b.text) secs.unshift({ type: 'text', text: b.text });
-              let first = true;
-              return secs.map((x) => {
-                const color = x.color === 'signature' ? ' is-signature' : '';
-                if (x.type === 'h') return `<h2 class="story-h${color}">${color ? signatureText(x.text) : esc(x.text)}</h2>`;
-                if (x.type === 'quote') {
-                  const by = (x.by || '').trim();
-                  return `<blockquote class="story-quote${color}"><p>${color ? signatureText(x.text) : esc(x.text)}</p>${by ? `<div class="story-quote-source"><span aria-hidden="true">→</span> ${esc(by)}</div>` : ''}</blockquote>`;
-                }
-                const html = first ? leadLetters(paragraphs(x.text), drop) : paragraphs(x.text);
-                first = false;
-                return `<div class="story-text">${html}</div>`;
-              }).join('');
+              if (!(simpleNews ? secs.length : secs.some(x => x.type === 'text')) && b.text) secs.unshift({ type: 'text', text: b.text });
+              return renderTextSections(secs, drop);
             })()}
             ${detailLinks ? `<div class="story-links story-detail-links">${detailLinks}</div>` : ''}
           </div>
@@ -936,7 +939,7 @@
     }
     if (!b) return `${ui().viewHead('Home', 'Diesen Beitrag gibt es nicht mehr.', false)}<p><a class="btn" href="#home">Zur Startseite</a></p>`;
     const admin = state.member && state.member.isAdmin;
-    if (b.mediaCollection) return TFB.homeMedia.detail(b, {imageOf:ref=>images[ref] || ref,paragraphs,admin,links:newsLinkMarkup(b)});
+    if (b.mediaCollection) return TFB.homeMedia.detail(b, {imageOf:ref=>images[ref] || ref,paragraphs,renderTextSections,admin,links:newsLinkMarkup(b)});
     return storyHtml(b, {
       topicHero: true,
       n: String(homeBlocks().filter((x) => x.type === 'feature').indexOf(b) + 1).padStart(2, '0'),
@@ -962,7 +965,7 @@
     const gallery = { id: `album-${b.id}`, title: album.title || b.title, more: { ...album, images: (album.images || []).slice(0, 100) } };
     storyIndex[gallery.id] = gallery;
     const admin = ui().state.member?.isAdmin;
-    return `<article class="story album-page"><div class="story-tools">${admin && page === 'home' ? `<button type="button" class="view-close" data-action="album-edit" data-id="${esc(b.id)}" aria-label="Fotoseite bearbeiten">${ui().icon.pencil}</button>` : ''}<a class="view-close" href="${back}" aria-label="Zurück">${ui().icon.close}</a></div><h1>${esc(album.title || b.title)}</h1>${storyPhotos(gallery, gallery.more) || '<p class="muted">Noch keine Fotos veröffentlicht.</p>'}<div class="story-foot"><a class="more-link" href="${back}">Zurück</a></div></article>`;
+    return `<article class="story album-page"><div class="story-tools">${admin && page === 'home' ? `<button type="button" class="view-close" data-action="album-edit" data-id="${esc(b.id)}" aria-label="Foto-Unterseite bearbeiten">${ui().icon.pencil}</button>` : ''}<a class="view-close" href="${back}" aria-label="Zurück">${ui().icon.close}</a></div><h1>${esc(album.title || b.title)}</h1>${album.sections?.some(section => section.text?.trim()) ? `<div class="story-body">${renderTextSections(album.sections)}</div>` : ''}${storyPhotos(gallery, gallery.more) || '<p class="muted">Noch keine Fotos veröffentlicht.</p>'}<div class="story-foot"><a class="more-link" href="${back}">Zurück</a></div></article>`;
   }
 
   const memberPdfUrl = key => {
@@ -2632,7 +2635,11 @@
     const originalValue = JSON.stringify(original);
     if (original.mediaCollection) {
       const page = editing;
-      return TFB.homeMedia.openEditor(original, {page,imageOf:ref=>images[ref] || ref,uploadFiles,cover4kField,
+      return TFB.homeMedia.openEditor(original, {page,startTab,editor: {
+          text: (label, name, value) => field(label, name, value, { area:true, rich:true, simple:true }),
+          sections: sectionsEditor, readSections, sectionsClick, isSectionsClick, legacySections,
+          bind: bindRichFields,
+        },imageOf:ref=>images[ref] || ref,uploadFiles,cover4kField,
         links: {
           fields: draft => ['link','link2'].map((key,i) => editorialLinkFields(draft[key], key, 'Link ' + (i + 1))).join(''),
           read: (form,draft) => ['link','link2'].forEach(key => readEditorialLink(form.elements, draft, key)),
@@ -2640,7 +2647,9 @@
           switchTarget: switchEditorialLink,
           crop: editLinkCrop,
         },
-        onSave:async draft=>{const next=await ui().api.site();
+        onSave:async draft=>{
+          for (const link of [draft.link, draft.link2]) if (link) delete link.pendingUrl;
+          const next=await ui().api.site();
           const current=next.pages[page].blocks.find(b=>b.id===id);
           if (originalSiteRevision !== undefined ? next._cms?.versions['page:' + page] !== originalSiteRevision : JSON.stringify(current) !== originalValue) throw Error('Der Inhalt wurde inzwischen geändert. Bitte öffne ihn erneut.');
           next.pages[page].blocks=next.pages[page].blocks.map(b=>b.id===id?draft:b);site=await ui().api.saveSite(next);if(detailEditing){editing=null;detailEditing=false;}ui().toast('Gespeichert',true);await ui().renderView();},
@@ -2659,11 +2668,18 @@
       draft.detailEnabled = !['none', 'link'].includes(draft.navigation);
     }
     let albumOpen = startTab === 'album' || Boolean(draft.album?.enabled || draft.album?.images?.length);
+    if (albumOpen) draft.album = { ...draft.album, sections: storySections(draft.album) };
     const photoModule = photoTypes.includes(draft.type);
     const newsroom = editing === 'aktuell';
     const liveNews = newsroom && (draft.type === 'post' || photoModule);
+    const newsDetail = liveNews && !homeFeature;
+    if (newsDetail) {
+      draft.more = { ...draft.more };
+      initSections(draft.more);
+    }
     const live = (editing === 'home' && homeFeature) || liveNews;
     let newsPreviewTab = isNew || !location.hash.includes('/') ? 'home' : 'sub';
+    if (newsDetail) edTab = newsPreviewTab;
     const articleLinksOpen = new Set(['link','link2'].filter(key => draft[key]?.url || draft[key]?.label));
     let formBaseline;
     const articleDateField = () => TFB.newsroom.creationDate(draft) ? `<p class="muted small">Erstellt am ${esc(fmt(TFB.newsroom.creationDate(draft),{day:'numeric',month:'long',year:'numeric'}))}</p>` : '';
@@ -2719,7 +2735,7 @@
             + `<div class="home-topic-actions">
               ${linksOpen || liveNews ? '' : '<button type="button" class="btn small" data-topic-open="links">Link hinzufügen</button>'}
               <button type="button" class="btn small" data-topic-open="sub">${detailOpen ? 'Unterseite bearbeiten' : 'Unterseite anlegen'}</button>
-              <button type="button" class="btn small" data-topic-open="album">${albumOpen ? 'Fotoseite bearbeiten' : 'Fotoseite anlegen'}</button>
+              <button type="button" class="btn small" data-topic-open="album">${albumOpen ? 'Foto-Unterseite bearbeiten' : 'Foto-Unterseite anlegen'}</button>
             </div>`
             + (linksOpen && !liveNews ? '<h3 class="editor-sub">Links</h3>'
               + editorialLinkFields(lk, 'link', 'Link 1')
@@ -2734,8 +2750,8 @@
           const ownHero = heroSrc === 'own' ? heroImgs.slice(0, 4) : [];
           const detailPhotos = (more.images || []).filter(shownImage);
           const subPanel = `
-            <label class="meet-check"><input type="checkbox" name="detailEnabled" ${draft.detailEnabled !== false ? 'checked' : ''}><span>Unterseite auf Home verlinken</span></label>
-            <p class="ed-hint">Die Unterseite öffnet sich über „Mehr erfahren“. Überschrift und Unterzeile kommen vom Reiter „Startseite“.</p>
+            <label class="meet-check"><input type="checkbox" name="detailEnabled" ${draft.detailEnabled !== false ? 'checked' : ''}><span>${newsroom ? 'Unterseite in Aktuell verlinken' : 'Unterseite auf Home verlinken'}</span></label>
+            <p class="ed-hint">Die Unterseite öffnet sich über „Mehr erfahren“. Überschrift und Unterzeile kommen vom Reiter „Übersicht“.</p>
             <h3 class="editor-sub">Fotos oben (bis zu 4)</h3>
             <div class="field"><div class="gallery-edit">
               ${ownHero.map((ref, i) => thumbEdit(ref, 'hero', i, ownHero.length, 'data-hero-remove', ownHero.length >= 2 ? 'square' : '')).join('')}
@@ -2771,21 +2787,23 @@
             ${detailPhotos.length && (!more.photoDisplay || more.photoDisplay === 'collage') ? `<div class="field"><span>Bildformat in der Collage</span>
               ${seg('collagestyle', more.original ? 'original' : 'tiles', [['tiles', 'Bildausschnitte'], ['original', 'Originalformate']])}
             </div>` : ''}`;
-          const albumPanel = `<label class="meet-check"><input type="checkbox" name="albumEnabled" ${album.enabled ? 'checked' : ''}><span>Fotoseite auf Home verlinken</span></label>
-            ${field('Überschrift der Fotoseite', 'albumTitle', album.title || draft.title)}
+          const albumPanel = `<label class="meet-check"><input type="checkbox" name="albumEnabled" ${album.enabled ? 'checked' : ''}><span>Foto-Unterseite verlinken</span></label>
+            ${field('Überschrift der Foto-Unterseite', 'albumTitle', album.title || draft.title)}
             ${field('Link-Text', 'albumLabel', album.label || 'Fotos der Veranstaltung')}
             ${photoFormatField('albumPhotoDisplay', album.photoDisplay || 'collage', false, album.images?.length)}
             ${album.photoDisplay === 'carousel' ? photoStartField('albumAnimationStart', album.animationStart) : ''}
             ${positionField('albumPos', album.position)}
+            <h3 class="editor-sub">Inhalt</h3>
+            ${sectionsEditor(album.sections || [], 'album_sec_')}
             ${linkAppearanceFields({ ...album, appearance:album.appearance || 'text', url:'#home/' + id + '/fotos' }, 'albumButton')}
             <label class="meet-check"><input type="checkbox" name="albumOriginal" data-rerender ${album.original ? 'checked' : ''}><span>Originalformate erhalten</span></label>
             <div class="field"><span>Fotos (${(album.images || []).length} / 100)</span><div class="gallery-edit">${(album.images || []).filter(shownImage).map((ref,i,list) => thumbEdit(ref, 'album', i, list.length, 'data-album-remove')).join('')}
             ${(album.images || []).length < photoLimit(album.photoDisplay) ? `<label class="gallery-add">${ui().icon.plus}<span>Fotos</span><input type="file" accept="image/*" multiple data-album-input hidden></label>` : ''}</div></div>`;
           return `
             <div class="ed-tabs" role="tablist">
-              <button type="button" role="tab" class="${edTab === 'home' ? 'on' : ''}" data-edtab="home">Startseite</button>
+              <button type="button" role="tab" class="${edTab === 'home' ? 'on' : ''}" data-edtab="home">Übersicht</button>
               ${detailOpen ? `<button type="button" role="tab" class="${edTab === 'sub' ? 'on' : ''}" data-edtab="sub">Unterseite</button>` : ''}
-              ${albumOpen ? `<button type="button" role="tab" class="${edTab === 'album' ? 'on' : ''}" data-edtab="album">Fotoseite</button>` : ''}
+              ${albumOpen ? `<button type="button" role="tab" class="${edTab === 'album' ? 'on' : ''}" data-edtab="album">Foto-Unterseite</button>` : ''}
             </div>
             <div class="ed-panel" data-panel="home" ${edTab === 'home' ? '' : 'hidden'}>${homePanel}</div>
             ${detailOpen ? `<div class="ed-panel" data-panel="sub" ${edTab === 'sub' ? '' : 'hidden'}>${subPanel}</div>` : ''}
@@ -2797,7 +2815,7 @@
           + (draft.id === 's-training' ? field('Funktion', 'subtitle', draft.subtitle) + imageField(draft.image, draft.id, 'Trainerfoto') + field('Telefon', 'phone', draft.phone) + field('E-Mail', 'email', draft.email) : '')
           + field(draft.id === 's-schnupper-dates' ? 'Termine' : 'Text', 'text', draft.text, { area: true, rich: true, rows: 8, placeholder: draft.id === 's-schnupper-dates' ? 'Datum, Uhrzeit, Treffpunkt und weitere Informationen eintragen' : 'Text schreiben – Wörter markieren und oben gestalten' });
         case 'event': return `<div class="field-row">${field('Datum', 'date', draft.date, { type: 'date' })}${field('Uhrzeit', 'time', draft.time, { type: 'time' })}</div>`
-          + field('Titel', 'title', draft.title) + field('Ort', 'place', draft.place) + field('Kurzinfo', 'text', draft.text, { area: true, rows: 3 })
+          + field('Titel', 'title', draft.title) + field('Ort', 'place', draft.place) + field('Kurzinfo', 'text', draft.text, { area: true, rich: true, simple: true })
           + `<div class="field"><span>Anhang: Bild oder PDF (z. B. Flyer, Ausschreibung)</span>
               ${draft.attachment && attachmentSource(draft.attachment.ref)
                 ? `<div class="att-edit">${attachmentThumb(draft, true)}<div><strong>${esc(draft.attachment.name || (draft.attachment.kind === 'pdf' ? 'PDF' : 'Bild'))}</strong>
@@ -2853,10 +2871,14 @@
       openSheet(`
         <form class="editor ${live ? 'editor-live' : ''} ${liveNews ? 'news-editor' : ''}" data-editor="block" novalidate>
           <h2>${isNew ? (live && !liveNews ? 'Neues Thema' : `${esc(label)} hinzufügen`) : live && !liveNews ? 'Thema bearbeiten' : `${esc(label)} bearbeiten`}</h2>
-          ${liveNews ? `<div class="seg news-preview-tabs" role="group" aria-label="Vorschau wählen">
-            ${[['home','News-Übersicht'],['sub','Artikelansicht']].map(([key,label]) => `<button type="button" data-news-preview="${key}" aria-pressed="${key === newsPreviewTab}" class="${key === newsPreviewTab ? 'on' : ''}">${label}</button>`).join('')}
+          ${newsDetail ? `<div class="seg news-preview-tabs" role="group" aria-label="Ansicht bearbeiten">
+            ${[['home','Übersicht'],['sub','Unterseite']].map(([key,label]) => `<button type="button" data-news-preview="${key}" aria-pressed="${key === newsPreviewTab}" class="${key === newsPreviewTab ? 'on' : ''}">${label}</button>`).join('')}
           </div>` : ''}
-          ${body()}
+          ${newsDetail ? `<div data-panel="home"${edTab === 'home' ? '' : ' hidden'}>${body()}</div>
+            <div data-panel="sub"${edTab === 'sub' ? '' : ' hidden'}>
+              <p class="ed-hint">Titel und Fotos kommen aus der Übersicht. Ohne eigenen Text erscheint hier der Text aus der Übersicht.</p>
+              ${sectionsEditor(draft.more.sections)}
+            </div>` : body()}
           <p class="form-error" data-block-error role="alert"></p>
           <div class="ed-actions">
             <button type="submit" class="btn primary block">${liveNews ? (isNew ? 'Veröffentlichen' : 'Änderungen speichern') : 'Speichern'}</button>
@@ -2866,7 +2888,11 @@
           ${isNew || editing === 'home' || (editing === 'aktuell' && !TFB.newsroom.canArchive(draft)) ? '' : `<button type="button" class="btn block danger" data-delete>${editing === 'aktuell' ? 'Ins Clubarchiv verschieben' : 'Baustein löschen'}</button>`}
         </form>`);
       const form = document.querySelector('[data-editor=block]');
-      bindRichFields(form, draft, draft.more?.sections);
+      bindRichFields(form, draft, draft.more?.sections, name => {
+        if (name.startsWith('album_sec_')) return draft.album.sections[Number(name.slice(10))];
+        if (name.startsWith('sec_')) return draft.more.sections[Number(name.slice(4))];
+        return draft;
+      });
       refreshPhotoPreview();
       // Die Liste ordnet sich schon während des Ziehens neu, ohne das Formular zu ersetzen.
       let pointerDrag = null;
@@ -2959,7 +2985,7 @@
       });
       form.addEventListener('dragstart', e => { if (e.target.closest('.gallery-thumb.sortable')) e.preventDefault(); });
       if (live) {
-        startLive(id, draft, () => { collect(form); return liveNews ? newsPreviewTab : edTab; }, editing);
+        startLive(id, draft, () => { collect(form); return newsDetail ? newsPreviewTab : edTab; }, editing);
         if (liveNews) {
           formBaseline ??= JSON.stringify(draft);
           form.confirmClose = () => {
@@ -2987,9 +3013,14 @@
       });
       form.addEventListener('submit', (e) => { e.preventDefault(); save(form); });
       form.addEventListener('click', async (e) => {
-        if (isSectionsClick(e) && draft.more) {
+        if (isSectionsClick(e)) {
           collect(form);
-          if (sectionsClick(e, draft.more.sections)) { Object.assign(draft.more, sectionsDerived(draft.more.sections)); render(); if (live) schedulePreview(); }
+          const holder = e.target.closest('[data-panel="album"]') ? draft.album : draft.more;
+          if (holder && sectionsClick(e, holder.sections ||= [])) {
+            Object.assign(holder, sectionsDerived(holder.sections));
+            render();
+            if (live) schedulePreview();
+          }
           return;
         }
         const factMove = e.target.closest('[data-fact-move]');
@@ -3035,6 +3066,11 @@
         const view = e.target.closest('[data-news-preview]');
         if (view) {
           newsPreviewTab = view.dataset.newsPreview;
+          if (newsDetail) {
+            edTab = newsPreviewTab;
+            form.querySelectorAll('[data-panel]').forEach(panel => { panel.hidden = panel.dataset.panel !== edTab; });
+            form.closest('.sheet').scrollTop = 0;
+          }
           form.querySelectorAll('[data-news-preview]').forEach(button => {
             button.classList.toggle('on', button === view);
             button.setAttribute('aria-pressed', String(button === view));
@@ -3067,7 +3103,7 @@
             }
             if (section === 'album' && !albumOpen) {
               albumOpen = true;
-              draft.album = { ...draft.album, enabled: true };
+              draft.album = { ...draft.album, enabled: true, sections: storySections(draft.album) };
             }
           }
           render();
@@ -3276,6 +3312,10 @@
         original: f.albumOriginal.checked, photoDisplay: f.albumPhotoDisplay.value,
         animationStart: f.albumAnimationStart ? (f.albumAnimationStart.checked ? 'auto' : 'manual') : draft.album?.animationStart,
       };
+      if (form.querySelector('[data-panel=album]')) {
+        draft.album.sections = readSections(form, draft.album.sections || [], 'album_sec_');
+        if (!draft.album.sections.length && !original.album?.sections) delete draft.album.sections;
+      }
       if (form.querySelector('[data-panel=sub]') && draft.more) {
         const secs = readSections(form, draft.more.sections || []);
         draft.more = { ...draft.more, sections: secs, ...sectionsDerived(secs) };
@@ -3354,7 +3394,7 @@
       const validDetail = validateEditorialLinks(form, detailLinks, detailLinks.keys(), i => 'detailLink' + i);
       if (!validArticle || !validDetail) {
         const panel = form.querySelector('[aria-invalid]')?.closest('[data-panel]');
-        if (panel?.hidden) form.querySelector(`[data-edtab="${panel.dataset.panel}"]`)?.click();
+        if (panel?.hidden) form.querySelector(`[data-edtab="${panel.dataset.panel}"], [data-news-preview="${panel.dataset.panel}"]`)?.click();
         form.querySelector('[aria-invalid]')?.focus();
         return;
       }
@@ -4258,10 +4298,10 @@
     area.replaceChildren(...snapshot.nodes.map(node => node.cloneNode(true)));
   }
 
-  function bindRichFields(form, draft, sections = []) {
+  function bindRichFields(form, draft, sections = [], ownerFor = null) {
     for (const area of form.querySelectorAll('.rich-area')) {
       const name = area.dataset.richFor;
-      const owner = name.startsWith('sec_') ? sections[Number(name.slice(4))] : draft;
+      const owner = ownerFor ? ownerFor(name) : name.startsWith('sec_') ? sections[Number(name.slice(4))] : draft;
       const previous = richHistories.get(owner);
       if (previous) {
         restoreRichContents(area, previous.current);
@@ -4491,16 +4531,15 @@
         }
         return;
       }
-      if (area.closest('.news-editor') && !chosen.trim()) { ui().toast('Bitte zuerst den Text markieren, den du verlinken möchtest.'); return; }
+      if (area.closest('.news-editor, .hm-editor, .editor-live') && !chosen.trim()) { ui().toast('Bitte zuerst den Text markieren, den du verlinken möchtest.'); return; }
       const target = prompt('Wohin soll der Link führen? Gib eine Website oder eine Seite wie #sport ein.', '');
       if (target === null) return;
       const url = editorialUrl(target);
       if (!url) { ui().toast('Bitte eine gültige Linkadresse eingeben.'); return; }
-      const label = chosen || prompt('Welcher Text soll im Fließtext stehen?', '') || url.replace(/^https?:\/\/(www\.)?/, '');
       const a = document.createElement('a');
       a.className = 'inline-link';
       a.setAttribute('href', url);
-      a.textContent = label;
+      a.textContent = chosen || prompt('Welcher Text soll im Fließtext stehen?', '') || url.replace(/^https?:\/\/(www\.)?/, '');
       if (range && area.contains(range.commonAncestorContainer)) { range.deleteContents(); range.insertNode(a); } else area.appendChild(a);
     }
   }

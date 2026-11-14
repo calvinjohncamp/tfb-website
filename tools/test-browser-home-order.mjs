@@ -16,7 +16,6 @@ try{
  await page.addInitScript(() => localStorage.setItem('tfb_kiosk_demo_session_v1', 'm-demo'));
  await page.goto(origin+'/?tfbPresentation=1#home');await page.waitForFunction(()=>TFB.ui&&TFB.homeMedia);
  await page.evaluate(async()=>{TFB.ui.state.member=TFB.api.attachDirectoryMember({id:'home-media-admin',firstName:'Home',lastName:'Test',isAdmin:true,active:true,email:'home@example.invalid',teams:[]});TFB.api.secureDirectory=true;TFB.api.mode='test';location.hash='#home';await TFB.ui.renderView('home');});
- if(await page.evaluate(()=>TFB.ui.state.member?.adminHidden))await page.locator('[data-action="admin-toggle"]').click();
 
 
  const image = 'assets/images/board/kai-eichmann.jpg';
@@ -38,7 +37,8 @@ try{
  const row = id => form.locator('[data-order-id="' + id + '"]');
  const state = () => page.evaluate(() => TFB.api.site());
  const editHome = async () => {
-   await page.locator('[data-action=site-edit][data-page=home]').click();
+   if (await page.locator('.header-admin-edit').getAttribute('aria-pressed') === 'false') await page.locator('.header-admin-edit').click();
+   else if (!await form.count()) await page.locator('[data-action=site-edit][data-page=home]').click();
    await form.waitFor();
  };
  const answer = () => page.once('dialog', dialog => dialog.accept());
@@ -109,7 +109,7 @@ try{
  await page.getByRole('dialog',{name:'Symbol auswählen'}).getByRole('button',{name:'Sport',exact:true}).click();
  await upload('[data-home-photo-input]');
  await editor.locator('[name=photoDisplay]').selectOption('carousel');
- await editor.getByRole('button',{name:'Unterseite anlegen'}).click();
+ await editor.getByRole('button',{name:'Unterseite anlegen',exact:true}).click();
  const content = editor.locator('[data-panel=sub] [contenteditable=true]').first();
  if (!await content.count()) await editor.locator('[data-panel=sub] [data-secadd=text]').first().click();
  await content.fill('Ausführlicher Inhalt zum Test.');
@@ -141,8 +141,13 @@ try{
  assert.equal(await sub.locator('[name=detailAnimationStart]').isChecked(), false);
  assert.equal(await sub.getByText(/freiwillig/).count(), 0);
  await editor.locator('[data-edtab=home]').click();
- await editor.getByRole('button',{name:'Fotoseite anlegen'}).click();
+ await editor.getByRole('button',{name:'Foto-Unterseite anlegen'}).click();
  await editor.locator('[name=albumPhotoDisplay]').selectOption('gallery');
+ await editor.locator('[data-panel=album] .sec-add [data-secadd=text]').click();
+ const albumText = editor.locator('[data-rich-for=album_sec_0]');
+ await albumText.fill('Ein Rückblick in Bildern');
+ await albumText.evaluate(el=>getSelection().selectAllChildren(el));
+ await editor.locator('[data-panel=album] [data-rich=hervorheben]').click();
  await upload('[data-album-input]');
  await editor.locator('[type=submit]').click();
  await editor.waitFor({state:'detached'});
@@ -197,7 +202,7 @@ try{
  assert.deepEqual(moved.album,topic.album);
  assert.deepEqual(moved.more,topic.more);
  await page.evaluate(() => location.hash = '#aktuell');
- await page.locator('.topbar [data-action=admin-toggle]').click();
+ if (await page.locator('.header-admin-edit').getAttribute('aria-pressed') === 'false') await page.locator('.header-admin-edit').click();
  const article = page.locator('[data-edit-block="' + topic.id + '"]');
  await article.getByRole('button',{name:'Bearbeiten'}).click();
  await editor.locator('[data-edtab=sub]').click();
@@ -224,7 +229,8 @@ try{
  await dismissByBackdrop(page.locator('.cs-viewer'));
  await page.getByRole('link',{name:'Fotos der Veranstaltung'}).click();
  await page.locator('.album-page .gallery-grid').waitFor();
- await page.goto(origin+'/?tfbPresentation=1#home');
+ await page.locator('.album-page .tx-highlight').getByText('Ein Rückblick in Bildern').waitFor();
+ await page.goto(origin+'/?tfbPresentation=1&view=published#home');
  await page.locator('[data-photo-module="' + photo.id + '"]').waitFor();
  for (const mode of ['gallery', 'legacy-collage']) {
    await page.evaluate(async ({mode,image}) => {
