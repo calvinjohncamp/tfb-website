@@ -64,14 +64,13 @@
       ctx.setTransform(ratio,0,0,ratio,0,0);ctx.clearRect(0,0,w,h);
       for(const i of order){
         const img=cards[i].querySelector('img');if(cards[i].dataset.hmLoaded!=='true'||!img.naturalWidth)continue;
-        const pose=poses[i],cw=pose.width,ch=cw*5/4;
-        ctx.save();ctx.translate(w/2+pose.x,top+pose.y);ctx.rotate(pose.angle*Math.PI/180);ctx.scale(pose.scale,pose.scale);
+        const {x,y,angle,scale,width:cw,height:ch}=poses[i];
+        ctx.save();ctx.translate(w/2+x,top+y);ctx.rotate(angle*Math.PI/180);ctx.scale(scale,scale);
         ctx.shadowColor='#0006';ctx.shadowBlur=26*ratio;ctx.shadowOffsetY=12*ratio;
         rounded(ctx,-cw/2,-ch/2,cw,ch,5);ctx.fillStyle='#302d2a';ctx.fill();
         ctx.shadowColor='transparent';ctx.shadowBlur=0;ctx.shadowOffsetY=0;
         rounded(ctx,-cw/2,-ch/2,cw,ch,5);ctx.clip();
-        const fit=Math.min(cw/img.naturalWidth,ch/img.naturalHeight),iw=img.naturalWidth*fit,ih=img.naturalHeight*fit;
-        ctx.drawImage(img,-iw/2,-ih/2,iw,ih);ctx.restore();
+        ctx.drawImage(img,-cw/2,-ch/2,cw,ch);ctx.restore();
       }
     }
     return {
@@ -105,17 +104,22 @@
     const enlarged=node.classList.contains('hm-zoom-orbit'), hoverable=matchMedia('(hover: hover) and (pointer: fine)');
     let keyboard=false,allowMotion=Boolean(initial.allowMotion);
     const motionBlocked=()=>reduced.matches&&!allowMotion;
-    const loaded=cards.map(()=>false),painter=createOrbitPainter(node,cards);
-    const nextImagesReady=()=>loaded[Math.floor(phase)%n]&&loaded[(Math.floor(phase)+1)%n];
+    const ratios=cards.map(()=>0),painter=createOrbitPainter(node,cards);
+    const nextImagesReady=()=>ratios[Math.floor(phase)%n]&&ratios[(Math.floor(phase)+1)%n];
     const depthOrder = at => cards.map((_,i)=>({i,depth:Math.cos(2*Math.PI*(i-at-.00001)/n)})).sort((a,b)=>a.depth-b.depth||a.i-b.i).map(x=>x.i);
     const layout = () => {
       const w=node.clientWidth,h=node.clientHeight,percent=n===1?64:n===2?54:n===3?50:48;
-      const cardWidth=enlarged?Math.min(w*(w<h?.82:percent/100),h*(n===1?.84:.66)*4/5)+'px':node.closest('.media-news')?Math.min(w*percent/100,h*(n===1?.88:.72)*4/5)+'px':percent+'%';
+      const widthLimit = w * (enlarged && w < h ? .82 : percent / 100);
+      const heightLimit = h * (enlarged ? (n === 1 ? .84 : .66) : (n === 1 ? .88 : .72));
       const step=Math.floor(phase),progress=phase-step,before=depthOrder(step),after=depthOrder(step+1),order=progress<.5?before:after;
       const poses=cards.map((card,i)=>{
         const angle=2*Math.PI*(i-phase)/n,c=Math.cos(angle),sin=Math.sin(angle);
-        const pose={x:sin*w*.285,y:-(1-c)*h*.13,angle:-sin*10,scale:.58+.42*(c+1)/2,width:cardWidth.endsWith('%')?w*parseFloat(cardWidth)/100:parseFloat(cardWidth)};
-        card.style.width=cardWidth;
+        const ratio = ratios[i] || 1;
+        const width = Math.min(widthLimit, heightLimit * ratio);
+        const height = width / ratio;
+        const pose={x:sin*w*.285,y:-(1-c)*h*.13,angle:-sin*10,scale:.58+.42*(c+1)/2,width,height};
+        card.style.width=width+'px';
+        card.style.height=height+'px';
         card.style.transform=`translate(-50%,-50%) translate(${pose.x}px,${pose.y}px) rotate(${pose.angle}deg) scale(${pose.scale})`;
         card.style.zIndex=String(order.indexOf(i)+1);card.style.opacity='1';
         return pose;
@@ -152,10 +156,10 @@
     cards.forEach((card,i)=>{
       const img=card.querySelector('img');
       const reveal=async()=>{
-        if(loaded[i]||!img.naturalWidth)return;
+        if(ratios[i]||!img.naturalWidth||!img.naturalHeight)return;
         try{await img.decode();}catch{return;}
         if(!node.isConnected)return;
-        loaded[i]=true;card.dataset.hmLoaded='true';layout();
+        ratios[i]=img.naturalWidth/img.naturalHeight;card.dataset.hmLoaded='true';layout();
         // Keep the current picture until its successor can actually be drawn.
         if(node.dataset.hmRunning!=='true')sync();
       };

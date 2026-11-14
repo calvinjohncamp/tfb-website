@@ -316,8 +316,9 @@ try{
    await editor.locator('[data-home-photo-mode=' + mode + ']').click();
    await upload('[data-home-photo-input]');
    assert.equal(await home.locator('.gallery-thumb').count(),2);
+   assert.equal(await editor.getByRole('tab',{name:'Unterseite',exact:true}).count(),0);
    if (mode === 'orbit') {
-     await editor.getByRole('tab',{name:'Unterseite',exact:true}).click();
+     await editor.getByRole('button',{name:'Unterseite anlegen',exact:true}).click();
      await subpage.getByText(/dieselben Fotos/).waitFor();
      assert.equal(await subpage.locator('input[data-hero-input],input[data-more-input]').count(),0);
      await subpage.locator('[data-rich-for=sec_0]').fill('Text zur Diashow');
@@ -353,6 +354,22 @@ try{
      assert.equal(await page.evaluate(()=>location.hash),'#home');
    }
  }
+ await editHome();
+ await page.getByRole('button',{name:'Neues Thema'}).click();
+ await editor.locator('[name=title]').fill('Karussell direkt auf Home');
+ await editor.getByRole('button',{name:'Als Karussell anlegen'}).click();
+ await upload('[data-home-photo-input]');
+ await editor.locator('[type=submit]').click();
+ await editor.waitFor({state:'detached'});
+ const inlineOrbit = (await state()).pages.home.blocks[0];
+ assert.equal(inlineOrbit.detailEnabled, undefined);
+ await page.locator('.header-admin-edit').click();
+ const inlineArticle = page.locator(`[data-feature="${inlineOrbit.id}"]`);
+ await inlineArticle.locator('.hm-zoom-button').waitFor();
+ assert.equal(await inlineArticle.locator('a.hm-card, .feature-more').count(),0);
+ await inlineArticle.getByRole('button',{name:'Karussell vergrößern'}).click();
+ await page.getByRole('dialog',{name:'Karussell in großer Ansicht'}).waitFor();
+ await page.keyboard.press('Escape');
  const testCover = async ({ratio, heroCount=1, grid, width}) => {
    await page.setViewportSize({width,height:900});
    await page.evaluate(async ({ratio, heroCount, grid}) => {

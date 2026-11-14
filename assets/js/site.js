@@ -738,9 +738,13 @@
   }).observe(document.getElementById('sheet-root') || document.body, { childList: true });
 
   // ---------- Unterseite eines Home-Themas („Mehr erfahren“) ----------
-  const hasMore = b => Boolean(((homeOrbit(b) || b.mediaCollection) && TFB.homeMedia.photos(b).length) || b.more && ((b.more.text || '').trim() || (b.more.images || []).length || b.more.quote || b.more.links?.some(link => safeLink(link.url)) || (b.more.heroImages || []).length || b.more.sections?.some(section => section.text?.trim())));
+  const hasDetailContent = more => Boolean(more && ((more.text || '').trim() || (more.images || []).length || more.quote || more.links?.some(link => safeLink(link.url)) || (more.heroImages || []).length || more.sections?.some(section => section.text?.trim())));
+  // The previous Home editor automatically enabled the empty music article's subpage.
+  const autoCreatedMusicDetail = b => b.id === 'b-afc9e12d-9bfb-4de4-a5ea-1fce455bb1e5' && homeOrbit(b)
+    && b.navigation === 'none' && !hasDetailContent(b.more) && !b.detailLink?.label;
+  const hasMore = b => hasDetailContent(b.more) || Boolean((b.mediaCollection || (homeOrbit(b) && b.detailEnabled === true)) && TFB.homeMedia.photos(b).length);
   const archiveHref = b => '#club/archiv/beitrag/' + encodeURIComponent('aktuell-' + b.id);
-  const hasPublishedDetail = b => b.detailEnabled !== false && hasMore(b);
+  const hasPublishedDetail = b => b.detailEnabled !== false && !autoCreatedMusicDetail(b) && hasMore(b);
   const safeLink = (url) => /^(#|https?:\/\/)/i.test(url || '') ? url : '';
   function featureLinks(b, page = 'home') {
     const list = [];
@@ -965,6 +969,7 @@
       if (moved) return newsArticleDetail(moved);
     }
     if (!b) return `${ui().viewHead('Home', 'Diesen Beitrag gibt es nicht mehr.', false)}<p><a class="btn" href="#home">Zur Startseite</a></p>`;
+    if (homeOrbit(b) && !preview && !hasPublishedDetail(b)) return '<p>Dieser Beitrag erscheint direkt auf Home.</p><a class="btn" href="#home">Zur Startseite</a>';
     const admin = state.member && state.member.isAdmin;
     if (homeOrbit(b) || b.mediaCollection || (b.photoDisplay === 'slideshow' && !hasPublishedDetail(b))) return mediaDetail(b, 'home');
     return storyHtml(b, {
@@ -1031,7 +1036,8 @@
         const title = b.title || b.caption || CONTENT_TYPES.find(([type]) => type === b.type)[1];
         const text = b.showText === false ? '' : plain(b.text);
         const sharedPhotos = sharedHomePhotos(b) || b.mediaCollection;
-        const href = `#${key}/${sharedPhotos ? '' : 'beitrag/'}${encodeURIComponent(b.id)}`;
+        const href = key === 'home' && homeOrbit(b) && !hasPublishedDetail(b)
+          ? '#home' : `#${key}/${sharedPhotos ? '' : 'beitrag/'}${encodeURIComponent(b.id)}`;
         const more = b.more || {};
         const searchable = [title, b.kicker, b.subtitle, text, plain(more.text), more.quote, more.by,
           ...(more.sections || []).flatMap(section => [plain(section.text), section.by]),
@@ -2773,6 +2779,10 @@
     if (!homeFeature && draft.type === 'post' && !(draft.images || []).length && draft.image) { draft.images = [draft.image]; draft.image = null; }
     let edTab = homeFeature ? startTab : 'home';
     let linksOpen = Boolean(draft.link?.url || draft.link2?.url);
+    if (editing === 'home' && autoCreatedMusicDetail(draft)) {
+      delete draft.detailEnabled;
+      delete draft.showMore;
+    }
     let detailOpen = startTab === 'sub' || draft.detailEnabled !== undefined || hasMore(draft);
     if (draft.type === 'feature' && draft.detailEnabled === undefined && detailOpen) {
       draft.detailEnabled = true;
@@ -2827,13 +2837,13 @@
           ${current && !legacyMedia ? '<button type="button" class="btn small" data-home-photo-mode="single">Einzelfoto anzeigen</button>' : ''}
         </div>
         ${current ? `<p class="ed-hint">${current[0] === 'orbit'
-          ? (draft.detailEnabled === false ? 'Das Karussell läuft direkt auf Home.' : 'Beim Öffnen des Karussells zeigt die Unterseite dieselben Fotos als Diashow.')
+          ? (hasPublishedDetail(draft) ? 'Die Unterseite zeigt dieselben Fotos als Diashow.' : 'Das Karussell läuft direkt auf Home. Eine Unterseite kannst du separat anlegen.')
           : 'Die Diashow lässt sich direkt auf Home abspielen.'}</p>
           ${photoStartField('animationStart', draft.animationStart || 'auto', current[1] + ' automatisch starten')}
           ${legacyMedia ? legacyMedia.entries.map((entry, i) => photoRatioField('sharedPhotoFormat' + i, entry.format, legacyMedia.entries.length > 1 ? i + 1 : 0)).join('') : photoRatioField('photoFormat', draft.photoFormat)}`
           : `<p class="ed-hint">${tooManyPhotos
             ? `Wähle höchstens ${carouselLimit()} Fotos, um ein Karussell oder eine Diashow anzulegen.`
-            : `Bis zu ${carouselLimit()} Fotos. Ein Karussell öffnet eine Diashow auf der Unterseite. Eine Diashow spielt direkt auf Home.`}</p>`}
+            : `Bis zu ${carouselLimit()} Fotos. Karussell und Diashow laufen direkt auf Home.`}</p>`}
       </fieldset>`;
     };
     const photoRatioField = (name, value, group = 0) => `<label class="field"><span>Format der Diashow${group ? ` · Fotogruppe ${group}` : ''}</span><select name="${name}">
@@ -3249,11 +3259,6 @@
           const selected = mode.dataset.homePhotoMode;
           if (!mode.disabled && selected !== draft.photoDisplay) {
             draft.photoDisplay = selected;
-            if (selected === 'orbit') {
-              detailOpen = true;
-              draft.detailEnabled = true;
-              draft.showMore = true;
-            }
             render();
             if (live) schedulePreview();
             document.querySelector(`[data-home-photo-mode="${selected}"]`)?.focus({preventScroll:true});
@@ -3271,6 +3276,7 @@
               detailOpen = true;
               draft.detailEnabled = true;
               draft.showMore = true;
+              if (autoCreatedMusicDetail(draft)) draft.navigation = 'detail';
             }
             if (section === 'album' && !albumOpen) {
               albumOpen = true;

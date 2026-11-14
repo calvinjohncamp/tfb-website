@@ -6,7 +6,15 @@ for(const engine of [chromium,webkit]){
  try{
   const page=await browser.newPage({viewport:{width:1024,height:1366},hasTouch:true,isMobile:true});
   const waiting=new Map();
-  await page.route('https://loading.invalid/image-*',route=>new Promise(resolve=>waiting.set(route.request().url(),async()=>{await route.fulfill({contentType:'image/svg+xml',body:'<svg xmlns="http://www.w3.org/2000/svg" width="108" height="135"><rect width="108" height="135" fill="#f05020"/></svg>'});resolve();})));
+  const formats = [[108,108],[216,108],[108,135]];
+  await page.route('https://loading.invalid/image-*',route=>new Promise(resolve=>{
+   const url=route.request().url();
+   const [w,h]=formats[Number(url.split('-').at(-1)) % formats.length];
+   waiting.set(url,async()=>{
+    await route.fulfill({contentType:'image/svg+xml',body:`<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}"><rect width="${w}" height="${h}" fill="#f05020"/></svg>`});
+    resolve();
+   });
+  }));
   await page.setContent('<meta name="viewport" content="width=device-width,initial-scale=1"><div id="app"></div><script>window.TFB={}</script>');
   await page.addStyleTag({content:readFileSync('assets/css/home-media.css','utf8')+'#app{width:480px}.hm-orbit{height:600px}'});
   await page.addScriptTag({content:readFileSync('assets/js/home-media.js','utf8')});
@@ -35,6 +43,18 @@ for(const engine of [chromium,webkit]){
   await page.waitForTimeout(500);assert.equal(await orbit.getAttribute('data-hm-phase'),'1');
   await waiting.get('https://loading.invalid/image-2')();
   await page.waitForFunction(()=>document.querySelector('.hm-orbit').dataset.hmRunning==='true');
+  const checkRatios = async container => {
+   for (let i=0; i<formats.length; i++) {
+    const card=container.locator('.hm-card').nth(i);
+    await card.waitFor();
+    const ratio=await card.evaluate(el=>el.clientWidth/el.clientHeight);
+    assert.ok(Math.abs(ratio-formats[i][0]/formats[i][1])<.02, `Photo ${i + 1} keeps its original ratio`);
+   }
+  };
+  await checkRatios(orbit);
+  await orbit.getByRole('button',{name:'Karussell vergrößern'}).click();
+  await checkRatios(page.getByRole('dialog',{name:'Karussell in großer Ansicht'}));
+  await page.keyboard.press('Escape');
   assert.equal(waiting.has('https://loading.invalid/image-3'),false,'Second carousel stays unloaded outside the viewport');
   await Promise.all([page.waitForRequest('https://loading.invalid/image-3'),page.locator('.hm-orbit').last().scrollIntoViewIfNeeded()]);
   console.log(`PASS ${engine.name()}: eager/high-priority first image, no empty frames, first image visible independently, autoplay waits for decoded successor.`);
