@@ -1,5 +1,23 @@
 # TFB – Übergabe für die nächste Sitzung
 
+## Aktuell mit Live-Vorschau · live am 14.11.2026
+
+GitHub Pages hat Commit `c195c51` veröffentlicht (Lauf 43576795459).
+Der Editor für News und Fotoartikel verwendet eine Seitenleiste mit
+Umschaltung zwischen News-Übersicht und Artikelansicht. Neue Artikel
+werden veröffentlicht, Änderungen werden im Artikel gespeichert.
+Beim Schließen eines geänderten Entwurfs erscheint eine Rückfrage.
+Links lassen sich als interne App-Ziele oder externe Websites anlegen.
+Ungültige Adressen werden am Feld gemeldet. Eingefügte Textlinks mit
+gültigen Zielen bleiben im News-Editor erhalten. Endgültiges Löschen
+archivierter Aktuell-Artikel erfordert zwei Bestätigungen im Clubarchiv.
+
+Veröffentlichte Dateien bytegenau verglichen. Der öffentliche
+Testbeitrag wurde bei 1440 und 390 px mit seinem Kopfbild im Originalformat
+und ohne Initiale geprüft. Interne und externe Links wurden in beiden
+Ansichten nach dem Speichern und Neuladen mit isolierten Testdaten
+geprüft. Der öffentliche Testbeitrag wurde nicht redaktionell geändert.
+
 ## Aktuell und Karussellgrenze · live am 14.11.2026
 
 GitHub Pages hat Commit `c844551` veröffentlicht (Lauf 43575445020).
