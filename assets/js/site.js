@@ -318,10 +318,10 @@
     return placeholder(seed);
   }
   const linkSymbols = [
-    ['kiosk','Kiosk'], ['news','Aktuell'], ['sport','Sport'], ['club','Club'], ['padel','Padel'], ['tally','Strichliste'], ['camera','Fotos'], ['user','Person'],
+    ['home','Home'], ['kiosk','Kiosk'], ['news','Aktuell'], ['sport','Sport'], ['club','Club'], ['padel','Padel'], ['tally','Strichliste'], ['camera','Fotos'], ['user','Person'],
     ['receipt','Dokument'], ['chevron','Pfeil'],
   ];
-  const pageSymbols = { home:'club', kiosk:'kiosk', strichliste:'tally', abrechnungen:'receipt', chat:'user', aktuell:'news',
+  const pageSymbols = { home:'home', kiosk:'kiosk', strichliste:'tally', abrechnungen:'receipt', chat:'user', aktuell:'news',
     sport:'sport', club:'club', verein:'club', treffen:'news', team:'sport' };
   const hostOf = url => { try { return new URL(url).hostname.replace(/^www\./, ''); } catch (_) { return ''; } };
 
@@ -336,6 +336,17 @@
   }
 
   const linkAppearance = link => link.appearance || (link.image ? 'photo' : link.icon ? 'symbol' : 'text');
+  function linkSymbolKey(link) {
+    if (link.icon && link.icon !== 'auto') return link.icon;
+    return pageSymbols[link.url?.match(/^#([^/?]+)/)?.[1]] || 'chevron';
+  }
+
+  function linkSymbolMark(key) {
+    const home = key === 'home';
+    const symbol = home ? '<span class="tfb-logo-noball"></span>' : ui().icon[key] || ui().icon.chevron;
+    return `<span class="editorial-link-mark is-symbol${home ? ' is-home-symbol' : ''}" aria-hidden="true">${symbol}</span>`;
+  }
+
   function linkDecoration(link) {
     const appearance = linkAppearance(link);
     if (appearance === 'photo' && shownImage(link.image)) {
@@ -345,9 +356,7 @@
         ? `<span class="photo-frame active" style="${TFB.photoFrame.style({...frame, format:'square'})}">${photo}</span>` : photo}</span>`;
     }
     if (appearance === 'symbol') {
-      const key = pageSymbols[link.url?.slice(1).split('/')[0]];
-      const symbol = ui().icon[link.icon === 'auto' || !link.icon ? key : link.icon] || ui().icon.chevron;
-      return `<span class="editorial-link-mark is-symbol" aria-hidden="true">${symbol}</span>`;
+      return linkSymbolMark(linkSymbolKey(link));
     }
     return '';
   }
@@ -2427,10 +2436,10 @@
         ${[['text','Nur Text'],['symbol','Mit Symbol'],['photo','Mit eigenem Foto']].map(([value,label]) =>
           `<option value="${value}"${mode === value ? ' selected' : ''}>${label}</option>`).join('')}
       </select></label>
-      ${mode === 'symbol' ? `<label class="field"><span>Symbol aus der Bibliothek</span><select name="${key}Symbol" data-link-refresh>
-        ${[['auto','Symbol der Zielseite'], ...linkSymbols.filter(([id]) => ui().icon[id])].map(([id,label]) =>
-          `<option value="${id}"${(link.icon || 'auto') === id ? ' selected' : ''}>${label}</option>`).join('')}
-      </select></label>` : ''}
+      ${mode === 'symbol' ? `<input type="hidden" name="${key}Symbol" value="${esc(link.icon || 'auto')}" data-link-refresh>
+        <button type="button" class="btn small editorial-symbol-trigger" data-link-symbols="${key}" data-symbol-target="${esc(link.url || '')}" aria-haspopup="dialog">
+          ${linkSymbolMark(linkSymbolKey(link))}<span>Symbol auswählen</span>
+        </button>` : ''}
       ${mode === 'photo' ? `<div class="editorial-link-photo-tools">
         <label class="btn small">${link.image ? 'Foto ersetzen' : 'Foto auswählen'}<input type="file" accept="image/*" data-link-photo="${key}" hidden></label>
         ${link.image && shownImage(link.image) ? `<button type="button" class="btn small" data-link-crop="${key}">Ausschnitt anpassen</button>` : ''}
@@ -2438,6 +2447,45 @@
       <div class="editorial-link-example"><span class="editorial-link">${linkDecoration(previewLink)}<span class="editorial-link-label">${esc(linkLabel(previewLink))}</span></span></div>
     </div>`;
   }
+
+  function openLinkSymbols(trigger) {
+    const form = trigger.form;
+    const key = trigger.dataset.linkSymbols;
+    const input = form.elements[key + 'Symbol'];
+    const url = form.elements[key + 'App']?.value || trigger.dataset.symbolTarget;
+    const choices = [['auto','Symbol der Zielseite'], ...linkSymbols];
+    const dialog = document.createElement('dialog');
+    dialog.className = 'editorial-symbol-dialog';
+    dialog.setAttribute('aria-labelledby', 'editorial-symbol-heading');
+    dialog.innerHTML = `<header><h2 id="editorial-symbol-heading">Symbol auswählen</h2>
+      <button type="button" class="view-close" data-symbol-close aria-label="Schließen">${ui().icon.close}</button></header>
+      <div class="editorial-symbol-grid">${choices.map(([value,label]) => `<button type="button" data-symbol-value="${value}"
+        aria-pressed="${input.value === value}"${input.value === value ? ' autofocus' : ''}>
+        ${linkSymbolMark(linkSymbolKey({ icon:value, url }))}<span>${label}</span>
+      </button>`).join('')}</div>`;
+    dialog.addEventListener('keydown', event => {
+      if (event.key === 'Escape') event.stopPropagation();
+    });
+    dialog.addEventListener('close', () => {
+      dialog.remove();
+      document.querySelector(`[data-link-symbols="${key}"]`)?.focus({preventScroll:true});
+    }, {once:true});
+    dialog.addEventListener('click', event => {
+      const choice = event.target.closest('[data-symbol-value]');
+      if (choice) {
+        input.value = choice.dataset.symbolValue;
+        dialog.close();
+        input.dispatchEvent(new Event('change', { bubbles:true }));
+      } else if (event.target === dialog || event.target.closest('[data-symbol-close]')) dialog.close();
+    });
+    document.body.append(dialog);
+    dialog.showModal();
+  }
+
+  document.addEventListener('click', event => {
+    const trigger = event.target.closest('[data-link-symbols]');
+    if (trigger) openLinkSymbols(trigger);
+  });
 
   function editorialLinkFields(link = {}, key, label = 'Linkziel') {
     return `<div class="news-link-row">

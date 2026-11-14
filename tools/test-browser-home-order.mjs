@@ -105,7 +105,8 @@ try{
  await editor.locator('[name=link2App]').selectOption('#sport');
  await editor.locator('[name=link2Label]').fill('Zum Sport');
  await editor.locator('[name=link2Appearance]').selectOption('symbol');
- await editor.locator('[name=link2Symbol]').selectOption('sport');
+ await editor.locator('[data-link-symbols=link2]').click();
+ await page.getByRole('dialog',{name:'Symbol auswählen'}).getByRole('button',{name:'Sport',exact:true}).click();
  await upload('[data-home-photo-input]');
  await editor.locator('[name=photoDisplay]').selectOption('carousel');
  await editor.getByRole('button',{name:'Unterseite anlegen'}).click();
