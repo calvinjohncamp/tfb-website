@@ -111,27 +111,30 @@
   // Fließtext mit Auszeichnungen. Im Editor gestaltet man direkt (WYSIWYG); gespeichert wird als
   // schlichter Text mit Zeichen – so bleibt alles klein, sicher und übertragbar:
   //   [Text](https://… | #seite)  Link       **Text** fett     *Text* kursiv    __Text__ unterstrichen
-  //   {hervorheben}…{/hervorheben} Unterstreichung   {rot}…{/rot} {grau}…{/grau} {marker}…{/marker} Farbe   {sehrklein} {klein} {gross} {sehrgross} … {/…} Größe
+  //   {hervorheben}…{/hervorheben} Signatur-Hervorhebung   {rot}…{/rot} {grau}…{/grau} {marker}…{/marker} Farbe   {sehrklein} {klein} {gross} {sehrgross} … {/…} Größe
   //   ## Text (Zeilenanfang) Zwischenüberschrift
   const SPANS = { hervorheben: 'tx-highlight', rot: 'tx-red', grau: 'tx-gray', marker: 'tx-mark', sehrklein: 'tx-xs', klein: 'tx-s', gross: 'tx-l', sehrgross: 'tx-xl' };
   // Gruppen schließen sich aus: eine neue Farbe ersetzt die alte, eine neue Größe die alte
   const SPAN_GROUPS = { color: ['tx-red', 'tx-highlight', 'tx-mark', 'tx-gray'], size: ['tx-xs', 'tx-s', 'tx-l', 'tx-xl'] };
-  function inline(raw) {
-    const links = [];
-    let h = esc(raw).replace(/\[([^\]]+)\]\(((?:https?:\/\/|#)[^\s)]+)\)/g, (_, label, url) => {
-      links.push([label, url]);
-      return `\u0000${links.length - 1}\u0000`;
-    });
-    h = h.replace(/\*\*([\s\S]+?)\*\*/g, '<strong>$1</strong>')
+  function inlineFormatting(text) {
+    let h = text.replace(/\*\*([\s\S]+?)\*\*/g, '<strong>$1</strong>')
       .replace(/__([\s\S]+?)__/g, '<u>$1</u>')
       .replace(/(^|[^*])\*([^*\s][\s\S]*?)\*(?!\*)/g, '$1<em>$2</em>');
     for (let i = 0; i < 3; i++) {   // verschachtelte Farben/Größen
       h = h.replace(/\{(hervorheben|rot|grau|marker|sehrklein|klein|gross|sehrgross)\}([\s\S]*?)\{\/\1\}/g, (_, k, t) => `<span class="${SPANS[k]}">${t}</span>`);
     }
-    h = h.replace(/\u0000(\d+)\u0000/g, (_, i) => {
+    return h;
+  }
+  function inline(raw) {
+    const links = [];
+    const text = esc(raw).replace(/\[([^\]]+)\]\(((?:https?:\/\/|#)[^\s)]+)\)/g, (_, label, url) => {
+      links.push([label, url]);
+      return `\u0000${links.length - 1}\u0000`;
+    });
+    const h = inlineFormatting(text).replace(/\u0000(\d+)\u0000/g, (_, i) => {
       const [label, url] = links[Number(i)];
       const ext = /^https?:/.test(url);
-      return `<a class="inline-link" href="${url}"${ext ? ' target="_blank" rel="noopener"' : ''}>${label}${ext ? '<span class="inline-ext" aria-hidden="true"><svg class="link-arrow" viewBox="0 0 806 1000" aria-hidden="true" focusable="false"><path transform="translate(0 755) scale(1 -1)" d="M528 -14 448 66 546 164 587 189 581 206 533 198H50V312H533L581 304L587 321L546 346L448 444L528 524L756 296V214Z"/></svg></span>' : ''}</a>`;
+      return `<a class="inline-link" href="${url}"${ext ? ' target="_blank" rel="noopener"' : ''}>${inlineFormatting(label)}${ext ? '<span class="inline-ext" aria-hidden="true"><svg class="link-arrow" viewBox="0 0 806 1000" aria-hidden="true" focusable="false"><path transform="translate(0 755) scale(1 -1)" d="M528 -14 448 66 546 164 587 189 581 206 533 198H50V312H533L581 304L587 321L546 346L448 444L528 524L756 296V214Z"/></svg></span>' : ''}</a>`;
     });
     return h.replace(/\n/g, '<br>');
   }
@@ -148,7 +151,7 @@
       if (tag === 'U') return wrapIf(kids(n), '__', '__');
       if (tag === 'A') {
         const href = (n.getAttribute('href') || '').replaceAll('(', '%28').replaceAll(')', '%29');
-        const t = n.textContent.replace(/↗/g, '').trim();
+        const t = kids(n).trim();
         return /^(https?:\/\/|#)/.test(href) && t ? `[${t}](${href})` : t;
       }
       if (tag === 'SPAN') {
@@ -231,7 +234,7 @@
           <button type="button" data-secmove="1" data-sec-i="${i}" ${i === list.length - 1 ? 'disabled' : ''} aria-label="Nach unten">${icon.down}</button>
           <button type="button" data-secdel="${i}" aria-label="Abschnitt löschen" title="Abschnitt löschen">×</button>
         </div>
-        ${x.type === 'text' ? field('', `${prefix}${i}`, x.text, { area: true, rich: true, simple: true, rows: 6, placeholder: 'Text schreiben – Wort markieren, dann Fett, Kursiv oder Rot' })
+        ${x.type === 'text' ? field('', `${prefix}${i}`, x.text, { area: true, rich: true, simple: true, rows: 6, placeholder: 'Text schreiben und zum Formatieren markieren' })
           : x.type === 'h' ? `<textarea class="sec-h-input" name="${prefix}${i}" rows="1" placeholder="z. B. 365 Tage geöffnet">${esc(x.text || '')}</textarea>`
           : `<textarea class="sec-q-input" name="${prefix}${i}" rows="2" placeholder="z. B. Eat. Sleep. Padel. Repeat.">${esc(x.text || '')}</textarea>
              <details class="sec-q-source"${(x.by || '').trim() ? ' open' : ''}>
@@ -2427,7 +2430,7 @@
         <span class="rich-group" role="group" aria-label="Schrift">
           <button type="button" data-rich="bold" aria-label="Fett umschalten" title="Fett (unabhängig von der Hervorhebung)"><b>F</b></button>
           <button type="button" data-rich="italic" title="Kursiv"><i>K</i></button>
-          <button type="button" data-rich="hervorheben" aria-label="${emphasisLabel}" title="${emphasisLabel}"><span class="highlight-sample">${yellowBrand ? 'M' : 'R'}</span> ${yellowBrand ? 'Textmarker' : 'Rot'}</button>
+          <button type="button" data-rich="hervorheben" aria-label="${emphasisLabel}" title="${emphasisLabel}"><span class="tx-highlight">${yellowBrand ? 'M' : 'R'}</span> ${yellowBrand ? 'Textmarker' : 'Rot'}</button>
         </span>
         <span class="rich-group" role="group" aria-label="Verlinkung">
           <button type="button" data-rich="link" title="Markierten Text verlinken"><svg class="link-arrow" viewBox="0 0 806 1000" aria-hidden="true" focusable="false"><path transform="translate(0 755) scale(1 -1)" d="M528 -14 448 66 546 164 587 189 581 206 533 198H50V312H533L581 304L587 321L546 346L448 444L528 524L756 296V214Z"/></svg> Text verlinken</button>
@@ -2435,7 +2438,7 @@
         <span class="rich-group" role="group" aria-label="Schrift">
           <button type="button" data-rich="bold" aria-label="Fett umschalten" title="Fett (unabhängig von der Hervorhebung)"><b>F</b></button>
           <button type="button" data-rich="italic" title="Kursiv"><i>K</i></button>
-          <button type="button" data-rich="hervorheben" aria-label="${emphasisLabel}" title="${emphasisLabel}"><span class="highlight-sample">${yellowBrand ? 'M' : 'R'}</span> ${yellowBrand ? 'Textmarker' : 'Rot'}</button>
+          <button type="button" data-rich="hervorheben" aria-label="${emphasisLabel}" title="${emphasisLabel}"><span class="tx-highlight">${yellowBrand ? 'M' : 'R'}</span> ${yellowBrand ? 'Textmarker' : 'Rot'}</button>
           <button type="button" data-rich="underline" title="Unterstrichen"><u>U</u></button>
         </span>
         <span class="rich-group" role="group" aria-label="Farbe">
@@ -2897,7 +2900,7 @@
                 : `<label class="btn">Bild oder PDF wählen<input type="file" accept="image/*,application/pdf" data-att-input hidden></label>`}
             </div>`;
         case 'post': return field('Überschrift', 'title', draft.title) + (newsroom ? articleDateField() : field('Veröffentlichungsdatum', 'date', draft.date, { type: 'date' }))
-          + field('Text', 'text', draft.text, { area: true, rich: true, simple: true, rows: 9, placeholder: 'Text schreiben – Wort markieren, dann Fett, Kursiv oder Rot' }) + postPhotosField(draft)
+          + field('Text', 'text', draft.text, { area: true, rich: true, simple: true, rows: 9, placeholder: 'Text schreiben und zum Formatieren markieren' }) + postPhotosField(draft)
           + (newsroom ? articleLinks() : '')
           + (ui().state.member?.isAdmin ? (newsroom ? `<details class="news-photo-options"><summary>Weitere Fotoeinstellungen</summary>${cover4kField(draft)}</details>` : cover4kField(draft)) : '');
         case 'image': return imageField(draft.image, draft.id) + field('Bildunterschrift', 'caption', draft.caption)
@@ -4550,7 +4553,7 @@
       document.execCommand(cmd);
     }
     else if (SPANS[cmd]) wrapSelection(area, SPANS[cmd]);
-    else if (cmd === 'nocolor') unwrapGroup(area, [...SPAN_GROUPS.color, 'tx-mark']);
+    else if (cmd === 'nocolor') unwrapGroup(area, SPAN_GROUPS.color);
     else if (cmd === 'nosize') unwrapGroup(area, SPAN_GROUPS.size);
     else if (cmd === 'h') {
       const block = window.getSelection().anchorNode && window.getSelection().anchorNode.parentElement.closest('h3, p, div');

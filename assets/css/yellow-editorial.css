@@ -1,8 +1,15 @@
 /* Gelbe Farbwelt: bestehende Magazin-Typografie, Akzente als Freihand-Markierung.
    Chat und Verabreden verwenden weiterhin ihre bisherigen Regeln. */
 span.signature-highlight { font: inherit; color: inherit; letter-spacing: inherit; }
-.tx-highlight { color: var(--tfb-signature-red); text-decoration: none; }
-:root.tfb-logo-midnight-amber :is(.site-page, .story, .post, .event, .rich-area) :is(.tx-red, .tx-highlight, .tx-mark, u),
+/* Dieselbe gespeicherte Hervorhebung gilt im Editor und in jeder Ansicht. */
+:is(.tx-red, .tx-highlight, .tx-mark),
+:is(.story-h.is-signature, .story-quote.is-signature p) .signature-highlight {
+  color: var(--tfb-signature-red); background: none; text-decoration: none;
+  padding: 0; margin: 0;
+}
+:root.tfb-logo-midnight-amber :is(.tx-red, .tx-highlight, .tx-mark),
+:root.tfb-logo-midnight-amber :is(.site-page, .story, .post, .event, .rich-area, .hm-collection) u,
+:root.tfb-logo-midnight-amber :is(.story-h.is-signature, .story-quote.is-signature p) .signature-highlight,
 :root.tfb-logo-midnight-amber :is(.story-lead, .story-h.is-signature, .story-quote.is-signature p),
 :root.tfb-logo-midnight-amber .story-head .feature-sub,
 :root.tfb-logo-midnight-amber .story .more-link:not(.back),
@@ -12,12 +19,12 @@ span.signature-highlight { font: inherit; color: inherit; letter-spacing: inheri
   text-decoration: none;
 }
 /* Ältere Inhalte speichern Fett und Signaturfarbe in beiden Verschachtelungen. */
-:root.tfb-logo-midnight-amber :is(.site-page, .story, .post, .event, .rich-area) .tx-red :is(strong, b),
-:root.tfb-logo-midnight-amber :is(.site-page, .story, .post, .event, .rich-area) :is(strong, b):has(.tx-red) {
+:root.tfb-logo-midnight-amber .tx-red :is(strong, b),
+:root.tfb-logo-midnight-amber :is(strong, b):has(.tx-red) {
   font-weight: inherit;
 }
-:root.tfb-logo-midnight-amber :is(.site-page, .story, .post, .event) .inline-link:hover,
-:root.tfb-logo-midnight-amber :is(.site-page, .story, .post, .event) .inline-ext {
+:root.tfb-logo-midnight-amber :is(.site-page, .story, .post, .event, .hm-collection, .rich-area) .inline-link:hover,
+:root.tfb-logo-midnight-amber :is(.site-page, .story, .post, .event, .hm-collection, .rich-area) .inline-ext {
   color: inherit;
 }
 :root.tfb-logo-midnight-amber .story-quote.is-signature { --quote-mark: var(--ink); }
@@ -45,9 +52,6 @@ span.signature-highlight { font: inherit; color: inherit; letter-spacing: inheri
   background-image: url("../brand/tfb-highlight-freihand.svg");
   background-size: 100% 1.1em; background-position: left center; background-repeat: no-repeat;
 }
-.rich-tools [data-rich="hervorheben"] .highlight-sample {
-  text-decoration: none;
-}
 /* Auch Datumsmarken und Medien-Unterseiten auf Home bleiben ohne gelbe Schrift. */
 :root.tfb-logo-midnight-amber body .view[data-view="home"] .date-badge {
   background: var(--tfb-signature-yellow); color: var(--tfb-midnight-blue);
@@ -64,7 +68,8 @@ span.signature-highlight { font: inherit; color: inherit; letter-spacing: inheri
 
 /* Native Inline-Hintergründe folgen jeder Textzeile, auch beim iPad-Umbruch.
    Keine absolut positionierten Flächen oder nachträglich gemessenen Koordinaten. */
-:root.tfb-logo-midnight-amber :is(.site-page, .story, .post, .event, .rich-area) :is(.tx-red, .tx-highlight, .tx-mark, u),
+:root.tfb-logo-midnight-amber :is(.tx-red, .tx-highlight, .tx-mark),
+:root.tfb-logo-midnight-amber :is(.site-page, .story, .post, .event, .rich-area, .hm-collection) u,
 :root.tfb-logo-midnight-amber .story-head .feature-sub .signature-highlight,
 :root.tfb-logo-midnight-amber :is(.story-h.is-signature, .story-quote.is-signature p) .signature-highlight,
 :root.tfb-logo-midnight-amber .site-page .post-date .signature-highlight,
@@ -72,8 +77,7 @@ span.signature-highlight { font: inherit; color: inherit; letter-spacing: inheri
 :root.tfb-logo-midnight-amber .story-lead,
 :root.tfb-logo-midnight-amber .story .more-link:not(.back),
 :root.tfb-logo-midnight-amber .site-page .link-card-body em,
-:root.tfb-logo-midnight-amber .site-page[data-page="verein"] .more-link,
-:root.tfb-logo-midnight-amber .rich-tools [data-rich="hervorheben"] .highlight-sample {
+:root.tfb-logo-midnight-amber .site-page[data-page="verein"] .more-link {
   text-decoration: none;
   background-image: url("../brand/tfb-highlight-freihand.svg");
   background-size: 100% 100%; background-repeat: no-repeat;
@@ -91,7 +95,7 @@ span.signature-highlight { font: inherit; color: inherit; letter-spacing: inheri
 :root.tfb-logo-midnight-amber .story-link .link-chip { border-color: var(--tfb-signature-yellow); }
 
 /* Verschachtelte alte/neue Auszeichnungen erzeugen keinen doppelten Farbauftrag. */
-:root.tfb-logo-midnight-amber :is(.site-page, .story, .post, .event, .rich-area) :is(.tx-red, .tx-highlight, .tx-mark, u) :is(.tx-red, .tx-highlight, .tx-mark, u) {
+:root.tfb-logo-midnight-amber :is(.tx-red, .tx-highlight, .tx-mark, u) :is(.tx-red, .tx-highlight, .tx-mark, u) {
   background-image: none; padding-inline: 0; margin-inline: 0;
 }
 
@@ -119,12 +123,6 @@ body .site-page[data-page="verein"] .story-teaser .more-link > span { display: n
 :root:not(.tfb-logo-midnight-amber) body .site-page[data-page="verein"] .story-teaser .more-link {
   border-color: var(--tfb-signature-red);
 }
-/* Hervorheben bedeutet in Rot ausschließlich Schriftfarbe; Fett bleibt ein eigener Befehl. */
-:root:not(.tfb-logo-midnight-amber) :is(.site-page, .story, .post, .event, .rich-area) :is(.tx-highlight, .tx-mark) {
-  color: var(--tfb-signature-red); background: none; text-decoration: none;
-  padding: 0; margin: 0;
-}
-
 /* Gelbe Menülinie: Abstand zur Textzeile statt zur variablen Linkbox.
    8.6 px entsprechen rund 80 % des bisherigen iPad-Hochformat-Abstands. */
 :root.tfb-logo-midnight-amber body .app .topbar .topnav .tab.active::after {

@@ -30,7 +30,7 @@ try{
  }
  await page.setViewportSize({width:1440,height:1050});
  const image='assets/images/board/kai-eichmann.jpg';
- await page.evaluate(async image=>{const site=await TFB.api.site();site.pages.home.blocks=[{id:'home-source',type:'feature',title:'Unsere Signature-Umkleide',kicker:'Konzept',subtitle:'Ausblick',text:'Originaltext bleibt.',mediaButtonLabel:'Zeig her!',mediaCollection:{entries:[{id:'entry',title:'Nach dem Match',kicker:'Signature',subtitle:'Wohlfühlen',text:'Originaler Detailtext',date:'2026-11-07',format:'4:5',images:Array(5).fill(image),instagramUrl:'https://instagram.com/p/example'}]}}];site.pages.aktuell.blocks=[{id:'dates-head',type:'heading',title:'Save the Date'},{id:'future',type:'event',date:'2027-05-15',title:'Späterer Termin'},{id:'news-head',type:'heading',title:'News'},{id:'old-news',type:'post',date:'2026-07-04',title:'Ältere News',text:'Bleibt erhalten'}];await TFB.api.saveSite(site);await TFB.refreshSite(true);location.hash='#aktuell';await TFB.ui.renderView('aktuell');},image);
+ await page.evaluate(async image=>{const site=await TFB.api.site();site.pages.home.blocks=[{id:'home-source',type:'feature',title:'Unsere Signature-Umkleide',kicker:'Konzept',subtitle:'Ausblick',text:'Originaltext bleibt.',mediaButtonLabel:'Zeig her!',mediaCollection:{entries:[{id:'entry',title:'Nach dem Match',kicker:'Signature',subtitle:'Wohlfühlen',text:'{hervorheben}Originaler Detailtext{/hervorheben} {rot}Ältere rote Markierung{/rot} {marker}Älterer Marker{/marker}',date:'2026-11-07',format:'4:5',images:Array(5).fill(image),instagramUrl:'https://instagram.com/p/example'}]}}];site.pages.aktuell.blocks=[{id:'dates-head',type:'heading',title:'Save the Date'},{id:'future',type:'event',date:'2027-05-15',title:'Späterer Termin'},{id:'news-head',type:'heading',title:'News'},{id:'old-news',type:'post',date:'2026-07-04',title:'Ältere News',text:'Bleibt erhalten'}];await TFB.api.saveSite(site);await TFB.refreshSite(true);location.hash='#aktuell';await TFB.ui.renderView('aktuell');},image);
  const tools=page.locator('.newsroom-tools');
  const headerPencil=page.locator('.topbar [data-action=admin-toggle]');
  await page.waitForFunction(()=>location.hash==='#aktuell');
@@ -106,10 +106,14 @@ try{
  await text.evaluate(el=>{const walker=document.createTreeWalker(el,NodeFilter.SHOW_TEXT);let node;while((node=walker.nextNode())){const at=node.textContent.indexOf('extern');if(at>=0){getSelection().setBaseAndExtent(node,at,node,at+6);return;}}throw Error(el.innerHTML);});
  page.once('dialog',dialog=>dialog.accept('https://example.com/bericht'));
  await form.locator('[data-panel=sub] [data-rich=link]').click();
+ await text.getByRole('link', {name:'extern',exact:true}).evaluate(el=>getSelection().selectAllChildren(el));
+ await form.locator('[data-panel=sub] [data-rich=hervorheben]').click();
  await form.locator('[data-secadd=h]').last().click();
  await form.locator('[name=sec_1]').fill('Zwischenüberschrift im Artikel');
  await form.locator('[data-secadd=quote]').last().click();
  await form.locator('[name=sec_2]').fill('Ein Zitat im Artikel');
+ await form.locator('[name=sec_1_color]').selectOption('signature');
+ await form.locator('[name=sec_2_color]').selectOption('signature');
 
  assert.equal(await draftStory.locator('.lead-letters').count(),0);
  assert.equal(await form.locator('[type=submit]').innerText(),'Veröffentlichen');
@@ -123,6 +127,34 @@ try{
  await page.reload();
  assert.equal(await page.locator('.col-news .post').filter({hasText:'Neue News'}).getByRole('link',{name:'Sport',exact:true}).getAttribute('href'),'#sport');
  await page.getByRole('link',{name:'Neue News'}).click();
+ const assertThemed = async marked => {
+   await marked.first().waitFor();
+   const colors = await marked.evaluateAll(elements => {
+     const root = document.documentElement;
+     const amber = root.classList.contains('tfb-logo-midnight-amber');
+     const read = () => elements.map(element => {
+       const style = getComputedStyle(element);
+       return [style.color, style.backgroundImage];
+     });
+     root.classList.add('tfb-logo-midnight-amber');
+     const yellow = read();
+     root.classList.remove('tfb-logo-midnight-amber');
+     const red = read();
+     root.classList.toggle('tfb-logo-midnight-amber', amber);
+     return {yellow, red};
+   });
+   for (const [color, background] of colors.yellow) {
+     assert.equal(color, 'rgb(23, 23, 23)');
+     assert.match(background, /tfb-highlight-freihand/);
+   }
+   for (const [color, background] of colors.red) {
+     assert.equal(color, 'rgb(196, 85, 58)');
+     assert.equal(background, 'none');
+   }
+ };
+ await assertThemed(page.locator('.story-body a .tx-highlight'));
+ await assertThemed(page.locator('.story-body :is(.story-h,.story-quote) .signature-highlight'));
+
  assert.equal(await page.locator('.story').getByRole('link',{name:'Sport',exact:true}).getAttribute('href'),'#sport');
  assert.equal(await page.getByRole('link',{name:'Externer News-Link'}).getAttribute('target'),'_blank');
  assert.equal(await page.locator('.story-body').getByRole('link',{name:'Intern',exact:true}).getAttribute('href'),'#club');
@@ -207,6 +239,9 @@ try{
    await TFB.refreshSite();
    location.hash='#aktuell/home-source';
  }, image);
+ const existingMarks = page.locator('.hm-entry-copy :is(.tx-highlight,.tx-red,.tx-mark)');
+ await assertThemed(existingMarks);
+ assert.equal(await existingMarks.count(), 3);
  const slideshow = page.getByRole('region',{name:'Diashow'});
  await slideshow.waitFor();
  assert.equal(await slideshow.count(),1);
@@ -232,8 +267,12 @@ try{
  await mediaText.fill('Fetter Einblick');
  await mediaText.evaluate(el=>getSelection().selectAllChildren(el));
  await mediaEditor.locator('[data-hm-entry="0"] [data-rich=bold]').click();
+ await mediaText.evaluate(el=>getSelection().selectAllChildren(el));
+ await mediaEditor.locator('[data-hm-entry="0"] [data-rich=hervorheben]').click();
+ await assertThemed(mediaText.locator('.tx-highlight'));
  await mediaEditor.locator('[data-hm-entry="0"] [data-secadd=quote]').last().click();
  await mediaEditor.locator('[name=entry_0_section_1]').fill('Zitat im Karussell');
+ await mediaEditor.locator('[name=entry_0_section_1_color]').selectOption('signature');
  await mediaEditor.getByRole('tab',{name:'Übersicht'}).click();
  await mediaEditor.locator('[data-rich-for=text]').fill('Überblick zum Karussell');
  await mediaEditor.locator('[type=submit]').click();
@@ -241,9 +280,11 @@ try{
  await page.evaluate(()=>location.hash='#aktuell/home-source');
  await page.locator('.hm-entry-copy strong').getByText('Fetter Einblick').waitFor();
  assert.equal(await page.locator('.hm-entry-copy blockquote').innerText(),'Zitat im Karussell');
+ await assertThemed(page.locator('.hm-entry-copy :is(.tx-highlight, .story-quote .signature-highlight)'));
  // The legacy collection keeps its own detail layout and all five photos.
  await page.evaluate(async()=>{location.hash='#club/archiv';await TFB.ui.renderView('club');});await page.locator('.archive-home').waitFor();assert.equal(await page.locator('.archive-home .media-news').count(),1);assert.equal(await page.locator('.archive-home .media-news .hm-card').count(),5);
  await page.evaluate(async()=>{location.hash='#club/archiv/beitrag/home-home-source';await TFB.ui.renderView('club');});await page.locator('.hm-entry').waitFor();assert.equal(await page.locator('.hm-entry-copy h1').innerText(),'Nach dem Match');assert.equal(await page.locator('.story-tools a[href="#club/archiv"]').count(),1);
+ await assertThemed(page.locator('.hm-entry-copy .tx-highlight'));
  // Management retains the normal two-column layout and simple terminology.
  await page.evaluate(async()=>{TFB.ui.state.member=TFB.api.attachDirectoryMember({id:'home-media-admin',firstName:'Home',lastName:'Test',isAdmin:true,active:true,email:'home@example.invalid',teams:[]});TFB.api.secureDirectory=true;TFB.api.mode='test';location.hash='#aktuell';await TFB.ui.renderView('aktuell');});if(await headerPencil.getAttribute('aria-pressed') === 'false')await headerPencil.click(); await tools.waitFor();assert.equal(await page.locator('.news-dates').count(),1);assert.equal(await page.locator('.col-news .block-edit').count()>0,true);assert.equal(await page.locator('[data-action=block-move]').count(),0);assert.equal(await page.locator('[data-action=block-new]').count(),0);
  for(const width of [1440,390]){await page.setViewportSize({width,height:1050});assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));await page.screenshot({path:`/tmp/tfb-aktuell-admin-${width}.png`,fullPage:true});}await page.locator('[data-action=aktuell-tab][data-tab=dates]').click();assert.equal(await page.locator('.col-dates').isVisible(),true);
