@@ -154,7 +154,7 @@
   }
 
   function editorial({ b, page }, prior, sortYear) {
-    const gallery = b.type === 'gallery' || b.type === 'collage';
+    const gallery = ['gallery', 'collage', 'carousel'].includes(b.type);
     const more = b.more || {};
     const sections = Array.isArray(more.sections) ? more.sections : [];
     const story = sections.length ? sections.map(section => {

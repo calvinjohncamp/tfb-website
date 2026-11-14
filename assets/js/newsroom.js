@@ -1,6 +1,6 @@
 // Editorial ordering and lossless media moves/copies; no persistence side effects.
 (function () {
-  const newsTypes = new Set(['post','gallery','collage','feature']);
+  const newsTypes = new Set(['post','gallery','collage','feature','carousel']);
   const dateOf = block => block.date || block.mediaCollection?.entries?.[0]?.date || '';
   function ordered(blocks) {
     const sort = (items, direction) => items.map((block,index)=>({block,index})).sort((a,b)=>{
@@ -16,7 +16,7 @@
     blocks.splice(index<0?blocks.length:index,0,block);
   }
   const validDate=value=>/^\d{4}-\d{2}-\d{2}$/.test(value||'')&&Number.isFinite(Date.parse(value+'T12:00:00Z'))&&new Date(value+'T12:00:00Z').toISOString().slice(0,10)===value;
-  function transfer(input,id,date,{from='home',mode='move',maxHome=10}={}) {
+  function transfer(input,id,date,{from='home',mode='move',format,maxHome=10}={}) {
     if(!['home','aktuell'].includes(from)||!['move','copy'].includes(mode))throw Error('Ungültige Übernahme.');
     const to=from==='home'?'aktuell':'home';
     if(to==='aktuell'&&!validDate(date))throw Error('Bitte ein gültiges Veröffentlichungsdatum wählen.');
@@ -24,12 +24,37 @@
     if(!source)throw Error('Dieses Karussell ist nicht mehr verfügbar. Bitte die Seite neu laden.');
     const target=next.pages[to].blocks;
     if(mode==='move'&&target.some(b=>b.id===id))throw Error('Dieser Beitrag ist bereits auf der Zielseite vorhanden.');
-    if(to==='home'&&target.filter(b=>b.type==='feature'&&!b._new).length>=maxHome)throw Error(`Home zeigt höchstens ${maxHome} Themen. Bitte zuerst Platz schaffen.`);
+    if(to==='home'&&format!=='photoBlock'&&target.filter(b=>b.type==='feature'&&!b._new).length>=maxHome)throw Error(`Home zeigt höchstens ${maxHome} Themen. Bitte zuerst Platz schaffen.`);
     const item={...structuredClone(source),articleId:source.articleId||source.sourceHomeId||source.id,type:to==='home'?'feature':'post'};
     if(mode==='copy'){item.id='b-'+crypto.randomUUID();item.archivePage=to;}
     else if(from==='aktuell'&&!item.sourceHomeId&&!item.archivePage)item.archivePage='aktuell';
     if(to==='aktuell')Object.assign(item,{date,sourceHomeId:source.sourceHomeId||source.id});
     else Object.assign(item,{layout:source.layout||'wide',navigation:'detail'});
+    if (to === 'home' && format) {
+      const entries = item.mediaCollection.entries;
+      const refs = entries.flatMap(entry => entry.images || []);
+      if (!refs.length) throw Error('Dieses Karussell enthält keine Fotos.');
+      if (format === 'photoBlock') {
+        item.type = 'carousel';
+        item.photoBlock = true;
+      } else {
+        item.photoDisplay = 'carousel';
+        item.navigation = 'none';
+        const detailText = entries.map(entry => [entry.title !== item.title && entry.title, entry.subtitle, entry.text,
+          entry.instagramUrl && `[Instagram](${entry.instagramUrl})`].filter(Boolean).join('\n\n')).filter(Boolean).join('\n\n');
+        if (detailText) {
+          item.more = { ...item.more, text: detailText };
+          item.detailEnabled = true;
+          item.navigation = 'detail';
+        }
+      }
+      item.images = refs;
+      item.image = refs[0];
+      item.animationStart ||= 'auto';
+      delete item.mediaCollection;
+      // Keep the source date for chronological views.
+      if (format === 'photoBlock') item.hideDate = true;
+    }
     // Home's summary and detail may subsequently be edited independently.
     delete item.mediaSingle;
     if(mode==='move')next.pages[from].blocks=next.pages[from].blocks.filter(b=>b.id!==id);

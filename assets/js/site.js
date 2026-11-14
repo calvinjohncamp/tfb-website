@@ -12,6 +12,8 @@
   let editing = null;       // Seite, die gerade bearbeitet wird
   let detailEditing = false; // Thema wird direkt auf seiner Unterseite bearbeitet
   let preview = null;        // Live-Vorschau beim Bearbeiten eines Themas: { id, draft, tab }
+  let homeOrder = null;
+  let newHomeId = '';
   let photoPreview = null;   // Ungespeicherte Galerie-/Collagenreihenfolge auf der Seite.
   const ui = () => TFB.ui;
 
@@ -74,7 +76,7 @@
     if (site) return Promise.resolve(site);
     siteLoad ||= ui().api.site().then(value => {
       site = value;
-      TFB.refreshNav();
+      TFB.refreshNav?.();
       return site;
     }).finally(() => { siteLoad = null; });
     return siteLoad;
@@ -91,47 +93,6 @@
 
   // ---------- Formatierung ----------
   const esc = (s) => ui().esc(s);
-  // Abstände der Links je Thema (px): über den Links und zwischen zwei Links – Regler ▲/▼ in 2-px-Schritten
-  const LINK_TOP = 26;
-  const LINK_GAP = 14;
-  const gapOk = (v) => Number.isFinite(v) && v >= 0 && v <= 120;
-  const gapField = (key, value, def, label) => {
-    const v = gapOk(value) ? value : def;
-    return `<div class="field gap-field"><span>${label}</span>
-      <div class="gap-row" data-gap-field="${key}" data-default="${def}">
-        <button type="button" class="gap-btn" data-gap-step="-2" aria-label="Weniger Abstand" title="Weniger Abstand (gedrückt halten für mehr)">▲</button>
-        <output>${v} px</output>
-        <button type="button" class="gap-btn" data-gap-step="2" aria-label="Mehr Abstand" title="Mehr Abstand (gedrückt halten für mehr)">▼</button>
-        <input type="hidden" name="${key}" value="${v}">
-        <button type="button" class="link" data-gap-reset ${v === def ? 'hidden' : ''}>Standard</button>
-      </div></div>`;
-  };
-  function wireGapFields(form, changed) {
-    form.querySelectorAll('[data-gap-field]').forEach((row) => {
-      const def = Number(row.dataset.default);
-      const input = row.querySelector('input');
-      const set = (v) => {
-        v = Math.max(0, Math.min(120, v));
-        input.value = v;
-        row.querySelector('output').textContent = `${v} px`;
-        row.querySelector('[data-gap-reset]').hidden = v === def;
-        changed();
-      };
-      let timer = null;
-      const stop = () => { clearTimeout(timer); clearInterval(timer); timer = null; };
-      row.querySelectorAll('[data-gap-step]').forEach((b) => {
-        const step = Number(b.dataset.gapStep);
-        b.addEventListener('pointerdown', (e) => {
-          e.preventDefault();
-          set(Number(input.value) + step);
-          timer = setTimeout(() => { timer = setInterval(() => set(Number(input.value) + step), 70); }, 380);
-        });
-        ['pointerup', 'pointerleave', 'pointercancel'].forEach((ev) => b.addEventListener(ev, stop));
-        b.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); set(Number(input.value) + step); } });
-      });
-      row.querySelector('[data-gap-reset]').addEventListener('click', () => set(def));
-    });
-  }
   // Fließtext mit Auszeichnungen. Im Editor gestaltet man direkt (WYSIWYG); gespeichert wird als
   // schlichter Text mit Zeichen – so bleibt alles klein, sicher und übertragbar:
   //   [Text](https://… | #seite)  Link       **Text** fett     *Text* kursiv    __Text__ unterstrichen
@@ -407,19 +368,60 @@
     await ensure();if(!ui().state.member?.isAdmin)return;
     const pages=from?[from]:['aktuell','home'];
     const sources=pages.flatMap(page=>site.pages[page].blocks.filter(b=>!b._new&&b.mediaCollection&&(!id||b.id===id)).map(b=>({b,page})));
-    ui().openSheet(`<section class="editor newsroom-transfer"><h2>Karussell kopieren oder verschieben</h2><p>Verschieben entfernt den Beitrag von der bisherigen Seite. Kopieren lässt ihn dort stehen und erstellt einen unabhängig bearbeitbaren Beitrag. Die Bilddateien werden in beiden Fällen wiederverwendet.</p>${sources.map(({b,page})=>{
+    ui().openSheet(`<section class="editor newsroom-transfer"><h2>${from === 'aktuell' ? 'Karussell aus Aktuell übernehmen' : 'Karussell kopieren oder verschieben'}</h2><p>Kopieren lässt das Original auf seiner Seite stehen. Verschieben entfernt es dort.</p>${sources.map(({b,page})=>{
       const target=page==='home'?'Aktuell':'Home';
-      return `<section class="newsroom-source" data-transfer-source="${esc(b.id)}" data-transfer-from="${page}"><p class="muted small">${page==='home'?'Home':'Aktuell'} → ${target}</p><h3>${esc(b.title)}</h3><p class="muted small">${b.mediaCollection.entries.reduce((n,e)=>n+e.images.length,0)} Bildseiten · ${b.mediaCollection.entries.length} ${b.mediaCollection.entries.length===1?'Beitrag':'Beiträge'}</p>${page==='home'?`<label class="field"><span>Veröffentlichungsdatum in Aktuell</span><input type="date" data-transfer-date="${esc(b.id)}" value="${esc(TFB.newsroom.dateOf(b)||today())}"></label>`:'<p class="muted small">Auf Home erscheint der Beitrag als erstes Thema.</p>'}<div class="newsroom-transfer-actions"><button class="btn" data-transfer-mode="move"${page==='home'?` data-transfer-home="${esc(b.id)}"`:''}>Nach ${target} verschieben</button><button class="btn" data-transfer-mode="copy">Nach ${target} kopieren</button></div></section>`;
+      return `<section class="newsroom-source" data-transfer-source="${esc(b.id)}" data-transfer-from="${page}"><p class="muted small">${page==='home'?'Home':'Aktuell'} → ${target}</p><h3>${esc(b.title)}</h3><p class="muted small">${b.mediaCollection.entries.reduce((n,e)=>n+e.images.length,0)} Bildseiten · ${b.mediaCollection.entries.length} ${b.mediaCollection.entries.length===1?'Beitrag':'Beiträge'}</p>${page==='home'?`<label class="field"><span>Veröffentlichungsdatum in Aktuell</span><input type="date" data-transfer-date="${esc(b.id)}" value="${esc(TFB.newsroom.dateOf(b)||today())}"></label>`:`<label class="field"><span>Auf Home anzeigen als</span><select data-transfer-format><option value="topic">Neues Thema</option><option value="photoBlock">Eigenständiger Fotoblock</option></select></label>`}<div class="newsroom-transfer-actions"><button class="btn primary" data-transfer-mode="copy">Nach ${target} kopieren</button><button class="btn" data-transfer-mode="move"${page==='home'?` data-transfer-home="${esc(b.id)}"`:''}>Nach ${target} verschieben</button></div></section>`;
     }).join('')||'<p>Derzeit gibt es keine Karussells zum Übernehmen.</p>'}<p class="form-error" role="alert"></p></section>`);
     const panel=document.querySelector('.newsroom-transfer');let busy=false;
     panel.addEventListener('click',async e=>{const button=e.target.closest('[data-transfer-mode]');if(!button||busy)return;busy=true;panel.querySelectorAll('button').forEach(b=>b.disabled=true);
-      try{const row=button.closest('[data-transfer-source]'),id=row.dataset.transferSource,from=row.dataset.transferFrom,mode=button.dataset.transferMode,date=row.querySelector('[data-transfer-date]')?.value;
-        const fresh=await ui().api.site(),next=TFB.newsroom.transfer(fresh,id,date,{from,mode,maxHome:MAX_HOME_FEATURES});site=await ui().api.saveSite(next);editing=null;detailEditing=false;ui().closeSheet();aktuellTab='news';await ui().renderView();ui().toast(mode==='copy'?'Karussell kopiert':'Karussell verschoben',true);
-      }catch(err){panel.querySelector('.form-error').textContent=err.message;busy=false;panel.querySelectorAll('button').forEach(b=>b.disabled=false);}
+      try {
+        const row = button.closest('[data-transfer-source]');
+        const { transferSource: id, transferFrom: from } = row.dataset;
+        const mode = button.dataset.transferMode;
+        const date = row.querySelector('[data-transfer-date]')?.value;
+        const format = row.querySelector('[data-transfer-format]')?.value;
+        if (mode === 'move' && !confirm(`Karussell verschieben? Es wird aus ${from === 'aktuell' ? 'Aktuell' : 'Home'} entfernt.`)) return;
+        const fresh = await ui().api.site();
+        const next = TFB.newsroom.transfer(fresh, id, date, { from, mode, format, maxHome: MAX_HOME_FEATURES });
+        site = await ui().api.saveSite(next);
+        if (from === 'aktuell' && editing === 'home') {
+          const newId = site.pages.home.blocks[0].id;
+          if (homeOrder && site.pages.home.blocks.slice(1).map(b => b.id).join() === homeOrder.expected.join()) { homeOrder.expected.unshift(newId); homeOrder.order.unshift(newId); }
+          highlightHome(newId);
+        } else editing = null;
+        detailEditing = false;
+        ui().closeSheet();
+        aktuellTab = 'news';
+        await ui().renderView();
+        ui().toast(mode === 'copy' ? 'Karussell kopiert' : 'Karussell verschoben', true);
+      } catch (error) {
+        panel.querySelector('.form-error').textContent = error.message;
+      } finally {
+        busy = false;
+        panel.querySelectorAll('button').forEach(b => { b.disabled = false; });
+      }
     });
   }
 
-  const HOME_PHOTO_LIMIT = 5;
+  const HOME_PHOTO_LIMIT = 100;
+  const photoDisplays = new Map([['collage', 'Collage'], ['gallery', 'Galerie'], ['carousel', 'Karussell']]);
+  const photoTypes = [...photoDisplays.keys()];
+  let photoStudio;
+  const showInlineCarousel = b => b.type === 'carousel' || b.photoDisplay === 'carousel' || b.album?.photoDisplay === 'carousel';
+  function photoDisplay(block, refs, mode, action) {
+    if (!refs.length) return '';
+    if (mode === 'carousel') {
+      return photoStudio.publishedGallery({
+        id: block.id, photoView: 'carousel', animationStart: block.animationStart || 'manual', compactControls: true,
+        designs: refs.map(ref => photoStudio.mediaDesign(ref, 16, 9)),
+      }, ref => images[ref] || TFB.clubArchive?.mediaUrl?.(ref) || ref);
+    }
+    const mosaic = mode === 'collage';
+    return `<div class="${mosaic ? `collage module-collage collage-${Math.min(refs.length, 5)}` : 'gallery-grid'}">${refs.map((ref, i) =>
+      `<button type="button" class="${mosaic ? 'collage-item' : 'gallery-item'}" data-action="${action}" data-block="${esc(block.id)}" data-index="${i}" aria-label="Foto ${i + 1} von ${refs.length} groß ansehen">${picture(ref, ref)}</button>`).join('')}</div>`;
+  }
+  const photoFormatField = (name, value, single = false) => `<label class="field"><span>Darstellung</span><select name="${name}" data-rerender>${[...(single ? [['single', 'Einzelfoto']] : []), ...photoDisplays].map(([key, label]) => `<option value="${key}"${key === value ? ' selected' : ''}>${label}</option>`).join('')}</select></label>`;
+  const photoStartField = (name, value) => `<label class="meet-check"><input type="checkbox" name="${name}" ${value === 'auto' ? 'checked' : ''}><span>Karussell automatisch starten</span></label>`;
   const homePhotoRefs = (block) => (block.images?.length ? block.images : [block.image]).filter(shownImage);
 
   // ---------- Bausteine darstellen ----------
@@ -429,8 +431,8 @@
         const list = page === 'home' ? homeBlocks().filter((x) => x.type === 'feature' && (!x._new || (preview && x.id === preview.id))) : [];
         const n = String(Math.max(1, list.findIndex((x) => x.id === b.id) + 1)).padStart(2, '0');
         const mode = b.navigation || (hasMore(b) ? 'detail' : 'link');
-        const more = (b.mediaCollection || mode === 'detail' && hasMore(b)) && (editing !== page || preview) ? `#home/${b.id}` : '';
-        const hit = (editing !== page || preview) ? (mode === 'link' ? safeLink(b.link?.url) : more) : '';
+        const more = (b.mediaCollection || hasPublishedDetail(b) && (mode === 'detail' || b.detailEnabled === true)) && (editing !== page || preview) ? `#home/${b.id}` : '';
+        const hit = (editing !== page || preview) ? (mode === 'link' ? safeLink(b.link?.url) : mode === 'none' ? '' : more) : '';
         const wrap = (html) => (hit ? `<a class="feature-hit" href="${esc(hit)}"${/^https?:/i.test(hit) ? ' target="_blank" rel="noopener"' : ''}>${html}</a>` : html);
         // Link-Platz (immer linksbündig): „left“ = links unter der Unterzeile, „right-<n>“ = rechts
         // vor Absatz n, „right“ = rechts unter dem Text (Standard). Im Bearbeiten-Modus mit der Maus
@@ -446,16 +448,14 @@
             ? `<button type="button" data-action="link-move" data-block="${esc(b.id)}" data-slot="${name}">${hint}</button>`
             : '<span class="link-drop" aria-hidden="true">hier ablegen</span>'}</div>`;
         };
-        const homePhotos = page === 'home' ? homePhotoRefs(b) : [];
+        const homePhotos = page === 'home' ? homePhotoRefs(b).slice(0, HOME_PHOTO_LIMIT) : [];
+        const formattedPhotos = homePhotos.length > 1 && photoDisplays.has(b.photoDisplay);
         const cover = `<div class="feature-media">${picture(homePhotos[0] || b.image, b.id, b.title)}</div>`;
         const parts = String(b.text || '').split(/\n{2,}/).filter((x) => x.trim());
         const textHtml = parts.map((p, i) => slot(`right-${i}`) + paragraphs(p)).join('');
         return `
-          <article class="feature feature-${esc(String(b.layout || 'wide').replace('-right', ''))} ${/-right$/.test(b.layout || '') ? 'img-right' : ''} ${more ? 'has-more' : ''} ${n === '01' ? 'feature-first' : ''} ${Number(n) % 2 === 0 ? 'feature-even' : ''}" data-feature="${esc(b.id)}"${(() => {
-            const v = [gapOk(b.linkTop) ? `--link-top:${b.linkTop}px` : '', gapOk(b.linkGap) ? `--link-gap:${b.linkGap}px` : ''].filter(Boolean).join(';');
-            return v ? ` style="${v}"` : '';
-          })()}>
-            ${b.mediaCollection ? TFB.homeMedia.cover(b, `#home/${b.id}`, ref => images[ref] || ref) : homePhotos.length ? `<button type="button" class="feature-hit home-photo-open" data-action="home-photo-gallery" data-block="${esc(b.id)}" aria-label="${esc(b.title)}: ${homePhotos.length === 1 ? 'Foto groß ansehen' : 'Fotos groß ansehen'}">${cover}</button>` : page !== 'home' && (b.images || []).some(shownImage) ? newsCollage(b) : wrap(cover)}
+          <article class="feature feature-${esc(String(b.layout || 'wide').replace('-right', ''))} ${/-right$/.test(b.layout || '') ? 'img-right' : ''} ${more ? 'has-more' : ''} ${n === '01' ? 'feature-first' : ''} ${Number(n) % 2 === 0 ? 'feature-even' : ''}" data-feature="${esc(b.id)}">
+            ${b.mediaCollection ? TFB.homeMedia.cover(b, `#home/${b.id}`, ref => images[ref] || ref) : formattedPhotos ? `<div class="home-topic-photos">${photoDisplay(b, homePhotos, b.photoDisplay, 'home-photo-gallery')}</div>` : homePhotos.length ? `<button type="button" class="feature-hit home-photo-open" data-action="home-photo-gallery" data-block="${esc(b.id)}" aria-label="${esc(b.title)}: ${homePhotos.length === 1 ? 'Foto groß ansehen' : 'Fotos groß ansehen'}">${cover}</button>` : page !== 'home' && (b.images || []).some(shownImage) ? newsCollage(b) : wrap(cover)}
             <div class="feature-body">
               <div class="feature-left">
                 <div class="feature-kicker"><span class="feature-number">${n}</span><span class="feature-kicker-label">${esc(b.kicker || '')}</span>
@@ -502,19 +502,20 @@
           ? `<figure class="block-image natural ${alignClass(b.align)}" data-site-content="${esc(b.id)}">${picture(b.image, b.id, b.caption)}${b.caption ? `<figcaption>${esc(b.caption)}</figcaption>` : ''}</figure>`
           : `<figure class="block-image card" data-site-content="${esc(b.id)}">${picture(b.image, b.id, b.caption)}${b.caption ? `<figcaption>${esc(b.caption)}</figcaption>` : ''}</figure>`;
       case 'gallery':
-      case 'collage': {
+      case 'collage':
+      case 'carousel': {
         const list = (b.images || []).filter(shownImage).slice(0, 100);
         const mosaic = b.type === 'collage';
         const text = b.showText !== false && b.text ? `<div class="gallery-text">${paragraphs(b.text)}</div>` : '';
         if (!list.length && editing !== page) return '';
         return `
-          <section class="block-gallery${mosaic ? ' block-collage' : ''}${b.date ? ' has-date' : ''}" data-photo-module="${esc(b.id)}">
+          <section class="block-gallery${mosaic ? ' block-collage' : ''}${b.date && !b.hideDate ? ' has-date' : ''}" data-photo-module="${esc(b.id)}" data-site-content="${esc(b.id)}">
             ${b.title ? `<h2>${esc(b.title)}</h2>` : ''}
             ${b.textPosition === 'above' ? text : ''}
             ${list.length
-              ? `<div class="gallery-media"><div class="${mosaic ? `collage module-collage collage-${Math.min(list.length, 5)}` : 'gallery-grid'}">${list.map((ref, i) => `<button type="button" class="${mosaic ? 'collage-item' : 'gallery-item'}" data-action="gallery-open" data-block="${esc(b.id)}" data-index="${i}" aria-label="Foto ${i + 1} von ${list.length} groß ansehen">${picture(ref, ref)}</button>`).join('')}</div>${b.date && !['aktuell', 'verein'].includes(page) ? dateBadge(b.date, accentDate) : ''}</div>`
+              ? `<div class="gallery-media">${photoDisplay(b, list, b.type, 'gallery-open')}${b.date && !b.hideDate && !['aktuell', 'verein'].includes(page) ? dateBadge(b.date, accentDate) : ''}</div>`
               : '<p class="muted small empty-hint">Noch keine Fotos – über den Stift Fotos hinzufügen.</p>'}
-            ${b.date ? `<p class="post-date"><time datetime="${esc(b.date)}">${signatureText(fmt(b.date, { day: 'numeric', month: 'long', year: 'numeric' }))}</time></p>` : ''}
+            ${b.date && !b.hideDate ? `<p class="post-date"><time datetime="${esc(b.date)}">${signatureText(fmt(b.date, { day: 'numeric', month: 'long', year: 'numeric' }))}</time></p>` : ''}
             ${b.textPosition !== 'above' ? text : ''}
           </section>`;
       }
@@ -641,7 +642,8 @@
   }).observe(document.getElementById('sheet-root') || document.body, { childList: true });
 
   // ---------- Unterseite eines Home-Themas („Mehr erfahren“) ----------
-  const hasMore = (b) => Boolean(b.mediaCollection || b.more && ((b.more.text || '').trim() || (b.more.images || []).length || b.more.quote));
+  const hasMore = b => Boolean(b.mediaCollection || b.more && ((b.more.text || '').trim() || (b.more.images || []).length || b.more.quote || (b.more.heroImages || []).length || b.more.sections?.some(section => section.text?.trim())));
+  const hasPublishedDetail = b => b.detailEnabled !== false && hasMore(b);
   const safeLink = (url) => /^(#|https?:\/\/)/i.test(url || '') ? url : '';
   function featureLinks(b) {
     const list = [];
@@ -830,12 +832,14 @@
 
   function albumDetail(id) {
     const b = homeBlocks().find((x) => x.id === id);
-    if (!b?.album?.enabled) return `<p>Diese Fotokollage ist nicht verfügbar.</p><a href="#home">Zur Startseite</a>`;
+    if (!b?.album?.enabled && !(preview?.tab === 'album' && b?.album)) return `<p>Diese Fotoseite ist nicht verfügbar.</p><a href="#home">Zur Startseite</a>`;
     const album = b.album;
-    const gallery = { id: `album-${b.id}`, title: album.title || b.title, more: { images: (album.images || []).slice(0, 100) } };
+    const gallery = { id: `album-${b.id}`, title: album.title || b.title, animationStart: album.animationStart, more: { images: (album.images || []).slice(0, 100) } };
     storyIndex[gallery.id] = gallery;
     const admin = ui().state.member?.isAdmin;
-    return `<article class="story album-page"><div class="story-tools">${admin ? `<button type="button" class="view-close" data-action="album-edit" data-id="${esc(b.id)}" aria-label="Fotokollage bearbeiten">${ui().icon.pencil}</button>` : ''}<a class="view-close" href="#home" aria-label="Zurück zur Startseite">${ui().icon.close}</a></div><h1>${esc(album.title || b.title)}</h1>${gallery.more.images.length ? collage(gallery.more.images, gallery.id, Boolean(album.original)) : '<p class="muted">Noch keine Fotos veröffentlicht.</p>'}<div class="story-foot"><a class="more-link" href="#home">Zur Startseite</a></div></article>`;
+    return `<article class="story album-page"><div class="story-tools">${admin ? `<button type="button" class="view-close" data-action="album-edit" data-id="${esc(b.id)}" aria-label="Fotoseite bearbeiten">${ui().icon.pencil}</button>` : ''}<a class="view-close" href="#home" aria-label="Zurück zur Startseite">${ui().icon.close}</a></div><h1>${esc(album.title || b.title)}</h1>${gallery.more.images.length ? (album.photoDisplay && album.photoDisplay !== 'collage'
+      ? photoDisplay(gallery, gallery.more.images.filter(shownImage), album.photoDisplay, 'collage-open')
+      : collage(gallery.more.images, gallery.id, Boolean(album.original))) : '<p class="muted">Noch keine Fotos veröffentlicht.</p>'}<div class="story-foot"><a class="more-link" href="#home">Zur Startseite</a></div></article>`;
   }
 
   const memberPdfUrl = key => {
@@ -848,11 +852,11 @@
   }).observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
 
   // ---------- Seite ----------
-  const CONTENT_TYPES = [['feature', 'Themen'], ['post', 'Beiträge'], ['gallery', 'Galerien'], ['collage', 'Collagen'], ['text', 'Texte'], ['image', 'Fotos']];
+  const CONTENT_TYPES = [['feature', 'Themen'], ['post', 'Beiträge'], ['gallery', 'Galerien'], ['collage', 'Collagen'], ['carousel', 'Karussells'], ['text', 'Texte'], ['image', 'Fotos']];
   function contentBlocks(key) {
     return (key === 'home' ? homeBlocks() : site.pages[key].blocks).filter(b => !b._new
       && CONTENT_TYPES.some(([type]) => type === b.type)
-      && (!['gallery', 'collage'].includes(b.type) || (b.images || []).some(shownImage)));
+      && (!photoTypes.includes(b.type) || (b.images || []).some(shownImage)));
   }
   function contentOverviewLink(key) {
     return `<div class="content-overview-tools"><a class="btn small" href="#${key}/alle">Alle Beiträge ${ui().icon.chevron}</a></div>`;
@@ -922,7 +926,15 @@
       const id=section==='beitrag'?location.hash.split('/')[2]:section;
       const media=site.pages.aktuell.blocks.find(b=>b.id===decodeURIComponent(id||'')&&b.mediaCollection);
       if(media)return mediaDetail(media);
-      const moved=homeBlocks().find(b=>b.id===decodeURIComponent(id||'')&&b.mediaCollection);if(moved)return mediaDetail(moved,'home');
+      const moved = homeBlocks().find(b => b.id === decodeURIComponent(id || '') && (b.mediaCollection || b.photoDisplay === 'carousel' || b.type === 'carousel'));
+      if (moved?.mediaCollection) return mediaDetail(moved, 'home');
+      if (moved) {
+        const href = moved.type === 'carousel' || !hasPublishedDetail(moved) ? `#home/beitrag/${encodeURIComponent(moved.id)}` : `#home/${encodeURIComponent(moved.id)}`;
+        return `<p>Dieser Beitrag ist jetzt auf Home.</p><a class="btn" href="${href}">Zum Beitrag</a>`;
+      }
+    }
+    if (key === 'home' && !photoStudio && (site.pages.home.blocks.some(showInlineCarousel) || (preview && showInlineCarousel(preview.draft)))) {
+      photoStudio ||= await import('./chat-media.js?v=20261114-home-editor-1');
     }
     if (key === 'home' && preview?.tab === 'album') return albumDetail(preview.id);
     if (key === 'home' && preview && preview.tab === 'sub') return featureDetail(preview.id);
@@ -955,15 +967,15 @@
       return (b.type === 'post' || photoDate) && newsDates++ % 2 === 1;
     }) : []);
     const renderPageBlock = b => renderBlock(b, key, accentDates.has(b));
-    const blocks = rulebook ? TFB.rulebook.render({ esc, paragraphs }) : courtPlan ? TFB.courtPlan.render() : edit
+    const blocks = key === 'home' && edit ? homeOrderForm() : rulebook ? TFB.rulebook.render({ esc, paragraphs }) : courtPlan ? TFB.courtPlan.render() : edit
       ? key==='aktuell'?layoutBlocks(list,key,b=>editWrap(b,list.indexOf(b),list.length,renderPageBlock(b))):list.map((b, i) => editWrap(b, i, list.length, renderPageBlock(b))).join('')
       : legal ? `<div class="legal-document">${list.map(renderPageBlock).join('')}</div>` : layoutBlocks(list, key, renderPageBlock);
     return `
       <div class="site-page ${edit ? 'editing-page' : ''} ${key === 'home' ? 'home-look-6' : ''}" data-page="${key}">
         ${edit ? `
           <div class="editbar">
-            <div><strong>${esc(page.title)} bearbeiten</strong><span>${key==='aktuell'?'News und Termine bearbeiten · Reihenfolge nach Datum':key==='home'?'Inhalte bearbeiten · Reihenfolge bequem in der Übersicht ändern':'Bausteine antippen zum Ändern · Pfeile zum Sortieren'}</span></div>
-            <div class="home-edit-actions">${key==='home'?'<button type="button" class="btn" data-action="home-order">Reihenfolge ändern</button>':''}<button type="button" class="btn primary" data-action="site-done">Fertig</button></div>
+            <div><strong>${esc(page.title)} bearbeiten</strong><span>${key==='aktuell'?'News und Termine bearbeiten · Reihenfolge nach Datum':key==='home'?'Themen und Fotoblöcke bearbeiten':'Bausteine antippen zum Ändern · Pfeile zum Sortieren'}</span></div>
+            <div class="home-edit-actions"><button type="button" class="btn primary" data-action="site-done">Fertig</button></div>
           </div>` : ''}
         ${key === 'home' && !edit
           ? ''
@@ -985,7 +997,7 @@
           ${homeAddButtons(list)}` : ''}
         ${key==='aktuell'&&admin?newsroomTools():''}
         ${blocks}
-        ${key === 'home' && edit ? homeAddButtons(list)+'<div class="home-editor-bottom"><button type="button" class="btn" data-action="home-order">Reihenfolge ändern</button><button type="button" class="btn primary" data-action="site-done">Fertig</button></div>' : ''}
+
         ${edit && !['home','aktuell'].includes(key) && (key !== 'sport' || training) ? `<button type="button" class="btn block add-section" data-action="block-new">${icon.plus} Baustein hinzufügen</button>` : ''}
         ${edit || legal ? '' : partnerSlot(key, page.partnerKicker || 'Präsentiert von')}
       </div>`;
@@ -1139,7 +1151,7 @@
           for (const page of removedPages) next.pages[page] = { title: originalSite.pages[page].title, blocks: [], deleted: true };
           site = await api.saveSite(next);
           if (form.isConnected) closeSheet();
-          TFB.refreshNav();
+          TFB.refreshNav?.();
           toast('Menü gespeichert', true);
           ui().renderView();
         } catch (ex) {
@@ -1164,12 +1176,20 @@
 
   const MAX_HOME_FEATURES = 10;
   function homeAddButtons(list) {
-    const n = list.filter((b) => b.type === 'feature').length;
-    const feature = n >= MAX_HOME_FEATURES
-      ? `<p class="muted small add-limit">Die Startseite zeigt höchstens ${MAX_HOME_FEATURES} Themen. Für ein neues Thema bitte zuerst eines löschen.</p>`
-      : `<button type="button" class="btn block add-section add-feature" data-action="block-add" data-type="feature">${ui().icon.plus} Neues Thema <small>${n} von ${MAX_HOME_FEATURES}</small></button>`;
-    const photoButtons = ['collage', 'gallery'].map(type => `<button type="button" class="btn block add-section" data-action="block-add" data-type="${type}">${ui().icon.camera} ${type === 'gallery' ? 'Galerie' : 'Collage'} hinzufügen</button>`).join('');
-    return `<div class="home-editor-add">${feature}${n < MAX_HOME_FEATURES ? `<button type="button" class="btn block add-section" data-action="block-add" data-type="feature" data-media-collection> ${ui().icon.camera} Medien-Collage hinzufügen</button>` : ''}${photoButtons}${site.pages.aktuell.blocks.some(b=>b.mediaCollection&&!b._new)?'<button type="button" class="btn block add-section" data-action="aktuell-transfer">Karussell aus Aktuell übernehmen</button>':''}</div>`;
+    const count = list.filter(b => b.type === 'feature').length;
+    return `<div class="home-editor-add">
+      <button type="button" class="btn primary add-feature" data-action="block-add" data-type="feature"${count >= MAX_HOME_FEATURES ? ' disabled' : ''}>${ui().icon.plus} Neues Thema</button>
+      <button type="button" class="btn" data-action="home-add-photos">Fotoblock hinzufügen</button>
+      ${site.pages.aktuell.blocks.some(b => b.mediaCollection && !b._new) ? '<button type="button" class="btn" data-action="aktuell-transfer">Karussell aus Aktuell übernehmen</button>' : ''}
+      ${count >= MAX_HOME_FEATURES ? `<p class="muted small add-limit">Auf Home sind bereits ${MAX_HOME_FEATURES} Themen veröffentlicht.</p>` : ''}
+    </div>`;
+  }
+  function openPhotoPicker() {
+    if (editing !== 'home' || !ui().state.member?.isAdmin) return;
+    ui().openSheet(`<div class="editor"><h2>Fotoblock hinzufügen</h2><div class="type-list">
+      ${[['collage', 'Fotos in unterschiedlich großen Feldern'], ['gallery', 'Fotos im gleichmäßigen Raster'], ['carousel', 'Fotos zum Wischen oder Blättern']].map(([type, hint]) =>
+        `<button type="button" class="type-option" data-action="block-add" data-type="${type}"><strong>${photoDisplays.get(type)}</strong><span>${hint}</span></button>`).join('')}
+    </div></div>`);
   }
   ['home', 'aktuell', 'sport', 'verein', 'impressum', 'satzung'].forEach((key) => { TFB.views[routeOf(key)] = () => pageView(key); });
 
@@ -1244,39 +1264,116 @@
   }
 
   function editWrap(b, i, total, inner) {
-    const { icon } = ui(),home=editing==='home',editorial=['home','aktuell'].includes(editing);
+    const { icon } = ui(), editorial = editing === 'aktuell';
     const label = b.mediaCollection?'Karussell':editing==='aktuell'&&b.type==='post'?'News':(BLOCK_TYPES.find(([t]) => t === b.type) || [0, b.type])[1];
-    const actions=`${home?`<button type="button" class="block-tool-text" data-action="home-order" data-id="${esc(b.id)}">Position ändern</button>`:editing!=='aktuell'?`<button type="button" data-action="block-move" data-id="${esc(b.id)}" data-dir="-1" ${i===0?'disabled':''} aria-label="Nach oben">${icon.up}</button><button type="button" data-action="block-move" data-id="${esc(b.id)}" data-dir="1" ${i===total-1?'disabled':''} aria-label="Nach unten">${icon.down}</button>`:''}${home&&!b.mediaCollection&&b.type==='feature'&&b.album?.enabled?`<button type="button" class="block-tool-text" data-action="block-album-edit" data-id="${esc(b.id)}">Fotokollage bearbeiten</button>`:''}${b.mediaCollection?`<button type="button" class="block-tool-text" data-action="media-transfer" data-page="${esc(editing)}" data-id="${esc(b.id)}">Kopieren / verschieben</button>`:''}<button type="button"${editorial?' class="block-tool-text"':''} data-action="block-edit" data-id="${esc(b.id)}" aria-label="Bearbeiten">${editorial?'Bearbeiten':icon.pencil}</button>`;
+    const actions=`${editing!=='aktuell'?`<button type="button" data-action="block-move" data-id="${esc(b.id)}" data-dir="-1" ${i===0?'disabled':''} aria-label="Nach oben">${icon.up}</button><button type="button" data-action="block-move" data-id="${esc(b.id)}" data-dir="1" ${i===total-1?'disabled':''} aria-label="Nach unten">${icon.down}</button>`:''}${b.mediaCollection?`<button type="button" class="block-tool-text" data-action="media-transfer" data-page="${esc(editing)}" data-id="${esc(b.id)}">Kopieren / verschieben</button>`:''}<button type="button"${editorial?' class="block-tool-text"':''} data-action="block-edit" data-id="${esc(b.id)}" aria-label="Bearbeiten">${editorial?'Bearbeiten':icon.pencil}</button>`;
     return `<div class="block-edit" data-edit-block="${esc(b.id)}"><div class="block-tools"><span class="block-type">${esc(label)}</span><div class="block-tool-actions">${actions}</div></div>${inner||`<p class="muted small empty-hint">${esc(label)} – noch leer</p>`}</div>`;
   }
 
-  async function openHomeOrder(trigger) {
-    await ensure();if(!ui().state.member?.isAdmin)return;
-    site=await ui().api.site();dropUnsaved();const expected=site.pages.home.blocks.map(b=>b.id),byId=new Map(site.pages.home.blocks.map(b=>[b.id,b]));
-    let order=expected.slice(),selected=trigger?.dataset.id||'',dragged='',busy=false;
-    ui().openSheet(`<form class="editor home-order" data-home-order><h2>Reihenfolge auf Home</h2><p>Ziehe die Einträge an ihren Platz oder wähle direkt eine Position. Mehrere Änderungen werden gemeinsam gespeichert.</p><ol class="home-order-list" data-home-order-list></ol><p class="home-order-status muted small" role="status" aria-live="polite"></p><p class="form-error" role="alert"></p><div class="home-order-actions"><button type="button" class="btn" data-action="close-sheet">Abbrechen</button><button type="submit" class="btn primary">Reihenfolge speichern</button></div></form>`);
-    const form=document.querySelector('[data-home-order]'),list=form.querySelector('[data-home-order-list]'),save=form.querySelector('[type=submit]');
-    function render(focusId,focusPart='select') {
-      list.innerHTML=order.map((id,i)=>{const b=byId.get(id),title=b.title||b.caption||b.label||'Ohne Titel',type=b.mediaCollection?'Karussell':(BLOCK_TYPES.find(([key])=>key===b.type)||['','Inhalt'])[1],ref=b.mediaCollection?.entries?.[0]?.images?.[0]||b.images?.[0]||b.image;
-        return `<li class="home-order-row${selected===id?' is-selected':''}" draggable="true" data-order-id="${esc(id)}"><span class="home-order-grip" aria-hidden="true">⠿</span>${ref&&shownImage(ref)?`<img class="home-order-thumb" src="${esc(images[ref]||ref)}" alt="">`:'<span class="home-order-thumb home-order-empty" aria-hidden="true"></span>'}<span class="home-order-info"><strong>${esc(title)}</strong><small>${esc(type)}</small></span><label class="home-order-position"><span>Position</span><select data-order-position aria-label="Position für ${esc(title)}">${order.map((_,j)=>`<option value="${j}"${j===i?' selected':''}>${j+1}</option>`).join('')}</select></label><span class="home-order-steps"><button type="button" data-order-step="-1"${i===0?' disabled':''} aria-label="${esc(title)} nach oben">${ui().icon.up}</button><button type="button" data-order-step="1"${i===order.length-1?' disabled':''} aria-label="${esc(title)} nach unten">${ui().icon.down}</button></span></li>`;
-      }).join('');save.disabled=busy||JSON.stringify(order)===JSON.stringify(expected);if(focusId){const row=[...list.children].find(row=>row.dataset.orderId===focusId);const control=focusPart==='select'?row?.querySelector('select'):row?.querySelector(`[data-order-step="${focusPart}"]:not([disabled])`)||row?.querySelector('select');control?.focus({preventScroll:true});row?.scrollIntoView({block:'nearest'});}
+  const orderChanged = () => homeOrder && (homeOrder.removed.size || homeOrder.order.some((id, i) => id !== homeOrder.expected[i]));
+  function homeOrderForm() {
+    const blocks = site.pages.home.blocks.filter(b => !b._new);
+    const byId = new Map(blocks.map(b => [b.id, b]));
+    const order = homeOrder?.order || blocks.map(b => b.id);
+    const removed = homeOrder?.removed || new Map();
+    const visible = order.filter(id => byId.has(id) && !removed.has(id));
+    let number = 0;
+    const busy = homeOrder?.busy ? ' disabled' : '';
+    return `<form class="home-order home-order-inline" data-home-order>
+      <h2>Inhalte auf Home</h2>
+      <ol class="home-order-list">${visible.map((id, index) => {
+        const b = byId.get(id);
+        const title = b.title || b.caption || b.label || 'Ohne Überschrift';
+        const numberLabel = b.type === 'feature' ? String(++number).padStart(2, '0') + ' · ' : '';
+        const type = b.type === 'feature' ? b.mediaCollection ? 'Thema mit Karussell' : 'Thema'
+          : photoDisplays.get(b.type) || BLOCK_TYPES.find(([key]) => key === b.type)?.[1] || 'Inhalt';
+        const ref = b.mediaCollection?.entries?.[0]?.images?.[0] || b.images?.[0] || b.image;
+        const step = (direction, label, atEnd) => `<button class="btn small" type="button" data-action="home-order-step" data-id="${esc(id)}" data-dir="${direction}" aria-label="${esc(title)} ${label}"${atEnd || busy ? ' disabled' : ''}>${direction < 0 ? '↑' : '↓'} <span>${label}</span></button>`;
+        return `<li class="home-order-row${newHomeId === id ? ' is-new' : ''}" data-order-id="${esc(id)}" data-edit-block="${esc(id)}">
+          <span class="home-order-thumb">${ref && shownImage(ref) ? picture(ref, ref, '', true) : ''}</span>
+          <span class="home-order-info"><strong>${esc(title)}</strong><small>${numberLabel}${esc(type)}</small></span>
+          <label class="home-order-position"><span>Position</span><select data-order-position aria-label="Position für ${esc(title)}"${busy}>${visible.map((_, i) =>
+            `<option value="${i}"${i === index ? ' selected' : ''}>${i + 1}</option>`).join('')}</select></label>
+          <div class="home-order-tools">
+            ${step(-1, 'Nach oben', index === 0)}${step(1, 'Nach unten', index === visible.length - 1)}
+            <button type="button" class="btn small" data-action="block-edit" data-id="${esc(id)}"${busy}>Bearbeiten</button>
+            ${b.album?.enabled && !b.mediaCollection ? `<button type="button" class="btn small" data-action="block-album-edit" data-id="${esc(id)}"${busy}>Fotoseite</button>` : ''}
+            ${b.mediaCollection ? `<button type="button" class="btn small" data-action="media-transfer" data-page="home" data-id="${esc(id)}"${busy}>Nach Aktuell</button>` : ''}
+            <button type="button" class="btn small danger" data-action="home-order-remove" data-id="${esc(id)}"${busy}>Löschen</button>
+          </div>
+        </li>`;
+      }).join('')}</ol>
+      ${removed.size ? `<p class="muted small">Zum Löschen vorgemerkt · ${[...removed.values()].map(b => `<span>${esc(b.title || b.caption || 'Ohne Überschrift')} <button class="link" type="button" data-action="home-order-restore" data-id="${esc(b.id)}"${busy}>Rückgängig</button></span>`).join(' · ')}</p>` : ''}
+      <p class="form-error" role="alert">${esc(homeOrder?.error || '')}</p>
+      <div class="home-order-save"${orderChanged() ? '' : ' hidden'}>
+        <p role="status">Ungespeicherte Änderungen</p>
+        <button type="button" class="btn" data-action="home-order-reset"${busy}>Verwerfen</button>
+        <button type="submit" class="btn primary"${busy}>Änderungen speichern</button>
+      </div>
+    </form>`;
+  }
+  function orderDraft() {
+    if (!homeOrder) {
+      const expected = site.pages.home.blocks.filter(b => !b._new).map(b => b.id);
+      homeOrder = { expected, order: [...expected], removed: new Map() };
     }
-    function move(id,index,focusPart='select') {
-      if(busy)return;const previous=order.indexOf(id);if(previous<0||index<0||index>=order.length||index===previous)return;
-      order.splice(previous,1);order.splice(index,0,id);selected=id;dragged='';render(id,focusPart);form.querySelector('.home-order-status').textContent=`${byId.get(id).title||'Eintrag'} steht jetzt auf Position ${index+1}. Noch nicht gespeichert.`;
+    return homeOrder;
+  }
+  async function moveHomeRow(id, position, control) {
+    const draft = orderDraft();
+    if (draft.busy) return;
+    const order = draft.order.filter(item => !draft.removed.has(item));
+    const at = order.indexOf(id);
+    if (at < 0 || position < 0 || position >= order.length || at === position) return;
+    order.splice(at, 1);
+    order.splice(position, 0, id);
+    draft.order = [...order, ...draft.removed.keys()];
+    draft.error = '';
+    await ui().renderView();
+    const row = [...document.querySelectorAll('[data-order-id]')].find(node => node.dataset.orderId === id);
+    (row?.querySelector(`${control}:not([disabled])`) || row?.querySelector('select'))?.focus({preventScroll:true});
+    row?.scrollIntoView({block:'nearest'});
+  }
+  function withHomeOrder(next, draft) {
+    const current = next.pages.home.blocks;
+    if (current.some(b => draft.removed.has(b.id) && JSON.stringify(b) !== JSON.stringify(draft.removed.get(b.id)))) {
+      throw Error('Home wurde inzwischen geändert. Bitte verwirf den Entwurf und prüfe den aktuellen Stand.');
     }
-    list.addEventListener('change',e=>{if(e.target.matches('[data-order-position]'))move(e.target.closest('[data-order-id]').dataset.orderId,Number(e.target.value));});
-    list.addEventListener('click',e=>{const button=e.target.closest('[data-order-step]');if(button){const id=button.closest('[data-order-id]').dataset.orderId;move(id,order.indexOf(id)+Number(button.dataset.orderStep),button.dataset.orderStep);}});
-    list.addEventListener('dragstart',e=>{if(busy){e.preventDefault();return;}const row=e.target.closest('[data-order-id]');if(!row)return;dragged=row.dataset.orderId;row.classList.add('is-dragging');e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',dragged);});
-    const clearDrop=()=>list.querySelectorAll('.is-drop-target,.is-dragging').forEach(row=>row.classList.remove('is-drop-target','is-dragging'));
-    list.addEventListener('dragover',e=>{const row=e.target.closest('[data-order-id]');if(!dragged||!row)return;e.preventDefault();list.querySelectorAll('.is-drop-target').forEach(el=>el.classList.remove('is-drop-target'));if(row.dataset.orderId!==dragged)row.classList.add('is-drop-target');e.dataTransfer.dropEffect='move';});
-    list.addEventListener('drop',e=>{const row=e.target.closest('[data-order-id]');if(!dragged||!row)return;e.preventDefault();const id=dragged;clearDrop();move(id,order.indexOf(row.dataset.orderId));dragged='';});
-    list.addEventListener('dragend',()=>{dragged='';clearDrop();});
-    form.addEventListener('submit',async e=>{e.preventDefault();if(busy||save.disabled)return;busy=true;save.disabled=true;form.querySelectorAll('select,[data-order-step]').forEach(el=>el.disabled=true);
-      try{const fresh=await ui().api.site(),next=TFB.newsroom.reorder(fresh,'home',expected,order);site=await ui().api.saveSite(next);editing='home';detailEditing=false;ui().closeSheet();await ui().renderView();const target=[...document.querySelectorAll('[data-edit-block]')].find(el=>el.dataset.editBlock===selected);if(target){const header=document.querySelector('.topbar')?.getBoundingClientRect().bottom||0;window.scrollTo(0,Math.max(0,window.scrollY+target.getBoundingClientRect().top-header-16));}ui().toast('Reihenfolge gespeichert',true);
-      }catch(err){busy=false;form.querySelector('.form-error').textContent=err.message;render();}
-    });
-    render(selected);
+    const sorted = TFB.newsroom.reorder(next, 'home', draft.expected, draft.order);
+    sorted.pages.home.blocks = sorted.pages.home.blocks.filter(b => !draft.removed.has(b.id));
+    return sorted;
+  }
+  document.addEventListener('change', event => {
+    if (!event.target.matches('[data-home-order] [data-order-position]')) return;
+    moveHomeRow(event.target.closest('[data-order-id]').dataset.orderId, Number(event.target.value), 'select');
+  });
+  document.addEventListener('submit', async event => {
+    const form = event.target;
+    if (!form.matches('[data-home-order]')) return;
+    event.preventDefault();
+    const draft = homeOrder;
+    if (!orderChanged() || draft.busy) return;
+    if (draft.removed.size && !confirm('Änderungen speichern und vorgemerkte Inhalte endgültig von Home entfernen?')) return;
+    draft.busy = true;
+    for (const control of form.elements) control.disabled = true;
+    try {
+      site = await ui().api.saveSite(withHomeOrder(await ui().api.site(), draft));
+      homeOrder = null;
+      ui().toast('Änderungen gespeichert', true);
+    } catch (error) {
+      draft.error = error.message;
+      draft.busy = false;
+    }
+    await ui().renderView();
+  });
+  const confirmHomeOrderDiscard = () => !homeOrder?.busy && (!orderChanged() || confirm('Ungespeicherte Änderungen auf Home verwerfen?'));
+  function highlightHome(id) {
+    newHomeId = id;
+    setTimeout(() => {
+      if (newHomeId !== id) return;
+      newHomeId = '';
+      document.querySelector('.home-order-row.is-new')?.classList.remove('is-new');
+    }, 4200);
   }
 
   // Neu angelegte, aber nie gespeicherte Bausteine (Editor abgebrochen) verwerfen.
@@ -1520,7 +1617,7 @@
     const photos = (post.images || []).filter(ref => images[ref] || /^assets\//.test(ref));
     const editSlideshow = photos.length > 1 && (!post.designs ||
       (post.designs.length > 1 && !post.designs.some(slide => slide.ref.startsWith('vid:'))));
-    const gallery = (post.designs || photos.length > 1) && await import('./chat-media.js').then(studio =>
+    const gallery = (post.designs || photos.length > 1) && await import('./chat-media.js?v=20261114-home-editor-1').then(studio =>
       studio.publishedGallery(post.designs ? post : {...post, designs:photos.map(ref => studio.mediaDesign(ref,16,9))}, ref => images[ref] || ref));
     const carousel = post.photoView === 'carousel';
     const slideshow = post.photoView === 'slideshow';
@@ -1869,7 +1966,7 @@
         disconnect.observe(document.getElementById('sheet-root'), {childList: true, subtree: true});
         const progress = form.querySelector('[data-video-progress]');
         try {
-          const studio = scope === 'club' ? await import('./chat-media.js') : null;
+          const studio = scope === 'club' ? await import('./chat-media.js?v=20261114-home-editor-1') : null;
           for (const file of files) {
             if (!form.isConnected) return;
             if (file.type.startsWith('video/') || /\.(mov|mp4|m4v|webm)$/i.test(file.name)) {
@@ -1922,7 +2019,7 @@
             delete media.file;
           }
           const slideshowLayers = hasSlideshow() ? draft.slideshowLayers : [];
-          const studio = draft.designed || slideshowLayers.length ? await import('./chat-media.js') : null;
+          const studio = draft.designed || slideshowLayers.length ? await import('./chat-media.js?v=20261114-home-editor-1') : null;
           const payload = {title:draft.title,text:draft.text,authorMode:draft.authorMode,alsoTeams:draft.alsoTeams,dots:draft.dots,
             images:draft.media.filter(media => !media.ref.startsWith('vid:')).map(media => media.ref),
             designs:studio ? draft.media.map(media => media.design || studio.mediaDesign(media.ref,16,9)) : [],
@@ -2199,7 +2296,7 @@
     const list = [['#home', 'Home'], ['#kiosk', 'Kiosk'], ['#strichliste', 'Kiosk · Strichliste'], ['#abrechnungen', 'Kiosk · Abrechnungen'],
       ['#chat', 'Chat'], ['#chat/alle', 'Chat · Alle Beiträge'], ['#aktuell', 'Aktuell'], ['#sport', 'Sport'], ['#sport/training', 'Sport · Training'], ['#sport/platzbelegung', 'Sport · Platzbelegung'], ['#sport/regelwerk', 'Sport · Regelwerk'], ['#club', 'Club'], ['#club/history', 'Club · History'], ['#impressum', 'Impressum'], ['#satzung', 'Satzung']];
     if (TFB.config.features && TFB.config.features.treffen) list.push(['#treffen', navAll().find(x => x.target === '#treffen')?.label || 'Dating 2.0']);
-    (site.pages.home.blocks || []).filter((x) => x.type === 'feature' && hasMore(x) && (!x.navigation || x.navigation === 'detail'))
+    (site.pages.home.blocks || []).filter((x) => x.type === 'feature' && hasPublishedDetail(x) && (x.detailEnabled || !x.navigation || x.navigation === 'detail'))
       .forEach((x) => list.push([`#home/${x.id}`, `Home · ${x.title}`]));
     (site.pages.home.blocks || []).filter(x => x.album?.enabled).forEach(x => list.push([`#home/${x.id}/fotos`, `Fotos · ${x.title}`]));
     return list.filter(([target]) => navTargetAvailable(target));
@@ -2214,7 +2311,7 @@
           <button type="button" class="${isApp ? 'on' : ''}" data-linkkind="app" data-linkfor="${prefix}">Seite der App</button>
         </div>
         ${isApp
-          ? `<select name="${prefix}App">${targets.map(([v, l]) => `<option value="${esc(v)}" ${v === url ? 'selected' : ''}>${esc(l)}</option>`).join('')}</select>
+          ? `<select name="${prefix}App">${targets.map(([v, l]) => `<option value="${esc(v)}" ${v === url ? 'selected' : ''}>${esc(l)}</option>`).join('')}${targets.some(([v]) => v === url) ? '' : `<option value="${esc(url)}" selected>${esc(url)}</option>`}</select>
              <input type="hidden" name="${prefix}Url" value="${esc(url)}">`
           : `<input name="${prefix}Url" type="url" inputmode="url" value="${esc(url || '')}" placeholder="https://www.beispiel.de">`}
       </div>`;
@@ -2227,7 +2324,7 @@
   function thumbEdit(ref, list, i, n, removeAttr, format = '') {
     return `<div class="gallery-thumb sortable" draggable="false" data-list="${list}" data-index="${i}">
       ${picture(ref, ref)}${frameButton(ref, true, format)}
-      ${list === 'home' ? '<span class="home-cover-label">Aufmacher</span>' : ''}
+      ${list === 'home' && i === 0 ? '<span class="home-cover-label">Erstes Foto</span>' : ''}
       <button type="button" class="thumb-grip" title="Ziehen zum Sortieren" aria-label="Foto ${i + 1} verschieben (ziehen oder Pfeiltasten)">⠿</button>
       <button type="button" ${removeAttr}="${esc(ref)}" aria-label="Foto entfernen">×</button>
       <span class="thumb-move">
@@ -2239,7 +2336,7 @@
   function homePhotoField(draft) {
     const refs = homePhotoRefs(draft);
     return `<div class="field"><span>Fotos (${refs.length} / ${HOME_PHOTO_LIMIT})</span>
-      <p class="muted small">Das erste Foto ist der Aufmacher auf Home. Ziehe ein anderes Foto an die erste Stelle, um es als Aufmacher zu verwenden.</p>
+      <p class="muted small">Das erste Foto erscheint zuerst. Die Reihenfolge kannst du direkt bei den Fotos ändern.</p>
       <div class="gallery-edit home-photo-edit">
         ${refs.map((ref, i) => thumbEdit(ref, 'home', i, refs.length, 'data-home-photo-remove')).join('')}
         ${refs.length < HOME_PHOTO_LIMIT ? `<label class="gallery-add">${ui().icon.plus}<span>Fotos hinzufügen</span><input type="file" accept="image/*" multiple data-home-photo-input hidden></label>` : ''}
@@ -2270,6 +2367,8 @@
     const { openSheet, closeSheet } = ui();
     const original = findBlock(id);
     if (!original) return;
+    const originalSiteRevision = site._cms?.versions['page:home'];
+    const originalValue = JSON.stringify(original);
     if (original.mediaCollection) {
       const page = editing;
       return TFB.homeMedia.openEditor(original, {page,imageOf:ref=>images[ref] || ref,uploadFiles,cover4kField,
@@ -2283,13 +2382,16 @@
     if (draft.type === 'feature') { draft.more = { ...(draft.more || {}) }; initSections(draft.more); }
     if (draft.type === 'post' && !(draft.images || []).length && draft.image) { draft.images = [draft.image]; draft.image = null; }
     let edTab = startTab;
-    const edMore = {};   // „Mehr Gestaltung“ je Reiter auf/zu (bleibt beim Neuzeichnen)
-    const moreBox = (k, inner) => `<details class="ed-more" data-edmore="${k}" ${edMore[k] ? 'open' : ''}><summary>Mehr Gestaltung <small>freiwillig – ohne Änderung sieht alles gut aus</small></summary>${inner}</details>`;
-    const albumOnly = draft.type === 'feature' && startTab === 'album';
-    const live = draft.type === 'feature' && !albumOnly;   // Themen: Seitenleiste mit Live-Vorschau
-    const photoModule = ['gallery', 'collage'].includes(draft.type);
+    let linksOpen = Boolean(draft.link?.url || draft.link2?.url);
+    let detailOpen = startTab === 'sub' || draft.detailEnabled !== undefined || hasMore(draft);
+    if (draft.type === 'feature' && draft.detailEnabled === undefined && detailOpen) {
+      draft.detailEnabled = !['none', 'link'].includes(draft.navigation);
+    }
+    let albumOpen = startTab === 'album' || Boolean(draft.album?.enabled || draft.album?.images?.length);
+    const live = draft.type === 'feature';   // Themen: Seitenleiste mit Live-Vorschau
+    const photoModule = photoTypes.includes(draft.type);
     const refreshPhotoPreview = () => {
-      if (!photoModule) return;
+      if (!photoModule || editing === 'home') return;
       photoPreview = { id, draft };
       const module = [...document.querySelectorAll('#view [data-photo-module]')].find(el => el.dataset.photoModule === id);
       const badge = module?.querySelector('.date-badge');
@@ -2298,7 +2400,7 @@
         module.outerHTML = renderBlock(draft, editing, badge?.classList.contains('date-badge-accent'));
       } else ui().renderView();
     };
-    const label = albumOnly?'Fotokollage':editing==='aktuell'&&draft.type==='post'?'News-Artikel':(BLOCK_TYPES.find(([t]) => t === draft.type) || [0, 'Inhalt'])[1];
+    const label = photoModule && draft.photoBlock ? 'Fotoblock' : photoModule ? photoDisplays.get(draft.type) :editing==='aktuell'&&draft.type==='post'?'News-Artikel':(BLOCK_TYPES.find(([t]) => t === draft.type) || [0, 'Inhalt'])[1];
 
     const body = () => {
       switch (draft.type) {
@@ -2316,27 +2418,28 @@
           const seg = (attr, cur, opts) => `<div class="seg">${opts.map(([v, l, off]) =>
             `<button type="button" class="${cur === v ? 'on' : ''}" data-${attr}="${v}" ${off ? 'disabled' : ''}>${l}</button>`).join('')}</div>`;
           const homePanel = `
-            <p class="ed-hint">So erscheint das Thema auf der <b>Startseite</b>. ${wideScreen() ? 'Links siehst du jede Änderung sofort.' : 'Mit „Vorschau ansehen“ siehst du die Seite.'}</p>
-            <h3 class="editor-sub">1 · Foto</h3>`
-            + (homeFeature ? homePhotoField(draft) : (draft.images || []).length ? newsPhotoField(draft) : imageField(draft.image, draft.id, ''))
-            + (ui().state.member?.isAdmin ? cover4kField(draft, homeFeature) : '')
-            + `<h3 class="editor-sub">2 · Überschrift</h3>`
-            + field('Kleine Zeile darüber', 'kicker', draft.kicker, { placeholder: 'z. B. Ab Mai 2027 im Freibad Bielstein' })
+            <h3 class="editor-sub">Titel und Text</h3>`
             + field('Überschrift', 'title', draft.title)
-            + field('Unterzeile darunter', 'subtitle', draft.subtitle, { placeholder: 'z. B. Zwei Outdoor-Courts, 365 Tage geöffnet' })
-            + `<h3 class="editor-sub">3 · Kurzer Text</h3>`
-            + field('', 'text', draft.text, { area: true, rich: true, simple: true, rows: 5, placeholder: 'Zwei, drei Sätze – Wort markieren, dann Fett, Kursiv oder Rot' })
-            + `<h3 class="editor-sub">4 · Links (freiwillig)</h3>
-               <p class="muted small ed-note">„Mehr erfahren“ zur Unterseite erscheint von selbst, sobald die Unterseite Inhalt hat.</p>
-               <div class="gap-fields">${gapField('linkTop', draft.linkTop, LINK_TOP, 'Abstand über den Links')}${gapField('linkGap', draft.linkGap, LINK_GAP, 'Abstand zwischen den Links')}</div>`
-            + linkTargetField(lk.url, 'link', 'Link 1')
-            + field('Link-Text (steht auf dem Link – leer = Adresse)', 'linkLabel', lk.label, { placeholder: 'z. B. Jetzt Platz buchen' })
-            + linkTargetField((draft.link2 || {}).url, 'link2', 'Link 2 – z. B. zu einer Unterseite der App')
-            + field('Link-Text (steht auf dem Link)', 'link2Label', (draft.link2 || {}).label, { placeholder: 'z. B. Zum Kiosk' })
-            + moreBox('home', (homeFeature || (draft.images || []).length ? '' : newsPhotoField(draft))
-              + `<label class="field"><span>${homeFeature ? 'Klick auf die Überschrift öffnet' : 'Klick auf Bild und Überschrift öffnet'}</span><select name="navigation" data-rerender>${[['detail','Eigene Detailseite'],['link','Verknüpften Link'],['none','Nichts']].map(([v,l]) => `<option value="${v}" ${v === (draft.navigation || (hasMore(draft) ? 'detail' : 'link')) ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
-              <label class="meet-check"><input type="checkbox" name="showMore" ${draft.showMore !== false ? 'checked' : ''}><span>„Mehr erfahren“ bei eigener Detailseite anzeigen</span></label>`
-              + (() => {
+            + field('Kurztext', 'text', draft.text, { area: true, rich: true, simple: true, rows: 5 })
+            + field('Kleine Zeile darüber (freiwillig)', 'kicker', draft.kicker)
+            + field('Unterüberschrift (freiwillig)', 'subtitle', draft.subtitle)
+            + `<h3 class="editor-sub">Fotos</h3>`
+            + (homeFeature ? homePhotoField(draft) : (draft.images || []).length ? newsPhotoField(draft) : imageField(draft.image, draft.id, ''))
+            + (homeFeature && homePhotoRefs(draft).length > 1 ? photoFormatField('photoDisplay', draft.photoDisplay || 'single', true) : '')
+            + (homeFeature && draft.photoDisplay === 'carousel' && homePhotoRefs(draft).length > 1 ? photoStartField('animationStart', draft.animationStart) : '')
+            + (ui().state.member?.isAdmin ? cover4kField(draft, homeFeature) : '')
+            + `<div class="home-topic-actions">
+              ${linksOpen ? '' : '<button type="button" class="btn small" data-topic-open="links">Link hinzufügen</button>'}
+              <button type="button" class="btn small" data-topic-open="sub">${detailOpen ? 'Unterseite bearbeiten' : 'Unterseite anlegen'}</button>
+              <button type="button" class="btn small" data-topic-open="album">${albumOpen ? 'Fotoseite bearbeiten' : 'Fotoseite anlegen'}</button>
+            </div>`
+            + (linksOpen ? '<h3 class="editor-sub">Links</h3>'
+              + linkTargetField(lk.url, 'link', 'Link 1')
+              + field('Link-Text', 'linkLabel', lk.label, { placeholder: 'z. B. Jetzt Platz buchen' })
+              + linkTargetField((draft.link2 || {}).url, 'link2', 'Link 2 (freiwillig)')
+              + field('Link-Text', 'link2Label', (draft.link2 || {}).label)
+              + `<label class="field"><span>Beim Antippen der Überschrift</span><select name="navigation" data-rerender>${[['none','Auf Home bleiben'],['detail','Eigene Unterseite öffnen'],['link','Ersten Link öffnen']].map(([v,l]) => `<option value="${v}" ${v === (draft.navigation || (hasMore(draft) ? 'detail' : 'link')) ? 'selected' : ''}>${l}</option>`).join('')}</select></label>`
+ + (() => {
                 const n = String(draft.text || '').split(/\n{2,}/).filter((x) => x.trim()).length;
                 const cur = lk.position || 'right';
                 const opts = [['left', 'Links unter der Unterzeile'], ...Array.from({ length: n }, (_, i) => [`right-${i}`, i === 0 ? 'Rechts vor dem Text' : `Rechts nach Absatz ${i}`]), ['right', 'Rechts unter dem Text']];
@@ -2347,9 +2450,10 @@
               + (ext ? `<p class="muted small">Für die Vorschau (kleines Bild beim dezenten Link, große Karte): im Echtbetrieb holt die App Bild, Titel und Text automatisch von der Website – bis dahin hier eintragen.</p>`
                 + field('Vorschau: Titel', 'linkTitle', lk.title) + field('Vorschau: Text', 'linkText', lk.text, { area: true, rows: 3 })
                 + imageField(lk.image, lk.url, 'Vorschau: Bild', 'link')
-                : imageField(lk.image, lk.url || 'intern', 'Rundes Bild im Link (leer = Symbol der Seite)', 'link')));
+                : imageField(lk.image, lk.url || 'intern', 'Rundes Bild im Link (leer = Symbol der Seite)', 'link')) : '');
           const ownHero = heroSrc === 'own' ? heroImgs : [];
           const subPanel = `
+            <label class="meet-check"><input type="checkbox" name="detailEnabled" ${draft.detailEnabled !== false ? 'checked' : ''}><span>Unterseite auf Home verlinken</span></label>
             <p class="ed-hint">Die <b>Unterseite</b> öffnet sich über „Mehr erfahren“. Hier bearbeitest du sie von oben nach unten – so wie sie erscheint. Überschrift, Unterzeile und Link kommen vom Reiter „Startseite“.</p>
             <h3 class="editor-sub">1 · Fotos oben (1 bis 4)</h3>
             <div class="field"><div class="gallery-edit">
@@ -2366,29 +2470,32 @@
                   ${(() => { const l = (more.images || []).filter(shownImage); return l.map((ref, i) => thumbEdit(ref, 'more', i, l.length, 'data-more-remove')).join(''); })()}
                   <label class="gallery-add">${ui().icon.plus}<span>Fotos</span><input type="file" accept="image/*" multiple data-more-input hidden></label>
                 </div></div>`
-            + moreBox('sub', `
+            + `
               ${ownHero.length === 1 ? `<div class="field"><span>Ein Foto oben: Darstellung</span>${seg('heromode', heroMode === 'original' ? 'original' : 'wide', [['wide', 'Breit'], ['original', 'Originalformat']])}</div>` : ''}
               ${ownHero.length === 1 && heroMode === 'original' ? `<div class="field"><span>Ausrichtung</span><div class="seg align-seg">${[['left', 'Links'], ['center', 'Mitte'], ['right', 'Rechts']].map(([v, l]) =>
                   `<button type="button" class="${(more.heroAlign || 'center') === v ? 'on' : ''}" data-align="hero:${v}">${l}</button>`).join('')}</div></div>` : ''}`
               + `<div class="field"><span>Großer Textanfang (rot)</span>${seg('dropcap', String(more.dropcap == null ? 1 : more.dropcap), [['0', 'Aus'], ['1', '1 Zeichen'], ['2', '2 Zeichen'], ['3', '3 Zeichen']])}</div>`
               + `<label class="meet-check"><input type="checkbox" name="moreOriginal" data-rerender ${more.original ? 'checked' : ''}><span>Kollage: Fotos im Originalformat zeigen (nicht zuschneiden)</span></label>
                  ${more.original ? `<div class="field"><span>Ausrichtung der Kollage</span><div class="seg align-seg">${[['left', 'Links'], ['center', 'Mitte'], ['right', 'Rechts']].map(([v, l]) =>
-                  `<button type="button" class="${(more.collageAlign || 'center') === v ? 'on' : ''}" data-align="collage:${v}">${l}</button>`).join('')}</div></div>` : ''}`);
-          const albumPanel = `<label class="meet-check"><input type="checkbox" name="albumEnabled" data-rerender ${album.enabled ? 'checked' : ''}><span>Separate Fotokollage veröffentlichen</span></label>
+                  `<button type="button" class="${(more.collageAlign || 'center') === v ? 'on' : ''}" data-align="collage:${v}">${l}</button>`).join('')}</div></div>` : ''}`;
+          const albumPanel = `<label class="meet-check"><input type="checkbox" name="albumEnabled" ${album.enabled ? 'checked' : ''}><span>Fotoseite auf Home verlinken</span></label>
             ${field('Überschrift der Fotoseite', 'albumTitle', album.title || draft.title)}
             ${field('Link-Text', 'albumLabel', album.label || 'Fotos der Veranstaltung')}
+            ${photoFormatField('albumPhotoDisplay', album.photoDisplay || 'collage')}
+            ${album.photoDisplay === 'carousel' ? photoStartField('albumAnimationStart', album.animationStart) : ''}
             ${positionField('albumPos', album.position)}${iconField('albumIcon', album.icon || 'camera')}
             <label class="meet-check"><input type="checkbox" name="albumOriginal" data-rerender ${album.original ? 'checked' : ''}><span>Originalformate erhalten</span></label>
             <div class="field"><span>Fotos (${(album.images || []).length} / 100)</span><div class="gallery-edit">${(album.images || []).filter(shownImage).map((ref,i,list) => thumbEdit(ref, 'album', i, list.length, 'data-album-remove')).join('')}
             ${(album.images || []).length < 100 ? `<label class="gallery-add">${ui().icon.plus}<span>Fotos</span><input type="file" accept="image/*" multiple data-album-input hidden></label>` : ''}</div></div>`;
-          if(albumOnly)return albumPanel;
           return `
             <div class="ed-tabs" role="tablist">
               <button type="button" role="tab" class="${edTab === 'home' ? 'on' : ''}" data-edtab="home">Startseite</button>
-              <button type="button" role="tab" class="${edTab === 'sub' ? 'on' : ''}" data-edtab="sub">Unterseite</button>
+              ${detailOpen ? `<button type="button" role="tab" class="${edTab === 'sub' ? 'on' : ''}" data-edtab="sub">Unterseite</button>` : ''}
+              ${albumOpen ? `<button type="button" role="tab" class="${edTab === 'album' ? 'on' : ''}" data-edtab="album">Fotoseite</button>` : ''}
             </div>
             <div class="ed-panel" data-panel="home" ${edTab === 'home' ? '' : 'hidden'}>${homePanel}</div>
-            <div class="ed-panel" data-panel="sub" ${edTab === 'sub' ? '' : 'hidden'}>${subPanel}</div>
+            ${detailOpen ? `<div class="ed-panel" data-panel="sub" ${edTab === 'sub' ? '' : 'hidden'}>${subPanel}</div>` : ''}
+            ${albumOpen ? `<div class="ed-panel" data-panel="album" ${edTab === 'album' ? '' : 'hidden'}>${albumPanel}</div>` : ''}
             `;
         }
         case 'heading': return field('Überschrift', 'title', draft.title);
@@ -2413,19 +2520,22 @@
           + (draft.original ? `<div class="field"><span>Ausrichtung</span><div class="seg align-seg">${[['left', 'Links'], ['center', 'Mitte'], ['right', 'Rechts']].map(([v, l]) =>
                 `<button type="button" class="${(draft.align || 'center') === v ? 'on' : ''}" data-align="image:${v}">${l}</button>`).join('')}</div></div>` : '');
         case 'gallery':
-        case 'collage': return field('Überschrift', 'title', draft.title)
-          + field('Datum', 'date', draft.date, { type: 'date' }) + `
+        case 'collage':
+        case 'carousel': return field('Überschrift (freiwillig)', 'title', draft.title)
+          + (editing === 'home' ? photoFormatField('blockPhotoDisplay', draft.type) : '')
+          + (draft.type === 'carousel' ? photoStartField('animationStart', draft.animationStart) : '')
+          + (draft.photoBlock ? '' : field('Datum', 'date', draft.date, { type: 'date' })) + `
           <div class="field"><span>Fotos (${(draft.images || []).filter(shownImage).length} / 100)</span>
             <div class="gallery-edit">
               ${(() => { const l = (draft.images || []).filter(shownImage); return l.map((ref, i) => thumbEdit(ref, 'gallery', i, l.length, 'data-gallery-remove')).join(''); })()}
               ${(draft.images || []).length < 100 ? `<label class="gallery-add">${ui().icon.plus}<span>Fotos</span><input type="file" accept="image/*" multiple data-gallery-input hidden></label>` : ''}
             </div>
-          </div><label class="meet-check"><input type="checkbox" name="showText" ${draft.showText !== false ? 'checked' : ''}><span>Text anzeigen</span></label>
+          </div>` + (draft.photoBlock && !draft.text ? '' : `<label class="meet-check"><input type="checkbox" name="showText" ${draft.showText !== false ? 'checked' : ''}><span>Text anzeigen</span></label>
           <label class="field"><span>Textposition</span><select name="textPosition">
             <option value="above" ${draft.textPosition === 'above' ? 'selected' : ''}>Unter der Überschrift</option>
             <option value="below" ${draft.textPosition !== 'above' ? 'selected' : ''}>Unter den Bildern</option>
           </select></label>`
-          + field('Text', 'text', draft.text, { area: true, rich: true, simple: true, rows: 7 });
+          + field('Text', 'text', draft.text, { area: true, rich: true, simple: true, rows: 7 }));
         case 'people': return field('Überschrift', 'title', draft.title)
           + field('Personen – je Zeile „Rolle: Name“', 'people', (draft.people || []).map((p) => `${p.role}: ${p.name}`).join('\n'), { area: true, rows: 6 });
         case 'facts': return `<div class="facts-editor">${(draft.items || []).map((f, i, list) => `
@@ -2453,7 +2563,7 @@
             <button type="submit" class="btn primary block">Speichern</button>
             ${live ? '<button type="button" class="btn block ed-peek" data-ed-peek>Vorschau ansehen</button>' : ''}
           </div>
-          ${albumOnly?'':`<button type="button" class="btn block danger" data-delete>${live ? 'Thema löschen' : editing==='aktuell'?esc(label)+' löschen':'Baustein löschen'}</button>`}
+          ${editing === 'home' && !detailEditing ? '' : `<button type="button" class="btn block danger" data-delete>${live ? 'Thema löschen' : editing==='aktuell'?esc(label)+' löschen':'Baustein löschen'}</button>`}
         </form>`);
       const form = document.querySelector('[data-editor=block]');
       bindRichFields(form, draft, draft.more?.sections);
@@ -2474,6 +2584,10 @@
         nodes.forEach((thumb, index) => {
           holder.insertBefore(thumb, add);
           thumb.dataset.index = index;
+          if (list === 'home') {
+            thumb.querySelector('.home-cover-label')?.remove();
+            if (index === 0) thumb.insertAdjacentHTML('beforeend', '<span class="home-cover-label">Erstes Foto</span>');
+          }
           const grip = thumb.querySelector('.thumb-grip');
           if (grip) grip.setAttribute('aria-label', `Foto ${index + 1} verschieben (ziehen oder Pfeiltasten)`);
           thumb.querySelectorAll('[data-move-index]').forEach(button => {
@@ -2544,14 +2658,12 @@
         document.querySelector(`[data-editor=block] .gallery-thumb[data-list="${thumb.dataset.list}"][data-index="${index}"] .thumb-grip`)?.focus();
       });
       form.addEventListener('dragstart', e => { if (e.target.closest('.gallery-thumb.sortable')) e.preventDefault(); });
-      wireGapFields(form, () => { if (live) schedulePreview(); });
       if (live) {
         startLive(id, draft, () => { collect(form); return edTab; });
         document.querySelector('#sheet-root .sheet').scrollTop = keepScroll;
         form.addEventListener('input', () => schedulePreview());
         form.addEventListener('change', () => schedulePreview());
       }
-      form.addEventListener('toggle', (e) => { if (e.target.dataset && e.target.dataset.edmore) edMore[e.target.dataset.edmore] = e.target.open; }, true);
       form.addEventListener('submit', (e) => { e.preventDefault(); save(form); });
       form.addEventListener('click', async (e) => {
         if (isSectionsClick(e) && draft.more) {
@@ -2592,6 +2704,28 @@
         }
         const mv = e.target.closest('[data-move-list]');
         if (mv) { collect(form); moveInList(mv.dataset.moveList, Number(mv.dataset.moveIndex), Number(mv.dataset.moveIndex) + Number(mv.dataset.moveDir)); render(); return; }
+        const option = e.target.closest('[data-topic-open]');
+        if (option) {
+          collect(form);
+          const section = option.dataset.topicOpen;
+          if (section === 'links') linksOpen = true;
+          else {
+            edTab = section;
+            if (section === 'sub' && !detailOpen) {
+              detailOpen = true;
+              draft.detailEnabled = true;
+              if (draft.navigation !== 'link') draft.navigation = 'detail';
+            }
+            if (section === 'album' && !albumOpen) {
+              albumOpen = true;
+              draft.album = { ...draft.album, enabled: true };
+            }
+          }
+          render();
+          document.querySelector('#sheet-root .sheet').scrollTop = 0;
+          if (live) refreshPreview(true);
+          return;
+        }
         const tabBtn = e.target.closest('[data-edtab]');
         if (tabBtn) {
           collect(form);
@@ -2660,7 +2794,10 @@
           return;
         }
         if (!input.files || !input.files.length) return;
+        const saveButton = form.querySelector('[type=submit]');
+        if (saveButton.disabled) return;
         collect(form);
+        saveButton.disabled = true;
         try {
           const files = [...input.files];
           const homeUpload = homeFeature && input.matches('[data-home-photo-input]');
@@ -2707,8 +2844,9 @@
           }
           if (input.matches('[data-more-input]')) draft.more = { ...(draft.more || {}), images: [...((draft.more || {}).images || []).filter((r) => !/^ph:/.test(r)), ...ids] };
           ui().toast(ids.length > 1 ? `${ids.length} Fotos hinzugefügt` : 'Foto hinzugefügt', true);
-          render();
+          if (form.isConnected) render();
         } catch (err) { ui().toast(err.message); }
+        finally { saveButton.disabled = false; }
       });
     };
 
@@ -2738,13 +2876,30 @@
         if (f.showText) draft.showText = f.showText.checked;
         if (f.textPosition) draft.textPosition = f.textPosition.value === 'above' ? 'above' : 'below';
       }
-      [['linkTop', LINK_TOP], ['linkGap', LINK_GAP]].forEach(([k, def]) => {
-        if (!f[k]) return;
-        const v = Number(f[k].value);
-        if (gapOk(v) && v !== def) draft[k] = v; else delete draft[k];
-      });
-      if (f.navigation) { draft.navigation = f.navigation.value; draft.showMore = f.showMore.checked; }
-      if (f.albumEnabled) draft.album = { ...(draft.album || {}), enabled: f.albumEnabled.checked, title: f.albumTitle.value.trim(), label: f.albumLabel.value.trim() || 'Fotos der Veranstaltung', position: f.albumPos.value, icon: f.albumIcon.value, original: f.albumOriginal.checked };
+      if (f.photoDisplay) draft.photoDisplay = f.photoDisplay.value;
+      if (f.blockPhotoDisplay) draft.type = f.blockPhotoDisplay.value;
+      if (f.animationStart) draft.animationStart = f.animationStart.checked ? 'auto' : 'manual';
+      if (f.navigation) {
+        draft.navigation = f.navigation.value;
+        if (draft.navigation === 'detail' && !detailOpen) {
+          detailOpen = true;
+          draft.detailEnabled = true;
+          draft.showMore = true;
+        }
+      }
+      if (f.detailEnabled) {
+        if (draft.detailEnabled === false && f.detailEnabled.checked) {
+          draft.showMore = true;
+          if (draft.navigation !== 'link') draft.navigation = 'detail';
+        }
+        draft.detailEnabled = f.detailEnabled.checked;
+      }
+      if (f.albumEnabled) draft.album = {
+        ...draft.album, enabled: f.albumEnabled.checked, title: f.albumTitle.value.trim(),
+        label: f.albumLabel.value.trim() || 'Fotos der Veranstaltung', position: f.albumPos.value,
+        icon: f.albumIcon.value, original: f.albumOriginal.checked, photoDisplay: f.albumPhotoDisplay.value,
+        animationStart: f.albumAnimationStart ? (f.albumAnimationStart.checked ? 'auto' : 'manual') : draft.album?.animationStart,
+      };
       if (form.querySelector('[data-panel=sub]') && draft.more) {
         const secs = readSections(form, draft.more.sections || []);
         draft.more = { ...draft.more, sections: secs, ...sectionsDerived(secs), original: Boolean(f.moreOriginal && f.moreOriginal.checked) };
@@ -2764,10 +2919,48 @@
         value: f['fact_value_' + i].value.trim(), label: f['fact_label_' + i].value.trim(),
       }));
     };
+    async function saveHomeBlock(form, value, isNew) {
+      const button = form.querySelector('[type=submit]');
+      if (button.disabled) return;
+      const controls = [...form.elements].filter(control => !control.disabled);
+      for (const control of controls) control.disabled = true;
+      try {
+        const next = await ui().api.site();
+        const blocks = next.pages.home.blocks;
+        const index = blocks.findIndex(block => block.id === id);
+        if (!isNew && (index < 0 || (originalSiteRevision !== undefined
+          ? next._cms?.versions['page:home'] !== originalSiteRevision
+          : JSON.stringify(blocks[index]) !== originalValue))) {
+          throw Error('Der Inhalt wurde inzwischen geändert. Bitte öffne ihn erneut.');
+        }
+        if (isNew && value.type === 'feature' && blocks.filter(block => block.type === 'feature').length >= MAX_HOME_FEATURES) {
+          throw Error(`Auf Home sind bereits ${MAX_HOME_FEATURES} Themen veröffentlicht.`);
+        }
+        const { _new, ...saved } = value;
+        if (isNew) blocks.unshift(saved);
+        else blocks[index] = saved;
+        site = await ui().api.saveSite(next);
+        if (isNew && homeOrder && blocks.slice(1).map(b => b.id).join() === homeOrder.expected.join()) {
+          homeOrder.expected.unshift(id);
+          homeOrder.order.unshift(id);
+        }
+        if (isNew) highlightHome(id);
+        if (detailEditing) { editing = null; detailEditing = false; }
+        endLive();
+        if (form.isConnected) closeSheet();
+        await ui().renderView();
+        ui().toast(isNew ? 'Oben auf Home hinzugefügt' : 'Gespeichert', true);
+      } catch (error) {
+        form.querySelector('.form-error').textContent = error.message;
+      } finally { for (const control of controls) control.disabled = false; }
+    }
     const save = (form) => {
       collect(form);
       if (['event', 'post', 'feature'].includes(draft.type) && !draft.title) { form.querySelector('.form-error').textContent = 'Bitte einen Titel eingeben.'; return; }
       if(editing==='aktuell'&&['post','event'].includes(draft.type)&&!TFB.newsroom.validDate(draft.date)){form.querySelector('.form-error').textContent='Bitte ein gültiges Datum wählen.';return;}
+      if (photoModule && (isNew || draft.photoBlock) && !(draft.images || []).length) { form.querySelector('.form-error').textContent = 'Bitte mindestens ein Foto hinzufügen.'; return; }
+      if (draft.album?.enabled && !draft.album.images?.length && (albumOpen || isNew)) { form.querySelector('.form-error').textContent = 'Bitte auf der Fotoseite mindestens ein Foto hinzufügen oder die Verlinkung ausschalten.'; return; }
+      if (editing === 'home') return saveHomeBlock(form, draft, isNew);
       delete draft._new;
       const list = blocksOf();
       list[list.findIndex((b) => b.id === id)] = draft;
@@ -2791,12 +2984,13 @@
 
   const today = () => new Date().toISOString().slice(0, 10);
   const newBlock = (type) => {
-    const id = 'b-' + Date.now().toString(36);
+    const id = 'b-' + crypto.randomUUID();
     const defaults = {
       feature: { layout: 'wide', image: null, kicker: '', title: '', subtitle: '', text: '', link: { url: '', label: '' } },
       heading: { title: 'Neue Überschrift' }, text: { title: '', text: '' },
       event: { date: today(), time: '', title: '', place: 'Tennisanlage', text: '' },
       post: { date: today(), title: '', text: '', image: null }, image: { image: null, caption: '' },
+      carousel: { title: '', images: [], text: '' },
       gallery: { title: 'Galerie', images: [], date: '', text: '', showText: true, textPosition: 'below' },
       collage: { title: 'Collage', images: [], date: '', text: '', showText: true, textPosition: 'below' }, people: { title: 'Ansprechpartner', people: [] },
       facts: { items: Array.from({ length: 5 }, () => ({ value: '–', label: 'Kennzahl' })) }, button: { label: 'Mehr erfahren', url: '' }, teams: { title: 'Mannschaften' },
@@ -3328,7 +3522,7 @@
         } else {
           site = saved;
         }
-        TFB.refreshNav();
+        TFB.refreshNav?.();
         await renderView();
         toast(TFB.kioskActive() ? 'Kiosk aktiviert' : 'Kiosk deaktiviert', true);
       } catch (error) { toast(error.message); }
@@ -3341,12 +3535,12 @@
         const latest = await ui().api.site();
         if (!el.isConnected || ui().currentView() !== 'home') return;
         site = latest;
-        TFB.refreshNav();
+        TFB.refreshNav?.();
         openNavEditor();
       } catch (error) { ui().toast(error.message); }
       finally { el.disabled = false; }
     },
-    'site-done': () => { editing = null; ui().renderView(); window.scrollTo(0, 0); },
+    'site-done': () => { if (!confirmHomeOrderDiscard()) return; homeOrder = null; editing = null; ui().renderView(); window.scrollTo(0, 0); },
     'block-move': (el) => {
       const list = blocksOf();
       const a = list.findIndex((b) => b.id === el.dataset.id);
@@ -3356,17 +3550,47 @@
       commit();
     },
     'block-edit': (el) => openBlockEditor(el.dataset.id),
-    'home-order': el=>openHomeOrder(el),
+    'home-add-photos': () => openPhotoPicker(),
+    'home-order-step': el => {
+      const draft = orderDraft();
+      const visible = draft.order.filter(id => !draft.removed.has(id));
+      return moveHomeRow(el.dataset.id, visible.indexOf(el.dataset.id) + Number(el.dataset.dir), `[data-dir="${el.dataset.dir}"]`);
+    },
+    'home-order-remove': el => {
+      const draft = orderDraft();
+      const block = site.pages.home.blocks.find(b => b.id === el.dataset.id);
+      if (draft.busy || !block || !confirm(`„${block.title || 'Ohne Überschrift'}“ zum Löschen vormerken? Die Änderung wird erst beim Speichern veröffentlicht.`)) return;
+      draft.removed.set(block.id, structuredClone(block));
+      ui().renderView();
+    },
+    'home-order-restore': el => {
+      if (!homeOrder || homeOrder.busy) return;
+      homeOrder.removed.delete(el.dataset.id);
+      ui().renderView();
+    },
+    'home-order-reset': async () => {
+      if (homeOrder?.busy || !confirmHomeOrderDiscard()) return;
+      homeOrder = null;
+      await TFB.refreshSite();
+    },
     'block-new': () => openBlockPicker(),
     'aktuell-new': el=>newNewsroomItem(el.dataset.kind),
-    'aktuell-transfer': ()=>openHomeTransfer(),
+    'aktuell-transfer': () => openHomeTransfer(ui().currentView() === 'home' ? { from: 'aktuell' } : {}),
     'media-transfer': el=>openHomeTransfer({from:el.dataset.page,id:el.dataset.id}),
     'aktuell-more': ()=>{editing='aktuell';openBlockPicker();},
     'block-add': (el) => {
+      if (!editing || !ui().state.member?.isAdmin) return;
       if (editing === 'home' && el.dataset.type === 'feature' && blocksOf().filter((b) => b.type === 'feature' && !b._new).length >= MAX_HOME_FEATURES) { ui().toast(`Höchstens ${MAX_HOME_FEATURES} Themen auf der Startseite.`); return; }
       dropUnsaved();
       const block = { ...newBlock(el.dataset.type), _new: true };
-      if (el.hasAttribute('data-media-collection')) Object.assign(block,{navigation:'detail',mediaButtonLabel:'Einblicke entdecken',mediaCollection:TFB.homeMedia.fresh()});
+      if (editing === 'home') {
+        block.title = '';
+        if (block.type === 'feature') block.navigation = 'none';
+        else block.photoBlock = true;
+        blocksOf().unshift(block);
+        openBlockEditor(block.id, true);
+        return;
+      }
       // Neue Beiträge/Termine direkt hinter den letzten gleicher Art, sonst ans Ende.
       const list = blocksOf();
       const lastSame = list.map((b) => b.type).lastIndexOf(block.type);
@@ -3452,7 +3676,7 @@
     'post-gallery': (el) => { const p = postCache[el.dataset.id]; if (p) openGallery(p.images || [], `${p.author} · ${whenText(p.createdAt)}`, false, Number(el.dataset.index)); },
     'home-photo-gallery': (el) => {
       const block = homeBlocks().find(item => item.id === el.dataset.block);
-      if (block) openGallery(homePhotoRefs(block).slice(0, HOME_PHOTO_LIMIT), block.title, true, 0);
+      if (block) openGallery(homePhotoRefs(block).slice(0, HOME_PHOTO_LIMIT), block.title, true, Number(el.dataset.index) || 0);
     },
     'news-gallery': (el) => {
       const archived = TFB.clubArchive?.photoEntry(el.dataset.block);
@@ -3486,7 +3710,7 @@
 
   // Bearbeitungsmodus verlassen, wenn eine andere Seite geöffnet wird.
   window.addEventListener('hashchange', () => {
-    if (detailEditing || (editing && location.hash.replace('#', '') !== routeOf(editing))) { editing = null; detailEditing = false; }
+    if (detailEditing || (editing && location.hash.replace('#', '') !== routeOf(editing))) { editing = null; detailEditing = false; homeOrder = null; }
   });
 
   // Link eines Home-Themas an den anderen Platz setzen

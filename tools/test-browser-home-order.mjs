@@ -8,29 +8,145 @@ const browser=await chromium.launch({headless:true});
 try{
  const page=await browser.newPage({serviceWorkers:'block',viewport:{width:1440,height:1050}}),errors=[];
  page.setDefaultTimeout(10000);page.on('pageerror',e=>errors.push(e.message));
- await page.route('**/*',route=>{const u=new URL(route.request().url());if(u.origin!==origin)return route.abort();const f=resolve(root,'.'+decodeURIComponent(u.pathname==='/'?'/index.html':u.pathname));if(!f.startsWith(root))return route.abort();try{return route.fulfill({body:readFileSync(f),contentType:({'.html':'text/html','.js':'text/javascript','.css':'text/css','.png':'image/png','.jpg':'image/jpeg','.webp':'image/webp','.ttf':'font/ttf'})[extname(f)]||'application/octet-stream'});}catch{return route.fulfill({status:404,body:''});}});
+ await page.route('**/*',route=>{const u=new URL(route.request().url());if(u.origin!==origin && !(u.origin==='https://joern-kaemper.de' && u.pathname.startsWith('/assets/shared-kiosk/')))return route.abort();const f=resolve(root,'.'+decodeURIComponent(u.pathname==='/'?'/index.html':u.pathname));if(!f.startsWith(root))return route.abort();try{return route.fulfill({body:readFileSync(f),contentType:({'.html':'text/html','.js':'text/javascript','.css':'text/css','.png':'image/png','.jpg':'image/jpeg','.webp':'image/webp','.ttf':'font/ttf'})[extname(f)]||'application/octet-stream'});}catch{return route.fulfill({status:404,body:''});}});
  await page.goto(origin+'/?tfbPresentation=1#home');await page.waitForFunction(()=>TFB.ui&&TFB.homeMedia);
  await page.evaluate(async()=>{TFB.ui.state.member=TFB.api.attachDirectoryMember({id:'home-media-admin',firstName:'Home',lastName:'Test',isAdmin:true,active:true,email:'home@example.invalid',teams:[]});TFB.api.secureDirectory=true;TFB.api.mode='test';location.hash='#home';await TFB.ui.renderView('home');});
  if(await page.evaluate(()=>TFB.ui.state.member?.adminHidden))await page.locator('[data-action="admin-toggle"]').click();
 
 
- const image='assets/images/board/kai-eichmann.jpg';
- await page.evaluate(async image=>{const s=await TFB.api.site();s.homeLook='6';s.pages.home.blocks=[{id:'a',type:'feature',title:'Karussell A',mediaCollection:{entries:[{id:'entry',title:'Einblick A',images:[image,image],format:'4:5'}]}},{id:'b',type:'feature',title:'Thema B',image,layout:'portrait-right'},{id:'c',type:'gallery',title:'Galerie C',images:[image,image]},{id:'d',type:'text',title:'Text D',text:'Bleibt vollständig erhalten.'},{id:'e',type:'feature',title:'Thema E',image}];await TFB.api.saveSite(s);await TFB.refreshSite(true);window.orderWrites=[];window.orderBaseSaveSite=TFB.api.saveSite;window.orderSpy=async value=>{window.orderWrites.push(value.pages.home.blocks.map(b=>b.id));return window.orderBaseSaveSite(value);};TFB.api.saveSite=window.orderSpy;},image);
- await page.locator('[data-action=site-edit][data-page=home]').first().click();await page.locator('.editing-page').waitFor();assert.equal(await page.locator('[data-action=block-move]').count(),0);assert.equal(await page.locator('.editing-page>.editbar').evaluate(el=>getComputedStyle(el).position),'static');
- // Text actions have real width and occupy a separate row above the content.
- for(const width of [1440,390,320]){await page.setViewportSize({width,height:1050});const geometry=await page.locator('[data-edit-block=a]').evaluate(el=>{const tools=el.querySelector('.block-tools').getBoundingClientRect(),article=el.querySelector('.feature').getBoundingClientRect(),buttons=[...el.querySelectorAll('.block-tool-text')].map(n=>n.getBoundingClientRect());return {bottom:tools.bottom,articleTop:article.top,buttons:buttons.map(r=>({x:r.x,y:r.y,width:r.width,height:r.height})),overlap:buttons.some((a,i)=>buttons.some((b,j)=>j>i&&a.x<b.right&&a.right>b.x&&a.y<b.bottom&&a.bottom>b.y))};});assert(geometry.bottom<=geometry.articleTop);assert.equal(geometry.overlap,false);geometry.buttons.forEach(b=>assert(b.width>60));assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));}
- await page.setViewportSize({width:1440,height:1050});await page.locator('[data-action=home-order][data-id=e]').click();const form=page.locator('[data-home-order]'),rows=()=>page.locator('[data-order-id]');await form.waitFor();assert.equal(await rows().count(),5);assert.equal(await form.locator('[type=submit]').isDisabled(),true);
- await page.locator('[data-order-id=e] [data-order-position]').selectOption('0');assert.deepEqual(await rows().evaluateAll(nodes=>nodes.map(n=>n.dataset.orderId)),['e','a','b','c','d']);await page.locator('[data-order-id=c] [data-order-step="-1"]').click();
- await page.locator('[data-order-id=d]').dragTo(page.locator('[data-order-id=a]'));
- const desired=['e','d','a','c','b'];assert.deepEqual(await rows().evaluateAll(nodes=>nodes.map(n=>n.dataset.orderId)),desired);assert.equal(await page.evaluate(()=>orderWrites.length),0);assert.deepEqual(await page.evaluate(async()=>(await TFB.api.site()).pages.home.blocks.map(b=>b.id)),['a','b','c','d','e']);await form.locator('[type=submit]').click();await form.waitFor({state:'detached'});assert.equal(await page.evaluate(()=>orderWrites.length),1);assert.deepEqual(await page.evaluate(async()=>(await TFB.api.site()).pages.home.blocks.map(b=>b.id)),desired);assert.deepEqual(await page.locator('.feature-number').allTextContents(),['01','02','03']);
- const sides=await page.locator('.feature').evaluateAll(nodes=>nodes.map(el=>el.firstElementChild.getBoundingClientRect().x<el.querySelector('.feature-body').getBoundingClientRect().x));assert.deepEqual(sides,[true,false,true]);assert.deepEqual(await page.evaluate(async()=>(await TFB.api.site()).pages.home.blocks.find(b=>b.id==='c').images),[image,image]);
- // Cancel only discards the ordering draft.
- await page.locator('.editbar [data-action=home-order]').click();await page.locator('[data-order-id=a] [data-order-position]').selectOption('0');await form.locator('[data-action=close-sheet]').click();await form.waitFor({state:'detached'});assert.equal(await page.evaluate(()=>orderWrites.length),1);assert.deepEqual(await page.evaluate(async()=>(await TFB.api.site()).pages.home.blocks.map(b=>b.id)),desired);
- // Failure preserves the draft; retry merges current fields into the chosen order.
- await page.locator('[data-action=home-order][data-id=b]').click();await page.locator('[data-order-id=b] [data-order-position]').selectOption('0');await page.evaluate(()=>{TFB.api.saveSite=async()=>{throw Error('Speicherkonflikt im Test');};});await form.locator('[type=submit]').click();await form.getByText('Speicherkonflikt im Test',{exact:true}).waitFor();assert.deepEqual(await page.evaluate(async()=>(await TFB.api.site()).pages.home.blocks.map(b=>b.id)),desired);
- await page.evaluate(async()=>{const s=await TFB.api.site();s.pages.home.blocks.find(b=>b.id==='a').title='Parallel aktualisiertes Karussell';await orderBaseSaveSite(s);TFB.api.saveSite=orderSpy;});await form.locator('[type=submit]').click();await form.waitFor({state:'detached'});assert.equal(await page.evaluate(()=>orderWrites.length),2);assert.equal(await page.evaluate(async()=>(await TFB.api.site()).pages.home.blocks.find(b=>b.id==='a').title),'Parallel aktualisiertes Karussell');
- // Concurrent insertion is never silently removed. Reopening loads the latest list.
- await page.locator('.editbar [data-action=home-order]').click();await page.locator('[data-order-id=c] [data-order-position]').selectOption('0');await page.evaluate(async()=>{const s=await TFB.api.site();s.pages.home.blocks.push({id:'new',type:'text',title:'Extern hinzugefügt',text:'Erhalten'});await orderBaseSaveSite(s);});await form.locator('[type=submit]').click();await form.getByText(/inzwischen verändert/).waitFor();assert.equal(await page.evaluate(()=>orderWrites.length),2);await form.locator('[data-action=close-sheet]').click();await page.locator('.editbar [data-action=home-order]').click();assert.equal(await rows().count(),6);
- await page.setViewportSize({width:390,height:844});assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));await page.locator('[data-order-id=new] [data-order-position]').selectOption('0');assert.equal(await rows().first().getAttribute('data-order-id'),'new');await page.screenshot({path:'/tmp/tfb-home-order-mobile.png'});await form.locator('[type=submit]').click();await form.waitFor({state:'detached'});assert.equal(await page.evaluate(()=>orderWrites.length),3);assert.equal(await page.locator('[data-edit-block]').first().getAttribute('data-edit-block'),'new');
- await page.setViewportSize({width:1440,height:1050});await page.locator('[data-edit-block=a]').scrollIntoViewIfNeeded();await page.screenshot({path:'/tmp/tfb-home-admin-controls.png'});await page.locator('[data-action=site-done]').first().click();await page.locator('.editing-page').waitFor({state:'detached'});await page.reload();await page.locator('.feature').first().waitFor();assert.deepEqual(await page.evaluate(async()=>(await TFB.api.site()).pages.home.blocks.map(b=>b.id)),['new','b','e','d','a','c']);assert.deepEqual(errors,[]);console.log('PASS: uncrowded admin controls 1440/390/320, direct position/steps/drag, no writes before save, single commit, numbering/sides, cancel, retry/current fields, concurrent insertion/reopen, mobile and reload.');
-}finally{await browser.close();}
+ const image = 'assets/images/board/kai-eichmann.jpg';
+ await page.evaluate(async image => {
+   const site = await TFB.api.site();
+   site.pages.home.blocks = [
+     {id:'legacy',type:'feature',title:'Altes Karussell',mediaCollection:{entries:[{id:'entry',title:'Einblick',images:[image,image]}]}},
+     {id:'topic',type:'feature',title:'Ein Thema',image},
+     {id:'gallery',type:'gallery',title:'Eine Galerie',images:[image,image]},
+   ];
+   site.pages.aktuell.blocks = [
+     {id:'news',type:'post',title:'Anlage',text:'Einblick',date:'2026-11-01',mediaCollection:{entries:[{id:'entry',title:'Anlage',images:[image,image]}]}},
+   ];
+   await TFB.api.saveSite(site);
+   await TFB.refreshSite(true);
+ }, image);
+ const form = page.locator('[data-home-order]');
+ const editor = page.locator('[data-editor=block]');
+ const row = id => form.locator('[data-order-id="' + id + '"]');
+ const state = () => page.evaluate(() => TFB.api.site());
+ const editHome = async () => {
+   await page.locator('[data-action=site-edit][data-page=home]').click();
+   await form.waitFor();
+ };
+ const saveChanges = () => form.getByRole('button', { name: 'Änderungen speichern' }).click();
+ const answer = () => page.once('dialog', dialog => dialog.accept());
+ const png = Buffer.from(await page.evaluate(() => {
+   const canvas = document.createElement('canvas');
+   canvas.width = 32; canvas.height = 24;
+   canvas.getContext('2d').fillRect(0, 0, 32, 24);
+   return canvas.toDataURL().split(',')[1];
+ }), 'base64');
+ const photos = ['Erstes Foto.png','Zweites Foto.png'].map(name => ({name,mimeType:'image/png',buffer:png}));
+ const upload = async selector => {
+   const field = editor.locator(selector);
+   await field.setInputFiles(photos);
+   await field.locator('..').locator('..').locator('.gallery-thumb').last().waitFor();
+ };
+ await editHome();
+ for (const width of [1440,390,320]) {
+   await page.setViewportSize({width,height:900});
+   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
+ }
+ await page.setViewportSize({width:390,height:880});
+ await page.getByRole('button',{name:'Neues Thema'}).click();
+ await editor.locator('[name=title]').fill('Neuer Beitrag');
+ assert.equal(await editor.getByText('Mehr Gestaltung').count(),0);
+ await editor.getByRole('button',{name:'Link hinzufügen'}).click();
+ await editor.locator('[name=linkUrl]').fill('https://example.org');
+ await editor.locator('[name=linkLabel]').fill('Externe Website');
+ await editor.locator('[data-linkfor=link2][data-linkkind=app]').click();
+ await editor.locator('[name=link2App]').selectOption('#sport');
+ await editor.locator('[name=link2Label]').fill('Zum Sport');
+ await upload('[data-home-photo-input]');
+ await editor.locator('[name=photoDisplay]').selectOption('carousel');
+ await editor.getByRole('button',{name:'Unterseite anlegen'}).click();
+ const content = editor.locator('[data-panel=sub] [contenteditable=true]').first();
+ if (!await content.count()) await editor.locator('[data-panel=sub] [data-secadd=text]').first().click();
+ await content.fill('Ausführlicher Inhalt zum Test.');
+ await editor.locator('[data-edtab=home]').click();
+ await editor.getByRole('button',{name:'Fotoseite anlegen'}).click();
+ await editor.locator('[name=albumPhotoDisplay]').selectOption('gallery');
+ await upload('[data-album-input]');
+ await editor.locator('[type=submit]').click();
+ await editor.waitFor({state:'detached'});
+ const topic = (await state()).pages.home.blocks[0];
+ assert.equal(topic.title,'Neuer Beitrag');
+ assert.equal(topic.photoDisplay,'carousel');
+ assert.equal(topic.album.photoDisplay,'gallery');
+ assert.equal(topic.link2.url,'#sport');
+ await row(topic.id).waitFor();
+ await page.getByRole('button',{name:'Fotoblock hinzufügen'}).click();
+ await page.getByRole('button',{name:/Karussell.*Fotos zum/}).click();
+ await upload('[data-gallery-input]');
+ await editor.locator('[type=submit]').click();
+ await editor.waitFor({state:'detached'});
+ const photo = (await state()).pages.home.blocks[0];
+ assert.equal(photo.type,'carousel');
+ assert.equal(photo.title,'');
+ await row(photo.id).waitFor();
+ assert.match(await form.locator('li').first().textContent(), /Ohne Überschrift/);
+ await row(photo.id).getByRole('button',{name:/Nach unten/}).click();
+ await row('gallery').locator('select').selectOption('0');
+ answer();
+ await row('topic').getByRole('button',{name:'Löschen'}).click();
+ assert.equal((await state()).pages.home.blocks[0].id,photo.id);
+ assert.ok((await state()).pages.home.blocks.some(b=>b.id==='topic'));
+ answer();
+ await saveChanges();
+ await form.getByRole('button',{name:'Änderungen speichern'}).waitFor({state:'hidden'});
+ assert.deepEqual((await state()).pages.home.blocks.map(b=>b.id),['gallery',topic.id,photo.id,'legacy']);
+
+ // Test an intervening edit before a staged removal is committed.
+ answer();
+ await row('legacy').getByRole('button',{name:'Löschen'}).click();
+ await page.evaluate(async () => {
+   const site = await TFB.api.site();
+   site.pages.home.blocks.find(b=>b.id==='legacy').title='Zwischenzeitlich geändert';
+   await TFB.api.saveSite(site);
+ });
+ answer();
+ await saveChanges();
+ await form.getByText(/inzwischen geändert/).waitFor();
+ answer();
+ await form.getByRole('button',{name:'Verwerfen'}).click();
+ await row('legacy').getByText('Zwischenzeitlich geändert').waitFor();
+ await row('legacy').getByRole('button',{name:'Bearbeiten'}).click();
+ await page.locator('[data-hm-editor]').waitFor();
+ await page.locator('.sheet-close').click();
+
+ await page.getByRole('button',{name:'Karussell aus Aktuell übernehmen'}).click();
+ await page.locator('[data-transfer-format]').selectOption('photoBlock');
+ await page.getByRole('button',{name:'Nach Home kopieren'}).click();
+ await page.locator('.newsroom-transfer').waitFor({state:'detached'});
+ const copied = await state();
+ assert.equal(copied.pages.home.blocks[0].type,'carousel');
+ assert.equal(copied.pages.home.blocks[0].title,'Anlage');
+ assert.equal(copied.pages.aktuell.blocks[0].id,'news');
+ await page.getByRole('button',{name:'Fertig'}).click();
+ await page.locator('.editing-page').waitFor({state:'detached'});
+ assert.deepEqual(await page.locator('.feature-number').allTextContents(),['01','02']);
+ const first = page.locator('[data-photo-module="' + copied.pages.home.blocks[0].id + '"]');
+ await first.getByRole('button',{name:'Nächstes Bild'}).click();
+ assert.match(await first.locator('.cs-carousel-status').textContent(), /2 von 2/);
+ const bare = page.locator('[data-photo-module="' + photo.id + '"]');
+ await bare.getByRole('region',{name:'Bilderkarussell'}).waitFor();
+ assert.equal(await bare.locator('h2').count(),0);
+ const feature = page.locator('[data-feature="' + topic.id + '"]');
+ await feature.getByRole('link',{name:'Fotos der Veranstaltung'}).click();
+ await page.locator('.album-page .gallery-grid').waitFor();
+ await page.goBack();
+ await feature.getByRole('link',{name:'Mehr erfahren'}).click();
+ await page.getByText('Ausführlicher Inhalt zum Test.').waitFor();
+ await page.goto(origin+'/?tfbPresentation=1#home');
+ await page.locator('[data-photo-module="' + photo.id + '"]').waitFor();
+ assert.deepEqual(errors,[]);
+ console.log('PASS: Home editors, inline order and staged deletion, legacy content, imports and public mobile layout.');
+} finally { await browser.close(); }

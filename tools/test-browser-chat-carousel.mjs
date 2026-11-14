@@ -15,7 +15,7 @@ try {
   page.on('pageerror',error => errors.push(error.message));
   await page.route('**/*',route => {
     const url = new URL(route.request().url());
-    if (url.origin !== origin) return route.abort();
+    if (url.origin !== origin && !(url.origin === 'https://joern-kaemper.de' && url.pathname.startsWith('/assets/shared-kiosk/'))) return route.abort();
     const file = resolve(root,'.'+decodeURIComponent(url.pathname === '/' ? '/index.html' : url.pathname));
     if (!file.startsWith(root)) return route.abort();
     const types = {'.html':'text/html','.js':'text/javascript','.css':'text/css','.png':'image/png','.jpg':'image/jpeg','.ttf':'font/ttf'};

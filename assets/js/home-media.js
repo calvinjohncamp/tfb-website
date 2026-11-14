@@ -14,7 +14,7 @@
     return `<div class="feature-media hm-orbit" data-hm-orbit data-hm-start="${block.animationStart==='manual'?'manual':'auto'}" aria-label="Einblicke in ${esc(block.title)}"><div class="hm-stage">${refs.map((ref,i) => `<a class="hm-card" href="${esc(href)}" aria-label="Bild ${i+1}: Alle Einblicke ansehen">${image(ref,imageOf,entry.title,i===0)}</a>`).join('')}</div><div class="hm-footer"><a class="hm-caption" href="${esc(href)}"><span>${esc(entry.title)}</span></a><button type="button" class="hm-zoom-button" aria-label="Karussell vergrößern" title="Karussell vergrößern">${magnifier}</button><button type="button" class="hm-pause" aria-label="${manual?'Bildbewegung starten':'Bildbewegung pausieren'}" aria-pressed="${manual}"${refs.length<2?' hidden':''}>${playbackIcon(!manual)}</button></div></div>`;
   }
   async function detail(block, { imageOf, paragraphs, admin, page='home', backHref }) {
-    const studio = await import('./chat-media.js');
+    const studio = await import('./chat-media.js?v=20261114-home-editor-1');
     const collection = block.mediaCollection, list = entries(block), count = collection.showAll ? list.length : 6;
     const sizes = {'4:5':[4,5],'9:16':[9,16],'16:9':[16,9],'5:4':[5,4]};
     const markup = (entry,index) => {
