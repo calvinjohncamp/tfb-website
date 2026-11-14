@@ -654,7 +654,7 @@
   }).observe(document.getElementById('sheet-root') || document.body, { childList: true });
 
   // ---------- Unterseite eines Home-Themas („Mehr erfahren“) ----------
-  const hasMore = b => Boolean(b.mediaCollection || b.more && ((b.more.text || '').trim() || (b.more.images || []).length || b.more.quote || (b.more.heroImages || []).length || b.more.sections?.some(section => section.text?.trim())));
+  const hasMore = b => Boolean(b.mediaCollection || b.more && ((b.more.text || '').trim() || (b.more.images || []).length || b.more.quote || b.more.links?.some(link => safeLink(link.url)) || (b.more.heroImages || []).length || b.more.sections?.some(section => section.text?.trim())));
   const archiveHref = b => '#club/archiv/beitrag/' + encodeURIComponent('aktuell-' + b.id);
   const hasPublishedDetail = b => b.detailEnabled !== false && hasMore(b);
   const safeLink = (url) => /^(#|https?:\/\/)/i.test(url || '') ? url : '';
@@ -667,7 +667,7 @@
   }
   const shownImage = (ref) => ref && (images[ref] || /^assets\//.test(ref) || /^ph:/.test(ref));
 
-  // Fotokollage: wechselnde Kachelgrößen, damit es nach Magazin aussieht – Antippen zeigt das Foto groß.
+  // Fotocollage: wechselnde Kachelgrößen, damit es nach Magazin aussieht – Antippen zeigt das Foto groß.
   const alignClass = (a) => `align-${a === 'left' || a === 'right' ? a : 'center'}`;
   function collage(list, blockId, original = false, align = 'center') {
     const imgs = list.filter(shownImage);
@@ -676,7 +676,7 @@
       <div class="collage ${original ? `natural ${alignClass(align)}` : ''} collage-${Math.min(imgs.length, 5)}">
         ${imgs.map((ref, i) => `
           <button type="button" class="collage-item" data-action="collage-open" data-block="${esc(blockId)}" data-index="${i}" aria-label="Foto ${i + 1} groß ansehen">
-            ${picture(ref, ref, '')}
+            ${picture(ref, ref, '', original)}
           </button>`).join('')}
       </div>`;
   }
@@ -714,7 +714,7 @@
     return storyHtml({ ...block, noPlaceholder: true }, {closeHref:back, backLabel:archive ? 'Zum Clubarchiv' : 'Zu Aktuell',
       editHtml: !archive && ui().state.member?.isAdmin ? `<button type="button" class="view-close" data-action="feature-edit" data-page="aktuell" data-id="${esc(block.id)}" aria-label="Bearbeiten">${ui().icon.pencil}</button>` : '',
       gallery: photoTypes.includes(block.type) || photoDisplays.has(block.photoDisplay) ? photoDisplay(block, (block.images || []).filter(shownImage), block.photoDisplay || block.type, 'gallery-open') : '',
-      linkPage: 'aktuell',
+      linkPage: 'aktuell', topicHero: Boolean(block.sourceHomeId && block.type === 'post'),
     });
   }
 
@@ -758,7 +758,7 @@
   function newsCollage(b) {
     const refs = (b.images || []).filter(shownImage).slice(0, 100);
     const preview = refs.slice(0, 5);
-    return `<div class="news-collage-wrap"><div class="collage news-collage collage-${preview.length}">${preview.map((ref, i) => `<button type="button" class="collage-item" data-action="news-gallery" data-block="${esc(b.id)}" aria-label="Fotokollage mit ${refs.length} Fotos ansehen">${picture(ref, ref, b.title)}${i === preview.length - 1 && refs.length > 5 ? `<span class="photo-count">+${refs.length - 5}</span>` : ''}</button>`).join('')}</div>${b.type === 'post' ? dateBadge(b.date) : ''}</div>`;
+    return `<div class="news-collage-wrap"><div class="collage news-collage collage-${preview.length}">${preview.map((ref, i) => `<button type="button" class="collage-item" data-action="news-gallery" data-block="${esc(b.id)}" aria-label="Fotocollage mit ${refs.length} Fotos ansehen">${picture(ref, ref, b.title)}${i === preview.length - 1 && refs.length > 5 ? `<span class="photo-count">+${refs.length - 5}</span>` : ''}</button>`).join('')}</div>${b.type === 'post' ? dateBadge(b.date) : ''}</div>`;
   }
 
   // Großer Textanfang (Initiale): die ersten n Zeichen des ersten Absatzes groß und rot (0 = aus).
@@ -779,32 +779,41 @@
   }
 
   // Magazin-Seite (Unterseite der Home-Themen und Mannschaftsporträt) aus einem Block mit `more`
-  const storyIndex = {};   // Block je Kennung – für Großansicht von Titelfotos und Kollage
-  function storyHtml(b, { n = '', editHtml = '', closeHref = '#home', backLabel = 'Zur Startseite', partner = '', gallery = '', linkPage = 'home' } = {}) {
+  const storyIndex = {};   // Block je Kennung – für Großansicht von Titelfotos und Collage
+  const topicHeroFormats = [['original', 'Originalformat'], ['2', '2:1'], ['3', '3:1'], ['4', '4:1']];
+  const topicHeroRatio = more => topicHeroFormats.some(([ratio]) => ratio === more.heroRatio) ? more.heroRatio : 'original';
+  const topicCover = b => homePhotoRefs(b)[0] || b.image;
+
+  function storyHtml(b, { n = '', editHtml = '', closeHref = '#home', backLabel = 'Zur Startseite', partner = '', gallery = '', linkPage = 'home', topicHero = false } = {}) {
     const { icon } = ui();
     storyIndex[b.id] = b;
     const more = b.more || {};
     // Titelbild: wie Startseite (bzw. Teamfoto) oder eigene Fotos; breit, im Originalformat oder 2–4 Quadrate
-    const own = more.heroSource === 'own' ? (more.heroImages || []).filter(shownImage) : [];
+    const own = more.heroSource === 'own' ? (more.heroImages || []).filter(shownImage).slice(0, 4) : [];
     // 2–4 eigene Fotos immer als Quadrate, ein Foto breit oder im Originalformat
     const mode = own.length >= 2 ? 'squares' : (more.heroMode === 'original' ? 'original' : 'wide');
     const heroRefs = own.length ? own : [b.image];
     const seed = own.length ? own[0] : b.id;
-    const sideImage = !own.length && mode === 'wide' && /^(portrait|square)/.test(b.layout || '');
+    const sideImage = !topicHero && !own.length && mode === 'wide' && /^(portrait|square)/.test(b.layout || '');
     let heroHtml = '';
     if (!own.length && !b.image && b.noPlaceholder && !gallery && !(b.images || []).some(shownImage)) heroHtml = '';
     else if (gallery && !own.length) {
       heroHtml = gallery;
       gallery = '';
+    } else if (topicHero && own.length < 2) {
+      const ratio = topicHeroRatio(more);
+      heroHtml = `<div class="story-topic-cover ${ratio === 'original' ? '' : `ratio-${ratio}`}">${picture(own[0] || topicCover(b), seed, b.title, true)}</div>`;
     } else if ((b.images || []).filter(shownImage).length && !own.length) {
       heroHtml = newsCollage(b);
     } else if (mode === 'squares' && heroRefs.length >= 2) {
-      heroHtml = `<div class="story-squares n${heroRefs.length}">${heroRefs.map((r, i) => `<button type="button" class="story-square" data-action="hero-open" data-block="${esc(b.id)}" data-index="${i}" aria-label="Foto groß ansehen">${picture(r, r)}</button>`).join('')}</div>`;
+      const original = topicHero && more.heroGrid === 'original';
+      heroHtml = `<div class="story-squares n${heroRefs.length}${topicHero ? ' topic-hero-grid' : ''}${original ? ' original-photos' : ''}">${heroRefs.map((r, i) => `<button type="button" class="story-square" data-action="hero-open" data-block="${esc(b.id)}" data-index="${i}" aria-label="Foto ${i + 1} groß ansehen">${picture(r, r, '', original)}</button>`).join('')}</div>`;
     } else if (mode === 'original') {
       heroHtml = `<div class="story-photo natural ${alignClass(more.heroAlign)}">${picture(heroRefs[0], seed, b.title)}</div>`;
     } else if (!sideImage) {
       heroHtml = `<div class="story-photo">${picture(heroRefs[0], seed, b.title)}</div>`;
     }
+    const detailLinks = (more.links || []).filter(link => safeLink(link.url)).map(link => linkMarkup(link)).join('');
     const extraLinks = linkPage === 'aktuell' ? featureLinks(b, linkPage).map(({link}) => linkMarkup(link)).join('') : '';
     return `
       <article class="story">
@@ -839,6 +848,7 @@
                 return `<div class="story-text">${html}</div>`;
               }).join('');
             })()}
+            ${detailLinks ? `<div class="story-links story-detail-links">${detailLinks}</div>` : ''}
           </div>
         </div>
         ${collage(more.images || [], b.id, Boolean(more.original), more.collageAlign)}
@@ -861,6 +871,7 @@
     const admin = state.member && state.member.isAdmin;
     if (b.mediaCollection) return TFB.homeMedia.detail(b, {imageOf:ref=>images[ref] || ref,paragraphs,admin});
     return storyHtml(b, {
+      topicHero: true,
       n: String(homeBlocks().filter((x) => x.type === 'feature').indexOf(b) + 1).padStart(2, '0'),
       editHtml: admin ? `<button type="button" class="view-close" data-action="feature-edit" data-id="${esc(b.id)}" aria-label="Bearbeiten">${icon.pencil}</button>` : '',
       partner: partnerSlot('home', site.pages.home.partnerKicker || 'Präsentiert von'),
@@ -2114,7 +2125,7 @@
     });
   }
 
-  // Galerie eines Beitrags: erst alle Fotos als Kollage, dann einzeln blättern (Pfeile, Wischen, Tasten)
+  // Galerie eines Beitrags: erst alle Fotos als Collage, dann einzeln blättern (Pfeile, Wischen, Tasten)
   // start: Index des angeklickten Fotos → Galerie öffnet direkt dort (weiter per Klick aufs Foto, Pfeile, Wischen)
   function openGallery(refs, title, magazine = false, start = null) {
     const list = refs.filter(shownImage);
@@ -2372,7 +2383,7 @@
   }
   function newsPhotoField(draft) {
     const refs = (draft.images || []).filter(shownImage);
-    return `<div class="field"><span>Fotokollage (${refs.length} / 100)</span><div class="gallery-edit">${refs.map((ref, i) => thumbEdit(ref, 'news', i, refs.length, 'data-news-remove')).join('')}${refs.length < 100 ? `<label class="gallery-add">${ui().icon.plus}<span>Fotos</span><input type="file" accept="image/*" multiple data-news-input hidden></label>` : ''}</div></div>`;
+    return `<div class="field"><span>Fotocollage (${refs.length} / 100)</span><div class="gallery-edit">${refs.map((ref, i) => thumbEdit(ref, 'news', i, refs.length, 'data-news-remove')).join('')}${refs.length < 100 ? `<label class="gallery-add">${ui().icon.plus}<span>Fotos</span><input type="file" accept="image/*" multiple data-news-input hidden></label>` : ''}</div></div>`;
   }
 
   function imageField(ref, seed, label = 'Foto', target = '') {
@@ -2438,7 +2449,7 @@
           const more = draft.more || {};
           const heroSrc = more.heroSource === 'own' ? 'own' : 'same';
           const heroImgs = (more.heroImages || []).filter(shownImage);
-          const heroMode = more.heroMode || 'wide';
+          const cover = topicCover(draft);
           const album = draft.album || {};
           const positions = () => [['left', 'Unter der Unterzeile'], ...String(draft.text || '').split(/\n{2,}/).filter(x => x.trim()).map((_, i) => [`right-${i}`, i ? `Nach Absatz ${i}` : 'Vor dem Text']), ['right', 'Unter dem Text']];
           const positionField = (name, value) => `<label class="field"><span>Position auf der Startseite</span><select name="${name}">${positions().map(([v, label]) => `<option value="${v}" ${v === (value || 'right') ? 'selected' : ''}>${label}</option>`).join('')}</select></label>`;
@@ -2480,33 +2491,46 @@
                 + field('Vorschau: Titel', 'linkTitle', lk.title) + field('Vorschau: Text', 'linkText', lk.text, { area: true, rows: 3 })
                 + imageField(lk.image, lk.url, 'Vorschau: Bild', 'link')
                 : imageField(lk.image, lk.url || 'intern', 'Rundes Bild im Link (leer = Symbol der Seite)', 'link')) : '');
-          const ownHero = heroSrc === 'own' ? heroImgs : [];
+          const ownHero = heroSrc === 'own' ? heroImgs.slice(0, 4) : [];
+          const collagePhotos = (more.images || []).filter(shownImage);
           const subPanel = `
             <label class="meet-check"><input type="checkbox" name="detailEnabled" ${draft.detailEnabled !== false ? 'checked' : ''}><span>Unterseite auf Home verlinken</span></label>
-            <p class="ed-hint">Die <b>Unterseite</b> öffnet sich über „Mehr erfahren“. Hier bearbeitest du sie von oben nach unten – so wie sie erscheint. Überschrift, Unterzeile und Link kommen vom Reiter „Startseite“.</p>
-            <h3 class="editor-sub">1 · Fotos oben (1 bis 4)</h3>
+            <p class="ed-hint">Die Unterseite öffnet sich über „Mehr erfahren“. Überschrift und Unterzeile kommen vom Reiter „Startseite“.</p>
+            <h3 class="editor-sub">Fotos oben (bis zu 4)</h3>
             <div class="field"><div class="gallery-edit">
-              ${ownHero.map((ref, i) => thumbEdit(ref, 'hero', i, ownHero.length, 'data-hero-remove', ownHero.length >= 2 ? 'square' : heroMode === 'original' ? '' : 'wide')).join('')}
-              ${ownHero.length < 4 ? `<label class="gallery-add">${ui().icon.plus}<span>Foto</span><input type="file" accept="image/*" multiple data-hero-input hidden></label>` : ''}
+              ${ownHero.map((ref, i) => thumbEdit(ref, 'hero', i, ownHero.length, 'data-hero-remove', ownHero.length >= 2 ? 'square' : '')).join('')}
+              ${ownHero.length < 4 ? `<label class="gallery-add">${ui().icon.plus}<span>Fotos</span><input type="file" accept="image/*" multiple data-hero-input hidden></label>` : ''}
             </div></div>
-            ${!ownHero.length && draft.image && shownImage(draft.image) ? `<div class="hero-fallback">${picture(draft.image, draft.id)}<div><b>Oben erscheint das Foto der Startseite.</b>${frameButton(draft.image, false, 'wide')}</div></div>` : ''}
-            <p class="muted small ed-note">${!ownHero.length ? 'Ohne eigene Fotos erscheint oben das Foto der Startseite.' : ownHero.length === 1 ? (heroMode === 'original' ? 'Ein Foto im Originalformat.' : 'Ein Foto, breit über der Seite.') : `${ownHero.length} Fotos als Quadrate nebeneinander.`}</p>
-            <h3 class="editor-sub">2 · Inhalt</h3>
-            <p class="muted small ed-note">Die Seite besteht aus Abschnitten: <b>Text</b>, <b>Überschrift</b> (rot) und <b>Zitat</b> – immer in derselben Gestaltung. Mit den Pfeilen verschieben, unten ergänzen.</p>`
-            + sectionsEditor(draft.more.sections)
-            + `<h3 class="editor-sub">3 · Fotos unten (Kollage, freiwillig)</h3>
-               <div class="field"><div class="gallery-edit">
-                  ${(() => { const l = (more.images || []).filter(shownImage); return l.map((ref, i) => thumbEdit(ref, 'more', i, l.length, 'data-more-remove')).join(''); })()}
-                  <label class="gallery-add">${ui().icon.plus}<span>Fotos</span><input type="file" accept="image/*" multiple data-more-input hidden></label>
-                </div></div>`
-            + `
-              ${ownHero.length === 1 ? `<div class="field"><span>Ein Foto oben: Darstellung</span>${seg('heromode', heroMode === 'original' ? 'original' : 'wide', [['wide', 'Breit'], ['original', 'Originalformat']])}</div>` : ''}
-              ${ownHero.length === 1 && heroMode === 'original' ? `<div class="field"><span>Ausrichtung</span><div class="seg align-seg">${[['left', 'Links'], ['center', 'Mitte'], ['right', 'Rechts']].map(([v, l]) =>
-                  `<button type="button" class="${(more.heroAlign || 'center') === v ? 'on' : ''}" data-align="hero:${v}">${l}</button>`).join('')}</div></div>` : ''}`
-              + `<div class="field"><span>Großer Textanfang (rot)</span>${seg('dropcap', String(more.dropcap == null ? 1 : more.dropcap), [['0', 'Aus'], ['1', '1 Zeichen'], ['2', '2 Zeichen'], ['3', '3 Zeichen']])}</div>`
-              + `<label class="meet-check"><input type="checkbox" name="moreOriginal" data-rerender ${more.original ? 'checked' : ''}><span>Kollage: Fotos im Originalformat zeigen (nicht zuschneiden)</span></label>
-                 ${more.original ? `<div class="field"><span>Ausrichtung der Kollage</span><div class="seg align-seg">${[['left', 'Links'], ['center', 'Mitte'], ['right', 'Rechts']].map(([v, l]) =>
-                  `<button type="button" class="${(more.collageAlign || 'center') === v ? 'on' : ''}" data-align="collage:${v}">${l}</button>`).join('')}</div></div>` : ''}`;
+            ${!ownHero.length ? `<p class="muted small ed-note">${cover ? 'Ohne eigene Kopfbilder erscheint das erste Foto der Startseite.' : 'Füge eigene Kopfbilder hinzu oder wähle ein Foto auf der Startseite.'}</p>` : ''}
+            ${ownHero.length > 1 ? `<div class="field"><span>Darstellung der Kopfbilder</span>
+              ${seg('herogrid', more.heroGrid || 'tiles', [['tiles', 'Gleichmäßige Kacheln'], ['original', 'Originalformate']])}
+              <p class="muted small ed-note">Die Kacheln sind quadratisch. In Originalformaten können die Bilder unterschiedlich hoch sein.</p>
+            </div>` : cover || ownHero.length ? `<div class="field"><span>Format des Kopfbilds</span>
+              ${seg('heroratio', topicHeroRatio(more), topicHeroFormats)}
+              <p class="muted small ed-note">Im Originalformat füllt das Bild die ganze Breite. Die festen Formate können bei abweichenden Bildmaßen freie Ränder haben.</p>
+            </div>` : ''}
+            <h3 class="editor-sub">Inhalt</h3>
+            ${sectionsEditor(more.sections)}
+            <div class="field"><span>Großer Textanfang (rot)</span>${seg('dropcap', String(more.dropcap == null ? 1 : more.dropcap), [['0', 'Aus'], ['1', '1 Zeichen'], ['2', '2 Zeichen'], ['3', '3 Zeichen']])}</div>
+            <h3 class="editor-sub">Links auf der Unterseite</h3>
+            ${(more.links || []).map((link, i) => `<fieldset class="detail-link-editor"><legend>Link ${i + 1}</legend>
+              ${linkTargetField(link.url, 'detailLink' + i)}
+              ${field('Link-Text', 'detailLink' + i + 'Label', link.label)}
+              <button type="button" class="btn small" data-detail-link-remove="${i}">Link entfernen</button>
+            </fieldset>`).join('')}
+            <button type="button" class="btn small" data-detail-link-add>Link hinzufügen</button>
+            <h3 class="editor-sub">Fotos unten (Collage, freiwillig)</h3>
+            <div class="field"><div class="gallery-edit">
+              ${collagePhotos.map((ref, i) => thumbEdit(ref, 'more', i, collagePhotos.length, 'data-more-remove')).join('')}
+              <label class="gallery-add">${ui().icon.plus}<span>Fotos</span><input type="file" accept="image/*" multiple data-more-input hidden></label>
+            </div></div>
+            ${collagePhotos.length ? `<div class="field"><span>Darstellung der Fotos unter dem Text</span>
+              ${seg('collagestyle', more.original ? 'original' : 'tiles', [['tiles', 'Kachel-Collage'], ['original', 'Originalformate']])}
+              <p class="muted small ed-note">Die Kachel-Collage füllt das Raster mit Bildausschnitten. Beim Antippen öffnet sich das ganze Foto.</p>
+            </div>` : ''}
+            ${collagePhotos.length && more.original ? `<div class="field"><span>Ausrichtung der Collage</span>
+              ${seg('align', 'collage:' + (more.collageAlign || 'center'), [['collage:left', 'Links'], ['collage:center', 'Mitte'], ['collage:right', 'Rechts']])}
+            </div>` : ''}`;
           const albumPanel = `<label class="meet-check"><input type="checkbox" name="albumEnabled" ${album.enabled ? 'checked' : ''}><span>Fotoseite auf Home verlinken</span></label>
             ${field('Überschrift der Fotoseite', 'albumTitle', album.title || draft.title)}
             ${field('Link-Text', 'albumLabel', album.label || 'Fotos der Veranstaltung')}
@@ -2773,23 +2797,47 @@
           return;
         }
         if (e.target.closest('[data-ed-peek]')) { togglePeek(e.target.closest('[data-ed-peek]')); return; }
-        const hs = e.target.closest('[data-herosrc]');
-        if (hs) { collect(form); draft.more = { ...(draft.more || {}), heroSource: hs.dataset.herosrc }; if (hs.dataset.herosrc !== 'own' && draft.more.heroMode === 'squares') draft.more.heroMode = 'wide'; render(); return; }
-        const hm = e.target.closest('[data-heromode]');
-        if (hm) { collect(form); draft.more = { ...(draft.more || {}), heroMode: hm.dataset.heromode }; render(); return; }
+        const photoLayout = e.target.closest('[data-heroratio], [data-herogrid], [data-collagestyle]');
+        if (photoLayout) {
+          collect(form);
+          const { heroratio, herogrid, collagestyle } = photoLayout.dataset;
+          if (heroratio) draft.more.heroRatio = heroratio;
+          if (herogrid) draft.more.heroGrid = herogrid;
+          if (collagestyle) draft.more.original = collagestyle === 'original';
+          render();
+          return;
+        }
         const hr = e.target.closest('[data-hero-remove]');
-        if (hr) { collect(form); draft.more.heroImages = (draft.more.heroImages || []).filter((r) => r !== hr.dataset.heroRemove); if (draft.more.heroImages.length < 2 && draft.more.heroMode === 'squares') draft.more.heroMode = 'wide'; if (!draft.more.heroImages.length) draft.more.heroSource = 'same'; render(); return; }
+        if (hr) {
+          collect(form);
+          draft.more.heroImages = (draft.more.heroImages || []).filter(r => r !== hr.dataset.heroRemove);
+          if (!draft.more.heroImages.length) draft.more.heroSource = 'same';
+          render();
+          return;
+        }
+        const detailLinkButton = e.target.closest('[data-detail-link-add], [data-detail-link-remove]');
+        if (detailLinkButton) {
+          collect(form);
+          const links = draft.more.links ||= [];
+          if (detailLinkButton.hasAttribute('data-detail-link-add')) links.push({ url: '', label: '' });
+          else links.splice(Number(detailLinkButton.dataset.detailLinkRemove), 1);
+          render();
+          return;
+        }
         const lk2 = e.target.closest('[data-linkkind]');
         if (lk2) {
           collect(form);
-          const which = lk2.dataset.linkfor === 'link2' ? 'link2' : 'link';
-          const l = draft[which] || {};
+          const prefix = lk2.dataset.linkfor;
+          const detailIndex = /^detailLink(\d+)$/.exec(prefix);
+          const links = detailIndex ? draft.more.links : draft;
+          const which = detailIndex ? Number(detailIndex[1]) : prefix;
+          const l = links[which] || {};
           const cur = l.url || '';
           const toApp = lk2.dataset.linkkind === 'app';
           if (toApp !== /^#/.test(cur)) {
             // bisherigen Link merken – beim Zurückschalten ist er wieder da
             const memo = { ...(l.memo || {}), [/^#/.test(cur) ? 'app' : 'web']: cur };
-            draft[which] = { ...l, memo, url: toApp ? (memo.app || '#kiosk') : (memo.web || '') };
+            links[which] = { ...l, memo, url: toApp ? (memo.app || (detailIndex ? '#home' : '#kiosk')) : (memo.web || '') };
           }
           render();
           return;
@@ -2847,11 +2895,11 @@
             input.value = ''; return;
           }
           if (input.matches('[data-news-input], [data-gallery-input]') && files.length + (draft.images || []).length + (draft.image ? 1 : 0) > 100) {
-            ui().toast('Eine Fotokollage kann höchstens 100 Bilder enthalten. Bitte weniger Fotos auswählen.');
+            ui().toast('Eine Fotocollage kann höchstens 100 Bilder enthalten. Bitte weniger Fotos auswählen.');
             input.value = ''; return;
           }
           if (input.matches('[data-album-input]') && files.length + (draft.album?.images || []).length > 100) {
-            ui().toast('Eine Fotokollage kann höchstens 100 Bilder enthalten. Bitte weniger Fotos auswählen.');
+            ui().toast('Eine Fotocollage kann höchstens 100 Bilder enthalten. Bitte weniger Fotos auswählen.');
             input.value = ''; return;
           }
           const firstIs4kCover = draft.allow4k === true && (
@@ -2876,7 +2924,7 @@
           if (input.matches('[data-hero-input]')) {
             const m = draft.more || {};
             const list = [...(m.heroSource === 'own' ? (m.heroImages || []).filter(shownImage) : []), ...ids].slice(0, 4);
-            draft.more = { ...m, heroSource: 'own', heroImages: list, heroMode: list.length >= 2 ? 'squares' : (m.heroMode === 'original' ? 'original' : 'wide') };
+            draft.more = { ...m, heroSource: 'own', heroImages: list };
           }
           if (input.matches('[data-more-input]')) draft.more = { ...(draft.more || {}), images: [...((draft.more || {}).images || []).filter((r) => !/^ph:/.test(r)), ...ids] };
           ui().toast(ids.length > 1 ? `${ids.length} Fotos hinzugefügt` : 'Foto hinzugefügt', true);
@@ -2938,7 +2986,13 @@
       };
       if (form.querySelector('[data-panel=sub]') && draft.more) {
         const secs = readSections(form, draft.more.sections || []);
-        draft.more = { ...draft.more, sections: secs, ...sectionsDerived(secs), original: Boolean(f.moreOriginal && f.moreOriginal.checked) };
+        draft.more = { ...draft.more, sections: secs, ...sectionsDerived(secs) };
+        draft.more.links?.forEach((link, i) => {
+          const prefix = 'detailLink' + i;
+          const url = f[prefix + 'App']?.value ?? f[prefix + 'Url'].value.trim();
+          link.url = url && !/^(https?:\/\/|#)/i.test(url) ? 'https://' + url : url;
+          link.label = f[prefix + 'Label'].value.trim();
+        });
       }
       if (f.link2Url) {
         const url2 = f.link2App ? f.link2App.value : f.link2Url.value.trim();
@@ -3214,7 +3268,7 @@
           <h3 class="editor-sub">${n0 + 2} · Inhalt</h3>
           <p class="muted small ed-note">Abschnitte: <b>Text</b>, <b>Überschrift</b> (rot) und <b>Zitat</b> – immer in derselben Gestaltung. Mit den Pfeilen verschieben, unten ergänzen.</p>
           ${sectionsEditor(draft.sections)}
-          <h3 class="editor-sub">${n0 + 3} · ${sp && sp.noHero ? `Fotos – Galerie unter dem Text (${coll.length} von 100)` : 'Fotos unten (Kollage, freiwillig)'}</h3>
+          <h3 class="editor-sub">${n0 + 3} · ${sp && sp.noHero ? `Fotos – Galerie unter dem Text (${coll.length} von 100)` : 'Fotos unten (Collage, freiwillig)'}</h3>
           <div class="field"><div class="gallery-edit">
             ${coll.map((ref, i) => thumbEdit(ref, 'more', i, coll.length, 'data-premove')).join('')}
             ${coll.length < 100 ? `<label class="gallery-add">${icon.plus}<span>Fotos</span><input type="file" accept="image/*" multiple data-pphoto="more" hidden></label>` : ''}
@@ -3224,7 +3278,7 @@
             ${heroImgs.length === 1 ? `<div class="field"><span>Ein Foto oben: Darstellung</span>${seg('pmode', mode === 'original' ? 'original' : 'wide', [['wide', 'Breit'], ['original', 'Originalformat']])}</div>` : ''}
             ${heroImgs.length === 1 && mode === 'original' ? align('hero', draft.heroAlign) : ''}
             <div class="field"><span>Großer Textanfang (rot)</span>${seg('pdrop', String(draft.dropcap == null ? 1 : draft.dropcap), [['0', 'Aus'], ['1', '1 Zeichen'], ['2', '2 Zeichen'], ['3', '3 Zeichen']])}</div>
-            <label class="meet-check"><input type="checkbox" name="original" ${draft.original ? 'checked' : ''}><span>Kollage: Fotos im Originalformat zeigen (nicht zuschneiden)</span></label>
+            <label class="meet-check"><input type="checkbox" name="original" ${draft.original ? 'checked' : ''}><span>Collage: Fotos im Originalformat zeigen (nicht zuschneiden)</span></label>
             ${draft.original ? align('collage', draft.collageAlign) : ''}
           </details>
           <p class="form-error" role="alert"></p>
@@ -3724,7 +3778,7 @@
     'att-open': (el) => openViewer(el.dataset.ref, el.dataset.kind, el.dataset.title, el.dataset.filename),
     'hero-open': (el) => {
       const b = storyIndex[el.dataset.block] || homeBlocks().find((x) => x.id === el.dataset.block);
-      openGallery(((b.more || {}).heroImages || []), b.title, true, Number(el.dataset.index) || 0);
+      if (b) openGallery((b.more?.heroImages || []).filter(shownImage).slice(0, 4), b.title, true, Number(el.dataset.index) || 0);
     },
     'collage-open': (el) => {
       const b = storyIndex[el.dataset.block] || site.pages.home.blocks.find((x) => x.id === el.dataset.block);

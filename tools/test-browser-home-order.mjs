@@ -9,6 +9,10 @@ try{
  const page=await browser.newPage({serviceWorkers:'block',viewport:{width:1440,height:1050}}),errors=[];
  page.setDefaultTimeout(10000);page.on('pageerror',e=>errors.push(e.message));
  await page.route('**/*',route=>{const u=new URL(route.request().url());if(u.origin!==origin && !(u.origin==='https://joern-kaemper.de' && u.pathname.startsWith('/assets/shared-kiosk/')))return route.abort();const f=resolve(root,'.'+decodeURIComponent(u.pathname==='/'?'/index.html':u.pathname));if(!f.startsWith(root))return route.abort();try{return route.fulfill({body:readFileSync(f),contentType:({'.html':'text/html','.js':'text/javascript','.css':'text/css','.png':'image/png','.jpg':'image/jpeg','.webp':'image/webp','.ttf':'font/ttf'})[extname(f)]||'application/octet-stream'});}catch{return route.fulfill({status:404,body:''});}});
+ for (const [format, size] of [['2x1',200],['3x1',300],['4x1',400]]) {
+   await page.route('**/assets/tests/' + format + '.svg', route => route.fulfill({contentType:'image/svg+xml',
+     body:`<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="100"><rect width="100%" height="100%" fill="gold"/></svg>`}));
+ }
  await page.goto(origin+'/?tfbPresentation=1#home');await page.waitForFunction(()=>TFB.ui&&TFB.homeMedia);
  await page.evaluate(async()=>{TFB.ui.state.member=TFB.api.attachDirectoryMember({id:'home-media-admin',firstName:'Home',lastName:'Test',isAdmin:true,active:true,email:'home@example.invalid',teams:[]});TFB.api.secureDirectory=true;TFB.api.mode='test';location.hash='#home';await TFB.ui.renderView('home');});
  if(await page.evaluate(()=>TFB.ui.state.member?.adminHidden))await page.locator('[data-action="admin-toggle"]').click();
@@ -50,7 +54,7 @@ try{
    await field.locator('..').locator('..').locator('.gallery-thumb').last().waitFor();
  };
  await editHome();
- for (const width of [1440,390,320]) {
+ for (const width of [1920,1440,1000,901,900,390,320]) {
    await page.setViewportSize({width,height:900});
    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
    const aligned = await form.locator('li').evaluateAll(rows => {
@@ -58,6 +62,15 @@ try{
      return lefts('[data-order-position]').size === 1 && lefts('[data-action=home-order-step]').size === 1;
    });
    assert.ok(aligned, 'Position and arrow columns align on every row');
+   const arrowPlacement = await form.locator('li').evaluateAll((rows, desktop) => rows.every(row => {
+     const bounds = selector => row.querySelector(selector).getBoundingClientRect();
+     const info = bounds('.home-order-info'), tools = bounds('[data-action=block-edit]');
+     const up = bounds('[data-dir="-1"]'), down = bounds('[data-dir="1"]');
+     const center = (up.left + down.right) / 2;
+     return up.right < down.left && down.right <= row.getBoundingClientRect().right &&
+       (!desktop || (down.right < tools.left && Math.abs(center - (info.right + tools.left) / 2) < 1));
+   }), width > 900);
+   assert.ok(arrowPlacement, 'Arrows have their own space between the title and edit actions');
    assert.equal(await form.locator('[data-action=home-order-step]').first().textContent(), '');
    assert.equal(await form.locator('[data-action=home-order-remove]').first().textContent(), 'Artikel löschen');
    const menuGap = await page.locator('.nav-card').evaluate(card =>
@@ -81,6 +94,20 @@ try{
  const content = editor.locator('[data-panel=sub] [contenteditable=true]').first();
  if (!await content.count()) await editor.locator('[data-panel=sub] [data-secadd=text]').first().click();
  await content.fill('Ausführlicher Inhalt zum Test.');
+ const sub = editor.locator('[data-panel=sub]');
+ const addDetailLink = sub.getByRole('button', {name:'Link hinzufügen'});
+ await addDetailLink.click();
+ await sub.locator('[data-linkfor=detailLink0][data-linkkind=app]').click();
+ await sub.locator('[name=detailLink0App]').selectOption('#club');
+ await sub.locator('[name=detailLink0Label]').fill('Zum Club');
+ await addDetailLink.click();
+ await sub.locator('[name=detailLink1Url]').fill('https://example.net/extern');
+ await sub.locator('[name=detailLink1Label]').fill('Externer Detaillink');
+ await addDetailLink.click();
+ await sub.locator('[data-detail-link-remove="2"]').click();
+ await sub.locator('[data-heroratio="3"]').click();
+ await upload('[data-more-input]');
+ await sub.locator('[data-collagestyle=original]').click();
  await editor.locator('[data-edtab=home]').click();
  await editor.getByRole('button',{name:'Fotoseite anlegen'}).click();
  await editor.locator('[name=albumPhotoDisplay]').selectOption('gallery');
@@ -92,6 +119,9 @@ try{
  assert.equal(topic.photoDisplay,'carousel');
  assert.equal(topic.album.photoDisplay,'gallery');
  assert.equal(topic.link2.url,'#sport');
+ assert.equal(topic.more.heroRatio,'3');
+ assert.equal(topic.more.original,true);
+ assert.deepEqual(topic.more.links.map(l=>[l.url,l.label]), [['#club','Zum Club'],['https://example.net/extern','Externer Detaillink']]);
  await row(topic.id).waitFor();
  await page.getByRole('button',{name:'Fotoblock hinzufügen'}).click();
  await page.getByRole('button',{name:/Karussell.*Fotos zum/}).click();
@@ -142,10 +172,54 @@ try{
  await archive.click();
  await page.getByRole('heading',{name:'Neuer Beitrag',exact:true}).waitFor();
  await page.getByText('Ausführlicher Inhalt zum Test.').waitFor();
+ const detailLinks = page.locator('.story-detail-links');
+ assert.equal(await detailLinks.getByRole('link',{name:'Zum Club'}).getAttribute('href'), '#club');
+ assert.equal(await detailLinks.getByRole('link',{name:'Externer Detaillink'}).getAttribute('target'), '_blank');
+ await page.locator('.collage.natural').waitFor();
  await page.getByRole('link',{name:'Fotos der Veranstaltung'}).click();
  await page.locator('.album-page .gallery-grid').waitFor();
  await page.goto(origin+'/?tfbPresentation=1#home');
  await page.locator('[data-photo-module="' + photo.id + '"]').waitFor();
+ const testCover = async ({ratio, heroCount=1, grid, width}) => {
+   await page.setViewportSize({width,height:900});
+   await page.evaluate(async ({ratio, heroCount, grid}) => {
+     const site = await TFB.api.site();
+     site.pages.home.blocks = site.pages.home.blocks.filter(block => block.id !== 'format-test');
+     site.pages.home.blocks.push({
+       id:'format-test', type:'feature', title:'Kopfbild-Test', image:'assets/tests/2x1.svg',
+       images:['assets/tests/2x1.svg'], more: {
+         heroMode:'wide', heroRatio:ratio, heroGrid:grid, text:'Test für Kopfbilder',
+         ...(heroCount > 1 ? {heroSource:'own', heroImages:['2x1','3x1','4x1','2x1'].map(r=>'assets/tests/'+r+'.svg')} : {}),
+       },
+     });
+     await TFB.api.saveSite(site);
+     await TFB.refreshSite(true);
+     location.hash = '#home/format-test';
+   },{ratio,heroCount,grid});
+   const photos = page.locator(heroCount > 1 ? '.topic-hero-grid img' : '.story-topic-cover img');
+   await photos.first().waitFor();
+   assert.equal(await photos.count(), heroCount);
+   const sizes = await photos.evaluateAll(async imgs => Promise.all(imgs.map(async img => {
+     await img.decode();
+     const rect = img.getBoundingClientRect();
+     return {imgRatio:rect.width / rect.height, naturalRatio:img.naturalWidth / img.naturalHeight,
+       fit:getComputedStyle(img).objectFit, top:rect.top, width:rect.width,
+       articleWidth:img.closest('.story').getBoundingClientRect().width};
+   })));
+   for (const size of sizes) {
+     assert.ok(Math.abs(size.imgRatio - (ratio ? Number(ratio) : grid === 'tiles' ? 1 : size.naturalRatio)) < .04);
+     if (ratio) assert.equal(size.fit,'contain');
+     if (heroCount === 1) assert.ok(Math.abs(size.width - size.articleWidth) < 1);
+   }
+   if (heroCount > 1) assert.equal(new Set(sizes.map(size => size.top)).size, width > 639 ? 1 : 2);
+   await page.evaluate(() => location.hash = '#home');
+   await page.locator('.story-topic-cover, .topic-hero-grid').waitFor({state:'detached'});
+ };
+ for (const width of [1440,390]) {
+   await testCover({width});
+   for (const ratio of ['2','3','4']) await testCover({ratio,width});
+   for (const grid of ['tiles','original']) await testCover({heroCount:4,grid,width});
+ }
  assert.deepEqual(errors,[]);
  console.log('PASS: Home editor, immediate order and deletion, transfer, archive and old links.');
 } finally { await browser.close(); }
