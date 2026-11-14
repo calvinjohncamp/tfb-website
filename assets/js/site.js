@@ -9,6 +9,7 @@
   let images = {};          // hochgeladene Fotos: { "img:<id>": dataUrl }
   let imagesLoaded = false;
   let imagesRevision = -1;
+  let communityImagesLoaded = false;
   let editing = null;       // Seite, die gerade bearbeitet wird
   let detailEditing = false; // Thema wird direkt auf seiner Unterseite bearbeitet
   let preview = null;        // Live-Vorschau beim Bearbeiten eines Themas: { id, draft, tab }
@@ -81,14 +82,17 @@
     }).finally(() => { siteLoad = null; });
     return siteLoad;
   };
-  async function ensure() {
+  async function ensure({ editorialOnly = true } = {}) {
     await TFB.loadSite();
     const revision = TFB.imageRevision || 0;
-    if (!imagesLoaded || imagesRevision !== revision) {
-      images = await ui().api.images(); imagesLoaded = true; imagesRevision = revision;
+    if (!imagesLoaded || imagesRevision !== revision || (!editorialOnly && !communityImagesLoaded)) {
+      const loaded = await ui().api.images({ editorialOnly });
+      if (imagesRevision !== revision) communityImagesLoaded = false;
+      images = communityImagesLoaded && editorialOnly ? { ...images, ...loaded } : loaded;
+      imagesLoaded = true;
+      imagesRevision = revision;
+      if (!editorialOnly) communityImagesLoaded = true;
     }
-    try { teamCounts = await ui().api.teamPostCounts(); } catch (_) { teamCounts = {}; }
-    boardPeople = await ui().api.boardPeople();
   }
 
   // ---------- Formatierung ----------
@@ -304,11 +308,11 @@
         <path d="M91.5 40 c3 2 3 6 0 8.5 M100.5 40 c-3 2 -3 6 0 8.5" stroke="#fff" stroke-width=".9" fill="none" opacity=".9"/>
       </svg>
     </div>`;
-  function picture(ref, seed, alt = '', original = false) {
+  function picture(ref, seed, alt = '', original = false, lead = false) {
     const src = ref && (images[ref] || (/^assets\//.test(ref) ? (TFB.clubArchive?.mediaUrl?.(ref) || ref) : ''));
     if (src) {
       const frame = !original && TFB.photoFrame?.normalize(site?.photoFrames?.[ref]);
-      const img = `<img src="${esc(src)}" alt="${esc(alt)}" loading="lazy"${original ? '' : ` data-photo-ref="${esc(ref)}"`}>`;
+      const img = `<img src="${esc(src)}" alt="${esc(alt)}" ${lead ? 'loading="eager" fetchpriority="high"' : 'loading="lazy"'} decoding="async"${original ? '' : ` data-photo-ref="${esc(ref)}"`}>`;
       return frame ? `<span class="photo-frame active" style="${TFB.photoFrame.style(frame)}">${img}</span>` : img;
     }
     if (/padel/.test(String(seed))) return padelArt();
@@ -496,12 +500,12 @@
         };
         const homePhotos = page === 'home' ? homePhotoRefs(b).slice(0, HOME_PHOTO_LIMIT) : [];
         const formattedPhotos = homePhotos.length > 1 && photoDisplays.has(b.photoDisplay);
-        const cover = `<div class="feature-media">${picture(homePhotos[0] || b.image, b.id, b.title)}</div>`;
+        const cover = `<div class="feature-media">${picture(homePhotos[0] || b.image, b.id, b.title, false, page === 'home' && n === '01')}</div>`;
         const parts = String(b.text || '').split(/\n{2,}/).filter((x) => x.trim());
         const textHtml = parts.map((p, i) => slot(`right-${i}`) + paragraphs(p)).join('');
         return `
           <article class="feature feature-${esc(String(b.layout || 'wide').replace('-right', ''))} ${/-right$/.test(b.layout || '') ? 'img-right' : ''} ${more ? 'has-more' : ''} ${n === '01' ? 'feature-first' : ''} ${Number(n) % 2 === 0 ? 'feature-even' : ''}" data-feature="${esc(b.id)}">
-            ${b.mediaCollection ? TFB.homeMedia.cover(b, `#home/${b.id}`, ref => images[ref] || ref) : formattedPhotos ? `<div class="home-topic-photos">${photoDisplay(b, homePhotos, b.photoDisplay, 'home-photo-gallery')}</div>` : homePhotos.length ? `<button type="button" class="feature-hit home-photo-open" data-action="home-photo-gallery" data-block="${esc(b.id)}" aria-label="${esc(b.title)}: ${homePhotos.length === 1 ? 'Foto groß ansehen' : 'Fotos groß ansehen'}">${cover}</button>` : page !== 'home' && (b.images || []).some(shownImage) ? newsCollage(b) : wrap(cover)}
+            ${b.mediaCollection ? TFB.homeMedia.cover(b, `#home/${b.id}`, ref => images[ref] || ref, page !== 'home' || n === '01') : formattedPhotos ? `<div class="home-topic-photos">${photoDisplay(b, homePhotos, b.photoDisplay, 'home-photo-gallery')}</div>` : homePhotos.length ? `<button type="button" class="feature-hit home-photo-open" data-action="home-photo-gallery" data-block="${esc(b.id)}" aria-label="${esc(b.title)}: ${homePhotos.length === 1 ? 'Foto groß ansehen' : 'Fotos groß ansehen'}">${cover}</button>` : page !== 'home' && (b.images || []).some(shownImage) ? newsCollage(b) : wrap(cover)}
             <div class="feature-body">
               <div class="feature-left">
                 <div class="feature-kicker"><span class="feature-number">${n}</span><span class="feature-kicker-label">${esc(b.kicker || '')}</span>
@@ -1028,6 +1032,10 @@
       return '<section class="card"><h1>Seite entfernt</h1><a class="btn" href="#home">Zur Startseite</a></section>';
     }
     const section = location.hash.split('/')[1];
+    if (site.pages[key]?.blocks.some(b => b.type === 'teams') && (key !== 'sport' || !section)) {
+      try { teamCounts = await ui().api.teamPostCounts(); } catch (_) { teamCounts = {}; }
+    }
+    if ((!section || key !== 'verein') && site.pages[key]?.blocks.some(b => b.id === 'v-vorstand')) boardPeople = await ui().api.boardPeople();
     if (key === 'verein' && section === 'galerie') { editing = null; return TFB.clubGallery.view(location.hash, { picture, openGallery }); }
     if (key === 'verein' && section === 'archiv' && TFB.clubArchive) {
       editing = null;
@@ -1855,7 +1863,7 @@
 
   // Übersicht aller Beiträge (Clubgeflüster + Insider News) – kompakt, mit Suche und Filtern
   async function overviewView() {
-    await ensure();
+    await ensure({ editorialOnly: false });
     const { api, icon, state } = ui();
     const copy = chatText();
     const preset = location.hash.startsWith('#chat') ? '' : location.hash.split('/')[1] || '';
@@ -1907,7 +1915,7 @@
   TFB.views.chat = async () => {
     const [, section, postId] = location.hash.split('/');
     if (section === 'beitrag') {
-      await ensure();
+      await ensure({ editorialOnly: false });
       const posts = await ui().api.posts('club', { withTeams: true });
       const p = posts.find(p => p.id === decodeURIComponent(postId || ''));
       if (!p) return `${ui().viewHead('Chat', '', false)}<p class="muted">Dieser Beitrag ist nicht mehr verfügbar.</p>`;
@@ -1918,7 +1926,7 @@
       return `<header class="view-head"><div><h1>Chat</h1></div><a class="view-close" href="#chat" aria-label="Zurück zum Chat">${ui().icon.close}</a></header><div class="chat-stream">${await chatPostMarkup(p)}</div>`;
     }
     if (location.hash.split('/')[1] === 'alle') return overviewView();
-    await ensure();
+    await ensure({ editorialOnly: false });
     return `<div class="chat-page"><header class="view-head page-head"><div><h1>${esc(chatText().feedTitle)}</h1></div>${chatEditButton()}</header>
       <div class="chat-stream">${await feedSection('club', { withTeams: true, chat: true })}</div>
       ${ui().partnerSlot('chat', 'Der Chat wird dir präsentiert von')}</div>`;
@@ -3680,7 +3688,7 @@
   }).observe(document.getElementById('sheet-root') || document.body, { childList: true });
 
   async function teamView() {
-    await ensure();
+    await ensure({ editorialOnly: false });
     const { icon, partnerSlot } = ui();
     const key = location.hash.split('/')[1] || '';
     if (location.hash.split('/')[2] === 'portraet') return teamPortraitView(key);
@@ -3864,6 +3872,14 @@
     await ui().renderView();
     await loading;
   };
+  TFB.openSiteEditor = page => { editing = page; };
+  TFB.resetSiteEditor = () => {
+    if (site) dropUnsaved();
+    editing = null;
+    detailEditing = false;
+    photoPreview = null;
+    if (preview) endLive();
+  };
   Object.assign(TFB.actions, {
     'photo-frame': async (el) => {
       await ensure();
@@ -3953,7 +3969,7 @@
       } catch (error) { ui().toast(error.message); }
       finally { el.disabled = false; }
     },
-    'site-done': () => { editing = null; ui().renderView(); window.scrollTo(0, 0); },
+    'site-done': () => { TFB.resetSiteEditor(); ui().renderView(); window.scrollTo(0, 0); },
     'block-move': (el) => {
       const list = blocksOf();
       const a = list.findIndex((b) => b.id === el.dataset.id);

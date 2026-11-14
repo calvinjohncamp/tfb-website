@@ -33,6 +33,9 @@ try{
  await page.evaluate(async image=>{const site=await TFB.api.site();site.pages.home.blocks=[{id:'home-source',type:'feature',title:'Unsere Signature-Umkleide',kicker:'Konzept',subtitle:'Ausblick',text:'Originaltext bleibt.',mediaButtonLabel:'Zeig her!',mediaCollection:{entries:[{id:'entry',title:'Nach dem Match',kicker:'Signature',subtitle:'Wohlfühlen',text:'Originaler Detailtext',date:'2026-11-07',format:'4:5',images:Array(5).fill(image),instagramUrl:'https://instagram.com/p/example'}]}}];site.pages.aktuell.blocks=[{id:'dates-head',type:'heading',title:'Save the Date'},{id:'future',type:'event',date:'2027-05-15',title:'Späterer Termin'},{id:'news-head',type:'heading',title:'News'},{id:'old-news',type:'post',date:'2026-07-04',title:'Ältere News',text:'Bleibt erhalten'}];await TFB.api.saveSite(site);await TFB.refreshSite(true);location.hash='#aktuell';await TFB.ui.renderView('aktuell');},image);
  const tools=page.locator('.newsroom-tools');
  const headerPencil=page.locator('.topbar [data-action=admin-toggle]');
+ await page.waitForFunction(()=>location.hash==='#aktuell');
+ if (await headerPencil.getAttribute('aria-pressed') === 'true') await headerPencil.click();
+ await tools.waitFor({state:'detached'});
  assert.equal(await tools.count(),0);
  assert.equal(await page.locator('[data-action=site-edit][data-page=aktuell]').count(),0);
  await headerPencil.click();
@@ -179,14 +182,21 @@ try{
  await page.evaluate(async()=>{location.hash='#club/archiv';await TFB.ui.renderView('club');});await page.locator('.archive-home').waitFor();assert.equal(await page.locator('.archive-home .media-news').count(),1);assert.equal(await page.locator('.archive-home .media-news .hm-card').count(),5);
  await page.evaluate(async()=>{location.hash='#club/archiv/beitrag/home-home-source';await TFB.ui.renderView('club');});await page.locator('.hm-entry').waitFor();assert.equal(await page.locator('.hm-entry-copy h1').innerText(),'Nach dem Match');assert.equal(await page.locator('.story-tools a[href="#club/archiv"]').count(),1);
  // Management retains the normal two-column layout and simple terminology.
- await page.evaluate(async()=>{TFB.ui.state.member=TFB.api.attachDirectoryMember({id:'home-media-admin',firstName:'Home',lastName:'Test',isAdmin:true,active:true,email:'home@example.invalid',teams:[]});TFB.api.secureDirectory=true;TFB.api.mode='test';location.hash='#aktuell';await TFB.ui.renderView('aktuell');});if(await page.evaluate(()=>TFB.ui.state.member?.adminHidden))await page.locator('[data-action=admin-toggle]').click();await page.locator('.topbar [data-action=admin-toggle]').click();await tools.waitFor();assert.equal(await page.locator('.news-dates').count(),1);assert.equal(await page.locator('.col-news .block-edit').count()>0,true);assert.equal(await page.locator('[data-action=block-move]').count(),0);assert.equal(await page.locator('[data-action=block-new]').count(),0);
+ await page.evaluate(async()=>{TFB.ui.state.member=TFB.api.attachDirectoryMember({id:'home-media-admin',firstName:'Home',lastName:'Test',isAdmin:true,active:true,email:'home@example.invalid',teams:[]});TFB.api.secureDirectory=true;TFB.api.mode='test';location.hash='#aktuell';await TFB.ui.renderView('aktuell');});if(await headerPencil.getAttribute('aria-pressed') === 'false')await headerPencil.click(); await tools.waitFor();assert.equal(await page.locator('.news-dates').count(),1);assert.equal(await page.locator('.col-news .block-edit').count()>0,true);assert.equal(await page.locator('[data-action=block-move]').count(),0);assert.equal(await page.locator('[data-action=block-new]').count(),0);
  for(const width of [1440,390]){await page.setViewportSize({width,height:1050});assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));await page.screenshot({path:`/tmp/tfb-aktuell-admin-${width}.png`,fullPage:true});}await page.locator('[data-action=aktuell-tab][data-tab=dates]').click();assert.equal(await page.locator('.col-dates').isVisible(),true);
  assert.equal(await page.getByRole('button',{name:'Fertig',exact:true}).count(),0);
- await page.locator('.topbar').getByRole('button',{name:'Aktuell-Bearbeitung schließen'}).click();
+ await headerPencil.click();
  await page.locator('.editing-page').waitFor({state:'detached'});
+ assert.equal(await page.locator('.tfb-admin-links').count(),0);
+ assert.equal(await headerPencil.getAttribute('aria-pressed'),'false');
  await page.locator('[data-action=aktuell-tab][data-tab=news]').click();
  await page.getByRole('link',{name:'Neue News'}).click();
- await page.locator('.topbar [data-action=admin-toggle]').click();
+ await headerPencil.click();
+ await form.waitFor();
+ await headerPencil.evaluate(button=>button.click());
+ await form.waitFor({state:'detached'});
+ assert.equal(await page.locator('.tfb-admin-links').count(),0);
+ await headerPencil.click();
  assert.equal(await form.locator('[type=submit]').innerText(),'Änderungen speichern');
  await form.locator('[name=title]').fill('Nicht veröffentlichte Änderung');
  page.once('dialog',dialog=>dialog.dismiss());

@@ -18,7 +18,7 @@ for(const engine of [chromium,webkit]){
    observer.observe(document, {childList:true, subtree:true});
   });
   await page.route('**/*',route=>{
-   const url=new URL(route.request().url());if(url.origin!==origin)return route.abort();
+   const url=new URL(route.request().url());if(url.origin!==origin && !(url.origin==='https://joern-kaemper.de' && url.pathname.startsWith('/assets/shared-kiosk/')))return route.abort();
    const path=resolve(root,'.'+decodeURIComponent(url.pathname==='/'?'/index.html':url.pathname));if(!path.startsWith(root))return route.abort();
    const types={'.html':'text/html','.js':'text/javascript','.css':'text/css','.png':'image/png','.jpg':'image/jpeg','.ttf':'font/ttf'};
    try{return route.fulfill({body:readFileSync(path),contentType:types[extname(path)]||'application/octet-stream'});}catch{return route.fulfill({status:404,body:''});}

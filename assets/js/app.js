@@ -10,6 +10,7 @@
   const $toast = document.getElementById('toast-root');
 
   const VIEWS = ['home', 'kiosk', 'strichliste', 'abrechnungen', 'chat', 'aktuell', 'gefluester', 'sport', 'team', 'club', 'treffen', 'verwaltung', 'impressum', 'satzung', 'partnerzahlen', 'clubstatistik', 'partner', 'kioskabrechnung', 'produktbibliothek', 'membermail'];
+  const ADMIN_VIEWS = new Set(['partner', 'partnerzahlen', 'clubstatistik', 'kioskabrechnung', 'produktbibliothek', 'membermail']);
   const KIOSK_AREA = ['kiosk', 'strichliste', 'abrechnungen'];   // nur mit Anmeldung
   // Reiter unten: Kiosk zuerst, dann die Vereinsseiten, dann der Padel-Link.
   // Team-Seiten gehören zu „Sport“
@@ -23,23 +24,26 @@
     editMode: false,        // Admin bearbeitet den Kiosk direkt
     lastAdd: null,          // { ids, until, text } – Storno-Stempel auf dem Deckel
   };
-  // Nur Demo: Admin-Werkzeuge sind beim Laden ausgeblendet (Mitglieder-Ansicht für die Vorführung);
-  // der Bleistift blendet sie ein und aus. state.member liefert dann isAdmin = false, adminHidden = true –
-  // egal, wo das Mitglied neu geladen oder gespeichert wird.
+  // Der Bleistift schaltet die Oberfläche um. Die verifizierte Rolle bleibt in rawMember.
   let hideAdmin = true;
   let rawMember = null;
   let viewMember = null;
   Object.defineProperty(state, 'member', {
     enumerable: true,
     get() {
-      if (!rawMember || !rawMember.isAdmin || !hideAdmin || api.mode !== 'demo') return rawMember;
+      if (!rawMember || !rawMember.isAdmin || !hideAdmin) return rawMember;
       if (!viewMember || viewMember._raw !== rawMember) {
         viewMember = { ...rawMember, isAdmin: false, adminHidden: true };
         Object.defineProperty(viewMember, '_raw', { value: rawMember });
       }
       return viewMember;
     },
-    set(m) { rawMember = m && m._raw ? m._raw : m; viewMember = null; },
+    set(m) {
+      const next = m?._raw || m;
+      if (rawMember?.id !== next?.id) hideAdmin = true;
+      rawMember = next;
+      viewMember = null;
+    },
   });
 
   // ---------- Formatierung ----------
@@ -108,9 +112,9 @@
   // ---------- Start ----------
   async function boot() {
     const splash = TFB.partnerVisibility?.start();
-    await TFB.editorial?.ready;
-    state.catalog = await api.catalog();
     state.member = await api.session();
+    state.catalog = await api.catalog();
+    if (rawMember?.isAdmin && ADMIN_VIEWS.has(currentView())) hideAdmin = false;
     // Wer die App neu öffnet, landet immer auf Home – egal, welche Seite zuletzt offen war.
     // Ausnahmen: Neu laden (bleibt auf der Seite) und direkte Links wie #treffen/<id>.
     const nav = (performance.getEntriesByType && performance.getEntriesByType('navigation')[0]) || {};
@@ -308,7 +312,6 @@
   // ---------- App-Rahmen ----------
   function renderShell() {
     const view = currentView();
-    document.body.classList.toggle('admin-hidden', Boolean(state.member && state.member.adminHidden));
     const area = areaOf(view);
     navArea = area;
     const clubName = esc(cfg.clubName);
@@ -337,6 +340,7 @@
       </footer>`;
     alignHeader();
     TFB.loadSite().catch(() => {});
+    syncAdminTools();
     return renderView(view);
   }
 
@@ -365,32 +369,41 @@
   }
   window.addEventListener('resize', () => requestAnimationFrame(alignHeader));
 
-  function toggleAdminTools(button) {
-    if (!rawMember?.isAdmin) return;
-    if (currentView() === 'aktuell') {
-      if ($sheet.querySelector('[data-editor=block], [data-hm-editor]')) return closeSheet();
-      hideAdmin = false;
-      viewMember = null;
-      document.body.classList.remove('admin-hidden');
-      return TFB.actions['aktuell-edit']();
+  function syncAdminTools() {
+    const enabled = state.member?.isAdmin === true;
+    const button = $app.querySelector('.header-admin-edit');
+    const label = enabled ? 'Bearbeitungsmodus schließen' : 'Bearbeitungsmodus öffnen';
+    if (button) {
+      button.setAttribute('aria-label', label);
+      button.setAttribute('aria-pressed', String(enabled));
+      button.title = label;
     }
-    if (currentView() === 'home' && !$app.querySelector('.editing-page')) {
-      hideAdmin = false;
-      viewMember = null;
-      document.body.classList.remove('admin-hidden');
-      button.setAttribute('aria-pressed', 'true');
-      return TFB.actions['site-edit']({ dataset: { page: 'home' } });
-    }
-    if (api.mode !== 'demo') {
-      if (currentView() === 'home') TFB.actions['site-done']();
-      return;
-    }
+    document.body.classList.toggle('admin-hidden', Boolean(state.member?.adminHidden));
+  }
+
+  function toggleAdminTools() {
+    if (!rawMember?.isAdmin || closeSheet() === false) return;
     hideAdmin = !hideAdmin;
-    viewMember = null;
     state.editMode = false;
-    document.body.classList.toggle('admin-hidden', hideAdmin);
-    button.setAttribute('aria-pressed', String(!hideAdmin));
-    if (hideAdmin) closeSheet();
+    syncAdminTools();
+    const view = currentView();
+    const route = location.hash;
+    if (hideAdmin) {
+      $app.querySelector('.tfb-admin-design')?.remove();
+      TFB.resetSiteEditor();
+      if (ADMIN_VIEWS.has(view)) { location.hash = '#home'; return; }
+    } else {
+      if (view === 'aktuell' && !location.hash.endsWith('/alle')) {
+        if (location.hash.split('/')[1]) {
+          renderView().then(() => { if (!hideAdmin && location.hash === route) TFB.actions['aktuell-edit'](); });
+          return;
+        }
+        return TFB.actions['aktuell-edit']();
+      }
+      if (view === 'home' && !location.hash.includes('/')) {
+        return TFB.actions['site-edit']({ dataset: { page: 'home' } });
+      }
+    }
     renderView();
   }
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => alignHeader());
@@ -510,16 +523,7 @@
           $view.appendChild(tools);
         }
       }
-      const headerEdit = $app.querySelector('.header-admin-edit');
-      if (headerEdit) {
-        const aktuellEdit = view === 'aktuell' && Boolean($view.querySelector('.site-page[data-page="aktuell"].editing-page'));
-        const label = view === 'aktuell'
-          ? (aktuellEdit ? 'Aktuell-Bearbeitung schließen' : 'Aktuell bearbeiten')
-          : 'Admin-Werkzeuge';
-        headerEdit.setAttribute('aria-label', label);
-        headerEdit.title = label;
-        headerEdit.setAttribute('aria-pressed', String(view === 'aktuell' ? aktuellEdit : state.member?.isAdmin === true));
-      }
+      syncAdminTools();
       renderPartnerSlot($view, view);
       TFB.fitChatReplies?.(view === 'chat' ? $view : null);
       if (view === 'club') TFB.clubArchive?.rendered();
@@ -959,7 +963,7 @@
       renderView('home');
       window.scrollTo(0, 0);
     }
-    else if (action === 'admin-toggle') toggleAdminTools(el);
+    else if (action === 'admin-toggle') toggleAdminTools();
     else if (action === 'members-manage' && state.member?.isAdmin) TFB.memberImport.open();
     else if (action === 'admin-backup') openAdminBackup();
     else if (action === 'close-sheet') closeSheet();
@@ -1059,6 +1063,7 @@
     });
     document.getElementById('view').dataset.view = view;
     if (view !== 'kiosk') state.editMode = false;
+    if (state.member?.isAdmin && ['#home', '#aktuell'].includes(location.hash)) TFB.openSiteEditor(view);
     window.scrollTo(0, 0);
     renderView(view);
   });

@@ -17,7 +17,7 @@
   const writeNames=['saveCatalog','setAvatar','setPhotoPermissions','updateProfile','acceptConsent','acceptFeedRules','setParentConsent','addToTab','undo','addPost','editPost','deletePost','removePostFromTeam','hidePost','addComment','editComment','deleteComment','hideComment','readChatPosts','readCommentPosts'];
   const readNames=['posts','comments','teamPostCounts','myOpenMonth','myStatements','tally'];
   for(const name of [...writeNames,...readNames,'images','putMemberImage'])local[name]=api[name].bind(api);
-  api.images=async options=>({...await local.images(options),...(!member?Object.fromEntries((await guestState()).images.map(ref=>[ref,publicBase+'/public/chat-media?'+new URLSearchParams({ref})])):{})});
+  api.images=async options=>({...await local.images(options),...(!member&&!options?.editorialOnly?Object.fromEntries((await guestState()).images.map(ref=>[ref,publicBase+'/public/chat-media?'+new URLSearchParams({ref})])):{})});
   function serial(fn) { const task=queue.then(fn,fn);queue=task.catch(()=>{});return task; }
   const storage=(mode,run)=>new Promise((resolve,reject)=>{
     const req=indexedDB.open('tfb_sync_recovery_v1',1);

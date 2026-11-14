@@ -40,10 +40,17 @@ try {
   await pencil.click();
 
   await page.locator('.site-page[data-page=home].editing-page').waitFor();
-  const expected = ['Splash','Partner','Mitglieder','Statistik','Kiosk','E-Mail an alle Mitglieder','Datensicherung / Time Machine'];
+  const expected = ['Splash','Partner','Mitglieder','Statistik','Kiosk-Buchungen','E-Mail an alle Mitglieder','Datensicherung / Time Machine'];
   for (const view of ['home','kiosk','chat','aktuell','sport','club','treffen']) {
     await page.evaluate(async view => { location.hash = '#'+view; await TFB.ui.renderView(view); }, view);
     await page.locator('.tfb-admin-links').waitFor();
+    await pencil.click();
+    await page.locator('.tfb-admin-links, .editing-page, .newsroom-tools').first().waitFor({state:'detached'});
+    assert.equal(await pencil.getAttribute('aria-pressed'),'false',view);
+    await pencil.click();
+    await page.locator('.tfb-admin-links').waitFor();
+    assert.equal(await pencil.getAttribute('aria-pressed'),'true',view);
+    if (view === 'aktuell') await page.locator('.newsroom-tools').waitFor();
     assert.deepEqual(await page.locator('.tfb-admin-links > *').allTextContents(), expected, view);
     for (const width of [390,834,1440]) {
       await page.setViewportSize({width,height:1000});
@@ -59,7 +66,7 @@ try {
   await page.locator('.tfb-admin-links a[href="#kioskabrechnung"]').click();
   await page.locator('[data-kb-admin-view] .kb-calendar').waitFor();
   assert.equal(await page.locator('[data-kb-member]').inputValue(),'');
-  assert.equal(await page.locator('.tfb-admin-links a[aria-current=page]').innerText(),'Kiosk');
+  assert.equal(await page.locator('.tfb-admin-links a[aria-current=page]').innerText(),'Kiosk-Buchungen');
   for(const yellow of [true,false]){
     const switcher = page.locator('.topbar [data-tfb-brand]');
     if ((await switcher.getAttribute('aria-pressed') === 'true') !== yellow) await switcher.click();
@@ -71,6 +78,9 @@ try {
     }),{bg,fg});
   }
   assert.match(await page.locator('.kb-account-heading').innerText(),/Clubweite Abrechnung/);
+  await pencil.click();
+  await page.locator('.site-page[data-page=home]').waitFor();
+  assert.equal(await page.locator('.tfb-admin-links, [data-kb-admin-view]').count(),0);
   await page.locator('.brand-home').click();
   const homeEditor = page.locator('.site-page[data-page=home].editing-page');
   await page.locator('.site-page[data-page=home]').waitFor();
@@ -112,7 +122,7 @@ try {
   await page.getByText('Diese clubweite Übersicht steht nur der berechtigten Verwaltung zur Verfügung.').waitFor();
   assert.equal(await page.locator('[data-kb-admin-view]').count(),0);
   assert.deepEqual(errors, []);
-  console.log('PASS: secure-login admin pencil toggles Home/Kiosk tools, stays hidden after session refresh/reload, retains role and never elevates ordinary members.');
+  console.log('PASS: secure-login admin pencil toggles tools across public and admin routes, stays hidden after session refresh/reload, retains role and never elevates ordinary members.');
 } finally { await browser.close(); }
 
 }

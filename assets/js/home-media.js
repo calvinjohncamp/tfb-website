@@ -3,15 +3,15 @@
   const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const entries = block => (block.mediaCollection?.entries || []).filter(e => e.title && e.images?.length);
   const source = (ref, imageOf) => imageOf(ref) || ref;
-  const image = (ref, imageOf, alt = '', lead = false) => `<img src="${esc(source(ref,imageOf))}" alt="${esc(alt)}" loading="${lead?'eager':'lazy'}" fetchpriority="${lead?'high':'low'}" decoding="async">`;
+  const image = (ref, imageOf, alt = '', lead = false, defer = false) => `<img ${defer?'data-hm-src':'src'}="${esc(source(ref,imageOf))}" alt="${esc(alt)}" loading="${lead?'eager':'lazy'}" fetchpriority="${lead?'high':'low'}" decoding="async">`;
   const link = value => { try { const u = new URL(value); return /^https?:$/.test(u.protocol) ? u.href : ''; } catch { return ''; } };
   const magnifier='<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="m15.5 15.5 5 5"></path></svg>';
   const playbackIcon = playing => `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">${playing?'<rect x="7" y="5" width="3.5" height="14" rx=".7"/><rect x="13.5" y="5" width="3.5" height="14" rx=".7"/>':'<path d="M8 5.5v13l10-6.5z"/>'}</svg>`;
   let zoom=null;
-  function cover(block, href, imageOf) {
+  function cover(block, href, imageOf, homeLead = null) {
     const entry = entries(block)[0], refs = entry?.images || [], manual=block.animationStart==='manual';
     if (!refs.length) return `<div class="feature-media hm-empty">Noch keine Bilder veröffentlicht.</div>`;
-    return `<div class="feature-media hm-orbit" data-hm-orbit data-hm-start="${block.animationStart==='manual'?'manual':'auto'}" aria-label="Einblicke in ${esc(block.title)}"><div class="hm-stage">${refs.map((ref,i) => `<a class="hm-card" href="${esc(href)}" aria-label="Bild ${i+1}: Alle Einblicke ansehen">${image(ref,imageOf,entry.title,i===0)}</a>`).join('')}</div><div class="hm-footer"><a class="hm-caption" href="${esc(href)}"><span>${esc(entry.title)}</span></a><button type="button" class="hm-zoom-button" aria-label="Karussell vergrößern" title="Karussell vergrößern">${magnifier}</button><button type="button" class="hm-pause" aria-label="${manual?'Bildbewegung starten':'Bildbewegung pausieren'}" aria-pressed="${manual}"${refs.length<2?' hidden':''}>${playbackIcon(!manual)}</button></div></div>`;
+    return `<div class="feature-media hm-orbit" data-hm-orbit data-hm-start="${block.animationStart==='manual'?'manual':'auto'}" aria-label="Einblicke in ${esc(block.title)}"><div class="hm-stage">${refs.map((ref,i) => `<a class="hm-card" href="${esc(href)}" aria-label="Bild ${i+1}: Alle Einblicke ansehen">${image(ref,imageOf,entry.title,i===0&&homeLead!==false,homeLead!==null&&(!homeLead||i>0))}</a>`).join('')}</div><div class="hm-footer"><a class="hm-caption" href="${esc(href)}"><span>${esc(entry.title)}</span></a><button type="button" class="hm-zoom-button" aria-label="Karussell vergrößern" title="Karussell vergrößern">${magnifier}</button><button type="button" class="hm-pause" aria-label="${manual?'Bildbewegung starten':'Bildbewegung pausieren'}" aria-pressed="${manual}"${refs.length<2?' hidden':''}>${playbackIcon(!manual)}</button></div></div>`;
   }
   async function detail(block, { imageOf, paragraphs, admin, page='home', backHref, links = '' }) {
     const studio = await import('./chat-media.js?v=20261114-home-editor-1');
@@ -105,7 +105,7 @@
       node.dataset.hmOrder=order.join(',');node.dataset.hmPhase=String(phase);node.dataset.hmReady='true';
     };
     const stop = () => {clearTimeout(timer);cancelAnimationFrame(frame);node.dataset.hmRunning='false';};
-    const canRun = () => n>1&&node.isConnected&&visible&&nextImagesReady()&&!document.hidden&&!motionBlocked()&&(enlarged||!hover&&!focused)&&!paused&&(!zoom||zoom.node===node);
+    const canRun = () => n>1&&node.isConnected&&visible&&!document.body.classList.contains('tfb-splash-open')&&nextImagesReady()&&!document.hidden&&!motionBlocked()&&(enlarged||!hover&&!focused)&&!paused&&(!zoom||zoom.node===node);
     const sync = (delay=3000) => {stop();button.setAttribute('aria-pressed',String(paused||motionBlocked()));button.setAttribute('aria-label',paused||motionBlocked()?'Bildbewegung starten':'Bildbewegung pausieren');const playing=!(paused||motionBlocked());if(button.dataset.hmPlaying!==String(playing)){button.innerHTML=playbackIcon(playing);button.dataset.hmPlaying=String(playing);}button.disabled=false;if(!canRun())return;node.dataset.hmRunning='true';timer=setTimeout(()=>{const start=performance.now(),from=phase,to=Math.floor(phase+.0001)+1;const tick=now=>{if(!canRun()){stop();return;}const t=Math.min(1,(now-start)/1600);phase=from+(to-from)*t*t*(3-2*t);layout();if(t<1)frame=requestAnimationFrame(tick);else{phase=to%n;layout();sync(2100);}};frame=requestAnimationFrame(tick);},delay);};
     button.addEventListener('click',()=>{if(motionBlocked()){allowMotion=true;paused=false;}else paused=!paused;hover=false;sync();});
     node.addEventListener('pointerenter',e=>{if(e.pointerType==='mouse'&&hoverable.matches){hover=true;sync();}});
@@ -115,7 +115,17 @@
     const keyInput=e=>{if(e.key==='Tab'){keyboard=true;focus();}};
     const pointerInput=e=>{keyboard=false;if(e.pointerType!=='mouse')hover=false;focus();};
     document.addEventListener('keydown',keyInput);document.addEventListener('pointerdown',pointerInput);
-    const intersection=new IntersectionObserver(rows=>{const next=rows[0].isIntersecting;if(visible===next)return;visible=next;sync();},{threshold:.15});intersection.observe(node);
+    function loadNextImage() {
+      if ((!visible && !enlarged) || document.body.classList.contains('tfb-splash-open')) return;
+      const images = [...node.querySelectorAll('.hm-card img')];
+      if (images.some(img => img.hasAttribute('src') && !img.complete)) return;
+      const next = images.find(img => img.dataset.hmSrc);
+      if (!next) return;
+      next.loading = 'eager';
+      next.src = next.dataset.hmSrc;
+      delete next.dataset.hmSrc;
+    }
+    const intersection=new IntersectionObserver(rows=>{const next=rows[0].isIntersecting;if(visible===next)return;visible=next;loadNextImage();sync();},{threshold:.15});intersection.observe(node);
     const resize=new ResizeObserver(layout);resize.observe(node);
     const changed=()=>{allowMotion=false;if(reduced.matches){phase=Math.round(phase)%n;layout();}sync();};
     const visibility=()=>sync();reduced.addEventListener('change',changed);document.addEventListener('visibilitychange',visibility);
@@ -129,10 +139,11 @@
         // Keep the current picture until its successor can actually be drawn.
         if(node.dataset.hmRunning!=='true')sync();
       };
-      img.addEventListener('load',reveal);
+      img.addEventListener('load', () => { reveal(); loadNextImage(); });
+      img.addEventListener('error', loadNextImage);
       if(img.complete)queueMicrotask(reveal);
     });
-    layout();sync();return {node,getState:()=>({phase,paused,allowMotion}),setState(state){phase=state.phase;paused=state.paused;allowMotion=Boolean(state.allowMotion);layout();sync();},refresh:sync,destroy(){stop();painter?.destroy();document.removeEventListener('keydown',keyInput);document.removeEventListener('pointerdown',pointerInput);intersection.disconnect();resize.disconnect();reduced.removeEventListener('change',changed);document.removeEventListener('visibilitychange',visibility);}};
+    layout();loadNextImage();sync();return {node,getState:()=>({phase,paused,allowMotion}),setState(state){phase=state.phase;paused=state.paused;allowMotion=Boolean(state.allowMotion);layout();sync();},refresh(){loadNextImage();sync();},destroy(){stop();painter?.destroy();document.removeEventListener('keydown',keyInput);document.removeEventListener('pointerdown',pointerInput);intersection.disconnect();resize.disconnect();reduced.removeEventListener('change',changed);document.removeEventListener('visibilitychange',visibility);}};
   }
   function closeZoom(restoreFocus=true) {
     if(!zoom)return;
@@ -175,6 +186,8 @@
   function hydrate(){queued=false;for(const c of controllers)if(!c.node.isConnected){c.destroy();controllers.delete(c);}document.querySelectorAll('[data-hm-orbit],.hm-entry').forEach(node=>{if(mounted.has(node))return;mounted.add(node);controllers.add(node.matches('[data-hm-orbit]')?mountOrbit(node):mountThumbs(node));});}
   new MutationObserver(()=>{if(!queued){queued=true;requestAnimationFrame(hydrate);}}).observe(document.getElementById('app'),{childList:true,subtree:true});
   document.addEventListener('click',e=>{const all=e.target.closest('[data-hm-all]');if(all){all.closest('.hm-collection').querySelectorAll('.hm-entry[hidden]').forEach(el=>el.hidden=false);all.parentElement.remove();}});
+
+  TFB.resumeHomeMedia = () => { for (const controller of controllers) controller.refresh?.(); };
 
   function fresh() { return {title:'Einblicke in unser Projekt.',intro:'',entries:[]}; }
   function openEditor(original, {imageOf,uploadFiles,cover4kField,links,onSave,onDelete,page='home'}) {

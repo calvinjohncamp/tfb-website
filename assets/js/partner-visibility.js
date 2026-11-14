@@ -96,6 +96,7 @@
   function hide(count=true) {
     if(!splash||splash.hidden)return;
     stopObserver();active=null;splash.hidden=true;TFB.usage?.rendered();document.body.classList.remove('tfb-splash-open');document.getElementById('app').inert=false;markVisit();
+    TFB.resumeHomeMedia?.();
     if(count)rendered();
   }
   async function start() {
@@ -109,9 +110,24 @@
       await show(false, {...defaults, ...saved});
     }
   }
+  function enter() {
+    if (!appReady) {
+      splash.dataset.enterRequested = '1';
+      return;
+    }
+    hide(false);
+    if (location.hash !== '#home') location.hash = '#home';
+    else {
+      window.scrollTo(0,0);
+      rendered();
+      TFB.loadChatVideoPreviews?.(document.getElementById('view'));
+      document.querySelector('#view h1')?.focus?.();
+    }
+  }
   function ready() {
     appReady=true;
-    if(splash&&!splash.hidden)begin('splash',splash);else rendered();
+    if (splash?.dataset.enterRequested) { delete splash.dataset.enterRequested; enter(); }
+    else if(splash&&!splash.hidden)begin('splash',splash);else rendered();
   }
   function rendered(){
     if(!started)return;
@@ -158,7 +174,7 @@
   function csv(){if(!admin()||!report)return;const cell=v=>'"'+String(v??'').replace(/^[=+@-]/,"'$&").replace(/"/g,'""')+'"';const names=new Map(report.partners.map(p=>[p.id,p.name]));const rows=[['Quelle','Jahr','Messbeginn','Tag','Seite','Partner-ID','Partner','Platz','Kennzahl','Anzahl'],...report.rows.map(r=>['TFB',report.year,report.startedAt||'',r.day,pageNames[r.page]||r.page,r.partner,names.get(r.partner)||'',r.slot,r.kind,r.total])];const blob=new Blob(['\uFEFF'+rows.map(r=>r.map(cell).join(';')).join('\r\n')],{type:'text/csv;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`TFB-Partner-Sichtbarkeit-${report.year}.csv`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);}
   TFB.views=TFB.views||{};TFB.views.partnerzahlen=reportView;
   TFB.actions=TFB.actions||{};Object.assign(TFB.actions,{
-    'splash-enter':()=>{hide(false);if(location.hash!=='#home')location.hash='#home';else{window.scrollTo(0,0);rendered();document.querySelector('#view h1')?.focus?.();}},
+    'splash-enter':enter,
     'splash-open':()=>{ui().closeSheet();show(true);},
     'splash-edit':edit,
     'partner-report-refresh':()=>ui().renderView('partnerzahlen'),

@@ -10,8 +10,12 @@ for(const engine of [chromium,webkit]){
   await page.setContent('<meta name="viewport" content="width=device-width,initial-scale=1"><div id="app"></div><script>window.TFB={}</script>');
   await page.addStyleTag({content:readFileSync('assets/css/home-media.css','utf8')+'#app{width:480px}.hm-orbit{height:600px}'});
   await page.addScriptTag({content:readFileSync('assets/js/home-media.js','utf8')});
-  await page.evaluate(()=>app.innerHTML=TFB.homeMedia.cover({title:'Load',mediaCollection:{entries:[{title:'Loading',images:[0,1,2].map(i=>'https://loading.invalid/image-'+i)}]}},'#detail',x=>x));
-  const orbit=page.locator('.hm-orbit');await orbit.waitFor();
+  await page.evaluate(()=>{
+   document.body.classList.add('tfb-splash-open');
+   const cover=(start,lead)=>TFB.homeMedia.cover({title:'Load',mediaCollection:{entries:[{title:'Loading',images:[start,start+1,start+2].map(i=>'https://loading.invalid/image-'+i)}]}},'#detail',x=>x,lead);
+   app.innerHTML=cover(0,true)+'<div style="height:2500px"></div>'+cover(3,false);
+  });
+  const orbit=page.locator('.hm-orbit').first();await orbit.waitFor();
   assert.equal(await orbit.locator('img').first().getAttribute('loading'),'eager');
   assert.equal(await orbit.locator('img').first().getAttribute('fetchpriority'),'high');
   await page.waitForFunction(()=>document.querySelector('.hm-orbit').dataset.hmRunning==='false');
@@ -20,7 +24,10 @@ for(const engine of [chromium,webkit]){
    for(let attempt=0;!waiting.has('https://loading.invalid/image-'+i)&&attempt<100;attempt++)await page.waitForTimeout(50);
    assert(waiting.has('https://loading.invalid/image-'+i));await waiting.get('https://loading.invalid/image-'+i)();
    await page.waitForFunction(i=>document.querySelectorAll('.hm-card')[i].dataset.hmLoaded==='true',i);
-   if(i===0){assert.equal(await orbit.locator('.hm-card:visible').count(),1);assert.equal(await orbit.getAttribute('data-hm-running'),'false','First picture visible without waiting for the full collection');}
+   if(i===0){
+    assert.equal(waiting.size,1,'Only the lead image is requested behind Splash');
+    await page.evaluate(()=>{document.body.classList.remove('tfb-splash-open');TFB.resumeHomeMedia();});
+    assert.equal(await orbit.locator('.hm-card:visible').count(),1);assert.equal(await orbit.getAttribute('data-hm-running'),'false','First picture visible without waiting for the full collection');}
   }
   await page.waitForFunction(()=>document.querySelector('.hm-orbit').dataset.hmRunning==='true');
   await page.waitForFunction(()=>Number(document.querySelector('.hm-orbit').dataset.hmPhase)>=1,{},{timeout:8000});
@@ -28,6 +35,8 @@ for(const engine of [chromium,webkit]){
   await page.waitForTimeout(500);assert.equal(await orbit.getAttribute('data-hm-phase'),'1');
   await waiting.get('https://loading.invalid/image-2')();
   await page.waitForFunction(()=>document.querySelector('.hm-orbit').dataset.hmRunning==='true');
+  assert.equal(waiting.has('https://loading.invalid/image-3'),false,'Second carousel stays unloaded outside the viewport');
+  await Promise.all([page.waitForRequest('https://loading.invalid/image-3'),page.locator('.hm-orbit').last().scrollIntoViewIfNeeded()]);
   console.log(`PASS ${engine.name()}: eager/high-priority first image, no empty frames, first image visible independently, autoplay waits for decoded successor.`);
  }finally{await browser.close();}
 }
