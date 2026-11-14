@@ -250,18 +250,23 @@ try{
  assert.ok(savedNews.archived);
  await page.evaluate(id=> location.hash='#club/archiv/beitrag/aktuell-'+id,savedNews.id);
  await page.getByRole('link',{name:'Externer News-Link'}).waitFor();
- const permanent=page.getByRole('button',{name:'Endgültig löschen'});
- const confirmDelete=async acceptSecond => {
-   let count=0;
-   const answer=dialog=>{count++;return count===1||acceptSecond?dialog.accept():dialog.dismiss();};
-   page.on('dialog',answer);
-   try { await permanent.click(); } finally { page.off('dialog',answer); }
-   assert.equal(count,2);
- };
- await confirmDelete(false);
- await permanent.waitFor();
- await confirmDelete(true);
- await page.locator('.archive-home').waitFor();
- assert.equal(await page.evaluate(async id=>(await TFB.api.site()).pages.aktuell.blocks.some(b=>b.id===id),savedNews.id),false);
+ assert.equal(await page.getByRole('button',{name:/löschen|bearbeiten/i}).filter({hasText:/löschen/i}).count(),0);
+ await page.evaluate(()=>location.hash='#aktuell');
+ await tools.getByRole('button',{name:'News hinzufügen'}).click();
+ await form.locator('[name=title]').fill('Mein löschbarer Test');
+ await form.locator('[type=submit]').click();
+ await form.waitFor({state:'detached'});
+ const own = page.locator('.block-edit').filter({hasText:'Mein löschbarer Test'});
+ const deleteButton = own.getByRole('button',{name:'Artikel löschen'});
+ await deleteButton.waitFor();
+ await deleteButton.click();
+ await own.waitFor();
+ const accept = dialog => dialog.accept();
+ page.on('dialog',accept);
+ await deleteButton.click();
+ await own.waitFor({state:'detached'});
+ page.off('dialog',accept);
+ const old = page.locator('.block-edit').filter({hasText:'Ältere News'});
+ assert.equal(await old.getByRole('button',{name:'Artikel löschen'}).count(),0);
  assert.deepEqual(errors,[]);console.log('PASS: News links, dates and three photo formats, 15-photo cap, compact collage, original dates on transfer, archive and mobile admin.');
 }finally{await browser.close();}

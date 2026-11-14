@@ -21,14 +21,14 @@ test('CMS access, published media, revision conflicts, independent page saves an
  const id=crypto.randomUUID(),changes=[change('page:home',0,{title:'Home',blocks:[{id:'first',image:ref,title:'Erster Beitrag'}]}),change('page:verein',0,{title:'Club',blocks:[{people:[{name:'Public',email:'private@example.invalid',phone:'secret',memberId:f.otherId}]}]})];
  assert.equal((await save(f,changes,id)).status,200);assert.equal((await save(f,changes,id)).status,200);
  assert.equal((await save(f,[change('page:home',0,{title:'Stale'})])).status,409);
- const [home,club]=await Promise.all([save(f,[change('page:home',1,{title:'Neu',blocks:[{id:'second',image:ref}]})]),save(f,[change('page:verein',1,{title:'Club neu'})])]);assert.equal(home.status,200);assert.equal(club.status,200);
+ const [home,club]=await Promise.all([save(f,[change('page:home',1,{title:'Neu',blocks:[{id:'first',image:ref}]})]),save(f,[change('page:verein',1,{title:'Club neu'})])]);assert.equal(home.status,200);assert.equal(club.status,200);
  const state=await f.call('/public/site');assert.equal(state.body.documents['page:home'].value.title,'Neu');assert.equal(state.body.documents['page:verein'].value.title,'Club neu');
  const privateCheck=await save(f,[change('page:verein',2,{blocks:[{people:[{name:'Public',email:'private@example.invalid',memberId:f.otherId,photoCrop:{image:png}}]}]})]);assert.equal(privateCheck.status,200);
  assert.ok(!JSON.stringify((await f.call('/public/site')).body).includes('private@example.invalid'));
  assert.ok(!JSON.stringify((await f.call('/public/site')).body).includes(f.otherId));
  const r=await (await import('./worker-test-loader.mjs')).default.fetch(new Request('https://tfb-api.test/public/site-media/'+ref),f.env);assert.equal(r.status,200);assert.equal(r.headers.get('Content-Type'),'image/png');
  const before=f.env.DB.sqlite.prepare('SELECT COUNT(*) AS n FROM cms_history').get().n;
- assert.equal((await save(f,[change('page:home',2,{title:'Missing',image:'img:cms-'+'0'.repeat(64)})])).status,400);
+ assert.equal((await save(f,[change('page:home',2,{title:'Missing',blocks:[{id:'first',image:'img:cms-'+'0'.repeat(64)}]})])).status,400);
  assert.equal(f.env.DB.sqlite.prepare('SELECT COUNT(*) AS n FROM cms_history').get().n,before);
  assert.equal((await f.call('/admin/site/media',{data:'data:image/png;base64,aGVsbG8='},f.adminToken)).status,400);
 });
@@ -126,4 +126,31 @@ test('the central kiosk switch blocks purchases and preserves existing bookings'
   assert.deepEqual((await f.state()).body.records.filter(r => r.kind === 'item').map(r => r.id), ['before-close']);
   assert.equal((await save(f, [change('global:kioskActive', 1, true)])).status, 200);
   assert.equal((await f.commit([buy('after-open')])).status, 200);
+});
+
+test('only the creating admin can delete active articles, and the archive stays read-only', async () => {
+ const f = await setup();
+ f.env.DB.sqlite.prepare('UPDATE members SET is_admin=1 WHERE id=?').run(f.otherId);
+ const historical = {id:'club-history', type:'post', title:'Vereinsgeschichte'};
+ assert.equal((await save(f,[change('page:home',0,{blocks:[historical]}),change('page:aktuell',0,{blocks:[]})])).status,200);
+ const own = {id:'b-'+crypto.randomUUID(),type:'post',title:'Mein neuer Artikel',editorialAuthor:f.otherId};
+ assert.equal((await save(f,[change('page:home',1,{blocks:[historical,own]})])).status,200);
+ const read = async () => (await f.call('/admin/site',undefined,f.adminToken)).body.documents;
+ let pages = await read();
+ assert.equal(pages['page:home'].value.blocks[1].editorialAuthor,f.admin.id);
+ assert.equal((await f.call('/public/site')).body.documents['page:home'].value.blocks[1].editorialAuthor,undefined);
+ const foreignDelete = await f.call('/admin/site/commit',{
+   id:crypto.randomUUID(),kind:'restore',changes:[change('page:home',2,{blocks:[historical]})]
+ },f.otherToken);
+ assert.equal(foreignDelete.status,403);
+ assert.equal((await save(f,[change('page:home',2,{blocks:[own]})])).status,403);
+ assert.equal((await save(f,[change('page:home',2,{blocks:[historical]}),change('page:aktuell',1,{blocks:[own]})])).status,200);
+ pages = await read();
+ assert.equal(pages['page:aktuell'].value.blocks[0].editorialAuthor,f.admin.id);
+ assert.equal((await save(f,[change('page:aktuell',2,{blocks:[]})])).status,200);
+ const archived = {...own,id:'b-'+crypto.randomUUID()};
+ assert.equal((await save(f,[change('page:aktuell',3,{blocks:[archived]})])).status,200);
+ assert.equal((await save(f,[change('page:aktuell',4,{blocks:[{...archived,archived:true}]})])).status,200);
+ assert.equal((await save(f,[change('page:aktuell',5,{blocks:[]})])).status,403);
+ assert.equal((await save(f,[change('page:aktuell',5,{blocks:[{...archived,archived:true,title:'Versuch'}]})])).status,403);
 });

@@ -13,7 +13,7 @@ export function joinSite(docs){const site={pages:{}};for(const [key,doc] of Obje
 export function publicValue(value){
  if(Array.isArray(value))return value.filter(x=>!x?true:!x._new).map(publicValue);
  if(!value||typeof value!=='object')return value;
- return Object.fromEntries(Object.entries(value).filter(([key])=>!['memberId','photoCrop','passwordHash','accounts','members','community'].includes(key)&&!(key==='email'&&!value.publishEmail)&&!(key==='phone'&&!value.publishPhone)).map(([key,item])=>[key,publicValue(item)]));
+ return Object.fromEntries(Object.entries(value).filter(([key])=>!['editorialAuthor','memberId','photoCrop','passwordHash','accounts','members','community'].includes(key)&&!(key==='email'&&!value.publishEmail)&&!(key==='phone'&&!value.publishPhone)).map(([key,item])=>[key,publicValue(item)]));
 }
 function validate(value){
  let nodes=0;function walk(v,depth){if(++nodes>40000||depth>25)fail(400,'Der Seiteninhalt ist zu komplex.');if(typeof v==='string'){if(v.length>600000)fail(400,'Ein Inhalt ist zu groß.');if(/^(?:javascript|vbscript|file):/i.test(v.trim()))fail(400,'Nicht erlaubtes Linkziel.');if(v.startsWith('data:')&&!/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(v))fail(400,'Nicht erlaubtes eingebettetes Format.');}else if(v&&typeof v==='object'){for(const [k,x] of Object.entries(v)){if(['__proto__','prototype','constructor'].includes(k))fail(400,'Ungültiger Inhalt.');walk(x,depth+1);}}else if(v!==null&&!['boolean','number'].includes(typeof v))fail(400,'Ungültiger Inhalt.');}walk(value,0);
@@ -49,6 +49,7 @@ export async function editorialState(env,admin=false,attempt=0){
  const rows=(await env.DB.prepare('SELECT key,revision,payload FROM cms_documents ORDER BY key').all()).results;
  if(!rows.length)fail(503,'Die zentrale Redaktion wird eingerichtet. Bitte den bisherigen Browserstand behalten.');
  const raw=Object.fromEntries(rows.map(row=>[row.key,{revision:row.revision,value:JSON.parse(row.payload)}]));
+ if(admin)await legacyTestAuthor(env,raw);
  const projected=await publicDocuments(env,raw),documents=admin?raw:projected;
  const media=(await env.DB.prepare('SELECT m.ref,m.mime,m.size,m.hash FROM cms_media m '+(admin?'':'JOIN cms_public_media p ON p.ref=m.ref')).all()).results;
  const revision=(await env.DB.prepare('SELECT revision FROM cms_head WHERE id=1').first()).revision;
@@ -90,7 +91,56 @@ async function snapshotObject(env,state,extra){
  await env.CMS_BUCKET.put(objectKey,JSON.stringify(manifest),{httpMetadata:{contentType:'application/json'},customMetadata:{backup:extra.unified?'pending':'content'}});
  return {id,at,objectKey,manifest};
 }
-export async function editorialCommit(env,member,data){
+const articlePages = ['page:home', 'page:aktuell'];
+const editorialTypes = new Set(['feature', 'post', 'gallery', 'collage', 'carousel', 'text', 'image']);
+const articleId = /^b-[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i;
+const legacyTestId = 'b-be4ed120-57fb-45f4-9666-2d5205f3ef34';
+
+async function legacyTestAuthor(env, documents) {
+ const test = documents['page:aktuell']?.value?.blocks?.find(block => block.id === legacyTestId);
+ if (!test || test.editorialAuthor || test.createdAt !== '2026-11-14T08:26:11.204Z') return;
+ const edit = await env.DB.prepare("SELECT author FROM cms_history WHERE revision=124 AND kind='edit' AND created_at='2026-11-14T08:26:15.328Z'").first();
+ if (edit) test.editorialAuthor = edit.author;
+}
+
+function enforceArticleOwnership(old, changes, member) {
+ const previous = new Map();
+ const upcoming = new Map(changes.map(change => [change.key, change.value]));
+ const next = new Map();
+ for (const page of articlePages) {
+  const before = old.documents[page]?.value;
+  for (const block of before?.blocks || []) if (block.id) previous.set(block.id, { page, block });
+  for (const block of (upcoming.get(page) || before)?.blocks || []) {
+   if (!block.id) continue;
+   if (next.has(block.id)) fail(400, 'Eine Artikelkennung ist doppelt vorhanden.');
+   next.set(block.id, { page, block });
+  }
+ }
+ for (const [id, { page, block }] of previous) {
+  const replacement = next.get(id);
+  if (block.archived && (!replacement || replacement.page !== page ||
+      JSON.stringify(block) !== JSON.stringify(replacement.block))) {
+   fail(403, 'Beiträge im Clubarchiv können nicht bearbeitet oder gelöscht werden.');
+  }
+  if (!replacement && (!editorialTypes.has(block.type) || block.editorialAuthor !== member.id)) {
+   fail(403, 'Du kannst nur deine eigenen Artikel löschen.');
+  }
+  if (replacement && replacement.page !== page &&
+      !(page === 'page:home' && replacement.page === 'page:aktuell')) fail(403, 'Dieser Artikel kann nicht verschoben werden.');
+ }
+ for (const [id, { page, block }] of next) {
+  if (!upcoming.has(page)) continue;
+  const existing = previous.get(id);
+  delete block.editorialAuthor;
+  const author = existing?.block.editorialAuthor;
+  if (author) block.editorialAuthor = author;
+  else if (!existing && Object.keys(old.documents).length && articleId.test(id) && editorialTypes.has(block.type)) {
+   block.editorialAuthor = member.id;
+  }
+ }
+}
+
+export async function editorialCommit(env,member,data,{restore=false}={}){
  ready(env);if(!/^[a-zA-Z0-9-]{12,100}$/.test(data?.id||'')||!Array.isArray(data.changes)||!data.changes.length||data.changes.length>24)fail(400,'Ungültiger Speichervorgang.');
  const signature=await digest(JSON.stringify(data)),receipt=await env.DB.prepare('SELECT signature,result FROM cms_receipts WHERE id=?').bind(data.id).first();
  if(receipt){if(receipt.signature!==signature)fail(409,'Diese Speicherung wurde bereits anders verwendet.');return JSON.parse(receipt.result);}
@@ -99,19 +149,21 @@ export async function editorialCommit(env,member,data){
  for(let attempt=0;attempt<3;attempt++){
   let old;try{old=await editorialState(env,true);}catch(e){if(e.status!==503)throw e;old={revision:0,documents:{},media:[]};}
   for(const item of changes)if((old.documents[item.key]?.revision||0)!==item.expected)fail(409,'Diese Seite wurde inzwischen auf einem anderen Gerät geändert. Dein Entwurf bleibt erhalten. Bitte den aktuellen Stand vergleichen.');
-  const next=clone(old);next.revision++;for(const item of changes)next.documents[item.key]={revision:item.expected+1,value:item.value};
+  const applied=clone(changes);
+  if(!restore)enforceArticleOwnership(old,applied,member);
+  const next=clone(old);next.revision++;for(const item of applied)next.documents[item.key]={revision:item.expected+1,value:item.value};
   if(!next.documents['page:home'])fail(400,'Die Startseite fehlt.');
   const refs=mediaRefs(joinSite(next.documents));const media=[];
   const knownMedia=new Map((await env.DB.prepare('SELECT * FROM cms_media').all()).results.map(row=>[row.ref,row]));
   for(const ref of refs){const row=knownMedia.get(ref);if(!row||!await env.CMS_BUCKET.head(row.object_key))fail(400,'Ein verknüpftes Bild oder PDF fehlt. Der bisherige Stand bleibt erhalten.');media.push(row);}
   next.media=media;const label=String(data.label||'Inhalte gespeichert').trim().slice(0,120);
-  const saved=await snapshotObject(env,next,{label,author:member.id,kind:data.kind==='restore'?'restore':'edit'});
+  const saved=await snapshotObject(env,next,{label,author:member.id,kind:restore?'restore':'edit'});
   const result={ok:true,revision:next.revision,snapshot:saved.id,...(data.requestHash?{requestHash:data.requestHash}:{}),versions:Object.fromEntries(Object.entries(next.documents).map(([k,v])=>[k,v.revision]))};
   const statements=[env.DB.prepare('INSERT INTO cms_guards VALUES(?,?,?)').bind(data.id+'@','@head',old.revision)];
-  for(const item of changes){statements.push(env.DB.prepare('INSERT INTO cms_guards VALUES(?,?,?)').bind(data.id+item.key,item.key,item.expected));statements.push(env.DB.prepare('INSERT INTO cms_documents VALUES(?,?,?,?) ON CONFLICT(key) DO UPDATE SET revision=excluded.revision,payload=excluded.payload,updated_at=excluded.updated_at').bind(item.key,item.expected+1,JSON.stringify(item.value),saved.at));}
+  for(const item of applied){statements.push(env.DB.prepare('INSERT INTO cms_guards VALUES(?,?,?)').bind(data.id+item.key,item.key,item.expected));statements.push(env.DB.prepare('INSERT INTO cms_documents VALUES(?,?,?,?) ON CONFLICT(key) DO UPDATE SET revision=excluded.revision,payload=excluded.payload,updated_at=excluded.updated_at').bind(item.key,item.expected+1,JSON.stringify(item.value),saved.at));}
   const publicRefs=mediaRefs(joinSite(await publicDocuments(env,next.documents)));statements.push(env.DB.prepare('DELETE FROM cms_public_media'));
   statements.push(env.DB.prepare('INSERT INTO cms_public_media SELECT ref FROM cms_media WHERE ref IN (SELECT value FROM json_each(?))').bind(JSON.stringify([...publicRefs])));
-  statements.push(env.DB.prepare('UPDATE cms_head SET revision=? WHERE id=1').bind(next.revision),env.DB.prepare('INSERT INTO cms_history VALUES(?,?,?,?,?,?,?,?,?)').bind(saved.id,next.revision,saved.at,member.id,label,data.kind==='restore'?'restore':'edit',0,saved.objectKey,''),env.DB.prepare('INSERT INTO cms_receipts VALUES(?,?,?)').bind(data.id,signature,JSON.stringify(result)),env.DB.prepare('DELETE FROM cms_guards WHERE id LIKE ?').bind(data.id+'%'));
+  statements.push(env.DB.prepare('UPDATE cms_head SET revision=? WHERE id=1').bind(next.revision),env.DB.prepare('INSERT INTO cms_history VALUES(?,?,?,?,?,?,?,?,?)').bind(saved.id,next.revision,saved.at,member.id,label,restore?'restore':'edit',0,saved.objectKey,''),env.DB.prepare('INSERT INTO cms_receipts VALUES(?,?,?)').bind(data.id,signature,JSON.stringify(result)),env.DB.prepare('DELETE FROM cms_guards WHERE id LIKE ?').bind(data.id+'%'));
   try{await env.DB.batch(statements);return result;}catch(e){if(!String(e.message).includes('CMS_CONFLICT')){const duplicate=await env.DB.prepare('SELECT signature,result FROM cms_receipts WHERE id=?').bind(data.id).first();if(duplicate?.signature===signature)return JSON.parse(duplicate.result);throw e;}if(attempt===2)fail(409,'Inhalte wurden gleichzeitig geändert. Dein Entwurf bleibt erhalten.');}
  }
 }
@@ -145,7 +197,7 @@ export async function editorialRestore(env,member,data,beforeRestore){
  if(prior){const result=JSON.parse(prior.result);if(result.requestHash!==requestHash)fail(409,'Diese Wiederherstellung wurde bereits anders verwendet.');return result;}
  const preview=await editorialPreview(env,data);if(preview.token!==data.token)fail(409,'Die Vorschau ist nicht mehr aktuell. Bitte erneut vergleichen.');if(!preview.changes.length)return {ok:true,unchanged:true};
  if(beforeRestore)await beforeRestore();else await editorialCheckpoint(env,member,{label:'Vor Wiederherstellung',kind:'safety'});
- return editorialCommit(env,member,{id:data.id,changes:preview.changes,label:'Wiederhergestellt: '+String(data.label||'früherer Stand').slice(0,80),kind:'restore',requestHash});
+ return editorialCommit(env,member,{id:data.id,changes:preview.changes,label:'Wiederhergestellt: '+String(data.label||'früherer Stand').slice(0,80),kind:'restore',requestHash},{restore:true});
 }
 export async function editorialExport(env,id,inline=false){
  const snapshot=id?await readSnapshot(env,id):{...(await editorialState(env,true)),format:'tfb-website-snapshot',version:1,schemaVersion:6,project:'tfb',createdAt:new Date().toISOString()};

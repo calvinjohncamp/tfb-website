@@ -23,7 +23,7 @@ try{
    const site = await TFB.api.site();
    site.pages.home.blocks = [
      {id:'legacy',type:'feature',title:'Altes Karussell',mediaCollection:{entries:[{id:'entry',title:'Einblick',images:[image,image]}]}},
-     {id:'topic',type:'feature',title:'Ein Thema',image, navigation:'link', link:{url:'#kiosk',label:'Kiosk besuchen'}, more:{text:'Eigene Unterseite'}},
+     {id:'topic',type:'feature',title:'Ein Thema',image, editorialAuthor:'home-media-admin', navigation:'link', link:{url:'#kiosk',label:'Kiosk besuchen'}, more:{text:'Eigene Unterseite'}},
      {id:'gallery',type:'gallery',title:'Eine Galerie',images:[image,image]},
    ];
    site.pages.aktuell.blocks = [
@@ -75,7 +75,7 @@ try{
  await editHome();
  for (const width of [1920,1440,1000,901,900,390,320]) {
    await page.setViewportSize({width,height:900});
-   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
+   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false, String(width));
    const aligned = await form.locator('li').evaluateAll(rows => {
      const lefts = selector => new Set(rows.map(row => row.querySelector(selector).getBoundingClientRect().left));
      return lefts('[data-order-position]').size === 1 && lefts('[data-action=home-order-step]').size === 1;
@@ -91,7 +91,7 @@ try{
    }), width > 900);
    assert.ok(arrowPlacement, 'Arrows have their own space between the title and edit actions');
    assert.equal(await form.locator('[data-action=home-order-step]').first().textContent(), '');
-   assert.equal(await form.locator('[data-action=home-order-remove]').first().textContent(), 'Artikel löschen');
+   assert.equal(await form.locator('[data-action=editorial-delete]').first().textContent(), 'Artikel löschen');
    const menuGap = await page.locator('.nav-card').evaluate(card =>
      card.querySelector('[data-action=nav-edit]').getBoundingClientRect().top -
      card.querySelector('.nav-preview').getBoundingClientRect().bottom);
@@ -195,8 +195,10 @@ try{
  await editHome();
  await row('topic').getByRole('button',{name:/Artikel löschen/}).click();
  assert.ok((await state()).pages.home.blocks.some(b=>b.id==='topic'), 'Dismissed dialog keeps the article');
- answer();
+ const confirmDelete = dialog => dialog.accept();
+ page.on('dialog',confirmDelete);
  await row('topic').getByRole('button',{name:/Artikel löschen/}).click();
+ page.off('dialog',confirmDelete);
  await row('topic').waitFor({state:'detached'});
  assert.ok(!(await state()).pages.home.blocks.some(b=>b.id==='topic'));
  assert.equal(await page.getByRole('button',{name:'Fertig'}).count(),0);

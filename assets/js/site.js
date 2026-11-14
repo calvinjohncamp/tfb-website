@@ -785,13 +785,9 @@
     if (block.archived && !archive) return `<p>Dieser Artikel ist im Clubarchiv.</p><a class="btn" href="${archiveHref(block)}">Zum Artikel im Clubarchiv</a>`;
     const back = archive ? '#club/archiv' : '#aktuell';
     if (block.type === 'event') return `<div class="site-page archive-reading">${ui().viewHead(esc(block.title), 'Termin', false)}${eventCard(block)}<a class="btn" href="${back}">Zurück</a></div>`;
-    const editable = !draftPreview && ui().state.member?.isAdmin;
-    const remove = editable && archive && block.archived
-      ? `<button type="button" class="btn small danger" data-action="aktuell-delete-archived" data-id="${esc(block.id)}">Endgültig löschen</button>` : '';
-    if (block.mediaCollection) return (await mediaDetail(block, 'aktuell', archive ? back : undefined, archive)) + remove;
+    if (block.mediaCollection) return mediaDetail(block, 'aktuell', archive ? back : undefined, archive);
     if (!photoStudio && showInlineCarousel(block)) photoStudio = await import('./chat-media.js?v=20261114-home-editor-1');
     return storyHtml({ ...block, text: block.showText === false ? '' : block.text, title: block.title || photoDisplays.get(block.type) || 'News', noPlaceholder: true }, {closeHref:back, backLabel:archive ? 'Zum Clubarchiv' : 'Zu Aktuell',
-      editHtml: remove,
       gallery: photoTypes.includes(block.type) || photoDisplays.has(block.photoDisplay) ? photoDisplay(block, (block.images || []).filter(shownImage), block.photoDisplay || block.type, 'gallery-open') : '',
       linkPage: 'aktuell', topicHero: block.type === 'post' && (Boolean(block.sourceHomeId) || homePhotoRefs(block).length === 1),
       simpleNews: !block.sourceHomeId, draftPreview,
@@ -1059,7 +1055,7 @@
           ...[...contentBlocks('aktuell', true), ...site.pages.aktuell.blocks.filter(b => b.type === 'event' && !b._new)].map(b => ({ b, page: 'aktuell' })),
           ...contentBlocks('home').map(b => ({ b, page: 'home' })),
         ],
-        newsPost, eventCard, newsDatesLayout, contentOverviewLink, paragraphs, picture, shownImage, openGallery, newsArticleDetail, mediaPost:mediaNewsPost, mediaDetail:(b,page)=>mediaDetail(b,page,'#club/archiv', Boolean(b.archived)),
+        newsPost, eventCard, newsDatesLayout, contentOverviewLink, paragraphs, picture, shownImage, openGallery, newsArticleDetail, mediaPost:mediaNewsPost, mediaDetail:(b,page)=>mediaDetail(b,page,'#club/archiv', true),
       });
     }
     if (['home', 'aktuell'].includes(key) && section === 'alle') { editing = null; return contentOverview(key); }
@@ -1317,7 +1313,7 @@
           });
           for (const page of removedPages) {
             const previous = originalSite.pages[page];
-            const blocks = page === 'aktuell' ? previous.blocks.filter(TFB.newsroom.canArchive).map(b => ({ ...b, archived: true })) : [];
+            const blocks = page === 'aktuell' ? previous.blocks.map(b => TFB.newsroom.canArchive(b) && !b.archived ? { ...b, archived: true } : b) : previous.blocks;
             next.pages[page] = { title: previous.title, blocks, deleted: true };
           }
           site = await api.saveSite(next);
@@ -1435,11 +1431,47 @@
       </div>`;
   }
 
+  function canDeleteArticle(block) {
+    const member = ui().state.member;
+    return Boolean(member?.isAdmin && block && !block.archived &&
+      TFB.newsroom.canMoveToNews(block) && block.editorialAuthor === member.id);
+  }
+
+  function articleDeleteButton(block, page, css) {
+    return canDeleteArticle(block) ? `<button type="button" class="${css}" data-action="editorial-delete"
+      data-page="${page}" data-id="${esc(block.id)}">Artikel löschen</button>` : '';
+  }
+
+  async function deleteOwnArticle(button) {
+    const page = button.dataset.page;
+    if (!['home', 'aktuell'].includes(page)) return;
+    const original = site.pages[page].blocks.find(block => block.id === button.dataset.id);
+    if (!canDeleteArticle(original)) return;
+    if (!confirm(`„${original.title || 'Ohne Überschrift'}“ löschen?`) ||
+        !confirm('Artikel endgültig löschen?')) return;
+    button.disabled = true;
+    try {
+      const fresh = await ui().api.site();
+      const blocks = fresh.pages[page].blocks;
+      const current = blocks.find(block => block.id === original.id);
+      if (!canDeleteArticle(current) || JSON.stringify(current) !== JSON.stringify(original)) {
+        throw Error('Der Artikel wurde inzwischen geändert. Bitte öffne ihn erneut.');
+      }
+      fresh.pages[page].blocks = blocks.filter(block => block.id !== original.id);
+      site = await ui().api.saveSite(fresh);
+      ui().closeSheet(true);
+      if (location.hash.startsWith('#' + page + '/')) location.hash = '#' + page;
+      else await ui().renderView();
+      ui().toast('Artikel gelöscht', true);
+    } catch (error) { ui().toast(error.message); }
+    finally { button.disabled = false; }
+  }
+
   function editWrap(b, i, total, inner) {
     const { icon } = ui(), editorial = editing === 'aktuell';
     const label = b.mediaCollection?'Karussell':editing==='aktuell'&&b.type==='post'?'News':(BLOCK_TYPES.find(([t]) => t === b.type) || [0, b.type])[1];
     const actions=`${editing!=='aktuell'?`<button type="button" data-action="block-move" data-id="${esc(b.id)}" data-dir="-1" ${i===0?'disabled':''} aria-label="Nach oben">${icon.up}</button><button type="button" data-action="block-move" data-id="${esc(b.id)}" data-dir="1" ${i===total-1?'disabled':''} aria-label="Nach unten">${icon.down}</button>`:''}<button type="button"${editorial?' class="block-tool-text"':''} data-action="block-edit" data-id="${esc(b.id)}" aria-label="Bearbeiten">${editorial?'Bearbeiten':icon.pencil}</button>${editorial && TFB.newsroom.canArchive(b) ? `<button type="button" class="block-tool-text" data-action="aktuell-archive" data-id="${esc(b.id)}">Ins Clubarchiv</button>` : ''}`;
-    return `<div class="block-edit" data-edit-block="${esc(b.id)}"><div class="block-tools"><span class="block-type">${esc(label)}</span><div class="block-tool-actions">${actions}</div></div>${inner||`<p class="muted small empty-hint">${esc(label)} – noch leer</p>`}</div>`;
+    return `<div class="block-edit" data-edit-block="${esc(b.id)}"><div class="block-tools"><span class="block-type">${esc(label)}</span><div class="block-tool-actions">${actions}${editorial ? articleDeleteButton(b, 'aktuell', 'block-tool-text danger') : ''}</div></div>${inner||`<p class="muted small empty-hint">${esc(label)} – noch leer</p>`}</div>`;
   }
 
   function homeOrderForm() {
@@ -1465,7 +1497,7 @@
           <div class="home-order-tools">
             <button type="button" class="btn small" data-action="block-edit" data-id="${esc(id)}">Bearbeiten</button>
             ${TFB.newsroom.canMoveToNews(block) ? `<button type="button" class="btn small" data-action="home-move-news" data-id="${esc(id)}">Nach Aktuell verschieben</button>` : ''}
-            <button type="button" class="btn small danger" data-action="home-order-remove" data-id="${esc(id)}" aria-label="Artikel löschen: ${esc(title)}">Artikel löschen</button>
+            ${articleDeleteButton(block, 'home', 'btn small danger') || '<span class="btn small" style="visibility:hidden" aria-hidden="true">Artikel löschen</span>'}
           </div>
         </li>`;
       }).join('')}</ol>
@@ -2692,6 +2724,7 @@
           const current=next.pages[page].blocks.find(b=>b.id===id);
           if (originalSiteRevision !== undefined ? next._cms?.versions['page:' + page] !== originalSiteRevision : JSON.stringify(current) !== originalValue) throw Error('Der Inhalt wurde inzwischen geändert. Bitte öffne ihn erneut.');
           next.pages[page].blocks=next.pages[page].blocks.map(b=>b.id===id?draft:b);site=await ui().api.saveSite(next);if(detailEditing){editing=null;detailEditing=false;}ui().toast('Gespeichert',true);await ui().renderView();},
+        deleteArticle: isNew ? '' : articleDeleteButton(original, page, 'btn block danger'),
         onDelete:page === 'aktuell' && !isNew ? () => archiveNewsItem(id, original, false) : null,
       });
     }
@@ -2924,6 +2957,7 @@
             ${live ? '<button type="button" class="btn block ed-peek" data-ed-peek>Vorschau ansehen</button>' : ''}
           </div>
           ${liveNews && isNew ? '<button type="button" class="btn block" data-action="close-sheet">Entwurf verwerfen</button>' : ''}
+          ${isNew || !['home','aktuell'].includes(editing) ? '' : articleDeleteButton(original, editing, 'btn block danger')}
           ${isNew || editing === 'home' || (editing === 'aktuell' && !TFB.newsroom.canArchive(draft)) ? '' : `<button type="button" class="btn block danger" data-delete>${editing === 'aktuell' ? 'Ins Clubarchiv verschieben' : 'Baustein löschen'}</button>`}
         </form>`);
       const form = document.querySelector('[data-editor=block]');
@@ -3388,6 +3422,7 @@
         }
         const { _new, ...saved } = value;
         for (const link of [saved.link, saved.link2, ...(saved.more?.links || [])]) if (link) delete link.pendingUrl;
+        if (isNew && TFB.newsroom.canMoveToNews(saved)) saved.editorialAuthor = ui().state.member.id;
         if (isNew && saved.type !== 'event') {
           saved.createdAt = new Date().toISOString();
           saved.createdOn = today();
@@ -4057,34 +4092,7 @@
       return moveHomeRow(el.dataset.id, index + Number(el.dataset.dir), `[data-dir="${el.dataset.dir}"]`);
     },
     'home-move-news': el => confirmHomeMove(el.dataset.id),
-    'home-order-remove': el => {
-      const block = site.pages.home.blocks.find(b => b.id === el.dataset.id);
-      if (!block || homeListBusy || !confirm(`„${block.title || 'Ohne Überschrift'}“ von Home löschen? Der Artikel wird dabei nicht ins Clubarchiv übernommen.`)) return;
-      return saveHomeList(fresh => {
-        if (JSON.stringify(fresh.pages.home.blocks.find(b => b.id === block.id)) !== JSON.stringify(block)) {
-          throw Error('Der Artikel wurde inzwischen geändert. Bitte prüfe den aktuellen Stand.');
-        }
-        fresh.pages.home.blocks = fresh.pages.home.blocks.filter(b => b.id !== block.id);
-        return fresh;
-      }, 'Artikel von Home gelöscht');
-    },
-    'aktuell-delete-archived': async el => {
-      if (!ui().state.member?.isAdmin || !location.hash.startsWith('#club/archiv/beitrag/')) return;
-      const original = site.pages.aktuell.blocks.find(b => b.id === el.dataset.id && b.archived);
-      if (!original || !confirm(`„${original.title || 'Ohne Überschrift'}“ endgültig löschen? Der Beitrag wird aus dem Clubarchiv entfernt.`)) return;
-      if (!confirm('Endgültig löschen bestätigen.')) return;
-      el.disabled = true;
-      try {
-        const fresh = await ui().api.site();
-        const blocks = fresh.pages.aktuell.blocks;
-        if (JSON.stringify(blocks.find(b => b.id === original.id)) !== JSON.stringify(original)) throw Error('Der Beitrag wurde inzwischen geändert.');
-        fresh.pages.aktuell.blocks = blocks.filter(b => b.id !== original.id);
-        site = await ui().api.saveSite(fresh);
-        location.hash = '#club/archiv';
-        ui().toast('Artikel gelöscht', true);
-      } catch (error) { ui().toast(error.message); }
-      finally { el.disabled = false; }
-    },
+    'editorial-delete': deleteOwnArticle,
     'aktuell-archive': async el => {
       const block = site.pages.aktuell.blocks.find(b => b.id === el.dataset.id);
       el.disabled = true;
