@@ -341,9 +341,16 @@
     return pageSymbols[link.url?.match(/^#([^/?]+)/)?.[1]] || 'chevron';
   }
 
+  // Die drei Buchstabenpfade aus der TFB-Originaldatei.
+  const homeWordmark = `<svg class="editorial-home-wordmark" viewBox="7.5 8 1716 737.5">
+    <path d="M 74 8 H 1059 L 993 205.5 H 432.5 L 248.5 745.5 H 19.5 L 204.5 205.5 H 7.5 Z"/>
+    <path d="M 329.5 745.5 L 439.515 419 C 466.152 341.433 525.353 288.465 595.304 279.614 C 601.2 278.87 608.5 278.5 618 278.5 H 969 L 901.856 478 H 650.266 L 558.773 745.5 Z"/>
+    <path d="M 1140 8 H 1519 C 1528 8 1539 8.4 1545 9.020 C 1660.962 21.048 1723.666 82.064 1723.277 182.5 C 1722.936 270.612 1685.748 330.769 1598.152 384.906 L 1586.5 392.5 L 1599.373 404 C 1640.962 439.040 1653.396 496.814 1633.467 562.425 C 1602.498 664.381 1519.320 732.517 1411.276 744.435 C 1398.292 745.5 1390 745.5 1378 745.5 H 890.382 L 956.210 553 H 1358 C 1364 553 1365.580 552.651 1369.114 551.985 C 1409.611 544.352 1425.034 492.580 1390.316 480.811 L 1383.5 478 H 981.791 L 1049.737 278.2 H 1432 C 1436 278.2 1438 277.6 1441 277.074 C 1481.476 269.675 1496.845 221.423 1463.079 207.758 L 1457.5 205.5 H 1073 Z"/>
+  </svg>`;
+
   function linkSymbolMark(key) {
     const home = key === 'home';
-    const symbol = home ? '<span class="tfb-logo-noball"></span>' : ui().icon[key] || ui().icon.chevron;
+    const symbol = home ? homeWordmark : ui().icon[key] || ui().icon.chevron;
     return `<span class="editorial-link-mark is-symbol${home ? ' is-home-symbol' : ''}" aria-hidden="true">${symbol}</span>`;
   }
 

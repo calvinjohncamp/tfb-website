@@ -53,9 +53,18 @@ try{
  const symbolPicker=page.getByRole('dialog',{name:'Symbol auswählen'});
  await form.locator('[data-link-symbols=link]').click();
  await symbolPicker.getByRole('button',{name:'Padel',exact:true}).locator('svg').waitFor();
- const emblem=symbolPicker.getByRole('button',{name:'Home',exact:true}).locator('.tfb-logo-noball');
- assert.ok((await emblem.boundingBox()).width>=20);
- assert.notEqual(await emblem.evaluate(el=>getComputedStyle(el).maskImage),'none');
+ const emblem=symbolPicker.getByRole('button',{name:'Home',exact:true}).locator('svg.editorial-home-wordmark');
+ assert.equal(await emblem.locator('path').count(),3);
+ const markGeometry=await emblem.evaluate(svg=>{
+   const circle=svg.parentElement.getBoundingClientRect();
+   const rect=svg.getBoundingClientRect();
+   const paths=svg.getBBox();
+   const view=svg.viewBox.baseVal;
+   return {scale:rect.width/circle.width, x:paths.x+paths.width/2-view.x-view.width/2,
+     y:paths.y+paths.height/2-view.y-view.height/2, fill:getComputedStyle(svg).fill};
+ });
+ assert.ok(markGeometry.scale >= .80, JSON.stringify(markGeometry));
+ assert.ok(Math.abs(markGeometry.x) < 15 && Math.abs(markGeometry.y) < 10, JSON.stringify(markGeometry));
  const colors=await emblem.evaluate(el=>{
    const root=document.documentElement;
    const yellow=root.classList.contains('tfb-logo-midnight-amber');

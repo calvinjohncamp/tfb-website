@@ -226,7 +226,6 @@ a.editorial-link:focus-visible { outline: 2px solid var(--signal); outline-offse
 .editorial-link-settings .editorial-link-label { margin: 0; font: inherit; }
 
 .tfb-logo-midnight-amber .editorial-link-mark.is-home-symbol { color: #001d3d; }
-.editorial-link-mark.is-home-symbol > .tfb-logo-noball { width: 75%; }
 .editorial-link-mark svg.link-arrow { fill: currentColor; stroke: none; }
 .editorial-symbol-trigger.btn { display: inline-flex; align-items: center; gap: 8px; }
 .editorial-symbol-dialog {
@@ -261,3 +260,5 @@ a.editorial-link:focus-visible { outline: 2px solid var(--signal); outline-offse
 .editorial-symbol-grid > button:is(:hover, [aria-pressed="true"]) { border-color: var(--signal); background: color-mix(in srgb, var(--signal) 12%, var(--paper)); }
 .editorial-symbol-grid .editorial-link-mark { width: 32px; height: 32px; }
 .editorial-symbol-grid .editorial-link-mark svg { width: 19px; height: 19px; }
+
+.editorial-link-mark.is-home-symbol > .editorial-home-wordmark { display: block; width: 82%; height: auto; fill: currentColor; stroke: none; }
