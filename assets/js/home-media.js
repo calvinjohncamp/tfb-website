@@ -155,7 +155,10 @@
     mounted.add(enlarged);const controller=mountOrbit(enlarged,source.getState());zoom={dialog,node:enlarged,controller,source,trigger};controllers.add(controller);
     for(const c of controllers)c.refresh?.();
     close.addEventListener('click',()=>closeZoom());dialog.addEventListener('cancel',e=>{e.preventDefault();closeZoom();});
-    dialog.addEventListener('click',e=>{if(e.target.closest('.hm-card,.hm-caption'))closeZoom(false);});
+    dialog.addEventListener('click', e => {
+      if (e.target.closest('.hm-card,.hm-caption')) closeZoom(false);
+      else if (!e.target.closest('button')) closeZoom();
+    });
     close.focus({preventScroll:true});
   }
   document.addEventListener('click',e=>{const trigger=e.target.closest('.hm-zoom-button');if(trigger){e.preventDefault();e.stopPropagation();openZoom(trigger);}});

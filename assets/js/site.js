@@ -419,7 +419,7 @@
   const photoDisplays = new Map([['collage', 'Collage'], ['gallery', 'Galerie'], ['carousel', 'Karussell']]);
   const photoTypes = [...photoDisplays.keys()];
   let photoStudio;
-  const showInlineCarousel = b => b.type === 'carousel' || b.photoDisplay === 'carousel' || b.album?.photoDisplay === 'carousel';
+  const showInlineCarousel = b => b.type === 'carousel' || b.photoDisplay === 'carousel' || b.album?.photoDisplay === 'carousel' || b.more?.photoDisplay === 'carousel';
   function photoDisplay(block, refs, mode, action) {
     if (!refs.length) return '';
     if (mode === 'carousel') {
@@ -851,7 +851,7 @@
             ${detailLinks ? `<div class="story-links story-detail-links">${detailLinks}</div>` : ''}
           </div>
         </div>
-        ${collage(more.images || [], b.id, Boolean(more.original), more.collageAlign)}
+        ${storyPhotos(b, more)}
         ${gallery}${extraLinks ? `<div class="story-links">${extraLinks}</div>` : ''}
         <div class="story-foot">
           <a class="more-link back" href="${esc(closeHref)}"><span aria-hidden="true">←</span> ${esc(backLabel)}</a>
@@ -878,17 +878,24 @@
     });
   }
 
+  function storyPhotos(block, photos) {
+    const refs = (photos.images || []).filter(shownImage);
+    if (!refs.length) return '';
+    if (photos.photoDisplay === 'gallery' || photos.photoDisplay === 'carousel') {
+      return photoDisplay({ ...block, animationStart: photos.animationStart }, refs, photos.photoDisplay, 'collage-open');
+    }
+    return collage(refs, block.id, Boolean(photos.original), photos.collageAlign);
+  }
+
   function albumDetail(id, page = 'home') {
     const b = (page === 'home' ? homeBlocks() : site.pages.aktuell.blocks).find(x => x.id === id);
     const back = page === 'home' ? '#home' : b?.archived ? archiveHref(b) : '#aktuell';
     if (!b?.album?.enabled && !(preview?.tab === 'album' && b?.album)) return `<p>Diese Fotoseite ist nicht verfügbar.</p><a href="${back}">Zurück</a>`;
     const album = b.album;
-    const gallery = { id: `album-${b.id}`, title: album.title || b.title, animationStart: album.animationStart, more: { images: (album.images || []).slice(0, 100) } };
+    const gallery = { id: `album-${b.id}`, title: album.title || b.title, more: { ...album, images: (album.images || []).slice(0, 100) } };
     storyIndex[gallery.id] = gallery;
     const admin = ui().state.member?.isAdmin;
-    return `<article class="story album-page"><div class="story-tools">${admin && page === 'home' ? `<button type="button" class="view-close" data-action="album-edit" data-id="${esc(b.id)}" aria-label="Fotoseite bearbeiten">${ui().icon.pencil}</button>` : ''}<a class="view-close" href="${back}" aria-label="Zurück">${ui().icon.close}</a></div><h1>${esc(album.title || b.title)}</h1>${gallery.more.images.length ? (album.photoDisplay && album.photoDisplay !== 'collage'
-      ? photoDisplay(gallery, gallery.more.images.filter(shownImage), album.photoDisplay, 'collage-open')
-      : collage(gallery.more.images, gallery.id, Boolean(album.original))) : '<p class="muted">Noch keine Fotos veröffentlicht.</p>'}<div class="story-foot"><a class="more-link" href="${back}">Zurück</a></div></article>`;
+    return `<article class="story album-page"><div class="story-tools">${admin && page === 'home' ? `<button type="button" class="view-close" data-action="album-edit" data-id="${esc(b.id)}" aria-label="Fotoseite bearbeiten">${ui().icon.pencil}</button>` : ''}<a class="view-close" href="${back}" aria-label="Zurück">${ui().icon.close}</a></div><h1>${esc(album.title || b.title)}</h1>${storyPhotos(gallery, gallery.more) || '<p class="muted">Noch keine Fotos veröffentlicht.</p>'}<div class="story-foot"><a class="more-link" href="${back}">Zurück</a></div></article>`;
   }
 
   const memberPdfUrl = key => {
@@ -2169,8 +2176,8 @@
       if (e.target.closest('[data-gback]')) { index = -1; draw(); return; }
       const st = e.target.closest('[data-gstep]');
       if (st) { step(Number(st.dataset.gstep)); return; }
-      if (e.target.closest('.gal-single')) { step(1); return; }
-      if (e.target.closest('.viewer-bar')) return;
+      const photo = e.target.closest('.gal-single');
+      if (photo && (e.detail === 0 || e.target.closest('img, .ph'))) { step(1); return; }
       close();
     });
     let touch = null;
@@ -2492,7 +2499,7 @@
                 + imageField(lk.image, lk.url, 'Vorschau: Bild', 'link')
                 : imageField(lk.image, lk.url || 'intern', 'Rundes Bild im Link (leer = Symbol der Seite)', 'link')) : '');
           const ownHero = heroSrc === 'own' ? heroImgs.slice(0, 4) : [];
-          const collagePhotos = (more.images || []).filter(shownImage);
+          const detailPhotos = (more.images || []).filter(shownImage);
           const subPanel = `
             <label class="meet-check"><input type="checkbox" name="detailEnabled" ${draft.detailEnabled !== false ? 'checked' : ''}><span>Unterseite auf Home verlinken</span></label>
             <p class="ed-hint">Die Unterseite öffnet sich über „Mehr erfahren“. Überschrift und Unterzeile kommen vom Reiter „Startseite“.</p>
@@ -2519,17 +2526,15 @@
               <button type="button" class="btn small" data-detail-link-remove="${i}">Link entfernen</button>
             </fieldset>`).join('')}
             <button type="button" class="btn small" data-detail-link-add>Link hinzufügen</button>
-            <h3 class="editor-sub">Fotos unten (Collage, freiwillig)</h3>
+            <h3 class="editor-sub">Fotos unter dem Text</h3>
             <div class="field"><div class="gallery-edit">
-              ${collagePhotos.map((ref, i) => thumbEdit(ref, 'more', i, collagePhotos.length, 'data-more-remove')).join('')}
-              <label class="gallery-add">${ui().icon.plus}<span>Fotos</span><input type="file" accept="image/*" multiple data-more-input hidden></label>
+              ${detailPhotos.map((ref, i) => thumbEdit(ref, 'more', i, detailPhotos.length, 'data-more-remove')).join('')}
+              ${detailPhotos.length < HOME_PHOTO_LIMIT ? `<label class="gallery-add">${ui().icon.plus}<span>Fotos hinzufügen</span><input type="file" accept="image/*" multiple data-more-input hidden></label>` : ''}
             </div></div>
-            ${collagePhotos.length ? `<div class="field"><span>Darstellung der Fotos unter dem Text</span>
-              ${seg('collagestyle', more.original ? 'original' : 'tiles', [['tiles', 'Kachel-Collage'], ['original', 'Originalformate']])}
-              <p class="muted small ed-note">Die Kachel-Collage füllt das Raster mit Bildausschnitten. Beim Antippen öffnet sich das ganze Foto.</p>
-            </div>` : ''}
-            ${collagePhotos.length && more.original ? `<div class="field"><span>Ausrichtung der Collage</span>
-              ${seg('align', 'collage:' + (more.collageAlign || 'center'), [['collage:left', 'Links'], ['collage:center', 'Mitte'], ['collage:right', 'Rechts']])}
+            ${detailPhotos.length ? photoFormatField('detailPhotoDisplay', more.photoDisplay || 'collage') : ''}
+            ${detailPhotos.length > 1 && more.photoDisplay === 'carousel' ? photoStartField('detailAnimationStart', more.animationStart) : ''}
+            ${detailPhotos.length && (!more.photoDisplay || more.photoDisplay === 'collage') ? `<div class="field"><span>Bildformat in der Collage</span>
+              ${seg('collagestyle', more.original ? 'original' : 'tiles', [['tiles', 'Bildausschnitte'], ['original', 'Originalformate']])}
             </div>` : ''}`;
           const albumPanel = `<label class="meet-check"><input type="checkbox" name="albumEnabled" ${album.enabled ? 'checked' : ''}><span>Fotoseite auf Home verlinken</span></label>
             ${field('Überschrift der Fotoseite', 'albumTitle', album.title || draft.title)}
@@ -2886,7 +2891,7 @@
           const files = [...input.files];
           const homeUpload = homeFeature && input.matches('[data-home-photo-input]');
           if (homeUpload && files.length + draft.images.length > HOME_PHOTO_LIMIT) {
-            ui().toast('Höchstens fünf Fotos pro Thema.');
+            ui().toast(`Höchstens ${HOME_PHOTO_LIMIT} Fotos pro Thema.`);
             input.value = '';
             return;
           }
@@ -2898,8 +2903,10 @@
             ui().toast('Eine Fotocollage kann höchstens 100 Bilder enthalten. Bitte weniger Fotos auswählen.');
             input.value = ''; return;
           }
-          if (input.matches('[data-album-input]') && files.length + (draft.album?.images || []).length > 100) {
-            ui().toast('Eine Fotocollage kann höchstens 100 Bilder enthalten. Bitte weniger Fotos auswählen.');
+          const lowerPhotos = input.matches('[data-more-input]');
+          const photoList = lowerPhotos ? (draft.more.images || []).filter(ref => !/^ph:/.test(ref)) : draft.album?.images || [];
+          if ((lowerPhotos || input.matches('[data-album-input]')) && files.length + photoList.length > HOME_PHOTO_LIMIT) {
+            ui().toast(`Bitte insgesamt höchstens ${HOME_PHOTO_LIMIT} Fotos auswählen.`);
             input.value = ''; return;
           }
           const firstIs4kCover = draft.allow4k === true && (
@@ -2926,7 +2933,7 @@
             const list = [...(m.heroSource === 'own' ? (m.heroImages || []).filter(shownImage) : []), ...ids].slice(0, 4);
             draft.more = { ...m, heroSource: 'own', heroImages: list };
           }
-          if (input.matches('[data-more-input]')) draft.more = { ...(draft.more || {}), images: [...((draft.more || {}).images || []).filter((r) => !/^ph:/.test(r)), ...ids] };
+          if (lowerPhotos) draft.more.images = [...photoList, ...ids];
           ui().toast(ids.length > 1 ? `${ids.length} Fotos hinzugefügt` : 'Foto hinzugefügt', true);
           if (form.isConnected) render();
         } catch (err) { ui().toast(err.message); }
@@ -2987,6 +2994,8 @@
       if (form.querySelector('[data-panel=sub]') && draft.more) {
         const secs = readSections(form, draft.more.sections || []);
         draft.more = { ...draft.more, sections: secs, ...sectionsDerived(secs) };
+        if (f.detailPhotoDisplay) draft.more.photoDisplay = f.detailPhotoDisplay.value;
+        if (f.detailAnimationStart) draft.more.animationStart = f.detailAnimationStart.checked ? 'auto' : 'manual';
         draft.more.links?.forEach((link, i) => {
           const prefix = 'detailLink' + i;
           const url = f[prefix + 'App']?.value ?? f[prefix + 'Url'].value.trim();
@@ -3782,7 +3791,7 @@
     },
     'collage-open': (el) => {
       const b = storyIndex[el.dataset.block] || site.pages.home.blocks.find((x) => x.id === el.dataset.block);
-      const list = ((b.more || {}).images || []).filter(shownImage).slice(0, 100);
+      const list = (b?.more?.images || []).filter(shownImage);
       if (!list.length) { ui().toast('Beispielbild – eigene Fotos über den Stift hochladen'); return; }
       openGallery(list, b.title, true, Number(el.dataset.index) || 0);
     },

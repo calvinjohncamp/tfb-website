@@ -53,6 +53,21 @@ try{
    await field.setInputFiles(photos);
    await field.locator('..').locator('..').locator('.gallery-thumb').last().waitFor();
  };
+ const dismissByBackdrop = async (viewer, x = 14, y = 100) => {
+   await viewer.waitFor();
+   await page.mouse.click(x,y);
+   await viewer.waitFor({state:'detached'});
+ };
+ await page.locator('[data-feature="topic"] [data-action=home-photo-gallery]').click();
+ const photoViewer = page.locator('.viewer.gallery.open');
+ const {x, y} = await photoViewer.locator('.gal-single').evaluate(button => {
+   const buttonBox = button.getBoundingClientRect(), image = button.querySelector('img').getBoundingClientRect();
+   if (image.left - buttonBox.left < 15) throw Error('Expected space beside the image');
+   return {x:buttonBox.left + 5, y:(image.top + image.bottom) / 2};
+ });
+ await dismissByBackdrop(photoViewer, x, y);
+ await page.locator('[data-feature="legacy"] .hm-zoom-button').click();
+ await dismissByBackdrop(page.locator('.hm-zoom-dialog'));
  await editHome();
  for (const width of [1920,1440,1000,901,900,390,320]) {
    await page.setViewportSize({width,height:900});
@@ -108,6 +123,12 @@ try{
  await sub.locator('[data-heroratio="3"]').click();
  await upload('[data-more-input]');
  await sub.locator('[data-collagestyle=original]').click();
+ await sub.locator('[name=detailPhotoDisplay]').selectOption('gallery');
+ await page.locator('.story .gallery-grid .gallery-item').first().waitFor();
+ await sub.locator('[name=detailPhotoDisplay]').selectOption('carousel');
+ await page.locator('.story .cs-carousel').waitFor();
+ assert.equal(await sub.locator('[name=detailAnimationStart]').isChecked(), false);
+ assert.equal(await sub.getByText(/freiwillig/).count(), 0);
  await editor.locator('[data-edtab=home]').click();
  await editor.getByRole('button',{name:'Fotoseite anlegen'}).click();
  await editor.locator('[name=albumPhotoDisplay]').selectOption('gallery');
@@ -121,6 +142,8 @@ try{
  assert.equal(topic.link2.url,'#sport');
  assert.equal(topic.more.heroRatio,'3');
  assert.equal(topic.more.original,true);
+ assert.equal(topic.more.photoDisplay,'carousel');
+ assert.equal(topic.more.images.length,2);
  assert.deepEqual(topic.more.links.map(l=>[l.url,l.label]), [['#club','Zum Club'],['https://example.net/extern','Externer Detaillink']]);
  await row(topic.id).waitFor();
  await page.getByRole('button',{name:'Fotoblock hinzufügen'}).click();
@@ -175,11 +198,34 @@ try{
  const detailLinks = page.locator('.story-detail-links');
  assert.equal(await detailLinks.getByRole('link',{name:'Zum Club'}).getAttribute('href'), '#club');
  assert.equal(await detailLinks.getByRole('link',{name:'Externer Detaillink'}).getAttribute('target'), '_blank');
- await page.locator('.collage.natural').waitFor();
+ const articleCarousel = page.locator('.story .cs-carousel');
+ await articleCarousel.locator('[data-cs-published-page]:not([hidden]) [data-cs-published-full]').first().click();
+ await dismissByBackdrop(page.locator('.cs-viewer'));
  await page.getByRole('link',{name:'Fotos der Veranstaltung'}).click();
  await page.locator('.album-page .gallery-grid').waitFor();
  await page.goto(origin+'/?tfbPresentation=1#home');
  await page.locator('[data-photo-module="' + photo.id + '"]').waitFor();
+ for (const mode of ['gallery', 'legacy-collage']) {
+   await page.evaluate(async ({mode,image}) => {
+     const site = await TFB.api.site();
+     site.pages.home.blocks.push({
+       id:'detail-' + mode, type:'feature', title:mode, image, more:{
+         text:'Fotos unter dem Text', images:[image,image,image],
+         ...(mode === 'gallery' ? {photoDisplay:'gallery'} : {original:true}),
+       },
+     });
+     await TFB.api.saveSite(site);
+     await TFB.refreshSite(true);
+   }, {mode,image});
+   await page.goto(origin+'/?tfbPresentation=1#home/detail-'+mode);
+   const photos = page.locator(mode === 'gallery' ? '.story .gallery-grid' : '.story .collage.natural');
+   const second = photos.locator('[data-index="1"]');
+   await second.click();
+   assert.ok((await photoViewer.locator('.viewer-bar').innerText()).includes('2 / 3'));
+   await dismissByBackdrop(photoViewer);
+ }
+ await page.evaluate(() => location.hash = '#home');
+ await page.locator('.story').waitFor({state:'detached'});
  const testCover = async ({ratio, heroCount=1, grid, width}) => {
    await page.setViewportSize({width,height:900});
    await page.evaluate(async ({ratio, heroCount, grid}) => {
@@ -221,5 +267,5 @@ try{
    for (const grid of ['tiles','original']) await testCover({heroCount:4,grid,width});
  }
  assert.deepEqual(errors,[]);
- console.log('PASS: Home editor, immediate order and deletion, transfer, archive and old links.');
+ console.log('PASS: Home editor, backdrop dismissal, detail photo formats, order, transfer, archive and old links.');
 } finally { await browser.close(); }
