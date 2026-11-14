@@ -262,3 +262,9 @@ a.editorial-link:focus-visible { outline: 2px solid var(--signal); outline-offse
 .editorial-symbol-grid .editorial-link-mark svg { width: 19px; height: 19px; }
 
 .editorial-link-mark.is-home-symbol > .editorial-home-wordmark { display: block; width: 82%; height: auto; fill: currentColor; stroke: none; }
+
+.home-photo-mode { margin: 20px 0 26px; padding: 12px; border: 1px solid var(--line); border-radius: 10px; }
+.home-photo-mode legend { padding-inline: 4px; font-weight: 700; }
+.home-photo-mode-options { display: flex; flex-wrap: wrap; gap: 8px; }
+.home-photo-mode-options [aria-pressed="true"] { border-color: var(--signal); }
+.home-topic-slideshow .cs-published { margin: 0; }

@@ -106,7 +106,7 @@
   }
 
   function article(item, full = false) {
-    if(item.mediaBlock)return render.mediaPost(item.mediaBlock,{page:item.mediaPage});
+    if(item.mediaBlock && item.mediaBlock.photoDisplay !== 'slideshow')return render.mediaPost(item.mediaBlock,{page:item.mediaPage});
     const body = `
       <div class="archive-text">${full ? item.fullBody : item.body}</div>
       ${!full && item.hasAlbums ? `<p><a class="more-link" href="${detail(item)}">Zur vollständigen Galerie</a></p>` : ''}`;
@@ -179,7 +179,7 @@
       .map(link => `<p><a class="more-link" href="${esc(link.url)}">${esc(link.label || 'Mehr erfahren')}</a></p>`).join('') : '';
     const body = (text ? render.paragraphs(text) : '') + links;
     const summary = text.replace(/\{\/?[a-z]+\}|\*\*/g, '').replace(/\s+/g, ' ').trim();
-    return { editorialBlock: b, archiveAliases: page === 'aktuell' ? ['aktuell-' + b.id] : [], id: prior?.id || `${b.archivePage||(b.sourceHomeId?'home':page)}-${b.id}`, ...(b.mediaCollection?{mediaBlock:b,mediaPage:page}:{}), title, date: b.date || b.mediaCollection?.entries?.[0]?.date || '', year, sortYear, gallery, photos, topics,
+    return { editorialBlock: b, archiveAliases: page === 'aktuell' ? ['aktuell-' + b.id] : [], id: prior?.id || `${b.archivePage||(b.sourceHomeId?'home':page)}-${b.id}`, ...(b.mediaCollection || ['orbit','slideshow'].includes(b.photoDisplay) ? {mediaBlock:b,mediaPage:page} : {}), title, date: b.date || b.mediaCollection?.entries?.[0]?.date || '', year, sortYear, gallery, photos, topics,
       body, fullBody: body, source: prior?.source, search: normalize(`${title} ${b.kicker || ''} ${TFB.search.plain(render.paragraphs(text))} ${more.quote || ''} ${more.by || ''} ${mediaText} ${topics.join(' ')} ${year}`),
       summary: summary.length > 180 ? summary.slice(0, 180).replace(/\s+\S*$/, '') + ' …' : summary };
   }

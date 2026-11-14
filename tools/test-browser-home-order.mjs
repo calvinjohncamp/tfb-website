@@ -111,7 +111,7 @@ try{
  await editor.locator('[data-link-symbols=link2]').click();
  await page.getByRole('dialog',{name:'Symbol auswählen'}).getByRole('button',{name:'Sport',exact:true}).click();
  await upload('[data-home-photo-input]');
- await editor.locator('[name=photoDisplay]').selectOption('carousel');
+ await editor.locator('[name=photoDisplay]').selectOption('gallery');
  await editor.getByRole('button',{name:'Unterseite anlegen',exact:true}).click();
  const content = editor.locator('[data-panel=sub] [contenteditable=true]').first();
  if (!await content.count()) await editor.locator('[data-panel=sub] [data-secadd=text]').first().click();
@@ -156,7 +156,7 @@ try{
  await editor.waitFor({state:'detached'});
  const topic = (await state()).pages.home.blocks[0];
  assert.equal(topic.title,'Neuer Beitrag');
- assert.equal(topic.photoDisplay,'carousel');
+ assert.equal(topic.photoDisplay,'gallery');
  assert.equal(topic.album.photoDisplay,'gallery');
  assert.equal(topic.link2.url,'#sport');
  assert.equal(topic.link2.appearance,'symbol');
@@ -170,12 +170,14 @@ try{
  assert.deepEqual(topic.more.links.map(l=>[l.url,l.label]), [['#club','Zum Club'],['https://example.net/extern','Externer Detaillink']]);
  await row(topic.id).waitFor();
  await page.getByRole('button',{name:'Fotoblock hinzufügen'}).click();
- await page.getByRole('button',{name:/Karussell.*Fotos zum/}).click();
+ const photoPicker = page.locator('#sheet-root .type-list');
+ assert.deepEqual(await photoPicker.locator('strong').allTextContents(), ['Collage', 'Galerie']);
+ await photoPicker.getByRole('button',{name:/Collage/}).click();
  await upload('[data-gallery-input]');
  await editor.locator('[type=submit]').click();
  await editor.waitFor({state:'detached'});
  const photo = (await state()).pages.home.blocks[0];
- assert.equal(photo.type,'carousel');
+ assert.equal(photo.type,'collage');
  assert.equal(photo.title,'');
  await row(photo.id).waitFor();
  assert.match(await form.locator('li').first().textContent(), /Ohne Überschrift/);
@@ -283,18 +285,74 @@ try{
  }, image);
  await editHome();
  await row('carousel-limit').getByRole('button',{name:'Bearbeiten'}).click();
- for(const [tab, name] of [['home','photoDisplay'],['sub','detailPhotoDisplay'],['album','albumPhotoDisplay']]){
+ assert.equal(await editor.getByRole('button',{name:'Als Karussell anlegen',exact:true}).isDisabled(),true);
+ assert.equal(await editor.getByRole('button',{name:'Als Diashow anlegen',exact:true}).isDisabled(),true);
+ for(const [tab, name] of [['sub','detailPhotoDisplay'],['album','albumPhotoDisplay']]){
    await editor.locator('[data-edtab="' + tab + '"]').click();
    assert.equal(await editor.locator('[name="' + name + '"] option[value=carousel]').evaluate(option => option.disabled),true,name);
  }
  await page.locator('.sheet-close').click();
  await row('legacy').getByRole('button',{name:'Bearbeiten'}).click();
- const collection = page.locator('[data-hm-editor]');
- await collection.locator('[data-hm-tab=posts]').click();
- await collection.locator('[data-hm-upload="0"]').setInputFiles(photos);
- await collection.getByText('Die Diashow kann höchstens 15 Fotos enthalten.').waitFor();
- assert.equal(await collection.locator('.gallery-thumb').count(),14);
- await page.locator('.sheet-close').click();
+ const home = editor.locator('[data-panel=home]');
+ const subpage = editor.locator('[data-panel=sub]');
+ assert.equal(await home.locator('.gallery-thumb').count(),14);
+ await home.locator('[data-home-photo-input]').setInputFiles(photos);
+ await page.getByText('Höchstens 15 Fotos pro Thema.',{exact:true}).waitFor();
+ assert.equal(await home.locator('.gallery-thumb').count(),14);
+ await editor.getByRole('tab',{name:'Unterseite',exact:true}).click();
+ assert.equal(await subpage.locator('input[type=file]:not([data-link-photo])').count(),0);
+ assert.equal(await subpage.locator('[name=sharedTitle0]').inputValue(),'Einblick');
+ await editor.getByRole('tab',{name:'Übersicht',exact:true}).click();
+ await home.locator('[data-move-list=home][data-move-dir="1"]').first().click();
+ await editor.locator('[type=submit]').click();
+ await editor.waitFor({state:'detached'});
+ assert.equal((await state()).pages.home.blocks.find(block => block.id === 'legacy').mediaCollection.entries[0].images.length,14);
+
+ // Both media formats are created in the regular topic editor, with the same photo list.
+ for (const [mode, title] of [['orbit','Thema mit Karten'],['slideshow','Thema mit Bildfolge']]) {
+   await editHome();
+   await page.getByRole('button',{name:'Neues Thema'}).click();
+   await editor.locator('[name=title]').fill(title);
+   await editor.locator('[data-home-photo-mode=' + mode + ']').click();
+   await upload('[data-home-photo-input]');
+   assert.equal(await home.locator('.gallery-thumb').count(),2);
+   if (mode === 'orbit') {
+     await editor.getByRole('tab',{name:'Unterseite',exact:true}).click();
+     await subpage.getByText(/dieselben Fotos/).waitFor();
+     assert.equal(await subpage.locator('input[data-hero-input],input[data-more-input]').count(),0);
+     await subpage.locator('[data-rich-for=sec_0]').fill('Text zur Diashow');
+   } else {
+     assert.equal(await editor.getByRole('tab',{name:'Unterseite',exact:true}).count(),0);
+     await home.getByRole('checkbox',{name:'Diashow automatisch starten'}).uncheck();
+   }
+   await editor.locator('[type=submit]').click();
+   await editor.waitFor({state:'detached'});
+   const item = (await state()).pages.home.blocks[0];
+   assert.equal(item.title,title);
+   assert.equal(item.type,'feature');
+   assert.equal(item.photoDisplay,mode);
+   assert.equal(item.images.length,2);
+   await page.locator('.header-admin-edit').click();
+   const article = page.locator('[data-feature="' + item.id + '"]');
+   await article.getByRole('heading',{name:title}).waitFor();
+   if (mode === 'orbit') {
+     assert.equal(await article.locator('a.hm-card').count(),2);
+     await article.locator('.hm-caption').click();
+     await page.locator('.hm-entry-copy').getByText('Text zur Diashow').waitFor();
+     assert.equal(await page.getByRole('region',{name:'Diashow'}).count(),1);
+     assert.equal(await page.locator('.hm-entry-gallery [data-cs-published-page]').count(),2);
+     await page.getByRole('link',{name:'Zurück zur Startseite'}).click();
+   } else {
+     assert.equal(await article.locator('a:has(h2), .feature-more').count(),0);
+     const inline = article.getByRole('region',{name:'Diashow'});
+     assert.equal(await inline.locator('[data-cs-published-page]').count(),2);
+     await inline.getByRole('button',{name:'Bild 2 anzeigen',exact:true}).click();
+     assert.equal(await inline.locator('.cs-carousel-status').textContent(),'Bild 2 von 2');
+     await inline.getByRole('button',{name:'Bilder abspielen'}).click();
+     await inline.getByRole('button',{name:'Bilder pausieren'}).click();
+     assert.equal(await page.evaluate(()=>location.hash),'#home');
+   }
+ }
  const testCover = async ({ratio, heroCount=1, grid, width}) => {
    await page.setViewportSize({width,height:900});
    await page.evaluate(async ({ratio, heroCount, grid}) => {

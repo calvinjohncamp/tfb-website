@@ -481,11 +481,14 @@
 
   const HOME_PHOTO_LIMIT = 100;
   const carouselLimit = () => TFB.newsroom.CAROUSEL_LIMIT;
-  const photoLimit = format => format === 'carousel' ? carouselLimit() : HOME_PHOTO_LIMIT;
+  const slideshowFormats = ['carousel', 'orbit', 'slideshow'];
+  const photoLimit = format => slideshowFormats.includes(format) ? carouselLimit() : HOME_PHOTO_LIMIT;
+  const homeOrbit = block => block.photoDisplay === 'orbit' || (!!block.mediaCollection && block.photoDisplay !== 'slideshow');
+  const sharedHomePhotos = block => homeOrbit(block) || block.photoDisplay === 'slideshow';
   const photoDisplays = new Map([['collage', 'Collage'], ['gallery', 'Galerie'], ['carousel', 'Karussell']]);
   const photoTypes = [...photoDisplays.keys()];
   let photoStudio;
-  const showInlineCarousel = b => b.type === 'carousel' || b.photoDisplay === 'carousel' || b.album?.photoDisplay === 'carousel' || b.more?.photoDisplay === 'carousel';
+  const showInlineCarousel = b => b.type === 'carousel' || ['carousel','slideshow'].includes(b.photoDisplay) || b.album?.photoDisplay === 'carousel' || b.more?.photoDisplay === 'carousel';
   function photoDisplay(block, refs, mode, action) {
     if (!refs.length) return '';
     if (mode === 'carousel') {
@@ -498,8 +501,8 @@
     return `<div class="${mosaic ? `collage module-collage collage-${Math.min(refs.length, 5)}` : 'gallery-grid'}">${refs.map((ref, i) =>
       `<button type="button" class="${mosaic ? 'collage-item' : 'gallery-item'}" data-action="${action}" data-block="${esc(block.id)}" data-index="${i}" aria-label="Foto ${i + 1} von ${refs.length} groß ansehen">${picture(ref, ref)}</button>`).join('')}</div>`;
   }
-  const photoFormatField = (name, value, single = false, count = 0) => `<label class="field"><span>Darstellung</span><select name="${name}" data-rerender>${[...(single ? [['single', 'Einzelfoto']] : []), ...photoDisplays].map(([key, label]) => `<option value="${key}"${key === value ? ' selected' : ''}${key === 'carousel' && key !== value && count > carouselLimit() ? ' disabled' : ''}>${label}${key === 'carousel' ? ` (bis ${carouselLimit()} Fotos)` : ''}</option>`).join('')}</select></label>`;
-  const photoStartField = (name, value) => `<label class="meet-check"><input type="checkbox" name="${name}" ${value === 'auto' ? 'checked' : ''}><span>Karussell automatisch starten</span></label>`;
+  const photoFormatField = (name, value, single = false, count = 0, allowCarousel = true) => `<label class="field"><span>Darstellung</span><select name="${name}" data-rerender>${[...(single ? [['single', 'Einzelfoto']] : []), ...photoDisplays].filter(([key]) => allowCarousel || key !== 'carousel' || key === value).map(([key, label]) => `<option value="${key}"${key === value ? ' selected' : ''}${key === 'carousel' && key !== value && count > carouselLimit() ? ' disabled' : ''}>${label}${key === 'carousel' ? ` (bis ${carouselLimit()} Fotos)` : ''}</option>`).join('')}</select></label>`;
+  const photoStartField = (name, value, label = 'Karussell automatisch starten') => `<label class="meet-check"><input type="checkbox" name="${name}" ${value === 'auto' ? 'checked' : ''}><span>${label}</span></label>`;
   const homePhotoRefs = (block) => (block.images?.length ? block.images : [block.image]).filter(shownImage);
 
   // ---------- Bausteine darstellen ----------
@@ -529,12 +532,14 @@
         };
         const homePhotos = page === 'home' ? homePhotoRefs(b).slice(0, HOME_PHOTO_LIMIT) : [];
         const formattedPhotos = homePhotos.length > 1 && photoDisplays.has(b.photoDisplay);
+        const orbit = homeOrbit(b) && TFB.homeMedia.photos(b).length;
+        const slideshow = b.photoDisplay === 'slideshow' && TFB.homeMedia.photos(b).length;
         const cover = `<div class="feature-media">${picture(homePhotos[0] || b.image, b.id, b.title, false, page === 'home' && n === '01')}</div>`;
         const parts = String(b.text || '').split(/\n{2,}/).filter((x) => x.trim());
         const textHtml = parts.map((p, i) => slot(`right-${i}`) + paragraphs(p)).join('');
         return `
           <article class="feature feature-${esc(String(b.layout || 'wide').replace('-right', ''))} ${/-right$/.test(b.layout || '') ? 'img-right' : ''} ${more ? 'has-more' : ''} ${n === '01' ? 'feature-first' : ''} ${Number(n) % 2 === 0 ? 'feature-even' : ''}" data-feature="${esc(b.id)}">
-            ${b.mediaCollection ? TFB.homeMedia.cover(b, `#home/${b.id}`, ref => images[ref] || ref, page !== 'home' || n === '01') : formattedPhotos ? `<div class="home-topic-photos">${photoDisplay(b, homePhotos, b.photoDisplay, 'home-photo-gallery')}</div>` : homePhotos.length ? `<button type="button" class="feature-hit home-photo-open" data-action="home-photo-gallery" data-block="${esc(b.id)}" aria-label="${esc(b.title)}: ${homePhotos.length === 1 ? 'Foto groß ansehen' : 'Fotos groß ansehen'}">${cover}</button>` : page !== 'home' && (b.images || []).some(shownImage) ? newsCollage(b) : wrap(cover)}
+            ${orbit ? TFB.homeMedia.cover(b, more, ref => images[ref] || ref, n === '01') : slideshow ? `<div class="home-topic-photos home-topic-slideshow">${TFB.homeMedia.slideshow(photoStudio, b, ref => images[ref] || ref, b.animationStart || 'auto', n === '01' ? 'high' : 'lazy')}</div>` : formattedPhotos ? `<div class="home-topic-photos">${photoDisplay(b, homePhotos, b.photoDisplay, 'home-photo-gallery')}</div>` : homePhotos.length ? `<button type="button" class="feature-hit home-photo-open" data-action="home-photo-gallery" data-block="${esc(b.id)}" aria-label="${esc(b.title)}: ${homePhotos.length === 1 ? 'Foto groß ansehen' : 'Fotos groß ansehen'}">${cover}</button>` : page !== 'home' && (b.images || []).some(shownImage) ? newsCollage(b) : wrap(cover)}
             <div class="feature-body">
               <div class="feature-left">
                 <div class="feature-kicker"><span class="feature-number">${n}</span><span class="feature-kicker-label">${esc(b.kicker || '')}</span>
@@ -547,7 +552,7 @@
               <div class="feature-right">
                 <div class="feature-text">${textHtml}</div>
                 ${slot('right', 'Link hierher')}
-                ${more && b.showMore !== false ? linkMarkup({ ...b.detailLink, url: more, label: b.detailLink?.label || b.mediaButtonLabel || 'Mehr erfahren' }, 'feature-more') : ''}
+                ${more && b.showMore !== false ? linkMarkup({ ...b.detailLink, url: more, label: b.detailLink?.label || b.mediaButtonLabel || (homeOrbit(b) ? 'Diashow ansehen' : 'Mehr erfahren') }, 'feature-more') : ''}
               </div>
             </div>
           </article>`;
@@ -575,7 +580,7 @@
       case 'event':
         return eventCard(b, { accentDate });
       case 'post':
-        return b.mediaCollection ? mediaNewsPost(b) : newsPost(b, null, accentDate, page === 'home');
+        return homeOrbit(b) ? mediaNewsPost(b) : newsPost(b, null, accentDate, page === 'home');
       case 'image':
         return b.original
           ? `<figure class="block-image natural ${alignClass(b.align)}" data-site-content="${esc(b.id)}">${picture(b.image, b.id, b.caption)}${b.caption ? `<figcaption>${esc(b.caption)}</figcaption>` : ''}</figure>`
@@ -688,7 +693,7 @@
       if (preview.tab === 'album') { window.scrollTo(0, 0); return; }
       const el = preview.page === 'aktuell'
         ? document.querySelector('.news-draft-preview .story, .news-draft-preview .post')
-        : preview.tab === 'sub' ? document.querySelector('.story') : document.querySelector(`[data-feature="${preview.id}"]`);
+        : preview.tab === 'sub' ? document.querySelector('.story, .hm-collection') : document.querySelector(`[data-feature="${preview.id}"]`);
       if (el) window.scrollTo(0, Math.max(0, el.getBoundingClientRect().top + window.scrollY - 150));
     } else window.scrollTo(0, y);
   }
@@ -733,7 +738,7 @@
   }).observe(document.getElementById('sheet-root') || document.body, { childList: true });
 
   // ---------- Unterseite eines Home-Themas („Mehr erfahren“) ----------
-  const hasMore = b => Boolean(b.mediaCollection || b.more && ((b.more.text || '').trim() || (b.more.images || []).length || b.more.quote || b.more.links?.some(link => safeLink(link.url)) || (b.more.heroImages || []).length || b.more.sections?.some(section => section.text?.trim())));
+  const hasMore = b => Boolean(((homeOrbit(b) || b.mediaCollection) && TFB.homeMedia.photos(b).length) || b.more && ((b.more.text || '').trim() || (b.more.images || []).length || b.more.quote || b.more.links?.some(link => safeLink(link.url)) || (b.more.heroImages || []).length || b.more.sections?.some(section => section.text?.trim())));
   const archiveHref = b => '#club/archiv/beitrag/' + encodeURIComponent('aktuell-' + b.id);
   const hasPublishedDetail = b => b.detailEnabled !== false && hasMore(b);
   const safeLink = (url) => /^(#|https?:\/\/)/i.test(url || '') ? url : '';
@@ -782,14 +787,23 @@
     const title = isNews ? String(b.title || '').trim().replace(/\.+$/u, '') : b.title;
     return `<article class="post card media-news" data-site-content="${esc(b.id)}">${TFB.homeMedia.cover(b,href,ref=>images[ref]||ref)}<div class="post-body">${TFB.newsroom.creationDate(b)?`<p class="post-date">${signatureText(fmt(TFB.newsroom.creationDate(b),{day:'numeric',month:'long',year:'numeric'}))}</p>`:''}${!isNews&&b.kicker?`<p class="media-news-kicker">${signatureText(b.kicker)}</p>`:''}<h3><a class="post-title-link" href="${href}">${esc(title)}</a></h3>${!isNews&&b.subtitle?`<p class="media-news-subtitle">${signatureText(b.subtitle)}</p>`:''}${paragraphs(b.text)}${isNews ? newsLinkMarkup(b) : ''}${linkMarkup({...b.detailLink, url:href, label:b.detailLink?.label || b.mediaButtonLabel || 'Beitrag ansehen'})}</div></article>`;
   }
-  const mediaDetail = (block,page='aktuell',backHref,readonly=false) => TFB.homeMedia.detail(block,{imageOf:ref=>images[ref]||ref,paragraphs,renderTextSections,admin:!readonly&&page !== 'aktuell'&&ui().state.member?.isAdmin,page,backHref,links:newsLinkMarkup(block)});
+  const mediaDetail = (block,page='aktuell',backHref,readonly=false) => {
+    const extra = [...(block.more?.heroImages || []), ...(block.more?.images || [])].filter(shownImage);
+    storyIndex[block.id] = {...block, more:{...block.more, images:extra}};
+    return TFB.homeMedia.detail(block,{
+      imageOf:ref=>images[ref]||ref, paragraphs, renderTextSections,
+      admin:!readonly && page === 'home' && ui().state.member?.isAdmin, page, backHref,
+      links:newsLinkMarkup(block) + (block.more?.links || []).filter(link => safeLink(link.url)).map(link => linkMarkup(link)).join(''),
+      extraPhotos: extra.length ? collage(extra, block.id, true) : '',
+    });
+  };
 
   async function newsArticleDetail(block, archive = false, draftPreview = false) {
     if (block.archived && !archive) return `<p>Dieser Artikel ist im Clubarchiv.</p><a class="btn" href="${archiveHref(block)}">Zum Artikel im Clubarchiv</a>`;
     const back = archive ? '#club/archiv' : '#aktuell';
     if (block.type === 'event') return `<div class="site-page archive-reading">${ui().viewHead(esc(block.title), 'Termin', false)}${eventCard(block)}<a class="btn" href="${back}">Zurück</a></div>`;
-    if (block.mediaCollection) return mediaDetail(block, 'aktuell', archive ? back : undefined, archive);
-    if (!photoStudio && showInlineCarousel(block)) photoStudio = await import('./chat-media.js?v=20261114-one-slideshow-1');
+    if (sharedHomePhotos(block) || block.mediaCollection) return mediaDetail(block, 'aktuell', archive ? back : undefined, archive);
+    if (!photoStudio && showInlineCarousel(block)) photoStudio = await import('./chat-media.js?v=20261114-home-formats-1');
     return storyHtml({ ...block, text: block.showText === false ? '' : block.text, title: block.title || photoDisplays.get(block.type) || 'News', noPlaceholder: true }, {closeHref:back, backLabel:archive ? 'Zum Clubarchiv' : 'Zu Aktuell',
       gallery: photoTypes.includes(block.type) || photoDisplays.has(block.photoDisplay) ? photoDisplay(block, (block.images || []).filter(shownImage), block.photoDisplay || block.type, 'gallery-open') : '',
       linkPage: 'aktuell', topicHero: block.type === 'post' && (Boolean(block.sourceHomeId) || homePhotoRefs(block).length === 1),
@@ -802,7 +816,9 @@
     const format = photoTypes.includes(b.type) ? b.type : b.photoDisplay;
     const refs = (b.images || []).filter(shownImage);
     const compactCollage = !archive && format === 'collage' && refs.length;
-    const photos = compactCollage
+    const photos = !archive && format === 'slideshow' && TFB.homeMedia.photos(b).length
+      ? TFB.homeMedia.slideshow(photoStudio, b, ref => images[ref] || ref, b.animationStart || 'auto')
+      : compactCollage
       ? `<div class="news-compact-collage">${photoDisplay(b, refs.slice(0, 4), format, 'gallery-open')}</div>`
       : !archive && photoDisplays.has(format) && refs.length
         ? photoDisplay(b, refs, format, 'gallery-open')
@@ -950,7 +966,7 @@
     }
     if (!b) return `${ui().viewHead('Home', 'Diesen Beitrag gibt es nicht mehr.', false)}<p><a class="btn" href="#home">Zur Startseite</a></p>`;
     const admin = state.member && state.member.isAdmin;
-    if (b.mediaCollection) return TFB.homeMedia.detail(b, {imageOf:ref=>images[ref] || ref,paragraphs,renderTextSections,admin,links:newsLinkMarkup(b)});
+    if (homeOrbit(b) || b.mediaCollection || (b.photoDisplay === 'slideshow' && !hasPublishedDetail(b))) return mediaDetail(b, 'home');
     return storyHtml(b, {
       topicHero: true,
       n: String(homeBlocks().filter((x) => x.type === 'feature').indexOf(b) + 1).padStart(2, '0'),
@@ -1011,15 +1027,17 @@
       </div>
       <p class="ov-count muted small" data-ovcount>${list.length} ${list.length === 1 ? 'Beitrag' : 'Beiträge'}</p>
       <div class="mini-grid">${list.map(b => {
-        const refs = (b.images?.length ? b.images : [b.image]).filter(shownImage);
+        const refs = (b.mediaCollection ? TFB.homeMedia.photos(b) : b.images?.length ? b.images : [b.image]).filter(shownImage);
         const title = b.title || b.caption || CONTENT_TYPES.find(([type]) => type === b.type)[1];
         const text = b.showText === false ? '' : plain(b.text);
+        const sharedPhotos = sharedHomePhotos(b) || b.mediaCollection;
+        const href = `#${key}/${sharedPhotos ? '' : 'beitrag/'}${encodeURIComponent(b.id)}`;
         const more = b.more || {};
         const searchable = [title, b.kicker, b.subtitle, text, plain(more.text), more.quote, more.by,
           ...(more.sections || []).flatMap(section => [plain(section.text), section.by]),
           ...(b.mediaCollection?.entries || []).flatMap(entry => [entry.kicker, entry.title, entry.subtitle, plain(entry.text)]),
         ].filter(Boolean).join(' ');
-        return `<a class="mini" href="${b.mediaCollection?`#${key}/${encodeURIComponent(b.id)}`:`#${key}/beitrag/${encodeURIComponent(b.id)}`}" data-title="${esc(title)}" data-author="" data-text="${esc(searchable)}" data-where="${b.type}" data-teams="" data-photos="${refs.length}" data-at="${esc(b.date || '')}">
+        return `<a class="mini" href="${href}" data-title="${esc(title)}" data-author="" data-text="${esc(searchable)}" data-where="${b.type}" data-teams="" data-photos="${refs.length}" data-at="${esc(b.date || '')}">
           ${refs.length ? `<span class="mini-img">${picture(refs[0], refs[0], title)}${refs.length > 1 ? `<i>${refs.length} Fotos</i>` : ''}</span>` : ''}
           <span class="mini-head"><span><b>${esc(title)}</b>${b.date ? `<small>${esc(fmt(b.date, { day: 'numeric', month: 'long', year: 'numeric' }))}</small>` : ''}</span></span>
           ${text ? `<span class="mini-text">${esc(text)}</span>` : ''}</a>`;
@@ -1064,10 +1082,10 @@
     if (['home', 'aktuell'].includes(key) && section === 'alle') { editing = null; return contentOverview(key); }
     if (key === 'aktuell' && preview?.page === 'aktuell') {
       const { draft, tab } = preview;
-      if (!photoStudio && showInlineCarousel(draft)) photoStudio = await import('./chat-media.js?v=20261114-one-slideshow-1');
+      if (!photoStudio && showInlineCarousel(draft)) photoStudio = await import('./chat-media.js?v=20261114-home-formats-1');
       const article = { ...draft, title: draft.title || 'Ohne Überschrift', date: draft.date || (draft._new ? today() : '') };
       return `<section class="news-draft-preview"><p class="muted small">Vorschau · ${tab === 'sub' ? 'Artikelansicht' : 'News-Übersicht'}</p>
-        ${tab === 'sub' ? await newsArticleDetail(article, false, true) : `<div class="news-preview-card">${newsPost(article, null, false, true)}</div>`}</section>`;
+        ${tab === 'sub' ? await newsArticleDetail(article, false, true) : `<div class="news-preview-card">${homeOrbit(article) ? mediaNewsPost(article) : newsPost(article, null, false, true)}</div>`}</section>`;
     }
     if (key === 'aktuell' && section === 'beitrag') aktuellTab = 'news';
     if (key === 'aktuell' && section) {
@@ -1076,7 +1094,7 @@
       try { id = decodeURIComponent((section === 'beitrag' ? parts[2] : section) || ''); } catch (_) { id = ''; }
       const article = site.pages.aktuell.blocks.find(b => b.id === id);
       if (article && parts[2] === 'fotos') {
-        if (!photoStudio && showInlineCarousel(article)) photoStudio = await import('./chat-media.js?v=20261114-one-slideshow-1');
+        if (!photoStudio && showInlineCarousel(article)) photoStudio = await import('./chat-media.js?v=20261114-home-formats-1');
         return albumDetail(id, 'aktuell');
       }
       if (article?.archived) return newsArticleDetail(article);
@@ -1091,16 +1109,16 @@
     if (key === 'home' && section && location.hash.split('/')[2] === 'fotos' && !homeBlocks().some(b => b.id === section)) {
       const moved = site.pages.aktuell.blocks.find(b => b.sourceHomeId === section);
       if (moved) {
-        if (!photoStudio && showInlineCarousel(moved)) photoStudio = await import('./chat-media.js?v=20261114-one-slideshow-1');
+        if (!photoStudio && showInlineCarousel(moved)) photoStudio = await import('./chat-media.js?v=20261114-home-formats-1');
         return albumDetail(section, 'aktuell');
       }
     }
     if (key === 'aktuell' && !photoStudio && site.pages.aktuell.blocks.some(b => !b.archived && showInlineCarousel(b))) {
-      photoStudio = await import('./chat-media.js?v=20261114-one-slideshow-1');
+      photoStudio = await import('./chat-media.js?v=20261114-home-formats-1');
     }
     if (key === 'aktuell' && site.pages.aktuell.deleted) return '<section class="card"><h1>Seite entfernt</h1><a class="btn" href="#club/archiv">Zum Clubarchiv</a></section>';
     if (key === 'home' && !photoStudio && (site.pages.home.blocks.some(showInlineCarousel) || (preview && showInlineCarousel(preview.draft)))) {
-      photoStudio ||= await import('./chat-media.js?v=20261114-one-slideshow-1');
+      photoStudio ||= await import('./chat-media.js?v=20261114-home-formats-1');
     }
     if (key === 'home' && preview?.tab === 'album') return albumDetail(preview.id);
     if (key === 'home' && preview && preview.tab === 'sub') return featureDetail(preview.id);
@@ -1358,7 +1376,7 @@
     if (!['home', 'aktuell'].includes(editing) || !ui().state.member?.isAdmin) return;
     const news = editing === 'aktuell';
     ui().openSheet(`<div class="editor"><h2>${news ? 'Fotos hinzufügen' : 'Fotoblock hinzufügen'}</h2><div class="type-list">
-      ${[['collage', 'Fotos in unterschiedlich großen Feldern'], ['gallery', 'Fotos im gleichmäßigen Raster'], ['carousel', `Bis zu ${carouselLimit()} Fotos zum Wischen oder Blättern`]].map(([type, hint]) =>
+      ${[['collage', 'Fotos in unterschiedlich großen Feldern'], ['gallery', 'Fotos im gleichmäßigen Raster'], ...(news ? [['carousel', `Bis zu ${carouselLimit()} Fotos zum Wischen oder Blättern`]] : [])].map(([type, hint]) =>
         `<button type="button" class="type-option" ${news ? `data-action="aktuell-new" data-kind="${type}"` : `data-action="block-add" data-type="${type}"`}><strong>${photoDisplays.get(type)}</strong><span>${hint}</span></button>`).join('')}
     </div></div>`);
   }
@@ -1487,7 +1505,7 @@
         const { id } = block;
         const title = block.title || block.caption || block.label || 'Ohne Überschrift';
         const numberLabel = block.type === 'feature' ? String(++number).padStart(2, '0') + ' · ' : '';
-        const type = block.type === 'feature' ? block.mediaCollection || block.photoDisplay === 'carousel' ? 'Thema mit Karussell' : 'Thema'
+        const type = block.type === 'feature' ? block.photoDisplay === 'slideshow' ? 'Thema mit Diashow' : homeOrbit(block) || block.photoDisplay === 'carousel' ? 'Thema mit Karussell' : 'Thema'
           : photoDisplays.get(block.type) || BLOCK_TYPES.find(([key]) => key === block.type)?.[1] || 'Inhalt';
         const ref = block.mediaCollection?.entries?.[0]?.images?.[0] || block.images?.[0] || block.image;
         const step = (direction, label, atEnd) => `<button class="btn small home-order-icon" type="button" data-action="home-order-step" data-id="${esc(id)}" data-dir="${direction}" title="${label}" aria-label="${esc(title)} ${label}"${atEnd ? ' disabled' : ''}>${direction < 0 ? icon.up : icon.down}</button>`;
@@ -1571,7 +1589,7 @@
 
   function cover4kField(draft, homeGallery = false, carousel = false) {
     return `<label class="meet-check"><input type="checkbox" name="allow4k" ${draft.allow4k === true ? 'checked' : ''}><span>4K erlauben (nur in Ausnahmefällen)</span></label>
-      <p class="muted small">${homeGallery ? (carousel ? 'Für die Fotos dieses Home-Karussells.' : 'Für bis zu fünf Fotos dieses Startseiten-Artikels.') : 'Nur für das erste Aufmacherbild dieses Artikels.'} Bis zu 3.840 Pixel an der längsten Seite und 10 MB.</p>`;
+      <p class="muted small">${homeGallery ? (carousel ? 'Für die Fotos dieser Bildfolge.' : 'Für bis zu fünf Fotos dieses Startseiten-Artikels.') : 'Nur für das erste Aufmacherbild dieses Artikels.'} Bis zu 3.840 Pixel an der längsten Seite und 10 MB.</p>`;
   }
 
   async function cover4kData(file, img) {
@@ -1792,7 +1810,7 @@
     const photos = (post.images || []).filter(ref => images[ref] || /^assets\//.test(ref));
     const editSlideshow = photos.length > 1 && (!post.designs ||
       (post.designs.length > 1 && !post.designs.some(slide => slide.ref.startsWith('vid:'))));
-    const gallery = (post.designs || photos.length > 1) && await import('./chat-media.js?v=20261114-one-slideshow-1').then(studio =>
+    const gallery = (post.designs || photos.length > 1) && await import('./chat-media.js?v=20261114-home-formats-1').then(studio =>
       studio.publishedGallery(post.designs ? post : {...post, designs:photos.map(ref => studio.mediaDesign(ref,16,9))}, ref => images[ref] || ref));
     const carousel = post.photoView === 'carousel';
     const slideshow = post.photoView === 'slideshow';
@@ -2141,7 +2159,7 @@
         disconnect.observe(document.getElementById('sheet-root'), {childList: true, subtree: true});
         const progress = form.querySelector('[data-video-progress]');
         try {
-          const studio = scope === 'club' ? await import('./chat-media.js?v=20261114-one-slideshow-1') : null;
+          const studio = scope === 'club' ? await import('./chat-media.js?v=20261114-home-formats-1') : null;
           for (const file of files) {
             if (!form.isConnected) return;
             if (file.type.startsWith('video/') || /\.(mov|mp4|m4v|webm)$/i.test(file.name)) {
@@ -2194,7 +2212,7 @@
             delete media.file;
           }
           const slideshowLayers = hasSlideshow() ? draft.slideshowLayers : [];
-          const studio = draft.designed || slideshowLayers.length ? await import('./chat-media.js?v=20261114-one-slideshow-1') : null;
+          const studio = draft.designed || slideshowLayers.length ? await import('./chat-media.js?v=20261114-home-formats-1') : null;
           const payload = {title:draft.title,text:draft.text,authorMode:draft.authorMode,alsoTeams:draft.alsoTeams,dots:draft.dots,
             images:draft.media.filter(media => !media.ref.startsWith('vid:')).map(media => media.ref),
             designs:studio ? draft.media.map(media => media.design || studio.mediaDesign(media.ref,16,9)) : [],
@@ -2706,7 +2724,7 @@
     if (!original) return;
     const originalSiteRevision = site._cms?.versions['page:' + editing];
     const originalValue = JSON.stringify(original);
-    if (original.mediaCollection) {
+    if (original.mediaCollection && editing !== 'home') {
       const page = editing;
       return TFB.homeMedia.openEditor(original, {page,startTab,editor: {
           text: (label, name, value) => field(label, name, value, { area:true, rich:true, simple:true }),
@@ -2733,7 +2751,24 @@
     }
     const draft = JSON.parse(JSON.stringify(original));
     const homeFeature = draft.type === 'feature' || (editing === 'aktuell' && draft.sourceHomeId && draft.type === 'post' && !draft.mediaCollection);
-    if (homeFeature && !draft.images?.length) draft.images = draft.image ? [draft.image] : [];
+    const legacyMedia = editing === 'home' ? draft.mediaCollection : undefined;
+    const legacyPhotoCounts = legacyMedia ? legacyMedia.entries.map(entry => (entry.images || []).length) : [];
+    const existingHomePhotos = legacyPhotoCounts.reduce((sum, count) => sum + count, 0);
+    if (legacyMedia) {
+      draft.images = TFB.homeMedia.photos(draft);
+      draft.photoDisplay = draft.photoDisplay === 'slideshow' ? 'slideshow' : 'orbit';
+      for (const entry of legacyMedia.entries) initSections(entry);
+    }
+    if (homeFeature && !draft.images?.length) draft.images = draft.image && !legacyMedia ? [draft.image] : [];
+    const syncLegacyPhotos = () => {
+      if (!legacyMedia) return;
+      let offset = 0;
+      legacyMedia.entries.forEach((entry, i) => {
+        const end = i + 1 === legacyMedia.entries.length ? draft.images.length : offset + legacyPhotoCounts[i];
+        entry.images = draft.images.slice(offset, end);
+        offset = end;
+      });
+    };
     if (homeFeature) { draft.more = { ...(draft.more || {}) }; initSections(draft.more); }
     if (!homeFeature && draft.type === 'post' && !(draft.images || []).length && draft.image) { draft.images = [draft.image]; draft.image = null; }
     let edTab = homeFeature ? startTab : 'home';
@@ -2745,6 +2780,7 @@
     let albumOpen = startTab === 'album' || Boolean(draft.album?.enabled || draft.album?.images?.length);
     if (albumOpen) draft.album = { ...draft.album, sections: storySections(draft.album) };
     const photoModule = photoTypes.includes(draft.type);
+    const homeEditor = editing === 'home' && homeFeature;
     const newsroom = editing === 'aktuell';
     const liveNews = newsroom && (draft.type === 'post' || photoModule);
     const newsDetail = liveNews && !homeFeature;
@@ -2781,6 +2817,29 @@
     };
     const label = photoModule && draft.photoBlock ? 'Fotoblock' : photoModule ? photoDisplays.get(draft.type) :editing==='aktuell'&&draft.type==='post'?'News-Artikel':(BLOCK_TYPES.find(([t]) => t === draft.type) || [0, 'Inhalt'])[1];
 
+    const homePhotoMode = () => {
+      const modes = [['orbit','Karussell'], ['slideshow','Diashow']];
+      const current = modes.find(([mode]) => mode === draft.photoDisplay);
+      const tooManyPhotos = homePhotoRefs(draft).length > carouselLimit();
+      const buttons = modes.map(([mode, name]) => `<button type="button" class="btn small" data-home-photo-mode="${mode}" aria-pressed="${current?.[0] === mode}"${current?.[0] !== mode && tooManyPhotos ? ' disabled' : ''}>${current?.[0] === mode ? name + ' aktiv' : 'Als ' + name + ' anlegen'}</button>`).join('');
+      return `<fieldset class="home-photo-mode"><legend>Fotos auf Home</legend>
+        <div class="home-photo-mode-options">${buttons}
+          ${current && !legacyMedia ? '<button type="button" class="btn small" data-home-photo-mode="single">Einzelfoto anzeigen</button>' : ''}
+        </div>
+        ${current ? `<p class="ed-hint">${current[0] === 'orbit'
+          ? (draft.detailEnabled === false ? 'Das Karussell läuft direkt auf Home.' : 'Beim Öffnen des Karussells zeigt die Unterseite dieselben Fotos als Diashow.')
+          : 'Die Diashow lässt sich direkt auf Home abspielen.'}</p>
+          ${photoStartField('animationStart', draft.animationStart || 'auto', current[1] + ' automatisch starten')}
+          ${legacyMedia ? legacyMedia.entries.map((entry, i) => photoRatioField('sharedPhotoFormat' + i, entry.format, legacyMedia.entries.length > 1 ? i + 1 : 0)).join('') : photoRatioField('photoFormat', draft.photoFormat)}`
+          : `<p class="ed-hint">${tooManyPhotos
+            ? `Wähle höchstens ${carouselLimit()} Fotos, um ein Karussell oder eine Diashow anzulegen.`
+            : `Bis zu ${carouselLimit()} Fotos. Ein Karussell öffnet eine Diashow auf der Unterseite. Eine Diashow spielt direkt auf Home.`}</p>`}
+      </fieldset>`;
+    };
+    const photoRatioField = (name, value, group = 0) => `<label class="field"><span>Format der Diashow${group ? ` · Fotogruppe ${group}` : ''}</span><select name="${name}">
+      ${['4:5','9:16','16:9','5:4'].map(format => `<option${(value || '4:5') === format ? ' selected' : ''}>${format}</option>`).join('')}
+    </select></label>`;
+
     const body = () => {
       switch (homeFeature ? 'feature' : draft.type) {
         case 'feature': {
@@ -2804,9 +2863,10 @@
             + field('Unterüberschrift (freiwillig)', 'subtitle', draft.subtitle)
             + `<h3 class="editor-sub">Fotos</h3>`
             + (homeFeature ? homePhotoField(draft) : (draft.images || []).length ? newsPhotoField(draft) : imageField(draft.image, draft.id, ''))
-            + (homeFeature && homePhotoRefs(draft).length > 1 ? photoFormatField('photoDisplay', draft.photoDisplay || 'single', true, homePhotoRefs(draft).length) : '')
-            + (homeFeature && draft.photoDisplay === 'carousel' && homePhotoRefs(draft).length > 1 ? photoStartField('animationStart', draft.animationStart) : '')
-            + (ui().state.member?.isAdmin ? cover4kField(draft, homeFeature) : '')
+            + (!sharedHomePhotos(draft) && homePhotoRefs(draft).length > 1 ? photoFormatField('photoDisplay', draft.photoDisplay || 'single', true, homePhotoRefs(draft).length, !homeEditor) : '')
+            + (draft.photoDisplay === 'carousel' && homePhotoRefs(draft).length > 1 ? photoStartField('animationStart', draft.animationStart) : '')
+            + (ui().state.member?.isAdmin ? cover4kField(draft, homeFeature, sharedHomePhotos(draft)) : '')
+            + (homeEditor ? homePhotoMode() : '')
             + (liveNews ? articleLinks() : '')
             + `<div class="home-topic-actions">
               ${linksOpen || liveNews ? '' : '<button type="button" class="btn small" data-topic-open="links">Link hinzufügen</button>'}
@@ -2824,9 +2884,20 @@
               })() : '');
           const ownHero = heroSrc === 'own' ? heroImgs.slice(0, 4) : [];
           const detailPhotos = (more.images || []).filter(shownImage);
+          const sharedPhotos = homeOrbit(draft) || Boolean(legacyMedia) || (newsroom && draft.photoDisplay === 'slideshow');
+          const detailLabel = sharedPhotos ? 'Diashow ansehen' : 'Mehr erfahren';
+          const legacyCopy = legacyMedia ? legacyMedia.entries.map((entry, i) => `<section data-shared-photo-copy="${i}">
+            ${legacyMedia.entries.length > 1 ? `<h3>Text ${i + 1}</h3>` : ''}
+            ${field('Kleine Zeile darüber', 'sharedKicker' + i, entry.kicker ?? draft.kicker)}
+            ${field('Überschrift', 'sharedTitle' + i, entry.title)}
+            ${field('Unterüberschrift', 'sharedSubtitle' + i, entry.subtitle)}
+            <label class="field"><span>Datum</span><input type="date" name="sharedDate${i}" value="${esc(entry.date || '')}"></label>
+            ${field('Instagram-Link', 'sharedInstagram' + i, entry.instagramUrl)}
+            ${sectionsEditor(entry.sections, `shared_sec_${i}_`)}
+          </section>`).join('') : '';
           const subPanel = `
             <label class="meet-check"><input type="checkbox" name="detailEnabled" ${draft.detailEnabled !== false ? 'checked' : ''}><span>${newsroom ? 'Unterseite in Aktuell verlinken' : 'Unterseite auf Home verlinken'}</span></label>
-            <p class="ed-hint">Die Unterseite öffnet sich über „Mehr erfahren“. Überschrift und Unterzeile kommen vom Reiter „Übersicht“.</p>
+            ${sharedPhotos ? '<p class="ed-hint">Die Diashow verwendet dieselben Fotos wie der Beitrag in der Übersicht. Du änderst sie im Reiter „Übersicht“.</p>' : `<p class="ed-hint">Die Unterseite öffnet sich über „Mehr erfahren“. Überschrift und Unterzeile kommen vom Reiter „Übersicht“.</p>
             <h3 class="editor-sub">Fotos oben (bis zu 4)</h3>
             <div class="field"><div class="gallery-edit">
               ${ownHero.map((ref, i) => thumbEdit(ref, 'hero', i, ownHero.length, 'data-hero-remove', ownHero.length >= 2 ? 'square' : '')).join('')}
@@ -2839,29 +2910,30 @@
             </div>` : cover || ownHero.length ? `<div class="field"><span>Format des Kopfbilds</span>
               ${seg('heroratio', topicHeroRatio(more), topicHeroFormats)}
               <p class="muted small ed-note">Im Originalformat füllt das Bild die ganze Breite. Die festen Formate können bei abweichenden Bildmaßen freie Ränder haben.</p>
-            </div>` : ''}
+            </div>` : ''}`}
             <h3 class="editor-sub">Inhalt</h3>
-            ${sectionsEditor(more.sections)}
-            <div class="field"><span>Großer Textanfang (rot)</span>${seg('dropcap', String(more.dropcap == null ? 1 : more.dropcap), [['0', 'Aus'], ['1', '1 Zeichen'], ['2', '2 Zeichen'], ['3', '3 Zeichen']])}</div>
+            ${legacyMedia ? legacyCopy : sectionsEditor(more.sections)}
+            ${sharedPhotos ? '' : `<div class="field"><span>Großer Textanfang (rot)</span>${seg('dropcap', String(more.dropcap == null ? 1 : more.dropcap), [['0', 'Aus'], ['1', '1 Zeichen'], ['2', '2 Zeichen'], ['3', '3 Zeichen']])}</div>`}
+
             <h3 class="editor-sub">Button zur Unterseite</h3>
-            ${field('Linktext', 'detailButtonLabel', draft.detailLink?.label || draft.mediaButtonLabel, { placeholder: 'Mehr erfahren' })}
-            ${linkAppearanceFields({ ...draft.detailLink, label:draft.detailLink?.label || draft.mediaButtonLabel || 'Mehr erfahren', url:'#home/' + id }, 'detailButton')}
+            ${field('Linktext', 'detailButtonLabel', draft.detailLink?.label || draft.mediaButtonLabel, { placeholder: detailLabel })}
+            ${linkAppearanceFields({ ...draft.detailLink, label:draft.detailLink?.label || draft.mediaButtonLabel || detailLabel, url:'#home/' + id }, 'detailButton')}
             <h3 class="editor-sub">Links auf der Unterseite</h3>
             ${(more.links || []).map((link, i) => `<fieldset class="detail-link-editor"><legend>Link ${i + 1}</legend>
               ${editorialLinkFields(link, 'detailLink' + i)}
               <button type="button" class="btn small" data-detail-link-remove="${i}">Link entfernen</button>
             </fieldset>`).join('')}
             <button type="button" class="btn small" data-detail-link-add>Link hinzufügen</button>
-            <h3 class="editor-sub">Fotos unter dem Text</h3>
+            ${sharedPhotos && !detailPhotos.length ? '' : `<h3 class="editor-sub">Fotos unter dem Text</h3>
             <div class="field"><div class="gallery-edit">
               ${detailPhotos.map((ref, i) => thumbEdit(ref, 'more', i, detailPhotos.length, 'data-more-remove')).join('')}
-              ${detailPhotos.length < photoLimit(more.photoDisplay) ? `<label class="gallery-add">${ui().icon.plus}<span>Fotos hinzufügen</span><input type="file" accept="image/*" multiple data-more-input hidden></label>` : ''}
+              ${!sharedPhotos && detailPhotos.length < photoLimit(more.photoDisplay) ? `<label class="gallery-add">${ui().icon.plus}<span>Fotos hinzufügen</span><input type="file" accept="image/*" multiple data-more-input hidden></label>` : ''}
             </div></div>
-            ${detailPhotos.length ? photoFormatField('detailPhotoDisplay', more.photoDisplay || 'collage', false, detailPhotos.length) : ''}
-            ${detailPhotos.length > 1 && more.photoDisplay === 'carousel' ? photoStartField('detailAnimationStart', more.animationStart) : ''}
+            ${detailPhotos.length && !sharedPhotos ? photoFormatField('detailPhotoDisplay', more.photoDisplay || 'collage', false, detailPhotos.length) : ''}
+            ${detailPhotos.length > 1 && !sharedPhotos && more.photoDisplay === 'carousel' ? photoStartField('detailAnimationStart', more.animationStart) : ''}
             ${detailPhotos.length && (!more.photoDisplay || more.photoDisplay === 'collage') ? `<div class="field"><span>Bildformat in der Collage</span>
               ${seg('collagestyle', more.original ? 'original' : 'tiles', [['tiles', 'Bildausschnitte'], ['original', 'Originalformate']])}
-            </div>` : ''}`;
+            </div>` : ''}`}`;
           const albumPanel = `<label class="meet-check"><input type="checkbox" name="albumEnabled" ${album.enabled ? 'checked' : ''}><span>Foto-Unterseite verlinken</span></label>
             ${field('Überschrift der Foto-Unterseite', 'albumTitle', album.title || draft.title)}
             ${field('Link-Text', 'albumLabel', album.label || 'Fotos der Veranstaltung')}
@@ -2876,9 +2948,9 @@
             ${(album.images || []).length < photoLimit(album.photoDisplay) ? `<label class="gallery-add">${ui().icon.plus}<span>Fotos</span><input type="file" accept="image/*" multiple data-album-input hidden></label>` : ''}</div></div>`;
           return `
             <div class="ed-tabs" role="tablist">
-              <button type="button" role="tab" class="${edTab === 'home' ? 'on' : ''}" data-edtab="home">Übersicht</button>
-              ${detailOpen ? `<button type="button" role="tab" class="${edTab === 'sub' ? 'on' : ''}" data-edtab="sub">Unterseite</button>` : ''}
-              ${albumOpen ? `<button type="button" role="tab" class="${edTab === 'album' ? 'on' : ''}" data-edtab="album">Foto-Unterseite</button>` : ''}
+              <button type="button" role="tab" aria-selected="${edTab === 'home'}" class="${edTab === 'home' ? 'on' : ''}" data-edtab="home">Übersicht</button>
+              ${detailOpen ? `<button type="button" role="tab" aria-selected="${edTab === 'sub'}" class="${edTab === 'sub' ? 'on' : ''}" data-edtab="sub">Unterseite</button>` : ''}
+              ${albumOpen ? `<button type="button" role="tab" aria-selected="${edTab === 'album'}" class="${edTab === 'album' ? 'on' : ''}" data-edtab="album">Foto-Unterseite</button>` : ''}
             </div>
             <div class="ed-panel" data-panel="home" ${edTab === 'home' ? '' : 'hidden'}>${homePanel}</div>
             ${detailOpen ? `<div class="ed-panel" data-panel="sub" ${edTab === 'sub' ? '' : 'hidden'}>${subPanel}</div>` : ''}
@@ -2910,7 +2982,7 @@
         case 'gallery':
         case 'collage':
         case 'carousel': return field('Überschrift', 'title', draft.title)
-          + (editing === 'home' || newsroom ? photoFormatField('blockPhotoDisplay', draft.type, false, draft.images?.length) : '')
+          + (editing === 'home' || newsroom ? photoFormatField('blockPhotoDisplay', draft.type, false, draft.images?.length, newsroom) : '')
           + (draft.type === 'carousel' ? photoStartField('animationStart', draft.animationStart) : '')
           + (newsroom ? articleDateField() : draft.photoBlock ? '' : field('Datum', 'date', draft.date, { type: 'date' })) + `
           <div class="field"><span>Fotos (${(draft.images || []).filter(shownImage).length} / ${photoLimit(draft.type)})</span>
@@ -2965,6 +3037,10 @@
         </form>`);
       const form = document.querySelector('[data-editor=block]');
       bindRichFields(form, draft, draft.more?.sections, name => {
+        if (name.startsWith('shared_sec_')) {
+          const [, , group, index] = name.split('_');
+          return legacyMedia.entries[Number(group)].sections[Number(index)];
+        }
         if (name.startsWith('album_sec_')) return draft.album.sections[Number(name.slice(10))];
         if (name.startsWith('sec_')) return draft.more.sections[Number(name.slice(4))];
         return draft;
@@ -3091,7 +3167,9 @@
       form.addEventListener('click', async (e) => {
         if (isSectionsClick(e)) {
           collect(form);
-          const holder = e.target.closest('[data-panel="album"]') ? draft.album : draft.more;
+          const copy = e.target.closest('[data-shared-photo-copy]');
+          const holder = copy ? legacyMedia.entries[Number(copy.dataset.sharedPhotoCopy)]
+            : e.target.closest('[data-panel="album"]') ? draft.album : draft.more;
           if (holder && sectionsClick(e, holder.sections ||= [])) {
             Object.assign(holder, sectionsDerived(holder.sections));
             render();
@@ -3165,6 +3243,23 @@
           if (addLink) document.querySelector(`[data-editor=block] [name="${key}Url"]`)?.focus();
           return;
         }
+        const mode = e.target.closest('[data-home-photo-mode]');
+        if (mode) {
+          collect(form);
+          const selected = mode.dataset.homePhotoMode;
+          if (!mode.disabled && selected !== draft.photoDisplay) {
+            draft.photoDisplay = selected;
+            if (selected === 'orbit') {
+              detailOpen = true;
+              draft.detailEnabled = true;
+              draft.showMore = true;
+            }
+            render();
+            if (live) schedulePreview();
+            document.querySelector(`[data-home-photo-mode="${selected}"]`)?.focus({preventScroll:true});
+          }
+          return;
+        }
         const option = e.target.closest('[data-topic-open]');
         if (option) {
           collect(form);
@@ -3191,7 +3286,10 @@
         if (tabBtn) {
           collect(form);
           edTab = tabBtn.dataset.edtab;
-          form.querySelectorAll('[data-edtab]').forEach((x) => x.classList.toggle('on', x === tabBtn));
+          form.querySelectorAll('[data-edtab]').forEach(button => {
+            button.classList.toggle('on', button === tabBtn);
+            button.setAttribute('aria-selected', String(button === tabBtn));
+          });
           form.querySelectorAll('.ed-panel').forEach((x) => { x.hidden = x.dataset.panel !== edTab; });
           document.querySelector('#sheet-root .sheet').scrollTop = 0;
           if (live) refreshPreview(true);
@@ -3307,7 +3405,7 @@
             (draft.type === 'post' && input.matches('[data-news-input]') && !(draft.images || []).length && !draft.image)
             || (draft.type === 'feature' && input.matches('[data-image-input]') && input.dataset.target === '')
           );
-          const ids = await uploadFiles(files, firstIs4kCover, homeUpload && draft.allow4k === true);
+          const ids = await uploadFiles(files, firstIs4kCover, homeUpload && draft.allow4k === true, homeUpload && sharedHomePhotos(draft));
           if (!form.isConnected) return;
           if (input.dataset.linkPhoto) setLink(input.dataset.linkPhoto, link => Object.assign(link, {
             image: ids[0], crop: null, appearance: 'photo',
@@ -3365,6 +3463,20 @@
         if (f.textPosition) draft.textPosition = f.textPosition.value === 'above' ? 'above' : 'below';
       }
       if (f.photoDisplay) draft.photoDisplay = f.photoDisplay.value;
+      if (f.photoFormat) draft.photoFormat = f.photoFormat.value;
+      if (legacyMedia) {
+        const names = {kicker:'Kicker', title:'Title', subtitle:'Subtitle', date:'Date', instagramUrl:'Instagram', format:'PhotoFormat'};
+        legacyMedia.entries.forEach((entry, i) => {
+          for (const [key, suffix] of Object.entries(names)) {
+            if (f['shared' + suffix + i]) entry[key] = f['shared' + suffix + i].value.trim();
+          }
+          if (form.querySelector(`[data-shared-photo-copy="${i}"]`)) {
+            entry.sections = readSections(form, entry.sections, `shared_sec_${i}_`);
+            entry.text = entry.sections.filter(section => section.type === 'text').map(section => section.text).join('\n\n');
+          }
+        });
+        syncLegacyPhotos();
+      }
       if (f.blockPhotoDisplay) draft.type = f.blockPhotoDisplay.value;
       if (f.animationStart) draft.animationStart = f.animationStart.checked ? 'auto' : 'manual';
       readTitleTarget(form, draft);
@@ -3385,8 +3497,10 @@
         if (!draft.album.sections.length && !original.album?.sections) delete draft.album.sections;
       }
       if (form.querySelector('[data-panel=sub]') && draft.more) {
-        const secs = readSections(form, draft.more.sections || []);
-        draft.more = { ...draft.more, sections: secs, ...sectionsDerived(secs) };
+        if (!legacyMedia) {
+          const secs = readSections(form, draft.more.sections || []);
+          draft.more = { ...draft.more, sections: secs, ...sectionsDerived(secs) };
+        }
         if (f.detailPhotoDisplay) draft.more.photoDisplay = f.detailPhotoDisplay.value;
         if (f.detailAnimationStart) draft.more.animationStart = f.detailAnimationStart.checked ? 'auto' : 'manual';
         draft.more.links?.forEach((_, i, links) => readEditorialLink(f, links, i, 'detailLink' + i));
@@ -3468,11 +3582,21 @@
         form.querySelector('[aria-invalid]')?.focus();
         return;
       }
+      if (homeEditor && sharedHomePhotos(draft) && !draft.images.length) {
+        form.querySelector('[data-block-error]').textContent = 'Bitte unter „Übersicht“ mindestens ein Foto hinzufügen.';
+        return;
+      }
+      if (legacyMedia?.entries.some(entry => !entry.title || (entry.instagramUrl && !/^https?:\/\/[^\s]+$/i.test(entry.instagramUrl)))) {
+        form.querySelector('[data-edtab=sub]')?.click();
+        form.querySelector('[data-block-error]').textContent = 'Bitte auf der Unterseite eine Überschrift und bei Bedarf eine gültige Instagram-Adresse eingeben.';
+        return;
+      }
       const groups = block => [[photoTypes.includes(block.type) ? block.type : block.photoDisplay, block.images], [block.more?.photoDisplay, block.more?.images], [block.album?.photoDisplay, block.album?.images]];
       const before = groups(original);
-      if (groups(draft).some(([format, refs], i) => format === 'carousel' && (refs?.length || 0) > carouselLimit()
-        && (before[i][0] !== 'carousel' || refs.length > (before[i][1]?.length || 0)))) {
-        form.querySelector('[data-block-error]').textContent = `Ein Karussell kann höchstens ${carouselLimit()} Fotos enthalten.`;
+      if (groups(draft).some(([format, refs], i) => slideshowFormats.includes(format) && (refs?.length || 0) > carouselLimit()
+        && (!slideshowFormats.includes(before[i][0]) || refs.length > (before[i][1]?.length || 0))
+        && !(i === 0 && legacyMedia && refs.length <= existingHomePhotos))) {
+        form.querySelector('[data-block-error]').textContent = `Ein Karussell oder eine Diashow kann höchstens ${carouselLimit()} Fotos enthalten.`;
         return;
       }
       if (editing === 'home' || newsroom) return saveEditorialBlock(form, draft, isNew);
@@ -4107,7 +4231,7 @@
     'aktuell-new': el=>newNewsroomItem(el.dataset.kind),
     'aktuell-photos': () => { if (ui().state.member?.isAdmin) { editing = 'aktuell'; openPhotoPicker(); } },
     'block-add': (el) => {
-      if (!editing || !ui().state.member?.isAdmin) return;
+      if (!editing || !ui().state.member?.isAdmin || (editing === 'home' && el.dataset.type === 'carousel')) return;
       if (editing === 'home' && el.dataset.type === 'feature' && blocksOf().filter((b) => b.type === 'feature' && !b._new).length >= MAX_HOME_FEATURES) { ui().toast(`Höchstens ${MAX_HOME_FEATURES} Themen auf der Startseite.`); return; }
       dropUnsaved();
       const block = { ...newBlock(el.dataset.type), _new: true };

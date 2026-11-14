@@ -256,12 +256,12 @@ function textLayersMarkup(slide, editing = false) {
       style="${styles.join(';')}">${esc(layer.text)}</span>`;
   }).join('');
 }
-function stage(slide, editing = false, fitPhoto = false) {
+function stage(slide, editing = false, fitPhoto = false, loading = '') {
   const src = esc(sourceOf(slide.source));
   const media = slide.kind === 'video'
     ? `<video ${src ? `src="${src}"` : ''} style="${mediaStyle(slide)}" playsinline preload="${editing ? 'auto' : 'none'}" ${editing ? 'muted' : ''}
       ${slide.videoEdit ? `data-clip-start="${slide.videoEdit.start}" data-clip-end="${slide.videoEdit.end}" data-clip-in="${fades[slide.videoEdit.fadeIn]}" data-clip-out="${fades[slide.videoEdit.fadeOut]}"` : ''}></video>`
-    : `<img src="${src}" style="${fitPhoto ? '' : mediaStyle(slide)}" alt="${typeof slide.source === 'string' ? 'Foto zum Beitrag' : 'Eigenes Foto'}" draggable="false">`;
+    : `<img ${loading}src="${src}" style="${fitPhoto ? '' : mediaStyle(slide)}" alt="${typeof slide.source === 'string' ? 'Foto zum Beitrag' : 'Eigenes Foto'}" draggable="false">`;
   const content = `<div class="cs-media">${media}</div><div class="cs-design">${design(slide, editing)}</div>`;
   return `<div class="cs-stage${editing ? ' is-editing' : ''}${slide.kind === 'slideshow' ? ' cs-shared-preview' : ''}" style="--cs-ratio:${slide.format}">
     ${fitPhoto ? `<div class="cs-photo-frame" style="--cs-photo-ratio:${slide.format}">${content}</div>` : content}
@@ -315,7 +315,10 @@ export function publishedGallery(post, imageOf) {
     ${post.designs.map((slide, index) => {
       const video = slide.ref.startsWith('vid:');
       const source = video ? '' : imageOf(slide.ref);
-      const html = stage({...slide, source, kind:video ? 'video' : 'image'}, false, slideshow || carousel);
+      const loading = post.firstPriority
+        ? (index === 0 && post.firstPriority === 'high' ? 'loading="eager" fetchpriority="high" ' : 'loading="lazy" decoding="async" ')
+        : '';
+      const html = stage({...slide, source, kind:video ? 'video' : 'image'}, false, slideshow || carousel, loading);
       return `<div class="cs-screen" data-cs-published-page="${index}"${index ? ' hidden' : ''}>${html}
         ${video ? `<button type="button" class="cs-play" data-cs-load-video="${esc(slide.ref)}" aria-label="Video abspielen">${playbackIcon(false)}</button>` : ''}
         ${video ? '<div class="cs-clip-controls" hidden><input type="range" min="0" step="any" value="0" data-cs-clip-seek aria-label="Position im Video"><button type="button" data-cs-clip-mute aria-pressed="false">Ton aus</button></div>' : ''}
