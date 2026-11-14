@@ -1,5 +1,26 @@
 # TFB – Übergabe für die nächste Sitzung
 
+## Padel-Käufe wieder im Bierdeckel · Server live am 14.11.2026 (Claude)
+
+Commit `7eb0e00` auf `main`, Worker-Version `cdcd7aa2-74ca-4831-a6a1-b8e1dbecb642`
+(vorher `f88089ec`). Die Brücke `/integrations/padel/kiosk` und Migration 0014 waren
+vorhanden, aber zwei Lesezugriffe in `server/cloudflare/app-sync.mjs` fehlten in
+`main`: Käufe mit `origin='padel_app'` wurden gespeichert, erschienen aber nicht im
+Bierdeckel des Mitglieds und frischten die Ansicht nicht auf. Beide Stellen wortgleich
+aus der Sicherung übernommen, Brückentabellen in `schema.sql` nachgetragen.
+
+- Vor der Veröffentlichung lesend geprüft: Tabellen `padel_kiosk_links`,
+  `padel_kiosk_receipts`, `meeting_mail` vorhanden; 0 Padel-Käufe, 1 verknüpftes Konto.
+  Einzige Server-Änderung seit der letzten Veröffentlichung war dieser Commit.
+- Tests: `tools/test-padel-bridge.mjs` besteht (schlug vorher fehl). Übrige Node-Tests
+  unverändert 186 von 201; dieselben 15 bekannten Fehlschläge. Browsertests nicht ausgeführt.
+- Nach der Veröffentlichung: `/health` in Ordnung, `/app/state` und die Brücke ohne
+  Anmeldung 401, öffentliche Inhalte 200, Kiosk-Seite lädt ohne Konsolenfehler.
+- Keine Datenbank-Änderung, keine Secrets geändert, Website unverändert.
+- Offen: echter Testkauf aus der Padel-App mit Storno (Punkt 3.2 der offenen Punkte).
+- Veröffentlicht mit `wrangler@4.162.0` aus `01 Software/server/cloudflare`; das Werkzeug
+  ist nicht im Projekt installiert.
+
 ## Dropbox-Ordner mit GitHub abgeglichen · 14.11.2026 (Claude)
 
 Die Aufgabenliste steht ab jetzt in `00 START HIER/OFFENE_PUNKTE.md` im Projektstamm;
