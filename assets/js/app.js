@@ -10,6 +10,10 @@
   const $toast = document.getElementById('toast-root');
 
   const VIEWS = ['home', 'kiosk', 'strichliste', 'abrechnungen', 'chat', 'aktuell', 'gefluester', 'sport', 'team', 'club', 'treffen', 'verwaltung', 'impressum', 'satzung', 'partnerzahlen', 'clubstatistik', 'partner', 'kioskabrechnung', 'produktbibliothek', 'membermail'];
+  const DIRECT_EDIT = new Map([
+    ['#home', 'home'], ['#aktuell', 'aktuell'], ['#sport', 'sport'], ['#sport/training', 'sport'],
+    ['#club', 'verein'], ['#verein', 'verein'],
+  ]);
   const ADMIN_VIEWS = new Set(['partner', 'partnerzahlen', 'clubstatistik', 'kioskabrechnung', 'produktbibliothek', 'membermail']);
   const KIOSK_AREA = ['kiosk', 'strichliste', 'abrechnungen'];   // nur mit Anmeldung
   // Reiter unten: Kiosk zuerst, dann die Vereinsseiten, dann der Padel-Link.
@@ -110,11 +114,9 @@
   const logo = (part, cls = '') => `<span class="tfb-${part} ${cls}" role="img" aria-label="${esc(cfg.clubName)}"></span>`;
 
   // ---------- Start ----------
+  let startupSession, sessionReady = false;
   async function boot() {
     const splash = TFB.partnerVisibility?.start();
-    state.member = await api.session();
-    state.catalog = await api.catalog();
-    if (rawMember?.isAdmin && ADMIN_VIEWS.has(currentView())) hideAdmin = false;
     // Wer die App neu öffnet, landet immer auf Home – egal, welche Seite zuletzt offen war.
     // Ausnahmen: Neu laden (bleibt auf der Seite) und direkte Links wie #treffen/<id>.
     const nav = (performance.getEntriesByType && performance.getEntriesByType('navigation')[0]) || {};
@@ -122,10 +124,23 @@
     if (!location.hash || (nav.type !== 'reload' && !deepLink && !['#impressum','#satzung','#partnerzahlen','#partner','#clubstatistik','#kioskabrechnung','#produktbibliothek','#membermail'].includes(location.hash))) history.replaceState(null, '', '#home');
     // Decide on the splash before mounting the app shell to avoid exposing a
     // frame of the previous page during a reload.
+    const fastHome = api.secureDirectory && location.hash === '#home';
+    if (fastHome) TFB.loadSite({ published: true }).catch(() => {});
+    startupSession = (async () => {
+      state.member = await api.session();
+      state.catalog = await api.catalog();
+      if (rawMember?.isAdmin && ADMIN_VIEWS.has(currentView())) hideAdmin = false;
+    })().finally(() => { sessionReady = true; });
+    if (!fastHome) await startupSession;
     await splash;
     await render();
     document.body.classList.remove('tfb-starting');
     TFB.partnerVisibility?.ready();
+    if (fastHome) {
+      await startupSession;
+      refreshHeaderActions();
+      TFB.partnerVisibility?.ready();
+    }
     TFB.usage?.ready();
   }
 
@@ -310,6 +325,24 @@
   }
 
   // ---------- App-Rahmen ----------
+  function headerActions() {
+    return `${rawMember?.isAdmin ? `<button type="button" class="header-admin-edit" data-action="admin-toggle" aria-label="Admin-Werkzeuge" title="Admin-Werkzeuge" aria-pressed="${state.member?.isAdmin === true}"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m4 20 1.4-5.1L16.7 3.6a2.6 2.6 0 0 1 3.7 3.7L9.1 18.6 4 20Z"/><path d="m14.7 5.6 3.7 3.7M5.4 14.9l3.7 3.7"/></svg></button>` : ''}
+            ${state.member && TFB.inbox ? TFB.inbox.button() : ''}
+            ${state.member
+              ? `<button class="avatar" type="button" data-action="profile" aria-label="Profil">${avatarFace(state.member)}</button>`
+              : `<button class="avatar guest" type="button" data-action="login" aria-label="Anmelden">${icon.user}</button>`}`;
+  }
+
+  function refreshHeaderActions() {
+    const actions = $app.querySelector('.top-actions');
+    if (!actions || rawMember === headerMember) return;
+    actions.innerHTML = headerActions();
+    headerMember = rawMember;
+    syncAdminTools();
+    alignHeader();
+  }
+
+  let headerMember;
   function renderShell() {
     const view = currentView();
     const area = areaOf(view);
@@ -324,11 +357,7 @@
             ${TFB.designPreview.brandButton('header-brand-ball')}
           </div>
           <div class="top-actions">
-            ${rawMember?.isAdmin ? `<button type="button" class="header-admin-edit" data-action="admin-toggle" aria-label="Admin-Werkzeuge" title="Admin-Werkzeuge" aria-pressed="${state.member?.isAdmin === true}"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m4 20 1.4-5.1L16.7 3.6a2.6 2.6 0 0 1 3.7 3.7L9.1 18.6 4 20Z"/><path d="m14.7 5.6 3.7 3.7M5.4 14.9l3.7 3.7"/></svg></button>` : ''}
-            ${state.member && TFB.inbox ? TFB.inbox.button() : ''}
-            ${state.member
-              ? `<button class="avatar" type="button" data-action="profile" aria-label="Profil">${avatarFace(state.member)}</button>`
-              : `<button class="avatar guest" type="button" data-action="login" aria-label="Anmelden">${icon.user}</button>`}
+            ${headerActions()}
           </div>
         </div>
         <nav class="topnav" aria-label="Bereiche">${navLinks(area)}</nav>
@@ -338,6 +367,7 @@
         <nav aria-label="Vereinsinformationen"><a class="footer-link" href="#impressum">Impressum</a><a class="footer-link" href="#satzung">Satzung</a><button type="button" class="footer-link" data-usage-info>Datenschutz zur Statistik</button></nav>
         <p>© ${new Date().getFullYear()} Tennisfreunde Bielstein e.V. · Inhalte, Gestaltung &amp; App-Konzept. Alle Rechte vorbehalten.</p>
       </footer>`;
+    headerMember = rawMember;
     alignHeader();
     TFB.loadSite().catch(() => {});
     syncAdminTools();
@@ -381,7 +411,7 @@
     document.body.classList.toggle('admin-hidden', Boolean(state.member?.adminHidden));
   }
 
-  function toggleAdminTools() {
+  async function toggleAdminTools() {
     if (!rawMember?.isAdmin || closeSheet() === false) return;
     hideAdmin = !hideAdmin;
     state.editMode = false;
@@ -393,6 +423,12 @@
       TFB.resetSiteEditor();
       if (ADMIN_VIEWS.has(view)) { location.hash = '#home'; return; }
     } else {
+      try { await TFB.prepareSiteEditor(); }
+      catch (error) {
+        if (!hideAdmin) { hideAdmin = true; syncAdminTools(); toast(error.message); }
+        return;
+      }
+      if (hideAdmin || location.hash !== route) return;
       if (view === 'aktuell' && !location.hash.endsWith('/alle')) {
         if (location.hash.split('/')[1]) {
           renderView().then(() => { if (!hideAdmin && location.hash === route) TFB.actions['aktuell-edit'](); });
@@ -400,9 +436,8 @@
         }
         return TFB.actions['aktuell-edit']();
       }
-      if (view === 'home' && !location.hash.includes('/')) {
-        return TFB.actions['site-edit']({ dataset: { page: 'home' } });
-      }
+      const page = DIRECT_EDIT.get(route);
+      if (page) return TFB.actions['site-edit']({ dataset: { page } });
     }
     renderView();
   }
@@ -474,6 +509,10 @@
     const $view = document.getElementById('view');
     if (!$view) return;
     try {
+      if (view !== 'home') {
+        await startupSession;
+        refreshHeaderActions();
+      }
       if (view === 'kiosk' || view === 'kioskabrechnung') await TFB.loadSite();
       if (request !== viewRender) return;
       if (view === 'kiosk' && !TFB.kioskActive()) {
@@ -835,7 +874,7 @@
   }
   function refreshAvatars() {
     const btn = document.querySelector('.topbar .avatar');
-    if (btn) {
+    if (btn && state.member && !btn.classList.contains('guest')) {
       const face=avatarFace(state.member);
       if(btn.innerHTML!==face)btn.innerHTML=face;
     }
@@ -970,7 +1009,10 @@
     else if (action === 'auth-back') { state.authStep = 'email'; showAuth(); }
     else if (action === 'auth-email-start') { state.authStep = 'email-request'; showAuth(); }
     else if (action === 'auth-activate') { state.authStep = 'create'; showAuth(); }
-    else if (action === 'login') { showAuth(); }
+    else if (action === 'login') {
+      await startupSession;
+      if (state.member) openProfile(); else showAuth();
+    }
     else if (action === 'forgot' && api.automaticEmail) { state.authStep='email-request';showAuth(); }
     else if (action === 'forgot') toast(api.secureDirectory ? 'Bitte beim Verein einen neuen persönlichen Freischaltcode anfordern. Damit kannst du ein neues Passwort festlegen.' : 'Passwort-Zurücksetzen per Mail kommt mit dem Echtbetrieb.');
     else if (action === 'demo-fill') {
@@ -1061,9 +1103,11 @@
       t.classList.toggle('active', active);
       if (active) t.setAttribute('aria-current', 'page'); else t.removeAttribute('aria-current');
     });
-    document.getElementById('view').dataset.view = view;
+    const root = document.getElementById('view');
+    if (!root) return;
+    root.dataset.view = view;
     if (view !== 'kiosk') state.editMode = false;
-    if (state.member?.isAdmin && ['#home', '#aktuell'].includes(location.hash)) TFB.openSiteEditor(view);
+    if (state.member?.isAdmin && DIRECT_EDIT.has(location.hash)) TFB.openSiteEditor(DIRECT_EDIT.get(location.hash));
     window.scrollTo(0, 0);
     renderView(view);
   });
@@ -1079,7 +1123,7 @@
     const img=`<img src="${esc(p.logo)}" alt="${esc(p.name)}" decoding="async" fetchpriority="high">`;
     return /^https?:\/\//i.test(p.url||'')?`<a ${attrs} href="${esc(p.url)}" target="_blank" rel="noopener noreferrer nofollow">${img}</a>`:`<div ${attrs}>${img}</div>`;
   };
-  TFB.ui = { state, api, cfg, esc, icon, logo, viewHead, partnerSlot, openSheet, closeSheet, toast, renderView, currentView, editProduct:openProductEditor, editCategory:openSectionEditor, loadImage, largeImage, openLightbox, openAvatarCropper, refreshAvatars, isAdmin:()=>Boolean(rawMember?.isAdmin) };
+  TFB.ui = { state, api, cfg, esc, icon, logo, viewHead, partnerSlot, openSheet, closeSheet, toast, renderView, currentView, sessionReady:()=>sessionReady, editProduct:openProductEditor, editCategory:openSectionEditor, loadImage, largeImage, openLightbox, openAvatarCropper, refreshAvatars, isAdmin:()=>Boolean(rawMember?.isAdmin) };
 
   if ('serviceWorker' in navigator && (location.protocol === 'https:' || ['localhost', '127.0.0.1', '[::1]'].includes(location.hostname))) {
     navigator.serviceWorker.register('sw.js').catch(() => {});

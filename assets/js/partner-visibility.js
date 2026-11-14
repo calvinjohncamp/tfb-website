@@ -17,7 +17,7 @@
     if(['aktuell','chat','club','treffen'].includes(key))return key+(detail==='alle'&&key==='aktuell'?'-alle':'-detail');
     return pageNames[key]?key:null;
   }
-  function eligible() {return appReady&&remote()&&!admin()&&!document.querySelector('.editing-page')&&!new URLSearchParams(location.search).has('tfbPresentation');}
+  function eligible() {return appReady&&ui().sessionReady()&&remote()&&!admin()&&!document.querySelector('.editing-page')&&!new URLSearchParams(location.search).has('tfbPresentation');}
   function event(kind,partner='',slot='') {
     if(!active||!eligible())return;
     const key=[kind,partner,slot].join(':');if(kind!=='click'&&active.sent.has(key))return;

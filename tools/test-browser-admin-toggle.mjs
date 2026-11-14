@@ -22,9 +22,12 @@ try {
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));
   await page.addInitScript(token=>{if(!sessionStorage.getItem('tfb_directory_token_v1'))sessionStorage.setItem('tfb_directory_token_v1',token);},f.adminToken);
+  let releaseSync;
+  const syncGate = new Promise(resolve => { releaseSync = resolve; });
+  let delaySync = true;
   await page.route('**/*', async route => {
     const url = new URL(route.request().url());
-    if (url.hostname === 'tfb-api.calvinjohncamp.workers.dev') {const req=route.request(),r=await worker.fetch(new Request('https://tfb-api.test'+url.pathname+url.search,{method:req.method(),headers:{...req.headers(),'CF-Connecting-IP':'192.0.2.10'},...(req.postData()?{body:req.postData()}:{})}),f.env);return route.fulfill({status:r.status,headers:Object.fromEntries(r.headers),body:Buffer.from(await r.arrayBuffer())});}
+    if (url.hostname === 'tfb-api.calvinjohncamp.workers.dev') {if (url.pathname === '/app/state' && delaySync) await syncGate; const req=route.request(),r=await worker.fetch(new Request('https://tfb-api.test'+url.pathname+url.search,{method:req.method(),headers:{...req.headers(),'CF-Connecting-IP':'192.0.2.10'},...(req.postData()?{body:req.postData()}:{})}),f.env);return route.fulfill({status:r.status,headers:Object.fromEntries(r.headers),body:Buffer.from(await r.arrayBuffer())});}
     if (url.origin !== origin) return route.abort();
     const path = resolve(root, '.' + (url.pathname === '/' ? '/index.html' : url.pathname));
     const types = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.ttf': 'font/ttf' };
@@ -32,8 +35,13 @@ try {
     catch { return route.fulfill({ status: 404, body: '' }); }
   });
   await page.goto(origin);
-  await page.waitForFunction(() => TFB.ui?.state.member?.adminHidden);
   await enter();
+  await page.locator('.site-page[data-page=home] .feature').first().waitFor();
+  assert.equal(await page.locator('.header-admin-edit').count(), 0, 'Home renders while authenticated sync is pending');
+  delaySync = false;
+  releaseSync();
+  await page.locator('.header-admin-edit').waitFor();
+  await page.waitForFunction(() => TFB.ui?.state.member?.adminHidden);
   assert.equal(await page.evaluate(() => TFB.api.secureDirectory), true);
   assert.equal(await page.locator('[data-action="site-edit"]').count(), 0);
   const pencil = page.locator('[data-action="admin-toggle"]');
@@ -51,6 +59,16 @@ try {
     await page.locator('.tfb-admin-links').waitFor();
     assert.equal(await pencil.getAttribute('aria-pressed'),'true',view);
     if (view === 'aktuell') await page.locator('.newsroom-tools').waitFor();
+    if (['sport','club'].includes(view)) {
+      await page.locator('.editing-page[data-page='+(view==='club'?'verein':view)+'] [data-action=block-edit]').first().waitFor();
+      assert.equal(await page.locator('[data-action=site-edit]').count(),0);
+    }
+    if (view === 'sport') {
+      await page.locator('.sport-switch a[href="#sport/training"]').click();
+      await page.locator('.editing-page[data-page=sport] .sport-switch a[aria-current=page][href="#sport/training"]').waitFor();
+      await page.locator('.sport-switch a[href="#sport"]').click();
+      await page.locator('.editing-page[data-page=sport] .sport-switch a[aria-current=page][href="#sport"]').waitFor();
+    }
     assert.deepEqual(await page.locator('.tfb-admin-links > *').allTextContents(), expected, view);
     for (const width of [390,834,1440]) {
       await page.setViewportSize({width,height:1000});

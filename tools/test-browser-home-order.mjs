@@ -23,7 +23,7 @@ try{
    const site = await TFB.api.site();
    site.pages.home.blocks = [
      {id:'legacy',type:'feature',title:'Altes Karussell',mediaCollection:{entries:[{id:'entry',title:'Einblick',images:[image,image]}]}},
-     {id:'topic',type:'feature',title:'Ein Thema',image},
+     {id:'topic',type:'feature',title:'Ein Thema',image, navigation:'link', link:{url:'#kiosk',label:'Kiosk besuchen'}, more:{text:'Eigene Unterseite'}},
      {id:'gallery',type:'gallery',title:'Eine Galerie',images:[image,image]},
    ];
    site.pages.aktuell.blocks = [
@@ -59,6 +59,9 @@ try{
    await page.mouse.click(x,y);
    await viewer.waitFor({state:'detached'});
  };
+ const firstTitle = page.locator('[data-feature="topic"] a:has(h2)');
+ assert.equal(await firstTitle.getAttribute('href'),'#home/topic');
+ assert.equal(await page.getByRole('link',{name:'Kiosk besuchen'}).getAttribute('href'),'#kiosk');
  await page.locator('[data-feature="topic"] [data-action=home-photo-gallery]').click();
  const photoViewer = page.locator('.viewer.gallery.open');
  const {x, y} = await photoViewer.locator('.gal-single').evaluate(button => {
@@ -181,6 +184,15 @@ try{
  await row('gallery').locator('select').selectOption('0');
  await page.waitForFunction(() => document.querySelector('[data-order-id]').dataset.orderId === 'gallery');
  assert.equal((await state()).pages.home.blocks[0].id,'gallery');
+ await row('topic').getByRole('button',{name:'Bearbeiten'}).click();
+ await editor.getByText('Linkziel der Überschrift',{exact:true}).click();
+ await editor.locator('[name=titleTarget]').fill('#sport');
+ await editor.locator('[type=submit]').click();
+ await editor.waitFor({state:'detached'});
+ await page.locator('.header-admin-edit').click();
+ await firstTitle.waitFor();
+ assert.equal(await firstTitle.getAttribute('href'),'#sport');
+ await editHome();
  await row('topic').getByRole('button',{name:/Artikel löschen/}).click();
  assert.ok((await state()).pages.home.blocks.some(b=>b.id==='topic'), 'Dismissed dialog keeps the article');
  answer();

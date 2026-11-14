@@ -213,6 +213,7 @@
       const form=document.querySelector('[data-hm-editor]');if(!form)return;
       for(const key of ['title','kicker','subtitle','text','mediaButtonLabel','date'])if(form.elements[key])draft[key]=form.elements[key].value.trim();
       links?.read(form, draft);
+      editor.readTitleTarget(form, draft);
       if(form.elements.animationStart)draft.animationStart=form.elements.animationStart.value;
       if(form.elements.allow4k)draft.allow4k=form.elements.allow4k.checked;
       draft.mediaCollection.entries.forEach((entry,i)=>{
@@ -258,7 +259,7 @@
           <button type="button" role="tab" data-hm-tab="home" aria-selected="${tab==='home'}" class="${tab==='home'?'on':''}">Übersicht</button>
           <button type="button" role="tab" data-hm-tab="posts" aria-selected="${tab==='posts'}" class="${tab==='posts'?'on':''}">Unterseite</button>
         </div>
-        ${tab==='home'?summaryFields()+dateField+linkControls:details()}
+        ${tab==='home'?summaryFields()+dateField+linkControls+(page==='home'?editor.titleTargetField(draft):''):details()}
         <p class="form-error" role="alert"></p><button type="submit" class="btn primary block">Speichern</button>
         ${onDelete ? `<button type="button" class="btn block danger" data-hm-delete>${armed ? 'Archivieren bestätigen' : 'Ins Clubarchiv verschieben'}</button>` : ''}
         </form>`);
@@ -321,6 +322,10 @@
       form.addEventListener('submit',async event=>{
         event.preventDefault();if(busy)return;collect();const error=form.querySelector('.form-error');
         if (links && !links.validate(form, draft)) return;
+        if (!editor.validateTitleTarget(form, draft)) {
+          if (tab !== 'home') { tab = 'home'; render(); editor.validateTitleTarget(document.querySelector('[data-hm-editor]'), draft); }
+          return;
+        }
         if(!draft.title){error.textContent='Bitte eine Hauptüberschrift eingeben.';return;}
         if(!draft.mediaCollection.entries.length||draft.mediaCollection.entries.some(e=>!e.title||!e.images.length)){if(tab!=='posts'){tab='posts';render();}
           document.querySelector('[data-hm-editor] .form-error').textContent='Jeder Einblick braucht eine Überschrift und mindestens ein Bild.';return;}

@@ -72,15 +72,26 @@
 
   let teamCounts = {};
   let boardPeople = [];
-  let siteLoad;
-  TFB.loadSite = () => {
+  let siteLoad, editorLoad, publishedOnly = false;
+  TFB.loadSite = ({ published = false } = {}) => {
     if (site) return Promise.resolve(site);
-    siteLoad ||= ui().api.site().then(value => {
+    siteLoad ||= ui().api.site({ published }).then(value => {
       site = value;
+      publishedOnly = published && !!TFB.editorial;
       TFB.refreshNav?.();
       return site;
     }).finally(() => { siteLoad = null; });
     return siteLoad;
+  };
+  TFB.prepareSiteEditor = async () => {
+    if (siteLoad) await siteLoad;
+    if (!publishedOnly) return;
+    editorLoad ||= ui().api.site().then(fresh => {
+      site = fresh;
+      publishedOnly = false;
+      TFB.refreshNav?.();
+    }).finally(() => { editorLoad = null; });
+    await editorLoad;
   };
   async function ensure({ editorialOnly = true } = {}) {
     await TFB.loadSite();
@@ -494,9 +505,10 @@
       case 'feature': {
         const list = page === 'home' ? homeBlocks().filter((x) => x.type === 'feature' && (!x._new || (preview && x.id === preview.id))) : [];
         const n = String(Math.max(1, list.findIndex((x) => x.id === b.id) + 1)).padStart(2, '0');
-        const mode = b.navigation || (hasMore(b) ? 'detail' : 'link');
-        const more = (b.mediaCollection || hasPublishedDetail(b) && (mode === 'detail' || b.detailEnabled === true)) && (editing !== page || preview) ? `#home/${b.id}` : '';
-        const hit = (editing !== page || preview) ? (mode === 'link' ? safeLink(b.link?.url) : mode === 'none' ? '' : more) : '';
+        const more = hasPublishedDetail(b) && (editing !== page || preview) ? `#home/${b.id}` : '';
+        const album = b.album?.enabled ? `#home/${b.id}/fotos` : '';
+        const hit = (editing !== page || preview) && (safeLink(b.titleLink) || more || album ||
+          (b.titleLink === undefined && b.navigation === 'link' ? safeLink(b.link?.url) : ''));
         const wrap = (html) => (hit ? `<a class="feature-hit" href="${esc(hit)}"${/^https?:/i.test(hit) ? ' target="_blank" rel="noopener"' : ''}>${html}</a>` : html);
         // Link-Platz (immer linksbündig): „left“ = links unter der Unterzeile, „right-<n>“ = rechts
         // vor Absatz n, „right“ = rechts unter dem Text (Standard). Im Bearbeiten-Modus mit der Maus
@@ -1130,13 +1142,13 @@
         ${edit ? `
           <div class="editbar">
             <div><strong>${esc(page.title)} bearbeiten</strong><span>${key==='aktuell'?'News und Termine bearbeiten · Reihenfolge nach Datum':key==='home'?'Positionen werden sofort gespeichert. Inhalte speicherst du im Editor.':'Bausteine antippen zum Ändern · Pfeile zum Sortieren'}</span></div>
-            ${['home','aktuell'].includes(key) ? '' : '<div class="home-edit-actions"><button type="button" class="btn primary" data-action="site-done">Fertig</button></div>'}
+            ${['home','aktuell','sport','verein'].includes(key) ? '' : '<div class="home-edit-actions"><button type="button" class="btn primary" data-action="site-done">Fertig</button></div>'}
           </div>` : ''}
         ${key === 'home' && !edit
           ? ''
           : `<header class="view-head page-head">
           <div><h1>${esc(page.title)}</h1>${page.intro ? `<p class="muted">${esc(page.intro)}</p>` : ''}</div>
-          ${key === 'aktuell' ? '<div class="page-head-tools">' : ''}${admin && !edit && key !== 'aktuell' && !courtPlan && !rulebook ? `<button type="button" class="view-close" data-action="site-edit" data-page="${key}" aria-label="${edit ? 'Bearbeitung schließen' : 'Seite bearbeiten'}" aria-pressed="${Boolean(edit)}">${icon.pencil}</button>` : ''}${key === 'aktuell' ? `${!edit ? contentOverviewLink(key) : ''}</div>` : ''}
+          ${key === 'aktuell' ? '<div class="page-head-tools">' : ''}${admin && !edit && !['aktuell','sport','verein'].includes(key) ? `<button type="button" class="view-close" data-action="site-edit" data-page="${key}" aria-label="${edit ? 'Bearbeitung schließen' : 'Seite bearbeiten'}" aria-pressed="${Boolean(edit)}">${icon.pencil}</button>` : ''}${key === 'aktuell' ? `${!edit ? contentOverviewLink(key) : ''}</div>` : ''}
         </header>`}
         ${key === 'sport' ? `<nav class="seg sport-switch" aria-label="Sportbereiche">
           <a class="${training || courtPlan || rulebook ? '' : 'on'}" href="#sport" ${training || courtPlan || rulebook ? '' : 'aria-current="page"'}>Mannschaften</a>
@@ -2424,7 +2436,7 @@
     const list = [['#home', 'Home'], ['#kiosk', 'Kiosk'], ['#strichliste', 'Kiosk · Strichliste'], ['#abrechnungen', 'Kiosk · Abrechnungen'],
       ['#chat', 'Chat'], ['#chat/alle', 'Chat · Alle Beiträge'], ['#aktuell', 'Aktuell'], ['#sport', 'Sport'], ['#sport/training', 'Sport · Training'], ['#sport/platzbelegung', 'Sport · Platzbelegung'], ['#sport/regelwerk', 'Sport · Regelwerk'], ['#club', 'Club'], ['#club/history', 'Club · History'], ['#impressum', 'Impressum'], ['#satzung', 'Satzung']];
     if (TFB.config.features && TFB.config.features.treffen) list.push(['#treffen', navAll().find(x => x.target === '#treffen')?.label || 'Dating 2.0']);
-    (site.pages.home.blocks || []).filter((x) => x.type === 'feature' && hasPublishedDetail(x) && (x.detailEnabled || !x.navigation || x.navigation === 'detail'))
+    (site.pages.home.blocks || []).filter((x) => x.type === 'feature' && hasPublishedDetail(x))
       .forEach((x) => list.push([`#home/${x.id}`, `Home · ${x.title}`]));
     (site.pages.home.blocks || []).filter(x => x.album?.enabled).forEach(x => list.push([`#home/${x.id}/fotos`, `Fotos · ${x.title}`]));
     (site.pages.aktuell.blocks || []).filter(x => !x.archived && !x._new && (x.type === 'post' || photoTypes.includes(x.type)))
@@ -2536,6 +2548,32 @@
     }, trigger, { format: 'square' });
   }
 
+  function titleTargetField(draft) {
+    const target = draft.titleLink ?? (!hasPublishedDetail(draft) && !draft.album?.enabled && draft.navigation === 'link' ? draft.link?.url : '');
+    return `<details class="field"${target ? ' open' : ''}>
+      <summary>Linkziel der Überschrift</summary>
+      <label><span>Eigenes Ziel</span><input name="titleTarget" value="${esc(target || '')}" placeholder="z. B. #kiosk oder https://…"></label>
+      <small>Leer lassen, damit die Überschrift die Unterseite öffnet, sobald eine vorhanden ist.</small>
+    </details>`;
+  }
+  function readTitleTarget(form, draft) {
+    if (form.elements.titleTarget) draft.titleLink = form.elements.titleTarget.value.trim();
+  }
+  function validateTitleTarget(form, draft) {
+    if (!draft.titleLink || editorialUrl(draft.titleLink)) {
+      if (draft.titleLink) draft.titleLink = editorialUrl(draft.titleLink);
+      return true;
+    }
+    const input = form.elements.titleTarget;
+    if (input) {
+      if (input.closest('[data-panel][hidden]')) form.querySelector('[data-edtab=home]')?.click();
+      input.closest('details').open = true;
+      input.focus();
+    }
+    form.querySelector('.form-error').textContent = 'Bitte ein gültiges Linkziel für die Überschrift eingeben.';
+    return false;
+  }
+
   function editorialUrl(value) {
     const target = value.trim();
     if (/^#[a-z0-9][^\s]*$/i.test(target)) return target;
@@ -2638,6 +2676,7 @@
       return TFB.homeMedia.openEditor(original, {page,startTab,editor: {
           text: (label, name, value) => field(label, name, value, { area:true, rich:true, simple:true }),
           sections: sectionsEditor, readSections, sectionsClick, isSectionsClick, legacySections,
+          titleTargetField, readTitleTarget, validateTitleTarget,
           bind: bindRichFields,
         },imageOf:ref=>images[ref] || ref,uploadFiles,cover4kField,
         links: {
@@ -2665,7 +2704,7 @@
     let linksOpen = Boolean(draft.link?.url || draft.link2?.url);
     let detailOpen = startTab === 'sub' || draft.detailEnabled !== undefined || hasMore(draft);
     if (draft.type === 'feature' && draft.detailEnabled === undefined && detailOpen) {
-      draft.detailEnabled = !['none', 'link'].includes(draft.navigation);
+      draft.detailEnabled = true;
     }
     let albumOpen = startTab === 'album' || Boolean(draft.album?.enabled || draft.album?.images?.length);
     if (albumOpen) draft.album = { ...draft.album, sections: storySections(draft.album) };
@@ -2722,6 +2761,7 @@
           const homePanel = `
             <h3 class="editor-sub">Titel und Text</h3>`
             + field('Überschrift', 'title', draft.title)
+            + (!newsroom ? titleTargetField(draft) : '')
             + (newsroom ? articleDateField() : '')
             + field('Kurztext', 'text', draft.text, { area: true, rich: true, simple: true, rows: 5 })
             + field('Kleine Zeile darüber (freiwillig)', 'kicker', draft.kicker)
@@ -2740,7 +2780,6 @@
             + (linksOpen && !liveNews ? '<h3 class="editor-sub">Links</h3>'
               + editorialLinkFields(lk, 'link', 'Link 1')
               + editorialLinkFields(draft.link2, 'link2', 'Link 2')
-              + `<label class="field"><span>Beim Antippen der Überschrift</span><select name="navigation" data-rerender>${[['none','Auf Home bleiben'],['detail','Eigene Unterseite öffnen'],['link','Ersten Link öffnen']].map(([v,l]) => `<option value="${v}" ${v === (draft.navigation || (hasMore(draft) ? 'detail' : 'link')) ? 'selected' : ''}>${l}</option>`).join('')}</select></label>`
  + (() => {
                 const n = String(draft.text || '').split(/\n{2,}/).filter((x) => x.trim()).length;
                 const cur = lk.position || 'right';
@@ -3099,7 +3138,7 @@
             if (section === 'sub' && !detailOpen) {
               detailOpen = true;
               draft.detailEnabled = true;
-              if (draft.navigation !== 'link') draft.navigation = 'detail';
+              draft.showMore = true;
             }
             if (section === 'album' && !albumOpen) {
               albumOpen = true;
@@ -3291,18 +3330,10 @@
       if (f.photoDisplay) draft.photoDisplay = f.photoDisplay.value;
       if (f.blockPhotoDisplay) draft.type = f.blockPhotoDisplay.value;
       if (f.animationStart) draft.animationStart = f.animationStart.checked ? 'auto' : 'manual';
-      if (f.navigation) {
-        draft.navigation = f.navigation.value;
-        if (draft.navigation === 'detail' && !detailOpen) {
-          detailOpen = true;
-          draft.detailEnabled = true;
-          draft.showMore = true;
-        }
-      }
+      readTitleTarget(form, draft);
       if (f.detailEnabled) {
         if (draft.detailEnabled === false && f.detailEnabled.checked) {
           draft.showMore = true;
-          if (draft.navigation !== 'link') draft.navigation = 'detail';
         }
         draft.detailEnabled = f.detailEnabled.checked;
       }
@@ -3389,6 +3420,7 @@
         form.querySelector('[data-block-error]').textContent = 'Bitte ein Foto für den Link auswählen oder die Darstellung ändern.';
         return;
       }
+      if (!validateTitleTarget(form, draft)) return;
       const detailLinks = draft.more?.links || [];
       const validArticle = validateEditorialLinks(form, draft, ['link','link2']);
       const validDetail = validateEditorialLinks(form, detailLinks, detailLinks.keys(), i => 'detailLink' + i);
@@ -4198,7 +4230,10 @@
   // Bearbeitungsmodus verlassen, wenn eine andere Seite geöffnet wird.
   window.addEventListener('hashchange', event => queueMicrotask(() => {
     if (event.newURL !== location.href) return;
-    if (detailEditing || (editing && location.hash.replace('#', '') !== routeOf(editing))) { editing = null; detailEditing = false; }
+    const route = location.hash.slice(1);
+    const samePage = route === routeOf(editing) ||
+      (editing === 'sport' && route === 'sport/training') || (editing === 'verein' && route === 'verein');
+    if (detailEditing || (editing && !samePage)) { editing = null; detailEditing = false; }
   }));
 
   // Link eines Home-Themas an den anderen Platz setzen
