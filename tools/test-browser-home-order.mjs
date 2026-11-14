@@ -9,7 +9,7 @@ try{
  const page=await browser.newPage({serviceWorkers:'block',viewport:{width:1440,height:1050}}),errors=[];
  page.setDefaultTimeout(10000);page.on('pageerror',e=>errors.push(e.message));
  await page.route('**/*',route=>{const u=new URL(route.request().url());if(u.origin!==origin && !(u.origin==='https://joern-kaemper.de' && u.pathname.startsWith('/assets/shared-kiosk/')))return route.abort();const f=resolve(root,'.'+decodeURIComponent(u.pathname==='/'?'/index.html':u.pathname));if(!f.startsWith(root))return route.abort();try{return route.fulfill({body:readFileSync(f),contentType:({'.html':'text/html','.js':'text/javascript','.css':'text/css','.png':'image/png','.jpg':'image/jpeg','.webp':'image/webp','.ttf':'font/ttf'})[extname(f)]||'application/octet-stream'});}catch{return route.fulfill({status:404,body:''});}});
- for (const [format, size] of [['2x1',200],['3x1',300],['4x1',400]]) {
+ for (const [format, size] of [['2x1',200],['3x1',300],['4x1',400],['1x1',100],['1x2',50]]) {
    await page.route('**/assets/tests/' + format + '.svg', route => route.fulfill({contentType:'image/svg+xml',
      body:`<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="100"><rect width="100%" height="100%" fill="gold"/></svg>`}));
  }
@@ -147,7 +147,7 @@ try{
  await slideshow.getByRole('button',{name:'Bild 2 anzeigen',exact:true}).evaluate(button=>button.click());
  assert.equal(await slideshow.locator('.cs-carousel-status').textContent(),'Bild 2 von 2');
  const active = slideshow.locator('.cs-screen:not([hidden]) .cs-stage');
- await page.waitForFunction(() => document.querySelector('.story .cs-screen:not([hidden]) .cs-stage')?.style.getPropertyValue('--cs-ratio') === String(32/24));
+ await page.waitForFunction(() => document.querySelector('.story .cs-original-slides')?.style.getPropertyValue('--cs-original-ratio') === String(32/24));
  const ratio = await active.evaluate(stage=>stage.clientWidth/stage.clientHeight);
  assert.ok(Math.abs(ratio-32/24)<.02);
  await sub.locator('[name=detailPhotoDisplay]').selectOption('carousel');
@@ -328,6 +328,7 @@ try{
    await editor.locator('[data-home-photo-mode=' + mode + ']').click();
    await upload('[data-home-photo-input]');
    assert.equal(await home.locator('.gallery-thumb').count(),2);
+   assert.equal(await editor.getByText('Format der Diashow', {exact:true}).count(),0);
    assert.equal(await editor.getByRole('tab',{name:'Unterseite',exact:true}).count(),0);
    if (mode === 'orbit') {
      await editor.getByRole('button',{name:'Unterseite anlegen',exact:true}).click();
@@ -421,6 +422,58 @@ try{
    await testCover({width});
    for (const ratio of ['2','3','4']) await testCover({ratio,width});
    for (const grid of ['tiles','original']) await testCover({heroCount:4,grid,width});
+ }
+ const fitPhotos = ['1x1','1x2','2x1'].map(format => 'assets/tests/'+format+'.svg');
+ await page.evaluate(async photos => {
+   const site = await TFB.api.site();
+   site.pages.home.blocks = [
+     {id:'mixed-orbit',type:'feature',title:'Gemischtes Karussell',images:photos,photoDisplay:'orbit',
+       detailEnabled:true,animationStart:'manual',more:{text:'Gemischte Fotos'}},
+     {id:'mixed-slideshow',type:'feature',title:'Gemischte Diashow',images:photos,photoDisplay:'slideshow',
+       animationStart:'manual',photoFormat:'9:16'},
+     {id:'wide-slideshow',type:'feature',title:'Querformat-Diashow',images:[photos[2],photos[2]],photoDisplay:'slideshow',
+       animationStart:'manual',photoFormat:'9:16'},
+   ];
+   await TFB.api.saveSite(site);
+   await TFB.refreshSite(true);
+ }, fitPhotos);
+ for (const width of [1440,390]) {
+   await page.setViewportSize({width,height:950});
+   const mixedOrbit = page.locator('[data-feature=mixed-orbit] [data-hm-orbit]');
+   await mixedOrbit.scrollIntoViewIfNeeded();
+   await page.waitForFunction(() => document.querySelectorAll('[data-feature=mixed-orbit] [data-hm-loaded]').length === 3);
+   const cardRatios = await mixedOrbit.locator('.hm-card').evaluateAll(cards =>
+     cards.map(card => parseFloat(card.style.width)/parseFloat(card.style.height)));
+   assert.deepEqual(cardRatios.map(ratio => Number(ratio.toFixed(2))), [1,.5,2]);
+   const mixed = page.locator('[data-feature=mixed-slideshow] .cs-original-slides');
+   const detail = page.locator('.hm-entry-gallery .cs-original-slides');
+   const checkMixed = async gallery => {
+     await gallery.scrollIntoViewIfNeeded();
+     const nav = gallery.locator('.cs-carousel-nav');
+     const top = await nav.evaluate(el => el.offsetTop);
+     for (const index of [0,1,2]) {
+       await gallery.locator(`[data-cs-published-dot="${index}"]`).evaluate(button => button.click());
+       const slide = gallery.locator('.cs-screen:not([hidden]) .cs-stage');
+       const image = slide.locator('img');
+       await gallery.locator('.cs-screen:not([hidden]) .cs-stage img').evaluate(img => { img.loading = 'eager'; });
+       await page.waitForFunction(img => img.complete && img.naturalWidth > 0, await image.elementHandle());
+       const shape = await image.evaluate(img => ({
+         fit:getComputedStyle(img).objectFit, ratio:img.naturalWidth / img.naturalHeight,
+       }));
+       assert.deepEqual(shape,{fit:'contain',ratio:[1,.5,2][index]});
+       assert.equal(await nav.evaluate(el => el.offsetTop),top);
+     }
+   };
+   await checkMixed(mixed);
+   const wide = page.locator('[data-feature=wide-slideshow] .cs-original-slides');
+   await wide.scrollIntoViewIfNeeded();
+   await page.waitForFunction(() => document.querySelector('[data-feature=wide-slideshow] .cs-original-slides')?.style.getPropertyValue('--cs-original-ratio') === '2');
+   const ratio = await wide.locator('.cs-stage').first().evaluate(stage => stage.clientWidth/stage.clientHeight);
+   assert.ok(Math.abs(ratio-2)<.02);
+   await page.evaluate(() => {location.hash = '#home/mixed-orbit';});
+   await checkMixed(detail);
+   await page.evaluate(() => {location.hash = '#home';});
+   await mixedOrbit.waitFor();
  }
  assert.deepEqual(errors,[]);
  console.log('PASS: Home editor, backdrop dismissal, detail photo formats, order, transfer, archive and old links.');

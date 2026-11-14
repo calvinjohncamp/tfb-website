@@ -3,25 +3,31 @@
   const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const entries = block => (block.mediaCollection?.entries || []).filter(entry => entry.title);
   const photos = block => block.mediaCollection?.entries.flatMap(entry => entry.images || []) || block.images || [];
+  function commonPhotoRatio(ratios) {
+    const first = ratios[0];
+    return first && ratios.every(ratio => ratio && Math.abs(ratio / first - 1) < .03) ? first : 0;
+  }
   const source = (ref, imageOf) => imageOf(ref) || ref;
   const image = (ref, imageOf, alt = '', lead = false, defer = false) => `<img ${defer?'data-hm-src':'src'}="${esc(source(ref,imageOf))}" alt="${esc(alt)}" loading="${lead?'eager':'lazy'}" fetchpriority="${lead?'high':'low'}" decoding="async">`;
   const link = value => { try { const u = new URL(value); return /^https?:$/.test(u.protocol) ? u.href : ''; } catch { return ''; } };
   const magnifier='<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="m15.5 15.5 5 5"></path></svg>';
   const playbackIcon = playing => `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">${playing?'<rect x="7" y="5" width="3.5" height="14" rx=".7"/><rect x="13.5" y="5" width="3.5" height="14" rx=".7"/>':'<path d="M8 5.5v13l10-6.5z"/>'}</svg>`;
   let zoom=null;
-  function cover(block, href, imageOf, homeLead = null) {
+  function cover(block, href, imageOf, homeLead = null, fitPhotos = homeLead !== null) {
     const caption = entries(block)[0]?.title || block.title || '';
     const refs = homeLead === null && block.mediaCollection ? entries(block)[0]?.images || [] : photos(block);
     const manual=block.animationStart==='manual';
     if (!refs.length) return `<div class="feature-media hm-empty">Noch keine Bilder veröffentlicht.</div>`;
-    return `<div class="feature-media hm-orbit" data-hm-orbit data-hm-start="${block.animationStart==='manual'?'manual':'auto'}" aria-label="Karussell zu ${esc(block.title)}"><div class="hm-stage">${refs.map((ref,i) => {
+    return `<div class="feature-media hm-orbit" data-hm-orbit${fitPhotos ? ' data-hm-fit-photos' : ''} data-hm-start="${block.animationStart==='manual'?'manual':'auto'}" aria-label="Karussell zu ${esc(block.title)}"><div class="hm-stage">${refs.map((ref,i) => {
       const tag = href ? 'a' : 'div';
       return `<${tag} class="hm-card"${href ? ` href="${esc(href)}" aria-label="Bild ${i+1}: Unterseite öffnen"` : ''}>${image(ref,imageOf,caption,i===0&&homeLead!==false,homeLead!==null&&(!homeLead||i>0))}</${tag}>`;
     }).join('')}</div><div class="hm-footer">${href ? `<a class="hm-caption" href="${esc(href)}"><span>${esc(caption)}</span></a>` : `<span class="hm-caption">${esc(caption)}</span>`}<button type="button" class="hm-zoom-button" aria-label="Karussell vergrößern" title="Karussell vergrößern">${magnifier}</button><button type="button" class="hm-pause" aria-label="${manual?'Bildbewegung starten':'Bildbewegung pausieren'}" aria-pressed="${manual}"${refs.length<2?' hidden':''}>${playbackIcon(!manual)}</button></div></div>`;
   }
   function slideshow(studio, block, imageOf, animationStart = 'auto', firstPriority = 'lazy', originalSlides = false) {
     const sizes = {'4:5':[4,5],'9:16':[9,16],'16:9':[16,9],'5:4':[5,4]};
-    const groups = block.mediaCollection?.entries || [{images:photos(block), format:block.photoFormat}];
+    const groups = originalSlides
+      ? [{images:photos(block)}]
+      : block.mediaCollection?.entries || [{images:photos(block), format:block.photoFormat}];
     const designs = groups.flatMap(entry => {
       const [w,h] = sizes[entry.format] || sizes['4:5'];
       return (entry.images || []).map(ref => studio.mediaDesign(ref,w,h));
@@ -31,12 +37,12 @@
     }, ref => source(ref,imageOf)) : '';
   }
   async function detail(block, { imageOf, paragraphs, renderTextSections, admin, page='home', backHref, links = '', extraPhotos = '' }) {
-    const studio = await import('./chat-media.js?v=20261114-detail-formats-1');
+    const studio = await import('./chat-media.js?v=20261114-auto-photo-fit-1');
     const list = block.mediaCollection ? entries(block) : [{
       title: block.title, subtitle: block.subtitle, date: TFB.newsroom.creationDate(block),
       text: block.text, sections: block.more?.sections, images: photos(block),
     }];
-    const gallery = slideshow(studio, block, imageOf);
+    const gallery = slideshow(studio, block, imageOf, 'auto', 'lazy', page === 'home' || Boolean(block.sourceHomeId));
     const markup = (entry,index) => {
       const url = link(entry.instagramUrl);
       const date = /^\d{4}-\d{2}-\d{2}$/.test(entry.date || '') ? new Date(entry.date+'T12:00:00').toLocaleDateString('de-DE',{day:'numeric',month:'long',year:'numeric'}) : '';
@@ -159,7 +165,13 @@
         if(ratios[i]||!img.naturalWidth||!img.naturalHeight)return;
         try{await img.decode();}catch{return;}
         if(!node.isConnected)return;
-        ratios[i]=img.naturalWidth/img.naturalHeight;card.dataset.hmLoaded='true';layout();
+        ratios[i]=img.naturalWidth/img.naturalHeight;
+        card.dataset.hmLoaded='true';
+        if (node.hasAttribute('data-hm-fit-photos') && !enlarged) {
+          const ratio = commonPhotoRatio(ratios);
+          if (ratio) node.style.setProperty('--hm-photo-ratio', ratio);
+        }
+        layout();
         // Keep the current picture until its successor can actually be drawn.
         if(node.dataset.hmRunning!=='true')sync();
       };
@@ -349,5 +361,5 @@
     }
     render();
   }
-  TFB.homeMedia={cover,detail,slideshow,photos,fresh,openEditor};
+  TFB.homeMedia={cover,detail,slideshow,photos,commonPhotoRatio,fresh,openEditor};
 })();

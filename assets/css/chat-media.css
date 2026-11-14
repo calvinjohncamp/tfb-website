@@ -224,11 +224,12 @@ html.tfb-logo-midnight-amber .tfb-sender-mark { color: var(--tfb-midnight-blue);
 .comment-reply-quote,.comment-reply-preview{border:0;border-left:3px solid var(--signal);border-radius:0 6px 6px 0;background:color-mix(in srgb,var(--signal) 7%,var(--card));padding:9px 11px;margin:4px 0 10px;color:var(--ink);font:inherit;text-align:left;overflow-wrap:anywhere;min-width:0;max-width:100%;box-sizing:border-box}
 button.comment-reply-quote{display:grid;gap:4px;width:100%;white-space:normal;cursor:pointer}.comment-reply-quote>span:first-child,.comment-reply-preview span{font-size:.72rem;color:var(--muted)}.comment-reply-quote>span:last-child,.comment-reply-preview p{font-size:.8rem;line-height:1.45}.comment-reply-quote.is-unavailable{font-size:.75rem;color:var(--muted);border-left-color:var(--line);background:transparent}.comment-reply-preview{display:flex;align-items:start;justify-content:space-between;gap:12px;margin:16px 0}.comment-reply-preview p{margin:5px 0 0}.comment-reply-preview>button{flex:none;border:0;background:transparent;color:var(--muted);width:32px;height:32px;font:inherit;font-size:1.2rem}.comment.is-reply-target{background:color-mix(in srgb,var(--signal) 12%,var(--card));box-shadow:inset 3px 0 var(--signal)}.comment[data-comment]:focus-visible{outline:2px solid var(--signal);outline-offset:2px}
 
-/* Editorial photo stories use the natural shape of each slide. */
+/* A single frame on every slide keeps navigation stationary when formats vary. */
 .cs-original-slides .cs-stage {
-  width: min(100%, calc(66dvh * (var(--cs-ratio))));
+  --cs-editorial-ratio: var(--cs-original-ratio, 1);
+  width: min(100%, calc(66dvh * var(--cs-editorial-ratio)));
   margin-inline: auto;
-  aspect-ratio: var(--cs-ratio);
+  aspect-ratio: var(--cs-editorial-ratio);
   background: transparent;
 }
-.cs-viewer .cs-original-slides .cs-stage { width: min(100%, calc(72dvh * (var(--cs-ratio)))); }
+.cs-viewer .cs-original-slides .cs-stage { width: min(100%, calc(72dvh * var(--cs-editorial-ratio))); }

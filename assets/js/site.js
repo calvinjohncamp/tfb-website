@@ -548,7 +548,7 @@
         const textHtml = parts.map((p, i) => slot(`right-${i}`) + paragraphs(p)).join('');
         return `
           <article class="feature feature-${esc(String(b.layout || 'wide').replace('-right', ''))} ${/-right$/.test(b.layout || '') ? 'img-right' : ''} ${more ? 'has-more' : ''} ${n === '01' ? 'feature-first' : ''} ${Number(n) % 2 === 0 ? 'feature-even' : ''}" data-feature="${esc(b.id)}">
-            ${orbit ? TFB.homeMedia.cover(b, more, ref => images[ref] || ref, n === '01') : slideshow ? `<div class="home-topic-photos home-topic-slideshow">${TFB.homeMedia.slideshow(photoStudio, b, ref => images[ref] || ref, b.animationStart || 'auto', n === '01' ? 'high' : 'lazy')}</div>` : formattedPhotos ? `<div class="home-topic-photos">${photoDisplay(b, homePhotos, b.photoDisplay, 'home-photo-gallery')}</div>` : homePhotos.length ? `<button type="button" class="feature-hit home-photo-open" data-action="home-photo-gallery" data-block="${esc(b.id)}" aria-label="${esc(b.title)}: ${homePhotos.length === 1 ? 'Foto groß ansehen' : 'Fotos groß ansehen'}">${cover}</button>` : page !== 'home' && (b.images || []).some(shownImage) ? newsCollage(b) : wrap(cover)}
+            ${orbit ? TFB.homeMedia.cover(b, more, ref => images[ref] || ref, n === '01') : slideshow ? `<div class="home-topic-photos home-topic-slideshow">${TFB.homeMedia.slideshow(photoStudio, b, ref => images[ref] || ref, b.animationStart || 'auto', n === '01' ? 'high' : 'lazy', true)}</div>` : formattedPhotos ? `<div class="home-topic-photos">${photoDisplay(b, homePhotos, b.photoDisplay, 'home-photo-gallery')}</div>` : homePhotos.length ? `<button type="button" class="feature-hit home-photo-open" data-action="home-photo-gallery" data-block="${esc(b.id)}" aria-label="${esc(b.title)}: ${homePhotos.length === 1 ? 'Foto groß ansehen' : 'Fotos groß ansehen'}">${cover}</button>` : page !== 'home' && (b.images || []).some(shownImage) ? newsCollage(b) : wrap(cover)}
             <div class="feature-body">
               <div class="feature-left">
                 <div class="feature-kicker"><span class="feature-number">${n}</span><span class="feature-kicker-label">${esc(b.kicker || '')}</span>
@@ -816,7 +816,7 @@
     const back = archive ? '#club/archiv' : '#aktuell';
     if (block.type === 'event') return `<div class="site-page archive-reading">${ui().viewHead(esc(block.title), 'Termin', false)}${eventCard(block)}<a class="btn" href="${back}">Zurück</a></div>`;
     if (sharedHomePhotos(block) || block.mediaCollection) return mediaDetail(block, 'aktuell', archive ? back : undefined, archive);
-    if (!photoStudio && showInlineCarousel(block)) photoStudio = await import('./chat-media.js?v=20261114-detail-formats-1');
+    if (!photoStudio && showInlineCarousel(block)) photoStudio = await import('./chat-media.js?v=20261114-auto-photo-fit-1');
     return storyHtml({ ...block, text: block.showText === false ? '' : block.text, title: block.title || photoDisplays.get(block.type) || 'News', noPlaceholder: true }, {closeHref:back, backLabel:archive ? 'Zum Clubarchiv' : 'Zu Aktuell',
       gallery: photoTypes.includes(block.type) || photoDisplays.has(block.photoDisplay) ? photoDisplay(block, (block.images || []).filter(shownImage), block.photoDisplay || block.type, 'gallery-open') : '',
       linkPage: 'aktuell', topicHero: block.type === 'post' && (Boolean(block.sourceHomeId) || homePhotoRefs(block).length === 1),
@@ -830,7 +830,7 @@
     const refs = (b.images || []).filter(shownImage);
     const compactCollage = !archive && format === 'collage' && refs.length;
     const photos = !archive && format === 'slideshow' && TFB.homeMedia.photos(b).length
-      ? TFB.homeMedia.slideshow(photoStudio, b, ref => images[ref] || ref, b.animationStart || 'auto')
+      ? TFB.homeMedia.slideshow(photoStudio, b, ref => images[ref] || ref, b.animationStart || 'auto', 'lazy', Boolean(b.sourceHomeId))
       : compactCollage
       ? `<div class="news-compact-collage">${photoDisplay(b, refs.slice(0, 4), format, 'gallery-open')}</div>`
       : !archive && photoDisplays.has(format) && refs.length
@@ -1000,7 +1000,7 @@
       const media = { id:block.id, title:block.title, images:refs, animationStart:photos.animationStart || 'manual' };
       const imageOf = ref => images[ref] || TFB.clubArchive?.mediaUrl?.(ref) || ref;
       return `<div class="story-photo-presentation ${mode}">${mode === 'carousel'
-        ? TFB.homeMedia.cover(media, '', imageOf, false)
+        ? TFB.homeMedia.cover(media, '', imageOf, false, true)
         : TFB.homeMedia.slideshow(photoStudio, media, imageOf, media.animationStart, 'lazy', true)}</div>`;
     }
     if (mode === 'gallery') return photoDisplay(block, refs, mode, 'collage-open');
@@ -1106,7 +1106,7 @@
     if (['home', 'aktuell'].includes(key) && section === 'alle') { editing = null; return contentOverview(key); }
     if (key === 'aktuell' && preview?.page === 'aktuell') {
       const { draft, tab } = preview;
-      if (!photoStudio && showInlineCarousel(draft)) photoStudio = await import('./chat-media.js?v=20261114-detail-formats-1');
+      if (!photoStudio && showInlineCarousel(draft)) photoStudio = await import('./chat-media.js?v=20261114-auto-photo-fit-1');
       const article = { ...draft, title: draft.title || 'Ohne Überschrift', date: draft.date || (draft._new ? today() : '') };
       return `<section class="news-draft-preview"><p class="muted small">Vorschau · ${tab === 'sub' ? 'Artikelansicht' : 'News-Übersicht'}</p>
         ${tab === 'sub' ? await newsArticleDetail(article, false, true) : `<div class="news-preview-card">${homeOrbit(article) ? mediaNewsPost(article) : newsPost(article, null, false, true)}</div>`}</section>`;
@@ -1118,7 +1118,7 @@
       try { id = decodeURIComponent((section === 'beitrag' ? parts[2] : section) || ''); } catch (_) { id = ''; }
       const article = site.pages.aktuell.blocks.find(b => b.id === id);
       if (article && parts[2] === 'fotos') {
-        if (!photoStudio && showInlineCarousel(article)) photoStudio = await import('./chat-media.js?v=20261114-detail-formats-1');
+        if (!photoStudio && showInlineCarousel(article)) photoStudio = await import('./chat-media.js?v=20261114-auto-photo-fit-1');
         return albumDetail(id, 'aktuell');
       }
       if (article?.archived) return newsArticleDetail(article);
@@ -1133,16 +1133,16 @@
     if (key === 'home' && section && location.hash.split('/')[2] === 'fotos' && !homeBlocks().some(b => b.id === section)) {
       const moved = site.pages.aktuell.blocks.find(b => b.sourceHomeId === section);
       if (moved) {
-        if (!photoStudio && showInlineCarousel(moved)) photoStudio = await import('./chat-media.js?v=20261114-detail-formats-1');
+        if (!photoStudio && showInlineCarousel(moved)) photoStudio = await import('./chat-media.js?v=20261114-auto-photo-fit-1');
         return albumDetail(section, 'aktuell');
       }
     }
     if (key === 'aktuell' && !photoStudio && site.pages.aktuell.blocks.some(b => !b.archived && showInlineCarousel(b))) {
-      photoStudio = await import('./chat-media.js?v=20261114-detail-formats-1');
+      photoStudio = await import('./chat-media.js?v=20261114-auto-photo-fit-1');
     }
     if (key === 'aktuell' && site.pages.aktuell.deleted) return '<section class="card"><h1>Seite entfernt</h1><a class="btn" href="#club/archiv">Zum Clubarchiv</a></section>';
     if (key === 'home' && !photoStudio && (site.pages.home.blocks.some(showInlineCarousel) || (preview && showInlineCarousel(preview.draft)))) {
-      photoStudio ||= await import('./chat-media.js?v=20261114-detail-formats-1');
+      photoStudio ||= await import('./chat-media.js?v=20261114-auto-photo-fit-1');
     }
     if (key === 'home' && preview?.tab === 'album') return albumDetail(preview.id);
     if (key === 'home' && preview && preview.tab === 'sub') return featureDetail(preview.id);
@@ -1841,7 +1841,7 @@
     const photos = (post.images || []).filter(ref => images[ref] || /^assets\//.test(ref));
     const editSlideshow = photos.length > 1 && (!post.designs ||
       (post.designs.length > 1 && !post.designs.some(slide => slide.ref.startsWith('vid:'))));
-    const gallery = (post.designs || photos.length > 1) && await import('./chat-media.js?v=20261114-detail-formats-1').then(studio =>
+    const gallery = (post.designs || photos.length > 1) && await import('./chat-media.js?v=20261114-auto-photo-fit-1').then(studio =>
       studio.publishedGallery(post.designs ? post : {...post, designs:photos.map(ref => studio.mediaDesign(ref,16,9))}, ref => images[ref] || ref));
     const carousel = post.photoView === 'carousel';
     const slideshow = post.photoView === 'slideshow';
@@ -2190,7 +2190,7 @@
         disconnect.observe(document.getElementById('sheet-root'), {childList: true, subtree: true});
         const progress = form.querySelector('[data-video-progress]');
         try {
-          const studio = scope === 'club' ? await import('./chat-media.js?v=20261114-detail-formats-1') : null;
+          const studio = scope === 'club' ? await import('./chat-media.js?v=20261114-auto-photo-fit-1') : null;
           for (const file of files) {
             if (!form.isConnected) return;
             if (file.type.startsWith('video/') || /\.(mov|mp4|m4v|webm)$/i.test(file.name)) {
@@ -2243,7 +2243,7 @@
             delete media.file;
           }
           const slideshowLayers = hasSlideshow() ? draft.slideshowLayers : [];
-          const studio = draft.designed || slideshowLayers.length ? await import('./chat-media.js?v=20261114-detail-formats-1') : null;
+          const studio = draft.designed || slideshowLayers.length ? await import('./chat-media.js?v=20261114-auto-photo-fit-1') : null;
           const payload = {title:draft.title,text:draft.text,authorMode:draft.authorMode,alsoTeams:draft.alsoTeams,dots:draft.dots,
             images:draft.media.filter(media => !media.ref.startsWith('vid:')).map(media => media.ref),
             designs:studio ? draft.media.map(media => media.design || studio.mediaDesign(media.ref,16,9)) : [],
@@ -2864,17 +2864,12 @@
         ${current ? `<p class="ed-hint">${current[0] === 'orbit'
           ? (hasPublishedDetail(draft) ? 'Die Unterseite zeigt dieselben Fotos als Diashow.' : 'Das Karussell läuft direkt auf Home. Eine Unterseite kannst du separat anlegen.')
           : 'Die Diashow lässt sich direkt auf Home abspielen.'}</p>
-          ${photoStartField('animationStart', draft.animationStart || 'auto', current[1] + ' automatisch starten')}
-          ${legacyMedia ? legacyMedia.entries.map((entry, i) => photoRatioField('sharedPhotoFormat' + i, entry.format, legacyMedia.entries.length > 1 ? i + 1 : 0)).join('') : photoRatioField('photoFormat', draft.photoFormat)}`
+          ${photoStartField('animationStart', draft.animationStart || 'auto', current[1] + ' automatisch starten')}`
           : `<p class="ed-hint">${tooManyPhotos
             ? `Wähle höchstens ${carouselLimit()} Fotos, um ein Karussell oder eine Diashow anzulegen.`
             : `Bis zu ${carouselLimit()} Fotos. Karussell und Diashow laufen direkt auf Home.`}</p>`}
       </fieldset>`;
     };
-    const photoRatioField = (name, value, group = 0) => `<label class="field"><span>Format der Diashow${group ? ` · Fotogruppe ${group}` : ''}</span><select name="${name}">
-      ${['4:5','9:16','16:9','5:4'].map(format => `<option${(value || '4:5') === format ? ' selected' : ''}>${format}</option>`).join('')}
-    </select></label>`;
-
     const body = () => {
       switch (homeFeature ? 'feature' : draft.type) {
         case 'feature': {
@@ -3494,9 +3489,8 @@
         if (f.textPosition) draft.textPosition = f.textPosition.value === 'above' ? 'above' : 'below';
       }
       if (f.photoDisplay) draft.photoDisplay = f.photoDisplay.value;
-      if (f.photoFormat) draft.photoFormat = f.photoFormat.value;
       if (legacyMedia) {
-        const names = {kicker:'Kicker', title:'Title', subtitle:'Subtitle', date:'Date', instagramUrl:'Instagram', format:'PhotoFormat'};
+        const names = {kicker:'Kicker', title:'Title', subtitle:'Subtitle', date:'Date', instagramUrl:'Instagram'};
         legacyMedia.entries.forEach((entry, i) => {
           for (const [key, suffix] of Object.entries(names)) {
             if (f['shared' + suffix + i]) entry[key] = f['shared' + suffix + i].value.trim();

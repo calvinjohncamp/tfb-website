@@ -448,7 +448,7 @@
     const active = TFB.kioskActive();
     return `<div class="kiosk-tools kiosk-admin-tools">
       <div class="kiosk-availability" role="group" aria-label="Kiosk-Status">
-        ${[[true, 'Aktiv'], [false, 'Inaktiv']].map(([value,label]) => `<button type="button" class="btn small" data-action="kiosk-toggle-availability" data-active="${value}" aria-pressed="${active === value}"><span aria-hidden="true">${active === value ? '✓' : ''}</span>${label}</button>`).join('')}
+        ${[[true, 'Kiosk aktiv'], [false, 'Kiosk inaktiv']].map(([value,label]) => `<button type="button" class="btn small" data-action="kiosk-toggle-availability" data-active="${value}" aria-pressed="${active === value}"><span aria-hidden="true">${active === value ? '✓' : ''}</span>${label}</button>`).join('')}
       </div>
       <a class="btn small" href="#produktbibliothek">Produktbibliothek</a>
     </div>`;
@@ -527,7 +527,7 @@
       if (request !== viewRender) return;
       if (view === 'kiosk' && !TFB.kioskActive()) {
         $view.innerHTML = isEditing()
-          ? `<section class="card"><h1>Kiosk bearbeiten</h1>${kioskAvailabilityTools()}<p>Der Kiosk ist ausgeblendet. Digitale Bestellungen sind gesperrt.</p><button type="button" class="btn" data-action="edit-done">Fertig</button></section>`
+          ? `<section class="shared-kiosk-scope">${kioskAvailabilityTools()}<div class="editbar"><div><strong>Kiosk bearbeiten</strong><span>Der Kiosk ist ausgeblendet. Digitale Bestellungen sind gesperrt.</span></div><button type="button" class="btn primary" data-action="edit-done">Fertig</button></div></section>`
           : '<section class="card"><h1>Kiosk geschlossen</h1><p>Digitale Bestellungen sind derzeit pausiert.</p><a href="#home" class="btn">Zur Startseite</a></section>';
       } else if (KIOSK_AREA.includes(view)) {
         if (!state.member && view !== 'kiosk') { $view.innerHTML = viewHead(view==='strichliste'?'Strichliste':'Abrechnungen','Deine persönlichen Kioskdaten findest du nach der Anmeldung.',false)+'<button class="btn primary" data-action="login">Anmelden</button>'; return; }
@@ -537,7 +537,7 @@
         if(request!==viewRender)return;
         $view.innerHTML = '<div class="shared-kiosk-scope">'+body+'</div>' + shop;
         if (view === 'kiosk') {
-          if (isEditing()) $view.querySelector('.kiosk-main')?.insertAdjacentHTML('afterbegin', kioskAvailabilityTools());
+          if (isEditing()) $view.querySelector('.kiosk-layout')?.insertAdjacentHTML('beforebegin', kioskAvailabilityTools());
           const partner = $view.querySelector('.shared-kiosk-scope > .pbsp-slot');
           if (partner) $view.appendChild(partner);
         }

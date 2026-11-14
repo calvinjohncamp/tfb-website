@@ -274,3 +274,13 @@ a.editorial-link:focus-visible { outline: 2px solid var(--signal); outline-offse
 .story-photo-single img { display: block; width: auto; height: auto; max-width: 100%; max-height: 75vh; margin: auto; border-radius: 8px; }
 .story-photo-presentation.carousel .hm-orbit { min-height: 0; height: clamp(300px, 51vw, 600px); border-radius: 8px; }
 .story-photo-presentation.slideshow .hm-thumbs { justify-content: center; }
+
+/* Keep the orbit and its footer in a stable area sized for the photo set. */
+.site-page .feature > .hm-orbit[data-hm-fit-photos],
+.story-photo-presentation.carousel .hm-orbit[data-hm-fit-photos] {
+  width: 100%;
+  height: auto;
+  min-height: 0 !important;
+  aspect-ratio: clamp(.8, var(--hm-photo-ratio, 1), 2) !important;
+  align-self: center;
+}

@@ -270,15 +270,28 @@ function stage(slide, editing = false, fitPhoto = false, loading = '') {
   </div>`;
 }
 
+const originalPhotoRatios = new WeakMap();
 function fitSlideshowImage(image) {
-  if (image.naturalWidth && image.naturalHeight) {
-    const ratio = image.naturalWidth / image.naturalHeight;
-    image.closest('.cs-photo-frame')?.style.setProperty('--cs-photo-ratio', ratio);
-    if (image.closest('.cs-original-slides')) image.closest('.cs-stage')?.style.setProperty('--cs-ratio', ratio);
+  if (!image.naturalWidth || !image.naturalHeight) return;
+  const ratio = image.naturalWidth / image.naturalHeight;
+  image.closest('.cs-photo-frame')?.style.setProperty('--cs-photo-ratio', ratio);
+
+  const gallery = image.closest('.cs-original-slides');
+  if (!gallery) return;
+  let ratios = originalPhotoRatios.get(gallery);
+  if (!ratios) {
+    ratios = Array(gallery.querySelectorAll('[data-cs-published-page]').length).fill(0);
+    originalPhotoRatios.set(gallery, ratios);
   }
+  const slide = image.closest('[data-cs-published-page]');
+  const index = Number(slide?.dataset.csPublishedPage ?? image.closest('[data-cs-published-dot]').dataset.csPublishedDot);
+  ratios[index] = ratio;
+  const common = TFB.homeMedia.commonPhotoRatio(ratios);
+  if (common) gallery.style.setProperty('--cs-original-ratio', common);
 }
+const slideshowImages = '.cs-photo-frame .cs-media img, .cs-original-slides .hm-thumbs img';
 document.addEventListener('load', event => {
-  if (event.target.matches?.('.cs-photo-frame img:not(.cs-logo)')) fitSlideshowImage(event.target);
+  if (event.target.matches?.(slideshowImages)) fitSlideshowImage(event.target);
 }, true);
 
 function range(name, label, value, max = 100, min = 0, step = 1) {
@@ -425,7 +438,7 @@ const slideshowVisibility = new IntersectionObserver(entries => {
   }
 });
 function observeSlideshows(root) {
-  root.querySelectorAll('.cs-photo-frame .cs-media img').forEach(fitSlideshowImage);
+  root.querySelectorAll(slideshowImages).forEach(fitSlideshowImage);
   for (const gallery of root.querySelectorAll('[data-cs-auto]')) slideshowVisibility.observe(gallery);
 }
 function selectPublished(gallery, index) {
@@ -822,7 +835,7 @@ function openPublishedViewer(gallery, button, fromStart = false) {
   document.body.append(dialog);
   dialog.showModal();
   observeVideoPreview(copy);
-  if (slideshow) observeSlideshows(dialog);
+  if (slideshow || copy.classList.contains('cs-original-slides')) observeSlideshows(dialog);
 }
 function openMobileVideo(gallery, button) {
   const screen = button.closest('.cs-screen');
