@@ -154,3 +154,25 @@ test('only the creating admin can delete active articles, and the archive stays 
  assert.equal((await save(f,[change('page:aktuell',5,{blocks:[]})])).status,403);
  assert.equal((await save(f,[change('page:aktuell',5,{blocks:[{...archived,archived:true,title:'Versuch'}]})])).status,403);
 });
+
+test('verified older Home articles retain their own author and deletion permissions', async () => {
+ const f = await setup();
+ f.env.DB.sqlite.prepare('UPDATE members SET is_admin=1 WHERE id=?').run(f.otherId);
+ const idea = {id:'b-457826b0-1ea5-4e36-9781-247da537c072',type:'feature',title:'Eine Idee nimmt Gestalt an.'};
+ const oktoberfest = {id:'b-mw9qi1yd',type:'gallery',title:'Oktoberfest'};
+ const historic = {id:'h-50',type:'feature',title:'50 Jahre Tennisfreunde'};
+ const blocks = [idea,oktoberfest,historic];
+ assert.equal((await save(f,[change('page:home',0,{blocks}),change('page:aktuell',0,{blocks:[]})])).status,200);
+ const history = f.env.DB.sqlite.prepare("INSERT INTO cms_history (id,revision,created_at,author,label,kind,object_key) VALUES (?,?,?,?,?,'edit','')");
+ history.run('first-admin',57,'2026-11-07T09:54:05.080Z',f.admin.id,'Inhalte gespeichert');
+ history.run('second-admin',86,'2026-11-09T20:53:14.973Z',f.otherId,'Inhalte gespeichert');
+ const read = token => f.call('/admin/site',undefined,token);
+ const edit = (token, changes) => f.call('/admin/site/commit',{id:crypto.randomUUID(),changes},token);
+ assert.deepEqual((await read(f.adminToken)).body.documents['page:home'].value.blocks.map(b=>b.editorialAuthor),[f.admin.id,f.otherId,undefined]);
+ assert.ok((await f.call('/public/site')).body.documents['page:home'].value.blocks.every(b=>!b.editorialAuthor));
+ assert.equal((await edit(f.otherToken,[change('page:home',1,{blocks:[oktoberfest,historic]})])).status,403);
+ assert.equal((await edit(f.adminToken,[change('page:home',1,{blocks:[idea,historic]})])).status,403);
+ assert.equal((await edit(f.adminToken,[change('page:home',1,{blocks:[idea,oktoberfest]})])).status,403);
+ assert.equal((await edit(f.otherToken,[change('page:home',1,{blocks:[idea,historic]})])).status,200);
+ assert.equal((await edit(f.adminToken,[change('page:home',2,{blocks:[historic]})])).status,200);
+});

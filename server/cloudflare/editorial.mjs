@@ -49,7 +49,7 @@ export async function editorialState(env,admin=false,attempt=0){
  const rows=(await env.DB.prepare('SELECT key,revision,payload FROM cms_documents ORDER BY key').all()).results;
  if(!rows.length)fail(503,'Die zentrale Redaktion wird eingerichtet. Bitte den bisherigen Browserstand behalten.');
  const raw=Object.fromEntries(rows.map(row=>[row.key,{revision:row.revision,value:JSON.parse(row.payload)}]));
- if(admin)await legacyTestAuthor(env,raw);
+ if(admin)await restoreLegacyArticleAuthors(env,raw);
  const projected=await publicDocuments(env,raw),documents=admin?raw:projected;
  const media=(await env.DB.prepare('SELECT m.ref,m.mime,m.size,m.hash FROM cms_media m '+(admin?'':'JOIN cms_public_media p ON p.ref=m.ref')).all()).results;
  const revision=(await env.DB.prepare('SELECT revision FROM cms_head WHERE id=1').first()).revision;
@@ -96,11 +96,26 @@ const editorialTypes = new Set(['feature', 'post', 'gallery', 'collage', 'carous
 const articleId = /^b-[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i;
 const legacyTestId = 'b-be4ed120-57fb-45f4-9666-2d5205f3ef34';
 
-async function legacyTestAuthor(env, documents) {
- const test = documents['page:aktuell']?.value?.blocks?.find(block => block.id === legacyTestId);
- if (!test || test.editorialAuthor || test.createdAt !== '2026-11-14T08:26:11.204Z') return;
- const edit = await env.DB.prepare("SELECT author FROM cms_history WHERE revision=124 AND kind='edit' AND created_at='2026-11-14T08:26:15.328Z'").first();
- if (edit) test.editorialAuthor = edit.author;
+// These edits were matched to the articles in the saved redaction snapshots.
+const legacyHomeCreations = [
+ [57, '2026-11-07T09:54:05.080Z', ['b-457826b0-1ea5-4e36-9781-247da537c072', 'b-mw6709j0']],
+ [86, '2026-11-09T20:53:14.973Z', ['b-mw9qi1yd']],
+ [87, '2026-11-13T04:23:01.350Z', ['b-mwegtef2']],
+];
+
+async function restoreLegacyArticleAuthors(env, documents) {
+ const home = documents['page:home']?.value?.blocks || [];
+ const news = documents['page:aktuell']?.value?.blocks || [];
+ const test = news.find(block => block.id === legacyTestId && !block.editorialAuthor && block.createdAt === '2026-11-14T08:26:11.204Z');
+ const fromHome = [...home, ...news.filter(block => block.sourceHomeId === block.id && !block.archived)];
+ const restores = legacyHomeCreations.map(([revision, at, ids]) => [
+  revision, at, fromHome.filter(block => ids.includes(block.id) && !block.editorialAuthor),
+ ]);
+ if (test) restores.push([124, '2026-11-14T08:26:15.328Z', [test]]);
+ await Promise.all(restores.filter(([, , blocks]) => blocks.length).map(async ([revision, at, blocks]) => {
+  const edit = await env.DB.prepare("SELECT author FROM cms_history WHERE revision=? AND kind='edit' AND created_at=?").bind(revision, at).first();
+  if (edit?.author) for (const block of blocks) block.editorialAuthor = edit.author;
+ }));
 }
 
 function enforceArticleOwnership(old, changes, member) {
