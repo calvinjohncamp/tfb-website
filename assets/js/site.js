@@ -740,7 +740,7 @@
   // ---------- Unterseite eines Home-Themas („Mehr erfahren“) ----------
   const hasDetailContent = more => Boolean(more && ((more.text || '').trim() || (more.images || []).length || more.quote || more.links?.some(link => safeLink(link.url)) || (more.heroImages || []).length || more.sections?.some(section => section.text?.trim())));
   // The previous Home editor automatically enabled the empty music article's subpage.
-  const autoCreatedMusicDetail = b => b.id === 'b-afc9e12d-9bfb-4de4-a5ea-1fce455bb1e5' && homeOrbit(b)
+  const autoCreatedMusicDetail = b => b.id === 'b-afc9e12d-9bfb-4de4-a5ea-1fce455bb1e5'
     && b.navigation === 'none' && !hasDetailContent(b.more) && !b.detailLink?.label;
   const hasMore = b => hasDetailContent(b.more) || Boolean((b.mediaCollection || (homeOrbit(b) && b.detailEnabled === true)) && TFB.homeMedia.photos(b).length);
   const archiveHref = b => '#club/archiv/beitrag/' + encodeURIComponent('aktuell-' + b.id);
