@@ -2311,7 +2311,7 @@ h1, h2, h3, .event h3, .feature-body h2, .story-head h1, .post-body h3 { -webkit
 /* ===== Verabreden linksbündig wie die anderen Seiten ===== */
 @media (min-width: 1024px) {
   .view[data-view="treffen"] { max-width: none; margin: 0; }
-  .view[data-view="treffen"] > :not(.pbsp-slot) { max-width: 760px; }
+  .view[data-view="treffen"] > :not(.pbsp-slot, .tfb-admin-design) { max-width: 760px; }
 }
 
 @media (min-width: 640px) { .team-row .team-news-btn { width: min(270px, 100%); justify-content: center; white-space: normal; text-align: center; } }

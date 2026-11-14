@@ -14,6 +14,21 @@ try{
  await page.evaluate(async()=>{TFB.ui.state.member=TFB.api.attachDirectoryMember({id:'home-media-admin',firstName:'Home',lastName:'Test',isAdmin:true,active:true,email:'home@example.invalid',teams:[]});TFB.api.secureDirectory=true;TFB.api.mode='test';location.hash='#home';await TFB.ui.renderView('home');});
  if(await page.evaluate(()=>TFB.ui.state.member?.adminHidden))await page.locator('[data-action="admin-toggle"]').click();
 
+ // The global admin row can use the page width on Dating 2.0.
+ await page.evaluate(async()=>{location.hash='#treffen';await TFB.ui.renderView('treffen');});
+ const adminBar=page.locator('#view[data-view=treffen] .tfb-admin-links');
+ await adminBar.waitFor();
+ await page.evaluate(()=>document.fonts.ready);
+ for (const width of [1440, 1200, 390]) {
+   await page.setViewportSize({width,height:1050});
+   const layout=await adminBar.evaluate(bar=>({
+     rows:new Set([...bar.children].map(button=>button.getBoundingClientRect().top)).size,
+     overflow:document.documentElement.scrollWidth>innerWidth,
+   }));
+   if(width>=1200) assert.equal(layout.rows,1);
+   assert.equal(layout.overflow,false);
+ }
+ await page.setViewportSize({width:1440,height:1050});
  const image='assets/images/board/kai-eichmann.jpg';
  await page.evaluate(async image=>{const site=await TFB.api.site();site.pages.home.blocks=[{id:'home-source',type:'feature',title:'Unsere Signature-Umkleide',kicker:'Konzept',subtitle:'Ausblick',text:'Originaltext bleibt.',mediaButtonLabel:'Zeig her!',mediaCollection:{entries:[{id:'entry',title:'Nach dem Match',kicker:'Signature',subtitle:'Wohlfühlen',text:'Originaler Detailtext',date:'2026-11-07',format:'4:5',images:Array(5).fill(image),instagramUrl:'https://instagram.com/p/example'}]}}];site.pages.aktuell.blocks=[{id:'dates-head',type:'heading',title:'Save the Date'},{id:'future',type:'event',date:'2027-05-15',title:'Späterer Termin'},{id:'news-head',type:'heading',title:'News'},{id:'old-news',type:'post',date:'2026-07-04',title:'Ältere News',text:'Bleibt erhalten'}];await TFB.api.saveSite(site);await TFB.refreshSite(true);location.hash='#aktuell';await TFB.ui.renderView('aktuell');},image);
  const tools=page.locator('.newsroom-tools');
