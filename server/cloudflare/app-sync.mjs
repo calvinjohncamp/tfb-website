@@ -140,7 +140,9 @@ export async function syncRevision(env,member) {
   const members=await env.DB.prepare('SELECT COUNT(*) n,SUM(active) active,MAX(updated_at) updated FROM members').first();
   const teams=(await env.DB.prepare('SELECT team_key FROM member_teams WHERE member_id=? ORDER BY team_key').bind(member.id).all()).results.map(r=>r.team_key);
   const credits=await env.DB.prepare('SELECT COUNT(*) n,COALESCE(SUM(amount_cents),0) total FROM kiosk_adjustments').first();
-  return `${credits.n}:${credits.total}:${row.n}:${row.total}:${member.updated_at}:${members.n}:${members.active}:${members.updated}:${teams.join(',')}:${berlinDay()}:tally3`;
+  // Purchases forwarded from the Padel app must refresh the member's coaster as well.
+  const imported=await env.DB.prepare("SELECT COUNT(*) n FROM kiosk_entries WHERE origin='padel_app' AND member_id=?").bind(member.id).first();
+  return `${imported.n}:${credits.n}:${credits.total}:${row.n}:${row.total}:${member.updated_at}:${members.n}:${members.active}:${members.updated}:${teams.join(',')}:${berlinDay()}:tally3`;
 }
 export async function syncFaces(env,member,ids) {
   if(!Array.isArray(ids)||ids.length>100||ids.some(id=>typeof id!=='string'||id.length>120))fail(400,'Ungültige Profilabfrage.');
@@ -181,6 +183,8 @@ export async function syncState(env, member) {
   const credits=(await env.DB.prepare('SELECT a.entry_id,SUM(a.amount_cents) cents FROM kiosk_adjustments a JOIN kiosk_entries e ON e.id=a.entry_id WHERE e.member_id=? GROUP BY a.entry_id').bind(member.id).all()).results;
   const creditMap=new Map(credits.map(r=>[r.entry_id,r.cents]));
   const own=c.rows.filter(r=>r.kind==='catalog'||r.owner_id===member.id&&(['account','item','media'].includes(r.kind)||r.deleted&&['post','comment'].includes(r.kind))).map(r=>r.kind==='item'?{...r,value:{...r.value,creditCents:creditMap.get(r.id)||0}}:r);
+  const imported=(await env.DB.prepare("SELECT * FROM kiosk_entries WHERE origin='padel_app' AND member_id=?").bind(member.id).all()).results;
+  for(const i of imported)own.push({kind:'item',id:i.id,owner_id:member.id,scope:'private',revision:1,deleted:false,value:{id:i.id,memberId:member.id,productId:i.product_id,productName:i.product_name,priceCents:i.price_cents,creditCents:creditMap.get(i.id)||0,createdAt:i.created_at,status:'open',unit:i.unit,kind:i.product_kind,origin:'padel_app'}});
   const media=c.rows.filter(r=>r.kind==='media'&&!r.deleted&&mediaIds.has(r.id)&&r.owner_id!==member.id);
   const people=(await env.DB.prepare('SELECT id,first_name,last_name FROM members WHERE active=1').all()).results;
   const visibleIds=new Set([member.id,...planning.memberIds,...posts.map(r=>r.owner_id),...comments.map(r=>r.owner_id)]);
