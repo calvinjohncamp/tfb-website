@@ -14,17 +14,23 @@
     return `<div class="feature-media hm-orbit" data-hm-orbit data-hm-start="${block.animationStart==='manual'?'manual':'auto'}" aria-label="Karussell zu ${esc(block.title)}"><div class="hm-stage">${refs.map((ref,i) => `<a class="hm-card" href="${esc(href)}" aria-label="Bild ${i+1}: Unterseite öffnen">${image(ref,imageOf,entry.title,i===0&&homeLead!==false,homeLead!==null&&(!homeLead||i>0))}</a>`).join('')}</div><div class="hm-footer"><a class="hm-caption" href="${esc(href)}"><span>${esc(entry.title)}</span></a><button type="button" class="hm-zoom-button" aria-label="Karussell vergrößern" title="Karussell vergrößern">${magnifier}</button><button type="button" class="hm-pause" aria-label="${manual?'Bildbewegung starten':'Bildbewegung pausieren'}" aria-pressed="${manual}"${refs.length<2?' hidden':''}>${playbackIcon(!manual)}</button></div></div>`;
   }
   async function detail(block, { imageOf, paragraphs, renderTextSections, admin, page='home', backHref, links = '' }) {
-    const studio = await import('./chat-media.js?v=20261114-home-editor-1');
-    const collection = block.mediaCollection, list = entries(block), count = collection.showAll ? list.length : 6;
+    const studio = await import('./chat-media.js?v=20261114-one-slideshow-1');
+    const list = entries(block);
     const sizes = {'4:5':[4,5],'9:16':[9,16],'16:9':[16,9],'5:4':[5,4]};
-    const markup = (entry,index) => {
+    const designs = list.flatMap(entry => {
       const [w,h] = sizes[entry.format] || sizes['4:5'];
-      const gallery = studio.publishedGallery({id:`home-media-${block.id}-${entry.id}`,photoView:'carousel',designs:entry.images.map(ref=>studio.mediaDesign(ref,w,h))},ref=>source(ref,imageOf)).replace(/<img(?![^>]*\bloading=)/g, '<img loading="lazy" decoding="async"');
+      return entry.images.map(ref => studio.mediaDesign(ref,w,h));
+    });
+    const gallery = designs.length ? studio.publishedGallery({
+      id: `home-media-${block.id}`, photoView: 'carousel', animationStart: 'auto', compactControls: true, photoSlideshow: true, designs,
+    }, ref => source(ref,imageOf)).replace(/<img(?![^>]*\bloading=)/g, '<img loading="lazy" decoding="async"') : '';
+    const markup = (entry,index) => {
       const url = link(entry.instagramUrl);
       const date = /^\d{4}-\d{2}-\d{2}$/.test(entry.date || '') ? new Date(entry.date+'T12:00:00').toLocaleDateString('de-DE',{day:'numeric',month:'long',year:'numeric'}) : '';
-      return `<article class="hm-entry"${index>=count?' hidden':''}><div class="hm-entry-gallery">${gallery}<div class="hm-thumbs" role="group" aria-label="Bild auswählen">${entry.images.map((ref,i)=>`<button type="button" data-hm-thumb="${i}" aria-label="Bild ${i+1} anzeigen" aria-pressed="${i===0}">${image(ref,imageOf,`${entry.title} · Bild ${i+1}`)}</button>`).join('')}</div></div><div class="hm-entry-copy"><p class="hm-entry-date">${date?`<time datetime="${esc(entry.date)}">${esc(date)}</time> · `:''}${entry.images.length} Bildseiten</p>${(entry.kicker ?? block.kicker) ? `<p class="feature-kicker hm-entry-kicker"><span class="signature-highlight">${esc(entry.kicker ?? block.kicker)}</span></p>` : ''}<${index===0?'h1':'h2'}>${esc(entry.title)}</${index===0?'h1':'h2'}>${entry.subtitle?`<p class="hm-entry-intro"><span class="signature-highlight">${esc(entry.subtitle)}</span></p>`:''}${entry.sections?.some(section => section.text?.trim()) ? renderTextSections(entry.sections) : paragraphs(block.mediaSingle ? entry.text || block.text : entry.text)}${url?`<a class="more-link" href="${esc(url)}" target="_blank" rel="noopener noreferrer">Auf Instagram ansehen ↗</a>`:''}</div></article>`;
+      return `<section class="hm-entry-copy"><p class="hm-entry-date">${date?`<time datetime="${esc(entry.date)}">${esc(date)}</time> · `:''}${entry.images.length} Bildseiten</p>${(entry.kicker ?? block.kicker) ? `<p class="feature-kicker hm-entry-kicker"><span class="signature-highlight">${esc(entry.kicker ?? block.kicker)}</span></p>` : ''}<${index===0?'h1':'h2'}>${esc(entry.title)}</${index===0?'h1':'h2'}>${entry.subtitle?`<p class="hm-entry-intro"><span class="signature-highlight">${esc(entry.subtitle)}</span></p>`:''}${entry.sections?.some(section => section.text?.trim()) ? renderTextSections(entry.sections) : paragraphs(block.mediaSingle ? entry.text || block.text : entry.text)}${url?`<a class="more-link" href="${esc(url)}" target="_blank" rel="noopener noreferrer">Auf Instagram ansehen ↗</a>`:''}</section>`;
     };
-    return `<section class="hm-collection"><div class="story-tools">${admin?`<button type="button" class="view-close" data-action="feature-edit" data-page="${esc(page)}" data-id="${esc(block.id)}" aria-label="Unterseite bearbeiten">${TFB.ui.icon.pencil}</button>`:''}<a class="view-close" href="${esc(backHref||'#'+page)}" aria-label="${backHref?'Zurück zum Clubarchiv':page==='home'?'Zurück zur Startseite':'Zurück zu Aktuell'}">${TFB.ui.icon.close}</a></div>${list.map(markup).join('')}${links ? `<div class="story-links">${links}</div>` : ''}${list.length>count?`<p class="hm-all"><button type="button" class="btn" data-hm-all>Alle ${list.length} Karussells anzeigen</button></p>`:''}</section>`;
+    return `<section class="hm-collection"><div class="story-tools">${admin?`<button type="button" class="view-close" data-action="feature-edit" data-page="${esc(page)}" data-id="${esc(block.id)}" aria-label="Unterseite bearbeiten">${TFB.ui.icon.pencil}</button>`:''}<a class="view-close" href="${esc(backHref||'#'+page)}" aria-label="${backHref?'Zurück zum Clubarchiv':page==='home'?'Zurück zur Startseite':'Zurück zu Aktuell'}">${TFB.ui.icon.close}</a></div>${gallery ? `<article class="hm-entry"><div class="hm-entry-gallery">${gallery}</div><div>${list.map(markup).join('')}</div></article>` : ''}
+      ${links ? `<div class="story-links">${links}</div>` : ''}`;
   }
   // Blend complete paint orders on one stable drawing surface. Every picture is
   // opaque in both orders: exposed edges remain visible while overlap changes.
@@ -175,23 +181,18 @@
   document.addEventListener('click',e=>{const trigger=e.target.closest('.hm-zoom-button');if(trigger){e.preventDefault();e.stopPropagation();openZoom(trigger);}});
   window.addEventListener('hashchange',()=>closeZoom(false));
 
-  function mountThumbs(node) {
-    const gallery=node.querySelector('.cs-carousel'),thumbs=[...node.querySelectorAll('[data-hm-thumb]')];
-    if(!gallery)return {node,destroy(){}};
-    const sync=()=>{const current=Number(gallery.querySelector('[data-cs-published-page]:not([hidden])')?.dataset.csPublishedPage||0);thumbs.forEach((b,i)=>b.setAttribute('aria-pressed',String(i===current)));};
-    thumbs.forEach(b=>b.addEventListener('click',()=>gallery.querySelector(`[data-cs-published-dot="${b.dataset.hmThumb}"]`)?.click()));
-    const observer=new MutationObserver(sync);observer.observe(gallery,{subtree:true,attributes:true,attributeFilter:['hidden']});sync();return {node,destroy(){observer.disconnect();}};
-  }
   let queued=false;
-  function hydrate(){queued=false;for(const c of controllers)if(!c.node.isConnected){c.destroy();controllers.delete(c);}document.querySelectorAll('[data-hm-orbit],.hm-entry').forEach(node=>{if(mounted.has(node))return;mounted.add(node);controllers.add(node.matches('[data-hm-orbit]')?mountOrbit(node):mountThumbs(node));});}
+  function hydrate(){queued=false;for(const c of controllers)if(!c.node.isConnected){c.destroy();controllers.delete(c);}document.querySelectorAll('[data-hm-orbit]').forEach(node=>{if(mounted.has(node))return;mounted.add(node);controllers.add(mountOrbit(node));});}
   new MutationObserver(()=>{if(!queued){queued=true;requestAnimationFrame(hydrate);}}).observe(document.getElementById('app'),{childList:true,subtree:true});
-  document.addEventListener('click',e=>{const all=e.target.closest('[data-hm-all]');if(all){all.closest('.hm-collection').querySelectorAll('.hm-entry[hidden]').forEach(el=>el.hidden=false);all.parentElement.remove();}});
 
   TFB.resumeHomeMedia = () => { for (const controller of controllers) controller.refresh?.(); };
 
   function fresh() { return {title:'Einblicke in unser Projekt.',intro:'',entries:[]}; }
   function openEditor(original, {imageOf,uploadFiles,cover4kField,links,onSave,onDelete,deleteArticle,editor,startTab,page='home'}) {
     const ui=TFB.ui,draft=structuredClone(original),single=page==='aktuell'&&draft.mediaSingle;
+    if (!draft.mediaCollection.entries.length) draft.mediaCollection.entries.push({
+      id: crypto.randomUUID(), title: draft.title || '', images: [], format: '4:5',
+    });
     let tab=startTab==='sub'?'posts':'home',busy=false,armed=false;
     const fieldOwner = name => {
       const match = /^entry_(\d+)_section_(\d+)$/.exec(name);
@@ -206,9 +207,10 @@
       field('Instagram-Link',`entry_${i}_instagramUrl`,entry.instagramUrl);
     let linksOpen = Boolean(draft.link?.url || draft.link2?.url);
     const limit = TFB.newsroom.CAROUSEL_LIMIT;
+    const photoCount = () => draft.mediaCollection.entries.reduce((count, entry) => count + entry.images.length, 0);
     const field = (label, name, value, type = 'text') => `<label class="field"><span>${label}</span><input type="${type}" name="${name}" value="${esc(value)}"></label>`;
     const formats=(entry,i)=>`<label class="field"><span>Bildformat</span><select name="entry_${i}_format">${['4:5','9:16','16:9','5:4'].map(format=>`<option${entry.format===format?' selected':''}>${format}</option>`).join('')}</select></label>`;
-    const pictures=(entry,i)=>`<div class="gallery-edit">${entry.images.map((ref,j)=>`<div class="gallery-thumb">${image(ref,imageOf)}<button type="button" data-hm-remove="${i}:${j}" aria-label="Bild entfernen">×</button><span class="thumb-move"><button type="button" data-hm-move="${i}:${j}:-1"${j===0?' disabled':''} aria-label="Bild nach vorne">‹</button><button type="button" data-hm-move="${i}:${j}:1"${j===entry.images.length-1?' disabled':''} aria-label="Bild nach hinten">›</button></span></div>`).join('')}${entry.images.length < limit ? `<label class="gallery-add">${ui.icon.camera}<span>Bilder hinzufügen</span><input type="file" accept="image/*" multiple data-hm-upload="${i}" hidden></label>` : ''}</div>`;
+    const pictures=(entry,i)=>`<div class="gallery-edit">${entry.images.map((ref,j)=>`<div class="gallery-thumb">${image(ref,imageOf)}<button type="button" data-hm-remove="${i}:${j}" aria-label="Bild entfernen">×</button><span class="thumb-move"><button type="button" data-hm-move="${i}:${j}:-1"${j===0?' disabled':''} aria-label="Bild nach vorne">‹</button><button type="button" data-hm-move="${i}:${j}:1"${j===entry.images.length-1?' disabled':''} aria-label="Bild nach hinten">›</button></span></div>`).join('')}${photoCount() < limit ? `<label class="gallery-add">${ui.icon.camera}<span>Bilder hinzufügen</span><input type="file" accept="image/*" multiple data-hm-upload="${i}" hidden></label>` : ''}</div>`;
     function collect(){
       const form=document.querySelector('[data-hm-editor]');if(!form)return;
       for(const key of ['title','kicker','subtitle','text','mediaButtonLabel','date'])if(form.elements[key])draft[key]=form.elements[key].value.trim();
@@ -241,18 +243,14 @@
       const entries = draft.mediaCollection.entries;
       const details = () => entries.map((entry,i)=>`<section class="hm-edit-entry" data-hm-entry="${i}">
         ${single ? '<p class="ed-hint">Titel kommt aus der Übersicht. Ohne eigenen Inhalt erscheint hier der Kurztext.</p>' : `
-          ${entries.length > 1 ? `<h3>Karussell ${i+1}</h3>` : ''}
+          ${entries.length > 1 ? `<h3>Fotos und Text ${i+1}</h3>` : ''}
           ${field('Kleine Zeile darüber',`entry_${i}_kicker`,entry.kicker ?? draft.kicker)}
           ${field('Überschrift',`entry_${i}_title`,entry.title)}
           ${field('Unterüberschrift',`entry_${i}_subtitle`,entry.subtitle)}
           ${field('Datum',`entry_${i}_date`,entry.date,'date')}`}
         ${entryPhotos(entry,i)}
         <h3 class="editor-sub">Inhalt</h3>${contentFields(entry,i)}
-        ${single ? '' : `<div class="hm-entry-actions">
-          ${entries.length>1?`<button type="button" class="btn small" data-hm-entry-move="${i}:-1"${i===0?' disabled':''}>Nach oben</button>
-          <button type="button" class="btn small" data-hm-entry-move="${i}:1"${i===entries.length-1?' disabled':''}>Nach unten</button>`:''}
-          ${entries.length>1 ? `<button type="button" class="link" data-hm-entry-remove="${i}">Karussell entfernen</button>` : ''}</div>`}
-        </section>`).join('')+(single?'':'<button type="button" class="btn block" data-hm-add>Weiteres Karussell auf dieser Unterseite hinzufügen</button>');
+        </section>`).join('');
       ui.openSheet(`<form class="editor hm-editor" data-hm-editor novalidate>
         <h2>Karussell ${draft._new?'hinzufügen':'bearbeiten'}</h2>
         <div class="ed-tabs" role="tablist" aria-label="Ansicht bearbeiten">
@@ -276,15 +274,8 @@
         else if (b.dataset.linkkind) { links.switchTarget(draft, b.dataset.linkfor, b.dataset.linkkind === 'app'); render(); }
         else if (b.dataset.linkCrop) { links.crop(draft[b.dataset.linkCrop], b, render); }
         else if(b.dataset.hmTab){tab=b.dataset.hmTab;render();}
-        else if(b.hasAttribute('data-hm-add')){if(draft.mediaCollection.entries.length>=50)return;draft.mediaCollection.entries.push({id:crypto.randomUUID(),kicker:draft.kicker||'',title:'',subtitle:'',date:new Date().toISOString().slice(0,10),text:'',format:'4:5',images:[],instagramUrl:''});render();}
         else if(b.dataset.hmRemove){const[i,j]=b.dataset.hmRemove.split(':').map(Number);draft.mediaCollection.entries[i].images.splice(j,1);render();}
         else if(b.dataset.hmMove){const[i,j,d]=b.dataset.hmMove.split(':').map(Number),a=draft.mediaCollection.entries[i].images;[a[j],a[j+d]]=[a[j+d],a[j]];render();}
-        else if(b.dataset.hmEntryRemove){
-          const index=Number(b.dataset.hmEntryRemove), entry=entries[index];
-          if ((entry.images.length || entry.title?.trim() || entry.text?.trim()) && !confirm('Dieses Karussell mit seinen Fotos und Texten von der Unterseite entfernen?')) return;
-          entries.splice(index,1);render();
-        }
-        else if(b.dataset.hmEntryMove){const[i,d]=b.dataset.hmEntryMove.split(':').map(Number),a=draft.mediaCollection.entries;[a[i],a[i+d]]=[a[i+d],a[i]];render();}
         else if(b.hasAttribute('data-hm-delete')){if(!armed){armed=true;b.textContent='Archivieren bestätigen';return;}busy=true;try{await onDelete();ui.closeSheet();}catch(err){form.querySelector('.form-error').textContent=err.message;busy=false;}}
       });
       form.addEventListener('change',async event=>{
@@ -307,11 +298,10 @@
           return;
         }
         if(!input.matches('[data-hm-upload]')||!input.files.length)return;collect();
-        if(draft.mediaCollection.entries.reduce((sum,e)=>sum+e.images.length,0)+input.files.length>100){form.querySelector('.form-error').textContent='Pro Sammlung sind höchstens 100 Bilder möglich.';return;}
         const index=Number(input.dataset.hmUpload);
         const entry=draft.mediaCollection.entries[index];
-        if (entry.images.length + input.files.length > limit) {
-          form.querySelector('.form-error').textContent = `Ein Karussell kann höchstens ${limit} Fotos enthalten.`;
+        if (photoCount() + input.files.length > limit) {
+          form.querySelector('.form-error').textContent = `Die Diashow kann höchstens ${limit} Fotos enthalten.`;
           input.value = '';
           return;
         }
@@ -329,7 +319,7 @@
         }
         if(!draft.title){error.textContent='Bitte eine Hauptüberschrift eingeben.';return;}
         if(!draft.mediaCollection.entries.length||draft.mediaCollection.entries.some(e=>!e.title||!e.images.length)){if(tab!=='posts'){tab='posts';render();}
-          document.querySelector('[data-hm-editor] .form-error').textContent='Jedes Karussell braucht eine Überschrift und mindestens ein Bild.';return;}
+          document.querySelector('[data-hm-editor] .form-error').textContent='Bitte eine Überschrift und mindestens ein Foto für die Unterseite hinzufügen.';return;}
         if(draft.mediaCollection.entries.some(e=>e.instagramUrl&&!link(e.instagramUrl))){
           if(tab!=='posts'){tab='posts';render();}
           document.querySelector('[data-hm-editor] .form-error').textContent='Bitte einen gültigen Instagram-Link mit https:// eingeben.';

@@ -292,7 +292,7 @@ try{
  const collection = page.locator('[data-hm-editor]');
  await collection.locator('[data-hm-tab=posts]').click();
  await collection.locator('[data-hm-upload="0"]').setInputFiles(photos);
- await collection.getByText('Ein Karussell kann höchstens 15 Fotos enthalten.').waitFor();
+ await collection.getByText('Die Diashow kann höchstens 15 Fotos enthalten.').waitFor();
  assert.equal(await collection.locator('.gallery-thumb').count(),14);
  await page.locator('.sheet-close').click();
  const testCover = async ({ratio, heroCount=1, grid, width}) => {

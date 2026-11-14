@@ -297,6 +297,7 @@ export function publishedGallery(post, imageOf) {
   const carousel = post.photoView === 'carousel';
   const autoplay = carousel && post.animationStart === 'auto' && post.designs.length > 1 && !matchMedia('(prefers-reduced-motion: reduce)').matches;
   const slideshow = !carousel && post.designs.length > 1 && post.designs.every(slide => !slide.ref.startsWith('vid:'));
+  const playable = slideshow || autoplay || (post.photoSlideshow && post.designs.length > 1);
   const format = post.designs[0]?.format || '4 / 5';
   const arrow = direction => `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="${direction < 0 ? 'M15 5 8 12l7 7' : 'm9 5 7 7-7 7'}"/></svg>`;
   const navigation = carousel ? `<div class="cs-carousel-nav">
@@ -305,7 +306,10 @@ export function publishedGallery(post, imageOf) {
     <button type="button" data-cs-step="1" aria-label="Nächstes Bild"${post.designs.length < 2 ? ' disabled' : ''}>${arrow(1)}</button>
     <span class="cs-carousel-status" aria-live="polite" aria-atomic="true">Bild 1 von ${post.designs.length}</span>
   </div>` : pageDots(post.designs);
-  return `<div class="cs-published${carousel ? ' cs-carousel' : ''}" data-cs-post="${esc(post.id)}"${carousel ? ' tabindex="0" role="region" aria-label="Bilderkarussell"' : ''}${slideshow || autoplay ? ` data-cs-auto style="--cs-slideshow-ratio:${format}"` : ''}>
+  const thumbnails = post.photoSlideshow && post.designs.length > 1 ? `<div class="hm-thumbs" role="group" aria-label="Bild auswählen">
+    ${post.designs.map((slide, index) => `<button type="button" data-cs-published-dot="${index}" aria-label="Bild ${index + 1} anzeigen"${index === 0 ? ' aria-current="true"' : ''}><img loading="lazy" decoding="async" src="${esc(imageOf(slide.ref))}" alt=""></button>`).join('')}
+  </div>` : '';
+  return `<div class="cs-published${carousel ? ' cs-carousel' : ''}" data-cs-post="${esc(post.id)}"${carousel ? ` tabindex="0" role="region" aria-label="${post.photoSlideshow ? 'Diashow' : 'Bilderkarussell'}"` : ''}${playable ? ` data-cs-auto${post.photoSlideshow && !autoplay ? ' data-cs-manual' : ''} style="--cs-slideshow-ratio:${format}"` : ''}>
     ${post.dots === 'top' ? navigation : ''}
     <div class="cs-screens">
     ${post.designs.map((slide, index) => {
@@ -322,7 +326,8 @@ export function publishedGallery(post, imageOf) {
     ${slideshow && post.slideshowLayers?.length ? `<div class="cs-slideshow-text">${textLayersMarkup({layers:post.slideshowLayers,kind:'slideshow'})}</div>` : ''}
     </div>
     ${post.dots !== 'top' ? navigation : ''}
-    ${slideshow || autoplay ? `<button type="button" class="cs-slideshow" data-cs-slideshow aria-label="Bilder abspielen" aria-pressed="false">${playbackIcon(false)}</button>` : ''}
+    ${thumbnails}
+    ${playable ? `<button type="button" class="cs-slideshow" data-cs-slideshow aria-label="Bilder abspielen" aria-pressed="false">${playbackIcon(false)}</button>` : ''}
   </div>`;
 }
 
@@ -335,7 +340,7 @@ function slideshowState(gallery) {
   if (!slideshows.has(gallery)) {
     const pages = [...gallery.querySelectorAll('[data-cs-published-page]')];
     slideshows.set(gallery, {pages, duration:slideshowDuration(pages.length), text:gallery.querySelector('.cs-slideshow-text'),
-      button:gallery.querySelector('[data-cs-slideshow]'), index:pages.findIndex(page => !page.hidden), elapsed:0, frame:null, paused:false});
+      button:gallery.querySelector('[data-cs-slideshow]'), index:pages.findIndex(page => !page.hidden), elapsed:0, frame:null, paused:gallery.hasAttribute('data-cs-manual')});
   }
   return slideshows.get(gallery);
 }

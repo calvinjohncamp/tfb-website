@@ -786,7 +786,7 @@
     const back = archive ? '#club/archiv' : '#aktuell';
     if (block.type === 'event') return `<div class="site-page archive-reading">${ui().viewHead(esc(block.title), 'Termin', false)}${eventCard(block)}<a class="btn" href="${back}">Zurück</a></div>`;
     if (block.mediaCollection) return mediaDetail(block, 'aktuell', archive ? back : undefined, archive);
-    if (!photoStudio && showInlineCarousel(block)) photoStudio = await import('./chat-media.js?v=20261114-home-editor-1');
+    if (!photoStudio && showInlineCarousel(block)) photoStudio = await import('./chat-media.js?v=20261114-one-slideshow-1');
     return storyHtml({ ...block, text: block.showText === false ? '' : block.text, title: block.title || photoDisplays.get(block.type) || 'News', noPlaceholder: true }, {closeHref:back, backLabel:archive ? 'Zum Clubarchiv' : 'Zu Aktuell',
       gallery: photoTypes.includes(block.type) || photoDisplays.has(block.photoDisplay) ? photoDisplay(block, (block.images || []).filter(shownImage), block.photoDisplay || block.type, 'gallery-open') : '',
       linkPage: 'aktuell', topicHero: block.type === 'post' && (Boolean(block.sourceHomeId) || homePhotoRefs(block).length === 1),
@@ -1061,7 +1061,7 @@
     if (['home', 'aktuell'].includes(key) && section === 'alle') { editing = null; return contentOverview(key); }
     if (key === 'aktuell' && preview?.page === 'aktuell') {
       const { draft, tab } = preview;
-      if (!photoStudio && showInlineCarousel(draft)) photoStudio = await import('./chat-media.js?v=20261114-home-editor-1');
+      if (!photoStudio && showInlineCarousel(draft)) photoStudio = await import('./chat-media.js?v=20261114-one-slideshow-1');
       const article = { ...draft, title: draft.title || 'Ohne Überschrift', date: draft.date || (draft._new ? today() : '') };
       return `<section class="news-draft-preview"><p class="muted small">Vorschau · ${tab === 'sub' ? 'Artikelansicht' : 'News-Übersicht'}</p>
         ${tab === 'sub' ? await newsArticleDetail(article, false, true) : `<div class="news-preview-card">${newsPost(article, null, false, true)}</div>`}</section>`;
@@ -1073,7 +1073,7 @@
       try { id = decodeURIComponent((section === 'beitrag' ? parts[2] : section) || ''); } catch (_) { id = ''; }
       const article = site.pages.aktuell.blocks.find(b => b.id === id);
       if (article && parts[2] === 'fotos') {
-        if (!photoStudio && showInlineCarousel(article)) photoStudio = await import('./chat-media.js?v=20261114-home-editor-1');
+        if (!photoStudio && showInlineCarousel(article)) photoStudio = await import('./chat-media.js?v=20261114-one-slideshow-1');
         return albumDetail(id, 'aktuell');
       }
       if (article?.archived) return newsArticleDetail(article);
@@ -1088,16 +1088,16 @@
     if (key === 'home' && section && location.hash.split('/')[2] === 'fotos' && !homeBlocks().some(b => b.id === section)) {
       const moved = site.pages.aktuell.blocks.find(b => b.sourceHomeId === section);
       if (moved) {
-        if (!photoStudio && showInlineCarousel(moved)) photoStudio = await import('./chat-media.js?v=20261114-home-editor-1');
+        if (!photoStudio && showInlineCarousel(moved)) photoStudio = await import('./chat-media.js?v=20261114-one-slideshow-1');
         return albumDetail(section, 'aktuell');
       }
     }
     if (key === 'aktuell' && !photoStudio && site.pages.aktuell.blocks.some(b => !b.archived && showInlineCarousel(b))) {
-      photoStudio = await import('./chat-media.js?v=20261114-home-editor-1');
+      photoStudio = await import('./chat-media.js?v=20261114-one-slideshow-1');
     }
     if (key === 'aktuell' && site.pages.aktuell.deleted) return '<section class="card"><h1>Seite entfernt</h1><a class="btn" href="#club/archiv">Zum Clubarchiv</a></section>';
     if (key === 'home' && !photoStudio && (site.pages.home.blocks.some(showInlineCarousel) || (preview && showInlineCarousel(preview.draft)))) {
-      photoStudio ||= await import('./chat-media.js?v=20261114-home-editor-1');
+      photoStudio ||= await import('./chat-media.js?v=20261114-one-slideshow-1');
     }
     if (key === 'home' && preview?.tab === 'album') return albumDetail(preview.id);
     if (key === 'home' && preview && preview.tab === 'sub') return featureDetail(preview.id);
@@ -1789,7 +1789,7 @@
     const photos = (post.images || []).filter(ref => images[ref] || /^assets\//.test(ref));
     const editSlideshow = photos.length > 1 && (!post.designs ||
       (post.designs.length > 1 && !post.designs.some(slide => slide.ref.startsWith('vid:'))));
-    const gallery = (post.designs || photos.length > 1) && await import('./chat-media.js?v=20261114-home-editor-1').then(studio =>
+    const gallery = (post.designs || photos.length > 1) && await import('./chat-media.js?v=20261114-one-slideshow-1').then(studio =>
       studio.publishedGallery(post.designs ? post : {...post, designs:photos.map(ref => studio.mediaDesign(ref,16,9))}, ref => images[ref] || ref));
     const carousel = post.photoView === 'carousel';
     const slideshow = post.photoView === 'slideshow';
@@ -2138,7 +2138,7 @@
         disconnect.observe(document.getElementById('sheet-root'), {childList: true, subtree: true});
         const progress = form.querySelector('[data-video-progress]');
         try {
-          const studio = scope === 'club' ? await import('./chat-media.js?v=20261114-home-editor-1') : null;
+          const studio = scope === 'club' ? await import('./chat-media.js?v=20261114-one-slideshow-1') : null;
           for (const file of files) {
             if (!form.isConnected) return;
             if (file.type.startsWith('video/') || /\.(mov|mp4|m4v|webm)$/i.test(file.name)) {
@@ -2191,7 +2191,7 @@
             delete media.file;
           }
           const slideshowLayers = hasSlideshow() ? draft.slideshowLayers : [];
-          const studio = draft.designed || slideshowLayers.length ? await import('./chat-media.js?v=20261114-home-editor-1') : null;
+          const studio = draft.designed || slideshowLayers.length ? await import('./chat-media.js?v=20261114-one-slideshow-1') : null;
           const payload = {title:draft.title,text:draft.text,authorMode:draft.authorMode,alsoTeams:draft.alsoTeams,dots:draft.dots,
             images:draft.media.filter(media => !media.ref.startsWith('vid:')).map(media => media.ref),
             designs:studio ? draft.media.map(media => media.design || studio.mediaDesign(media.ref,16,9)) : [],

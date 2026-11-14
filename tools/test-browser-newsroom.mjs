@@ -197,6 +197,29 @@ try{
  // Reload preserves media and old Home URLs still reach the transferred content.
  await page.reload();await page.locator('.media-news').first().waitFor();assert.equal(await page.locator('.media-news').count(),1);await page.evaluate(async()=>{location.hash='#home/home-source';await TFB.ui.renderView('home');});await page.locator('.hm-entry').waitFor();assert.equal(await page.locator('.hm-entry-copy h1').innerText(),'Nach dem Match');assert.equal(await page.locator('.hm-entry-intro').innerText(),'Wohlfühlen');
  await page.evaluate(async()=>{location.hash='#aktuell/alle';await TFB.ui.renderView('aktuell');});assert.equal(await page.locator('a.mini[href="#aktuell/beitrag/'+newId+'"]').count(),1);await page.locator('a.mini[href="#aktuell/beitrag/'+newId+'"]').click();await page.locator('.story .cs-carousel').waitFor();
+ // Multiple stored groups are shown as a single slideshow, retaining every image and heading.
+ await page.evaluate(async image => {
+   const site = await TFB.api.site();
+   site.pages.aktuell.blocks.find(block => block.id === 'home-source').mediaCollection.entries.push({
+     id:'extra', title:'Zweiter Text', text:'Vorhandener Inhalt', images:[image],
+   });
+   await TFB.api.saveSite(site);
+   await TFB.refreshSite();
+   location.hash='#aktuell/home-source';
+ }, image);
+ const slideshow = page.getByRole('region',{name:'Diashow'});
+ await slideshow.waitFor();
+ assert.equal(await slideshow.count(),1);
+ assert.equal(await slideshow.locator('[data-cs-published-page]').count(),6);
+ await page.getByRole('heading',{name:'Zweiter Text'}).waitFor();
+ await slideshow.getByRole('button',{name:'Bild 6 anzeigen',exact:true}).click();
+ assert.equal(await slideshow.locator('.cs-carousel-status').innerText(),'Bild 6 von 6');
+ const play=slideshow.locator('[data-cs-slideshow]');
+ assert.equal(await play.getAttribute('aria-pressed'),'false');
+ await play.click();
+ assert.equal(await play.getAttribute('aria-pressed'),'true');
+ await play.click();
+ assert.equal(await play.getAttribute('aria-pressed'),'false');
  // Edit a legacy carousel through the shared Underseite tools and reopen the published result.
  if (await headerPencil.getAttribute('aria-pressed') === 'false') await headerPencil.click();
  const movedArticle = page.locator('[data-edit-block=home-source]');
@@ -204,11 +227,12 @@ try{
  await movedArticle.getByRole('button',{name:'Bearbeiten'}).click();
  const mediaEditor = page.locator('[data-hm-editor]');
  await mediaEditor.getByRole('tab',{name:'Unterseite'}).click();
+ assert.equal(await mediaEditor.locator('[data-hm-add],[data-hm-entry-remove]').count(),0);
  const mediaText = mediaEditor.locator('[data-rich-for=entry_0_section_0]');
  await mediaText.fill('Fetter Einblick');
  await mediaText.evaluate(el=>getSelection().selectAllChildren(el));
- await mediaEditor.locator('[data-rich=bold]').click();
- await mediaEditor.locator('[data-secadd=quote]').last().click();
+ await mediaEditor.locator('[data-hm-entry="0"] [data-rich=bold]').click();
+ await mediaEditor.locator('[data-hm-entry="0"] [data-secadd=quote]').last().click();
  await mediaEditor.locator('[name=entry_0_section_1]').fill('Zitat im Karussell');
  await mediaEditor.getByRole('tab',{name:'Übersicht'}).click();
  await mediaEditor.locator('[data-rich-for=text]').fill('Überblick zum Karussell');
