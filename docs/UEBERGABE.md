@@ -1,5 +1,15 @@
 # TFB – Übergabe für die nächste Sitzung
 
+## Home → Aktuell → Clubarchiv · live am 14.11.2026
+
+GitHub Pages hat Commit `3ab44bc` veröffentlicht (Lauf 43572883664).
+Die öffentlichen Ansichten Home, Aktuell und Clubarchiv wurden live geprüft.
+Der Ablauf mit Sortieren, Löschen, Verschieben und Archivieren wurde im
+Browser mit Testdaten geprüft, einschließlich Unterseiten, Fotoseiten
+und bestehender Links. Auf Home speichert die Position sofort. Der
+Kopf-Bleistift schließt die Bearbeitung. Aktuell-Beiträge werden über
+„Ins Clubarchiv“ aus der aktuellen Übersicht genommen.
+
 ## Home-Bearbeitung · live am 14.11.2026
 
 GitHub Pages hat Home-Editor `5b520a556a6b3e53c9f35fd4b5f8d5e5279968c1`
