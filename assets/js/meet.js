@@ -18,7 +18,7 @@
 //   - Abschalten: in config.js  features: { treffen: false }
 //   - Entfernen:  diese Datei + <script> in index.html + Abschnitt „Treffen“ in app.css
 // Daten liegen im Demo-Modus in einem eigenen Speicher (localStorage: tfb_meet_demo_v2).
-// Keine Historie: Vorbei ist vorbei. Termine verschwinden nach ihrem Tag, beendete Serien sofort,
+// Termine verschwinden nach ihrem Tag. Eigene Serien bleiben als Vorlagen erhalten,
 // beantwortete Einladungen sofort. Infos im Postfach entfernt man mit ×, sonst gehen sie nach 7 Tagen
 // (oder mit ihrem Termin) von selbst.
 (function () {
@@ -149,8 +149,7 @@
   function prune() {
     const now = today();
     data.meets = data.meets.filter((m) => m.date >= now);
-    data.series = (data.series || []).filter((s) => s.until >= now);
-    data.series.forEach((s) => { s.skipped = (s.skipped || []).filter((d) => d >= now); });
+    (data.series || []).forEach((s) => { s.skipped = (s.skipped || []).filter((d) => d >= now); });
     const week = Date.now() - 7 * 864e5;
     data.inbox = (data.inbox || []).filter((n) => {
       if (n.groupId) {
@@ -882,7 +881,9 @@
         <label class="field"><span>Status</span><select name="active"><option value="yes">Aktiv</option><option value="no" ${s.active === false ? 'selected' : ''}>Inaktiv</option></select></label>
         <p class="small muted">Inaktiv pausiert neue Einladungen. Bereits verschickte Einladungen und Zusagen bleiben gültig. Beim Löschen werden bereits eingeladene kommende Termine abgesagt und die Teilnehmenden im Postfach informiert.</p>
         <p class="form-error" role="alert"></p>
-        <button type="submit" class="btn primary block big">Speichern</button>
+        <button type="submit" class="btn primary block big">Änderungen speichern</button>
+        <button type="submit" class="btn block" data-copy-series>Als neue Serie speichern</button>
+        <p class="small muted">Gib der Kopie einen neuen Namen. Sie übernimmt die Eingeladenen und wird inaktiv gespeichert. Du kannst sie anschließend aktivieren.</p>
         <button type="button" class="btn danger block" data-end>Serie löschen und kommende Termine absagen</button>
       </form>`);
     const form = document.querySelector('[data-series-form]');
@@ -915,12 +916,28 @@
     }
     form.addEventListener('submit', async event => {
       event.preventDefault();
+      const copy = event.submitter?.hasAttribute('data-copy-series');
       const f = form.elements;
       const update = { title: f.title.value.trim(), from: f.from.value, until: f.until.value, time: f.time.value,
         place: f.place.value.trim(), leadDays: Number(f.leadDays.value), active: f.active.value === 'yes' };
       if (!update.title || !update.place || !update.time || !update.from || !update.until || update.until < update.from
           || Date.parse(update.until) - Date.parse(update.from) > 732 * DAY) {
         error.textContent = 'Bitte Namen, Anlage, Uhrzeit und einen gültigen Zeitraum von bis zu zwei Jahren angeben.';
+        return;
+      }
+      if (copy) {
+        if (update.title === s.title.trim()) {
+          error.textContent = 'Bitte einen neuen Namen für die Kopie eingeben.';
+          f.title.focus();
+          return;
+        }
+        await apply(current => {
+          const { kind, groupId, note, meetAt, departAt, createdBy, invitees, slots } = current;
+          data.series.push({
+            id: uid('sr-'), ...update, kind, groupId, note, meetAt, departAt, createdBy, invitees: [...invitees], slots,
+            active: false, skipped: [], createdAt: new Date().toISOString(),
+          });
+        }, 'Neue Serie inaktiv gespeichert');
         return;
       }
       if (update.active && update.until < today()) {
