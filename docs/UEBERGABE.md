@@ -1,5 +1,23 @@
 # TFB – Übergabe für die nächste Sitzung
 
+## Home-Bearbeitung · live am 14.11.2026
+
+GitHub Pages hat Home-Editor `5b520a556a6b3e53c9f35fd4b5f8d5e5279968c1`
+veröffentlicht. Cache `tfb-20261114-home-editor-1`. Live geprüft bei 390 px
+mit bestehenden Karussells, Detailseite, Collage und Galerie.
+Anlegen, Reihenfolge, zweistufiges Löschen, Verlinkung und Übernahme aus
+Aktuell wurden mit isolierten Browserdaten geprüft.
+
+- Der Bleistift auf Home zeigt „Neues Thema“, den Fotoblock, die Übernahme
+  aus Aktuell und die sortierbare Liste. Neu gespeicherte Einträge landen
+  oben. Nur Themen tragen eine Nummer.
+- Fotoblöcke können ohne Überschrift über die Inhaltsbreite stehen.
+  Collage, Galerie und Karussell stehen auch im Thema und auf der Fotoseite
+  zur Wahl. Links, Unterseite und Fotoseite werden nach Bedarf hinzugefügt.
+- Löschen und Positionsänderungen werden in der Liste vorgemerkt.
+  „Änderungen speichern“ veröffentlicht sie gemeinsam. Die Linkabstände
+  kommen aus dem Layout. Bestehende Medien-Collagen sind weiterhin editierbar.
+
 ## Live-Stand vom 14.11.2026
 
 GitHub Pages hat Commit `b258c4456ae1d5107f976b53ae2763c9e7aaf677` veröffentlicht.
