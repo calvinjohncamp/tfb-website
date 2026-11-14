@@ -272,7 +272,9 @@ function stage(slide, editing = false, fitPhoto = false, loading = '') {
 
 function fitSlideshowImage(image) {
   if (image.naturalWidth && image.naturalHeight) {
-    image.closest('.cs-photo-frame')?.style.setProperty('--cs-photo-ratio', image.naturalWidth / image.naturalHeight);
+    const ratio = image.naturalWidth / image.naturalHeight;
+    image.closest('.cs-photo-frame')?.style.setProperty('--cs-photo-ratio', ratio);
+    if (image.closest('.cs-original-slides')) image.closest('.cs-stage')?.style.setProperty('--cs-ratio', ratio);
   }
 }
 document.addEventListener('load', event => {
@@ -309,7 +311,7 @@ export function publishedGallery(post, imageOf) {
   const thumbnails = post.photoSlideshow && post.designs.length > 1 ? `<div class="hm-thumbs" role="group" aria-label="Bild auswählen">
     ${post.designs.map((slide, index) => `<button type="button" data-cs-published-dot="${index}" aria-label="Bild ${index + 1} anzeigen"${index === 0 ? ' aria-current="true"' : ''}><img loading="lazy" decoding="async" src="${esc(imageOf(slide.ref))}" alt=""></button>`).join('')}
   </div>` : '';
-  return `<div class="cs-published${carousel ? ' cs-carousel' : ''}" data-cs-post="${esc(post.id)}"${carousel ? ` tabindex="0" role="region" aria-label="${post.photoSlideshow ? 'Diashow' : 'Bilderkarussell'}"` : ''}${playable ? ` data-cs-auto${post.photoSlideshow && !autoplay ? ' data-cs-manual' : ''} style="--cs-slideshow-ratio:${format}"` : ''}>
+  return `<div class="cs-published${carousel ? ' cs-carousel' : ''}${post.originalSlides ? ' cs-original-slides' : ''}" data-cs-post="${esc(post.id)}"${carousel ? ` tabindex="0" role="region" aria-label="${post.photoSlideshow ? 'Diashow' : 'Bilderkarussell'}"` : ''}${playable ? ` data-cs-auto${post.photoSlideshow && !autoplay ? ' data-cs-manual' : ''} style="--cs-slideshow-ratio:${format}"` : ''}>
     ${post.dots === 'top' ? navigation : ''}
     <div class="cs-screens">
     ${post.designs.map((slide, index) => {

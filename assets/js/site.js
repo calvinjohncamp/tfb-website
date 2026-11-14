@@ -488,7 +488,7 @@
   const photoDisplays = new Map([['collage', 'Collage'], ['gallery', 'Galerie'], ['carousel', 'Karussell']]);
   const photoTypes = [...photoDisplays.keys()];
   let photoStudio;
-  const showInlineCarousel = b => b.type === 'carousel' || ['carousel','slideshow'].includes(b.photoDisplay) || b.album?.photoDisplay === 'carousel' || b.more?.photoDisplay === 'carousel';
+  const showInlineCarousel = b => b.type === 'carousel' || ['carousel','slideshow'].includes(b.photoDisplay) || [b.album?.photoDisplay, b.more?.photoDisplay].includes('slideshow');
   function photoDisplay(block, refs, mode, action) {
     if (!refs.length) return '';
     if (mode === 'carousel') {
@@ -502,6 +502,15 @@
       `<button type="button" class="${mosaic ? 'collage-item' : 'gallery-item'}" data-action="${action}" data-block="${esc(block.id)}" data-index="${i}" aria-label="Foto ${i + 1} von ${refs.length} groß ansehen">${picture(ref, ref)}</button>`).join('')}</div>`;
   }
   const photoFormatField = (name, value, single = false, count = 0, allowCarousel = true) => `<label class="field"><span>Darstellung</span><select name="${name}" data-rerender>${[...(single ? [['single', 'Einzelfoto']] : []), ...photoDisplays].filter(([key]) => allowCarousel || key !== 'carousel' || key === value).map(([key, label]) => `<option value="${key}"${key === value ? ' selected' : ''}${key === 'carousel' && key !== value && count > carouselLimit() ? ' disabled' : ''}>${label}${key === 'carousel' ? ` (bis ${carouselLimit()} Fotos)` : ''}</option>`).join('')}</select></label>`;
+  const storyPhotoFormatField = (name, value, count) => `<label class="field"><span>Darstellung</span>
+    <select name="${name}" data-rerender>
+      ${[['single','Einzelfoto'], ['slideshow','Diashow'], ['carousel','Karussell'], ...[...photoDisplays].filter(([key]) => key !== 'carousel')].map(([key,label]) => {
+        const limited = key === 'carousel' || key === 'slideshow';
+        return `<option value="${key}"${key === value ? ' selected' : ''}${limited && key !== value && count > carouselLimit() ? ' disabled' : ''}>${label}</option>`;
+      }).join('')}
+    </select>
+    <small>Diashow zeigt ein Foto nach dem anderen. Karussell zeigt mehrere Karten wie auf Home. Beide verwenden bis zu ${carouselLimit()} Fotos.</small>
+  </label>`;
   const photoStartField = (name, value, label = 'Karussell automatisch starten') => `<label class="meet-check"><input type="checkbox" name="${name}" ${value === 'auto' ? 'checked' : ''}><span>${label}</span></label>`;
   const homePhotoRefs = (block) => (block.images?.length ? block.images : [block.image]).filter(shownImage);
 
@@ -807,7 +816,7 @@
     const back = archive ? '#club/archiv' : '#aktuell';
     if (block.type === 'event') return `<div class="site-page archive-reading">${ui().viewHead(esc(block.title), 'Termin', false)}${eventCard(block)}<a class="btn" href="${back}">Zurück</a></div>`;
     if (sharedHomePhotos(block) || block.mediaCollection) return mediaDetail(block, 'aktuell', archive ? back : undefined, archive);
-    if (!photoStudio && showInlineCarousel(block)) photoStudio = await import('./chat-media.js?v=20261114-home-formats-1');
+    if (!photoStudio && showInlineCarousel(block)) photoStudio = await import('./chat-media.js?v=20261114-detail-formats-1');
     return storyHtml({ ...block, text: block.showText === false ? '' : block.text, title: block.title || photoDisplays.get(block.type) || 'News', noPlaceholder: true }, {closeHref:back, backLabel:archive ? 'Zum Clubarchiv' : 'Zu Aktuell',
       gallery: photoTypes.includes(block.type) || photoDisplays.has(block.photoDisplay) ? photoDisplay(block, (block.images || []).filter(shownImage), block.photoDisplay || block.type, 'gallery-open') : '',
       linkPage: 'aktuell', topicHero: block.type === 'post' && (Boolean(block.sourceHomeId) || homePhotoRefs(block).length === 1),
@@ -983,9 +992,18 @@
   function storyPhotos(block, photos) {
     const refs = (photos.images || []).filter(shownImage);
     if (!refs.length) return '';
-    if (photos.photoDisplay === 'gallery' || photos.photoDisplay === 'carousel') {
-      return photoDisplay({ ...block, animationStart: photos.animationStart }, refs, photos.photoDisplay, 'collage-open');
+    const mode = photos.photoDisplay;
+    if (mode === 'single' || refs.length === 1) {
+      return `<button type="button" class="story-photo-single" data-action="collage-open" data-block="${esc(block.id)}" data-index="0" aria-label="Foto groß ansehen">${picture(refs[0], refs[0], '', true)}</button>`;
     }
+    if (mode === 'carousel' || mode === 'slideshow') {
+      const media = { id:block.id, title:block.title, images:refs, animationStart:photos.animationStart || 'manual' };
+      const imageOf = ref => images[ref] || TFB.clubArchive?.mediaUrl?.(ref) || ref;
+      return `<div class="story-photo-presentation ${mode}">${mode === 'carousel'
+        ? TFB.homeMedia.cover(media, '', imageOf, false)
+        : TFB.homeMedia.slideshow(photoStudio, media, imageOf, media.animationStart, 'lazy', true)}</div>`;
+    }
+    if (mode === 'gallery') return photoDisplay(block, refs, mode, 'collage-open');
     return collage(refs, block.id, Boolean(photos.original), photos.collageAlign);
   }
 
@@ -1088,7 +1106,7 @@
     if (['home', 'aktuell'].includes(key) && section === 'alle') { editing = null; return contentOverview(key); }
     if (key === 'aktuell' && preview?.page === 'aktuell') {
       const { draft, tab } = preview;
-      if (!photoStudio && showInlineCarousel(draft)) photoStudio = await import('./chat-media.js?v=20261114-home-formats-1');
+      if (!photoStudio && showInlineCarousel(draft)) photoStudio = await import('./chat-media.js?v=20261114-detail-formats-1');
       const article = { ...draft, title: draft.title || 'Ohne Überschrift', date: draft.date || (draft._new ? today() : '') };
       return `<section class="news-draft-preview"><p class="muted small">Vorschau · ${tab === 'sub' ? 'Artikelansicht' : 'News-Übersicht'}</p>
         ${tab === 'sub' ? await newsArticleDetail(article, false, true) : `<div class="news-preview-card">${homeOrbit(article) ? mediaNewsPost(article) : newsPost(article, null, false, true)}</div>`}</section>`;
@@ -1100,7 +1118,7 @@
       try { id = decodeURIComponent((section === 'beitrag' ? parts[2] : section) || ''); } catch (_) { id = ''; }
       const article = site.pages.aktuell.blocks.find(b => b.id === id);
       if (article && parts[2] === 'fotos') {
-        if (!photoStudio && showInlineCarousel(article)) photoStudio = await import('./chat-media.js?v=20261114-home-formats-1');
+        if (!photoStudio && showInlineCarousel(article)) photoStudio = await import('./chat-media.js?v=20261114-detail-formats-1');
         return albumDetail(id, 'aktuell');
       }
       if (article?.archived) return newsArticleDetail(article);
@@ -1115,16 +1133,16 @@
     if (key === 'home' && section && location.hash.split('/')[2] === 'fotos' && !homeBlocks().some(b => b.id === section)) {
       const moved = site.pages.aktuell.blocks.find(b => b.sourceHomeId === section);
       if (moved) {
-        if (!photoStudio && showInlineCarousel(moved)) photoStudio = await import('./chat-media.js?v=20261114-home-formats-1');
+        if (!photoStudio && showInlineCarousel(moved)) photoStudio = await import('./chat-media.js?v=20261114-detail-formats-1');
         return albumDetail(section, 'aktuell');
       }
     }
     if (key === 'aktuell' && !photoStudio && site.pages.aktuell.blocks.some(b => !b.archived && showInlineCarousel(b))) {
-      photoStudio = await import('./chat-media.js?v=20261114-home-formats-1');
+      photoStudio = await import('./chat-media.js?v=20261114-detail-formats-1');
     }
     if (key === 'aktuell' && site.pages.aktuell.deleted) return '<section class="card"><h1>Seite entfernt</h1><a class="btn" href="#club/archiv">Zum Clubarchiv</a></section>';
     if (key === 'home' && !photoStudio && (site.pages.home.blocks.some(showInlineCarousel) || (preview && showInlineCarousel(preview.draft)))) {
-      photoStudio ||= await import('./chat-media.js?v=20261114-home-formats-1');
+      photoStudio ||= await import('./chat-media.js?v=20261114-detail-formats-1');
     }
     if (key === 'home' && preview?.tab === 'album') return albumDetail(preview.id);
     if (key === 'home' && preview && preview.tab === 'sub') return featureDetail(preview.id);
@@ -1816,7 +1834,7 @@
     const photos = (post.images || []).filter(ref => images[ref] || /^assets\//.test(ref));
     const editSlideshow = photos.length > 1 && (!post.designs ||
       (post.designs.length > 1 && !post.designs.some(slide => slide.ref.startsWith('vid:'))));
-    const gallery = (post.designs || photos.length > 1) && await import('./chat-media.js?v=20261114-home-formats-1').then(studio =>
+    const gallery = (post.designs || photos.length > 1) && await import('./chat-media.js?v=20261114-detail-formats-1').then(studio =>
       studio.publishedGallery(post.designs ? post : {...post, designs:photos.map(ref => studio.mediaDesign(ref,16,9))}, ref => images[ref] || ref));
     const carousel = post.photoView === 'carousel';
     const slideshow = post.photoView === 'slideshow';
@@ -2165,7 +2183,7 @@
         disconnect.observe(document.getElementById('sheet-root'), {childList: true, subtree: true});
         const progress = form.querySelector('[data-video-progress]');
         try {
-          const studio = scope === 'club' ? await import('./chat-media.js?v=20261114-home-formats-1') : null;
+          const studio = scope === 'club' ? await import('./chat-media.js?v=20261114-detail-formats-1') : null;
           for (const file of files) {
             if (!form.isConnected) return;
             if (file.type.startsWith('video/') || /\.(mov|mp4|m4v|webm)$/i.test(file.name)) {
@@ -2218,7 +2236,7 @@
             delete media.file;
           }
           const slideshowLayers = hasSlideshow() ? draft.slideshowLayers : [];
-          const studio = draft.designed || slideshowLayers.length ? await import('./chat-media.js?v=20261114-home-formats-1') : null;
+          const studio = draft.designed || slideshowLayers.length ? await import('./chat-media.js?v=20261114-detail-formats-1') : null;
           const payload = {title:draft.title,text:draft.text,authorMode:draft.authorMode,alsoTeams:draft.alsoTeams,dots:draft.dots,
             images:draft.media.filter(media => !media.ref.startsWith('vid:')).map(media => media.ref),
             designs:studio ? draft.media.map(media => media.design || studio.mediaDesign(media.ref,16,9)) : [],
@@ -2939,22 +2957,22 @@
               ${detailPhotos.map((ref, i) => thumbEdit(ref, 'more', i, detailPhotos.length, 'data-more-remove')).join('')}
               ${!sharedPhotos && detailPhotos.length < photoLimit(more.photoDisplay) ? `<label class="gallery-add">${ui().icon.plus}<span>Fotos hinzufügen</span><input type="file" accept="image/*" multiple data-more-input hidden></label>` : ''}
             </div></div>
-            ${detailPhotos.length && !sharedPhotos ? photoFormatField('detailPhotoDisplay', more.photoDisplay || 'collage', false, detailPhotos.length) : ''}
-            ${detailPhotos.length > 1 && !sharedPhotos && more.photoDisplay === 'carousel' ? photoStartField('detailAnimationStart', more.animationStart) : ''}
+            ${detailPhotos.length && !sharedPhotos ? storyPhotoFormatField('detailPhotoDisplay', more.photoDisplay || (detailPhotos.length === 1 ? 'single' : 'collage'), detailPhotos.length) : ''}
+            ${detailPhotos.length > 1 && !sharedPhotos && ['carousel','slideshow'].includes(more.photoDisplay) ? photoStartField('detailAnimationStart', more.animationStart, more.photoDisplay === 'slideshow' ? 'Diashow automatisch starten' : undefined) : ''}
             ${detailPhotos.length && (!more.photoDisplay || more.photoDisplay === 'collage') ? `<div class="field"><span>Bildformat in der Collage</span>
               ${seg('collagestyle', more.original ? 'original' : 'tiles', [['tiles', 'Bildausschnitte'], ['original', 'Originalformate']])}
             </div>` : ''}`}`;
           const albumPanel = `<label class="meet-check"><input type="checkbox" name="albumEnabled" ${album.enabled ? 'checked' : ''}><span>Foto-Unterseite verlinken</span></label>
             ${field('Überschrift der Foto-Unterseite', 'albumTitle', album.title || draft.title)}
             ${field('Link-Text', 'albumLabel', album.label || 'Fotos der Veranstaltung')}
-            ${photoFormatField('albumPhotoDisplay', album.photoDisplay || 'collage', false, album.images?.length)}
-            ${album.photoDisplay === 'carousel' ? photoStartField('albumAnimationStart', album.animationStart) : ''}
+            ${storyPhotoFormatField('albumPhotoDisplay', album.photoDisplay || 'collage', album.images?.length || 0)}
+            ${['carousel','slideshow'].includes(album.photoDisplay) ? photoStartField('albumAnimationStart', album.animationStart, album.photoDisplay === 'slideshow' ? 'Diashow automatisch starten' : undefined) : ''}
             ${positionField('albumPos', album.position)}
             <h3 class="editor-sub">Inhalt</h3>
             ${sectionsEditor(album.sections || [], 'album_sec_')}
             ${linkAppearanceFields({ ...album, appearance:album.appearance || 'text', url:'#home/' + id + '/fotos' }, 'albumButton')}
             <label class="meet-check"><input type="checkbox" name="albumOriginal" data-rerender ${album.original ? 'checked' : ''}><span>Originalformate erhalten</span></label>
-            <div class="field"><span>Fotos (${(album.images || []).length} / 100)</span><div class="gallery-edit">${(album.images || []).filter(shownImage).map((ref,i,list) => thumbEdit(ref, 'album', i, list.length, 'data-album-remove')).join('')}
+            <div class="field"><span>Fotos (${(album.images || []).length} / ${photoLimit(album.photoDisplay)})</span><div class="gallery-edit">${(album.images || []).filter(shownImage).map((ref,i,list) => thumbEdit(ref, 'album', i, list.length, 'data-album-remove')).join('')}
             ${(album.images || []).length < photoLimit(album.photoDisplay) ? `<label class="gallery-add">${ui().icon.plus}<span>Fotos</span><input type="file" accept="image/*" multiple data-album-input hidden></label>` : ''}</div></div>`;
           return `
             <div class="ed-tabs" role="tablist">

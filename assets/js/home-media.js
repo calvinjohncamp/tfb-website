@@ -19,7 +19,7 @@
       return `<${tag} class="hm-card"${href ? ` href="${esc(href)}" aria-label="Bild ${i+1}: Unterseite öffnen"` : ''}>${image(ref,imageOf,caption,i===0&&homeLead!==false,homeLead!==null&&(!homeLead||i>0))}</${tag}>`;
     }).join('')}</div><div class="hm-footer">${href ? `<a class="hm-caption" href="${esc(href)}"><span>${esc(caption)}</span></a>` : `<span class="hm-caption">${esc(caption)}</span>`}<button type="button" class="hm-zoom-button" aria-label="Karussell vergrößern" title="Karussell vergrößern">${magnifier}</button><button type="button" class="hm-pause" aria-label="${manual?'Bildbewegung starten':'Bildbewegung pausieren'}" aria-pressed="${manual}"${refs.length<2?' hidden':''}>${playbackIcon(!manual)}</button></div></div>`;
   }
-  function slideshow(studio, block, imageOf, animationStart = 'auto', firstPriority = 'lazy') {
+  function slideshow(studio, block, imageOf, animationStart = 'auto', firstPriority = 'lazy', originalSlides = false) {
     const sizes = {'4:5':[4,5],'9:16':[9,16],'16:9':[16,9],'5:4':[5,4]};
     const groups = block.mediaCollection?.entries || [{images:photos(block), format:block.photoFormat}];
     const designs = groups.flatMap(entry => {
@@ -27,11 +27,11 @@
       return (entry.images || []).map(ref => studio.mediaDesign(ref,w,h));
     });
     return designs.length ? studio.publishedGallery({
-      id: `home-media-${block.id}`, photoView:'carousel', animationStart, compactControls:true, photoSlideshow:true, designs, firstPriority,
+      id: `home-media-${block.id}`, photoView:'carousel', animationStart, compactControls:true, photoSlideshow:true, designs, firstPriority, originalSlides,
     }, ref => source(ref,imageOf)) : '';
   }
   async function detail(block, { imageOf, paragraphs, renderTextSections, admin, page='home', backHref, links = '', extraPhotos = '' }) {
-    const studio = await import('./chat-media.js?v=20261114-home-formats-1');
+    const studio = await import('./chat-media.js?v=20261114-detail-formats-1');
     const list = block.mediaCollection ? entries(block) : [{
       title: block.title, subtitle: block.subtitle, date: TFB.newsroom.creationDate(block),
       text: block.text, sections: block.more?.sections, images: photos(block),
