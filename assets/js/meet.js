@@ -247,7 +247,7 @@
   // Alphabetisch nach Nachname, dann Vorname („Jörn Kämper“ → „Kämper Jörn“)
   const sortKey = (full) => { const p = String(full || '').trim().split(/\s+/); return `${p.slice(-1)[0] || ''} ${p.slice(0, -1).join(' ')}`; };
   const byName = (ids, names) => ids.slice().sort((a, b) => sortKey(names[a]).localeCompare(sortKey(names[b]), 'de'));
-  const rhythm = (s) => `jede Woche ${WD_LONG[weekdayOf(s.from)]} · bis ${longDate(s.until)}`;
+  const rhythm = (s) => `jede Woche ${WD_LONG[weekdayOf(s.from)]} · von ${longDate(s.from)} bis ${longDate(s.until)}`;
 
   // Wer spielt, wer ist Ersatz, wer ist offen, wer hat abgesagt?
   function lineup(m) {
@@ -373,13 +373,15 @@
     if (fresh.length) setTimeout(refreshBell, 0);
     const id = location.hash.split('/')[1];
     if (id) return detail(id);
+    const currentDay = today();
     const mine = data.meets
       .filter((m) => m.invitees.includes(me().id) || m.createdBy === me().id)
-      .filter((m) => m.date >= today())
+      .filter((m) => m.date >= currentDay)
       .sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
     const waiting = mine.filter((m) => m.invitees.includes(me().id) && !m.responses[me().id]);
     const rest = mine.filter((m) => !waiting.includes(m));
-    const mySeries = (data.series || []).filter(s => s.createdBy === me().id || (s.active !== false && s.until >= today() && s.invitees.includes(me().id)));
+    const upcomingSeries = new Set(mine.map(m => m.seriesId));
+    const mySeries = (data.series || []).filter(s => s.createdBy === me().id || (s.active !== false && s.until >= currentDay && s.invitees.includes(me().id)));
     const allIds = [...new Set(mine.flatMap((m) => m.invitees).concat(mySeries.map((s) => s.createdBy)))];
     const playerIds = [...new Set(mine.flatMap(m => lineup(m).players.slice(0, 7)))];
     const [names, photos] = await Promise.all([
@@ -410,7 +412,7 @@
       ${rest.length ? `<div class="meet-list">${rest.map((m) => card(m, names, photos)).join('')}</div>` : '<p class="muted">Gerade keine weiteren Verabredungen.</p>'}
       <h2 class="block-heading">${esc(text.training)}</h2>
       <p class="small muted meet-section-intro">Wiederkehrende Einladungen mit festem Tag und fester Uhrzeit.</p>
-      <div class="meet-series-list">${mySeries.map((s) => seriesCard(s, names)).join('')}</div>
+      <div class="meet-series-list">${mySeries.map((s) => seriesCard(s, names, currentDay, upcomingSeries.has(s.id))).join('')}</div>
       <button type="button" class="btn meet-gap" data-action="meet-new" data-kind="training" data-repeat="weekly">Trainingsserie anlegen</button>
       <h2 class="block-heading">${esc(text.groups)}</h2>
       <p class="small muted meet-section-intro">Gespeicherte Mitgliederlisten, die du beim Einladen auswählen und kombinieren kannst.</p>
@@ -478,18 +480,22 @@
       </article>`;
   }
 
-  function seriesCard(s, names) {
+  function seriesCard(s, names, currentDay, hasUpcomingMatch) {
     const nx = nextSend(s);
     const own = s.createdBy === me().id;
-    const nextLine = s.active === false ? 'Inaktiv' : s.until < today() ? 'Abgelaufen' : nx ? `Nächste Einladung ${sendText(nx.send)} für ${shortDate(nx.date)}` : 'Alle Termine sind verschickt';
+    const active = s.active !== false && currentDay <= s.until && (s.from <= currentDay || hasUpcomingMatch);
+    const nextLine = s.active === false ? 'Inaktiv' : s.until < currentDay ? 'Abgelaufen' : nx ? `Nächste Einladung ${sendText(nx.send)} für ${shortDate(nx.date)}` : 'Alle Termine sind verschickt';
     const inner = `
         <span class="meet-series-icon">${kindIcon(s.kind)}</span>
         <span class="meet-card-text">
           <strong>${esc(s.title)}</strong>
           <small>${esc(rhythm(s))} · ${esc(s.time)} Uhr</small>
-          <small>${esc(nextLine)} · ${s.leadDays} ${s.leadDays === 1 ? 'Tag' : 'Tage'} vorher${own ? '' : ` · von ${esc(firstName(names[s.createdBy]))}`}</small>
+          <small>${esc(nextLine)}${nx ? ` · ${s.leadDays} ${s.leadDays === 1 ? 'Tag' : 'Tage'} vorher` : ''}${own ? '' : ` · von ${esc(firstName(names[s.createdBy]))}`}</small>
         </span>
-        ${own ? '<span class="meet-mine edit">Ändern</span>' : ''}`;
+        ${active || own ? `<span class="meet-series-actions">
+          ${active ? '<span class="meet-mine meet-series-active">Aktiv</span>' : ''}
+          ${own ? '<span class="meet-mine edit">Ändern</span>' : ''}
+        </span>` : ''}`;
     return own
       ? `<button type="button" class="card meet-card meet-series" data-action="meet-series" data-id="${s.id}">${inner}</button>`
       : `<div class="card meet-card meet-series">${inner}</div>`;

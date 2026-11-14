@@ -1,6 +1,6 @@
 // TFB-Kiosk – Service Worker.
 // Netz zuerst, damit Änderungen sofort ankommen; ohne Netz startet die App aus dem Zwischenspeicher.
-const CACHE = 'tfb-20261114-carousel-zoom-1';
+const CACHE = 'tfb-20261114-training-status-1';
 const SHELL = [
   './assets/css/admin-signature.css?v=20261114-auto-photo-fit-1',
   './assets/css/product-library.css?v=20261113-kiosk-signature',
@@ -59,7 +59,7 @@ const SHELL = [
   './assets/css/kiosk-billing.css', './assets/js/kiosk-billing.js', './assets/js/kiosk-export.js', './assets/js/kiosk-day-image.js',
   './assets/css/club-usage.css', './assets/js/club-usage.js',
   './assets/css/member-access.css', './assets/js/app-install.js',
-  './assets/css/yellow-editorial.css?v=20261114-text-marker-1', './assets/brand/tfb-highlight-freihand.svg',
+  './assets/css/yellow-editorial.css?v=20261114-training-status-1', './assets/brand/tfb-highlight-freihand.svg',
   './assets/js/member-directory.js?v=20261110-unified-backup-1', './assets/js/member-directory.js', './assets/js/cloud-sync.js?v=20261114-admin-home-fast-1',
   './assets/js/snapshot-zip.js', './assets/js/editorial.js?v=20261114-home-start-2',
   './assets/data/public-content.js',
@@ -79,7 +79,7 @@ const SHELL = [
   './assets/css/design-preview.css?v=20261110-gallery-complete-1', './assets/js/design-preview.js?v=20261113-brand-gallery-4k',
   './assets/css/partner-visibility.css', './assets/css/partner-visibility.css?v=20261109-statement-layout-1', './assets/js/partner-visibility.js?v=20261114-home-start-2', './assets/js/partner-content.js', './assets/js/partner-admin.js?v=20261110-search-pdfs-1',
   './assets/fonts/editorial/bricolage-grotesque.ttf', './assets/fonts/editorial/dm-sans.ttf',
-  './assets/js/config.js', './assets/data/partners.js', './assets/data/teams.js', './assets/data/site-seed.js', './assets/js/partner-rotation.js', './assets/js/site.js?v=20261114-carousel-zoom-1', './assets/js/meet.js?v=20261114-training-copy-1', './assets/js/demo-backend.js?v=20261114-dating-kiosk-1', './assets/js/brand-data.js', './assets/js/art.js', './assets/js/app.js?v=20261114-auto-photo-fit-1', './assets/js/app.js?v=20261114-auto-photo-fit-1',
+  './assets/js/config.js', './assets/data/partners.js', './assets/data/teams.js', './assets/data/site-seed.js', './assets/js/partner-rotation.js', './assets/js/site.js?v=20261114-carousel-zoom-1', './assets/js/meet.js?v=20261114-training-status-1', './assets/js/demo-backend.js?v=20261114-dating-kiosk-1', './assets/js/brand-data.js', './assets/js/art.js', './assets/js/app.js?v=20261114-auto-photo-fit-1', './assets/js/app.js?v=20261114-auto-photo-fit-1',
   './assets/icons/favicon-64.png', './assets/icons/icon-192.png',
   './assets/js/membership.js', './assets/js/membership-fees.js', './assets/js/site.js?v=20261114-carousel-zoom-1',
   './assets/js/photo-drop.js',

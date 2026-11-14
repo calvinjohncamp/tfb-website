@@ -179,3 +179,22 @@ body .app .topbar .topnav .tab.active::before {
   color: #171717;
 }
 :root:not(.tfb-logo-midnight-amber) .deckel .coaster-note { opacity: 1; }
+
+/* Verabreden uses the same colors for the date and the current training series. */
+.view[data-view="treffen"] {
+  --meet-badge-bg: var(--tfb-signature-red);
+  --meet-badge-ink: #fff;
+}
+:root.tfb-logo-midnight-amber .view[data-view="treffen"] {
+  --meet-badge-bg: var(--tfb-midnight-blue, #001D3D);
+  --meet-badge-ink: var(--tfb-signature-yellow);
+}
+:root body .view[data-view="treffen"] :is(.meet-card-link .date-badge, .meet-series-active) {
+  background: var(--meet-badge-bg);
+  color: var(--meet-badge-ink);
+}
+:root body .view[data-view="treffen"] .meet-card-link .date-badge > :is(small, b) {
+  color: var(--meet-badge-ink);
+  opacity: 1;
+}
+.meet-series-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
