@@ -1,5 +1,15 @@
 # TFB – Übergabe für die nächste Sitzung
 
+## Aktuell direkt über den Kopf-Bleistift · live am 14.11.2026
+
+GitHub Pages hat Commit `e01a6e6` veröffentlicht (Lauf 43577386205).
+Der Bleistift in der Kopfzeile öffnet und schließt die Aktuell-Bearbeitung.
+Dort erscheinen die Anlegefunktionen und die Aktionen an den Einträgen.
+In einem geöffneten Aktuell-Artikel startet derselbe Bleistift direkt den
+Artikel-Editor. Die zusätzlichen Bleistifte in Aktuell sind entfallen.
+Die Bedienung wurde mit Browser-Testdaten geprüft. Die bereitgestellten
+Dateien und der öffentliche Testbeitrag wurden live geprüft.
+
 ## Aktuell mit Live-Vorschau · live am 14.11.2026
 
 GitHub Pages hat Commit `c195c51` veröffentlicht (Lauf 43576795459).
