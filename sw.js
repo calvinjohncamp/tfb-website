@@ -1,6 +1,6 @@
 // TFB-Kiosk – Service Worker.
 // Netz zuerst, damit Änderungen sofort ankommen; ohne Netz startet die App aus dem Zwischenspeicher.
-const CACHE = 'tfb-20261114-link-symbols-1';
+const CACHE = 'tfb-20261114-link-symbol-colors-1';
 const SHELL = [
   './assets/css/admin-signature.css?v=20261114-dating-kiosk-1',
   './assets/css/product-library.css?v=20261113-kiosk-signature',
@@ -73,7 +73,7 @@ const SHELL = [
   './assets/icons/icon-512.png', './assets/icons/icon-maskable-512.png', './assets/icons/icon-180.png',
   './assets/brand/tfb-logo-black-crail.svg', './assets/brand/tfb-logo-midnight-amber.svg',
   './assets/css/chat-media.css', './assets/js/chat-media.js', './assets/js/chat-media.js?v=20261114-home-editor-1',
-  './assets/css/home-media.css?v=20261114-link-symbols-1', './assets/js/home-media.js?v=20261114-link-editor-1', './assets/js/newsroom.js?v=20261114-aktuell-1',
+  './assets/css/home-media.css?v=20261114-link-symbol-colors-1', './assets/js/home-media.js?v=20261114-link-editor-1', './assets/js/newsroom.js?v=20261114-aktuell-1',
   './assets/css/club-archive.css?v=20261110-club-return-1', './assets/js/club-archive.js?v=20261114-home-workflow-1',
   './assets/css/brand.css', './assets/css/app.css?v=20261114-admin-width-1', './assets/css/app.css?v=20261114-admin-width-1',
   './assets/css/design-preview.css?v=20261110-gallery-complete-1', './assets/js/design-preview.js?v=20261113-brand-gallery-4k',

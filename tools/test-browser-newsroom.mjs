@@ -60,13 +60,16 @@ try{
    const root=document.documentElement;
    const yellow=root.classList.contains('tfb-logo-midnight-amber');
    root.classList.add('tfb-logo-midnight-amber');
+   const symbols=[...el.closest('dialog').querySelectorAll('.editorial-link-mark.is-symbol')].filter(mark=>!mark.classList.contains('is-home-symbol'));
+   const amberColors=symbols.map(mark=>getComputedStyle(mark).color);
    const blue=getComputedStyle(el).color;
    root.classList.remove('tfb-logo-midnight-amber');
    const white=getComputedStyle(el).color;
+   const redColors=symbols.map(mark=>getComputedStyle(mark).color);
    root.classList.toggle('tfb-logo-midnight-amber',yellow);
-   return [blue,white];
+   return [blue,white,[...new Set(amberColors)],[...new Set(redColors)]];
  });
- assert.deepEqual(colors,['rgb(0, 29, 61)','rgb(255, 255, 255)']);
+ assert.deepEqual(colors,['rgb(0, 29, 61)','rgb(255, 255, 255)',['rgb(23, 23, 23)'],['rgb(255, 255, 255)']]);
  await page.keyboard.press('Escape');
  await symbolPicker.waitFor({state:'detached'});
  assert.equal(await form.locator('[name=linkSymbol]').inputValue(),'auto');
