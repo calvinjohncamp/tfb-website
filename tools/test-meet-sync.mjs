@@ -96,3 +96,29 @@ test('mail queue tracks singles and doubles, ignores training, and skips repeate
   [f.otherId,'invite','einzel',false],[f.admin.id,'yes','einzel',true],[f.otherId,'invite','doppel',false],
  ]);
 });
+
+test('inactive series can resume, and deleting one cancels only its upcoming invitations', async () => {
+  const f = await fixture();
+  const winter = series(f, { title: 'Wintertraining', active: false });
+  const summer = { ...series(f, { title: 'Sommertraining', active: false }), id: 'summer' };
+  assert.equal((await f.commit([group(f), winter, summer])).status, 200);
+  let owner = (await f.state()).body.meetings;
+  assert.equal(owner.series.length, 2);
+  assert.equal(owner.meets.length, 0);
+  const update = (record, revision, active) => ({ ...record, revision, value: { ...record.value, active } });
+  assert.equal((await f.commit([update(winter, 1, true)])).status, 200);
+  owner = (await f.state()).body.meetings;
+  const winterDate = owner.meets[0];
+  assert.equal(winterDate.seriesId, winter.id);
+  assert.equal((await f.commit([update(winter, 2, false), update(summer, 1, true)])).status, 200);
+  owner = (await f.state()).body.meetings;
+  assert.equal(owner.series.find(s => s.id === winter.id).active, false);
+  assert.deepEqual(owner.meets.map(m => m.seriesId).sort(), ['series', 'summer']);
+  const remove = { kind: 'series', id: winter.id, revision: 3, deleted: true };
+  assert.equal((await f.commit([remove], f.otherToken)).status, 403);
+  assert.equal((await f.commit([remove])).status, 200);
+  const invited = (await f.state(f.otherToken)).body.meetings;
+  assert.deepEqual(invited.meets.map(m => m.seriesId), ['summer']);
+  assert.ok(invited.inbox.some(n => n.type === 'cancel' && n.meetId === winterDate.id));
+  assert.equal((await f.state()).body.meetings.groups.length, 1);
+});

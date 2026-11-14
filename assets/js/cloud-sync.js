@@ -178,7 +178,7 @@
   });
   const pick=(v,fields)=>Object.fromEntries(fields.filter(k=>v[k]!==undefined).map(k=>[k,JSON.parse(JSON.stringify(v[k]))]));
   const fields={group:['id','name','weekday','time','place','createdBy','members','pending'],
-    series:['id','kind','groupId','title','time','place','note','meetAt','departAt','createdBy','invitees','slots','from','until','leadDays','skipped','createdAt'],
+    series:['id','kind','groupId','title','time','place','note','meetAt','departAt','createdBy','invitees','slots','from','until','leadDays','skipped','active','createdAt'],
     meet:['id','kind','groupId','title','date','time','place','note','meetAt','departAt','createdBy','invitees','slots','seriesId','createdAt']};
   function planningOperations(snapshot,importing=false) {
     const records=new Map(state.records.map(r=>[key(r),r])),baseline=state.meetings,ops=[];

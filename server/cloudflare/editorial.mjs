@@ -1,7 +1,7 @@
 const enc=new TextEncoder();
 const fail=(status,message)=>{throw Object.assign(Error(message),{status});};
 const clone=v=>JSON.parse(JSON.stringify(v));
-const globals=new Set(['version','teams','applied','chatText','homeLook','homeColorMode','nav','stories','photoFrames','focusStrip']);
+const globals=new Set(['version','teams','applied','chatText','homeLook','homeColorMode','nav','meetText','kioskActive','stories','photoFrames','focusStrip']);
 const pages=new Set(['home','aktuell','sport','verein','satzung','impressum']);
 const validKey=k=>typeof k==='string'&&(k.startsWith('page:')?pages.has(k.slice(5)):k.startsWith('global:')&&globals.has(k.slice(7)));
 export const digest=async value=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',typeof value==='string'?enc.encode(value):value)),b=>b.toString(16).padStart(2,'0')).join('');

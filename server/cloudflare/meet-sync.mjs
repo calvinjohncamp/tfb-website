@@ -95,7 +95,8 @@ export async function validateMeetingOperation(env,member,c,op,all,importing) {
         const from=day(v.from),until=day(v.until);
         if(until<from||Date.parse(until)-Date.parse(from)>2*366*86400000||!Number.isInteger(v.leadDays)||v.leadDays<1||v.leadDays>7)fail(400,'Zeitraum oder Vorlauf prüfen.');
         if(!Array.isArray(v.skipped||[])||(v.skipped||[]).length>200)fail(400,'Ungültige ausgenommene Termine.');
-        Object.assign(value,{from,until,leadDays:v.leadDays,skipped:[...new Set((v.skipped||[]).map(day))],reservedDates:importing?(v.reservedDates||[]).map(day):old?.value.reservedDates||[]});
+        if(v.active!==undefined&&typeof v.active!=='boolean')fail(400,'Ungültiger Serienstatus.');
+        Object.assign(value,{from,until,active:v.active!==false,leadDays:v.leadDays,skipped:[...new Set((v.skipped||[]).map(day))],reservedDates:importing?(v.reservedDates||[]).map(day):old?.value.reservedDates||[]});
       } else {
         value.date=day(v.date);value.seriesId=v.seriesId||null;
         if(v.seriesId){const s=ref('series',v.seriesId);if(!s||s.deleted||s.owner_id!==member.id)fail(403,'Ungültige Trainingsserie.');}
@@ -137,21 +138,21 @@ export async function validateMeetingOperation(env,member,c,op,all,importing) {
 export async function materializeMeetings(env,c,member) {
   const today=berlinDay(),created=[],statements=[];
   const groups=new Map(c.rows.filter(r=>r.kind==='group'&&!r.deleted).map(r=>[r.id,projectedGroup(c,r)]));
-  const append=(kind,id,owner,value)=>{
+  const append=(kind,id,owner,value,series)=>{
     const payload=crypto.randomUUID(),json=JSON.stringify(value);
     statements.push(env.DB.prepare('INSERT INTO app_payloads(payload_id,part,data) VALUES (?,0,?)').bind(payload,json));
-    statements.push(env.DB.prepare('INSERT INTO app_records(kind,id,owner_id,scope,revision,deleted,payload_id,updated_at) VALUES (?,?,?,\'\',1,0,?,?) ON CONFLICT(kind,id) DO NOTHING').bind(kind,id,owner,payload,Date.now()));
+    statements.push(env.DB.prepare('INSERT INTO app_records(kind,id,owner_id,scope,revision,deleted,payload_id,updated_at) SELECT ?,?,?,\'\',1,0,?,? WHERE EXISTS(SELECT 1 FROM app_records WHERE kind=\'series\' AND id=? AND revision=? AND deleted=0) ON CONFLICT(kind,id) DO NOTHING').bind(kind,id,owner,payload,Date.now(),series.id,series.revision));
     statements.push(env.DB.prepare('DELETE FROM app_payloads WHERE payload_id=? AND NOT EXISTS(SELECT 1 FROM app_records WHERE payload_id=?)').bind(payload,payload));
   };
-  for(const s of c.rows.filter(r=>r.kind==='series'&&!r.deleted&&participant(r,member.id))){
+  for(const s of c.rows.filter(r=>r.kind==='series'&&!r.deleted&&r.value.active!==false&&participant(r,member.id))){
     for(let date=s.value.from,n=0;date<=s.value.until&&n<200&&created.length<5;date=addDays(date,7),n++){
       if(date<today||(s.value.skipped||[]).includes(date)||(s.value.reservedDates||[]).includes(date))continue;
       if(addDays(date,-s.value.leadDays)>today)break;
       if(c.rows.some(r=>r.kind==='meet'&&r.value?.seriesId===s.id&&r.value.date===date))continue;
       const g=groups.get(s.value.groupId),invitees=g?everyone(g):s.value.invitees;
       const id='mt-'+s.id+'-'+date,value={...s.value,id,date,seriesId:s.id,invitees:[...new Set([s.owner_id,...invitees])],createdAt:new Date().toISOString()};
-      delete value.from;delete value.until;delete value.leadDays;delete value.skipped;
-      append('meet',id,s.owner_id,value);append('meet-answer',id+':'+s.owner_id,s.owner_id,{meetId:id,memberId:s.owner_id,a:'yes',at:Date.now(),note:'',imported:false});created.push(id);
+      delete value.from;delete value.until;delete value.leadDays;delete value.skipped;delete value.active;
+      append('meet',id,s.owner_id,value,s);append('meet-answer',id+':'+s.owner_id,s.owner_id,{meetId:id,memberId:s.owner_id,a:'yes',at:Date.now(),note:'',imported:false},s);created.push(id);
     }
   }
   if(statements.length)await env.DB.batch(statements);

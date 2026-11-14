@@ -39,8 +39,8 @@ try {
   const pencil = page.locator('[data-action="admin-toggle"]');
   await pencil.click();
 
-  await page.locator('[data-action="site-edit"]').first().waitFor();
-  const expected = ['Splash','Home','Partner','Mitglieder','Statistik','Kiosk','E-Mail an alle Mitglieder','Datensicherung / Time Machine'];
+  await page.locator('.site-page[data-page=home].editing-page').waitFor();
+  const expected = ['Splash','Partner','Mitglieder','Statistik','Kiosk','E-Mail an alle Mitglieder','Datensicherung / Time Machine'];
   for (const view of ['home','kiosk','chat','aktuell','sport','club','treffen']) {
     await page.evaluate(async view => { location.hash = '#'+view; await TFB.ui.renderView(view); }, view);
     await page.locator('.tfb-admin-links').waitFor();
@@ -71,11 +71,13 @@ try {
     }),{bg,fg});
   }
   assert.match(await page.locator('.kb-account-heading').innerText(),/Clubweite Abrechnung/);
-  await page.locator('.tfb-admin-links [data-action="site-edit"]').click();
+  await page.locator('.brand-home').click();
+  const homeEditor = page.locator('.site-page[data-page=home].editing-page');
+  await page.locator('.site-page[data-page=home]').waitFor();
+  if (!await homeEditor.count()) await pencil.click();
   await page.locator('.site-page[data-page="home"].editing-page').waitFor();
   assert.equal(await page.evaluate(()=>location.hash),'#home');
   await page.screenshot({path:`/private/tmp/tfb335-admin-${engine.name()}.png`,fullPage:true});
-  await page.locator('[data-action="site-done"]').first().click();
   await pencil.click();
   await page.waitForFunction(() => TFB.ui.state.member.adminHidden === true);
   assert.equal(await page.locator('[data-action="site-edit"]').count(), 0);

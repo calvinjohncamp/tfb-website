@@ -69,8 +69,18 @@
 
   let teamCounts = {};
   let boardPeople = [];
+  let siteLoad;
+  TFB.loadSite = () => {
+    if (site) return Promise.resolve(site);
+    siteLoad ||= ui().api.site().then(value => {
+      site = value;
+      TFB.refreshNav();
+      return site;
+    }).finally(() => { siteLoad = null; });
+    return siteLoad;
+  };
   async function ensure() {
-    if (!site) { site = await ui().api.site(); TFB.refreshNav && TFB.refreshNav(); }
+    await TFB.loadSite();
     const revision = TFB.imageRevision || 0;
     if (!imagesLoaded || imagesRevision !== revision) {
       images = await ui().api.images(); imagesLoaded = true; imagesRevision = revision;
@@ -891,6 +901,9 @@
   }
   async function pageView(key) {
     await ensure();
+    if (site.pages[key]?.deleted) {
+      return '<section class="card"><h1>Seite entfernt</h1><a class="btn" href="#home">Zur Startseite</a></section>';
+    }
     const section = location.hash.split('/')[1];
     if (key === 'verein' && section === 'galerie') { editing = null; return TFB.clubGallery.view(location.hash, { picture, openGallery }); }
     if (key === 'verein' && section === 'archiv' && TFB.clubArchive) {
@@ -980,10 +993,22 @@
   // Home uses the approved Wechselspiel layout, including older CMS snapshots.
   // ---------- Menü oben: Namen, Reihenfolge, Ziel (Seite der App oder Website), sichtbar ----------
   const MAX_NAV = 8;
-  const navAll = () => (Array.isArray(site?.nav) && site.nav.length ? site.nav : TFB.defaultNav());
-  TFB.navItems = () => (site ? navAll().filter((x) => !x.hidden) : null);
+  const navContentPages = new Map([['aktuell', 'aktuell'], ['sport', 'sport'], ['club', 'verein'], ['verein', 'verein']]);
+  const navPage = target => target?.startsWith('#') ? navContentPages.get(target.slice(1).split('/')[0]) : undefined;
+  const navTargetAvailable = target => !site?.pages?.[navPage(target)]?.deleted;
+  const navDefaults = () => TFB.defaultNav().filter(x => navTargetAvailable(x.target));
+  const navAll = () => (Array.isArray(site?.nav) ? site.nav : navDefaults()).map(item => {
+    // Alte Stände enthielten hier noch den Namen, den der Kopf seitdem ersetzt hat.
+    if (item.id === 'treffen' && item.target === '#treffen' && !item.customLabel
+        && ['Verabreden', 'Dating'].includes(item.label)) {
+      return { ...item, label: 'Dating 2.0' };
+    }
+    return item;
+  });
+  TFB.kioskActive = () => site?.kioskActive !== false;
+  TFB.navItems = () => site ? navAll().filter(x => !x.hidden && navTargetAvailable(x.target)) : null;
   function navCard() {
-    const shown = navAll().filter((x) => !x.hidden);
+    const shown = TFB.navItems();
     return `<section class="look-picker nav-card" aria-label="Menü oben">
       <h2>Menü oben</h2>
       <p class="nav-preview">${shown.map((x) => `<span>${esc(x.label)}${/^https?:/i.test(x.target || '') ? ' <svg class="link-arrow" viewBox="0 0 806 1000" aria-hidden="true" focusable="false"><path transform="translate(0 755) scale(1 -1)" d="M528 -14 448 66 546 164 587 189 581 206 533 198H50V312H533L581 304L587 321L546 346L448 444L528 524L756 296V214Z"/></svg>' : ''}</span>`).join('')}</p>
@@ -991,33 +1016,41 @@
     </section>`;
   }
   function openNavEditor() {
-    const { openSheet, closeSheet, api, toast, icon } = ui();
-    const draft = JSON.parse(JSON.stringify(navAll()));
+    const { openSheet, closeSheet, api, toast, icon, state } = ui();
+    if (!state.member?.isAdmin) return;
+    const originalSite = structuredClone(site);
+    const originals = new Map(navAll().map(item => [item.id, item]));
+    const draft = structuredClone(navAll());
+    const removals = new Map();
     const targets = appTargets();
+    let saving = false;
     const render = () => {
-      const visible = draft.filter((x) => !x.hidden).length;
       openSheet(`
         <form class="editor" data-editor="nav" novalidate>
           <h2>Menü oben bearbeiten</h2>
           <p class="ed-hint">Name ändern, mit den Pfeilen sortieren und das Ziel wählen: eine <b>Seite der App</b> oder eine <b>Website</b> (öffnet in neuem Fenster). Höchstens ${MAX_NAV} sichtbare Punkte – dann passt das Menü auch aufs Handy.</p>
           <div class="nav-rows">${draft.map((x, i) => {
-            const web = /^https?:/i.test(x.target || '');
+            const web = x.website ?? /^https?:/i.test(x.target || '');
             return `<div class="nav-row ${x.hidden ? 'is-hidden' : ''}">
               <div class="nav-row-top">
                 <input name="label_${i}" value="${esc(x.label)}" maxlength="20" aria-label="Name im Menü">
                 <button type="button" data-navmove="-1" data-i="${i}" ${i === 0 ? 'disabled' : ''} aria-label="Nach vorne">${icon.up}</button>
                 <button type="button" data-navmove="1" data-i="${i}" ${i === draft.length - 1 ? 'disabled' : ''} aria-label="Nach hinten">${icon.down}</button>
                 <label class="nav-show"><input type="checkbox" name="show_${i}" ${x.hidden ? '' : 'checked'}><span>zeigen</span></label>
-                ${x.custom ? `<button type="button" data-navdel="${i}" aria-label="Menüpunkt löschen">×</button>` : ''}
               </div>
               <div class="nav-row-target">
                 <div class="seg"><button type="button" class="${web ? '' : 'on'}" data-navkind="app" data-i="${i}">Seite der App</button><button type="button" class="${web ? 'on' : ''}" data-navkind="web" data-i="${i}">Website</button></div>
                 ${web ? `<input name="target_${i}" type="url" value="${esc(x.target)}" placeholder="https://www.beispiel.de">`
                   : `<select name="target_${i}">${targets.map(([v, l]) => `<option value="${esc(v)}" ${v === x.target ? 'selected' : ''}>${esc(l)}</option>`).join('')}${targets.some(([v]) => v === x.target) ? '' : `<option value="${esc(x.target)}" selected>${esc(x.target)}</option>`}</select>`}
               </div>
+              <div>
+                <button type="button" class="btn small danger" data-navdel="${i}">Menüpunkt löschen</button>
+                ${deletablePage(x) ? `<button type="button" class="btn small danger" data-navdel="${i}" data-nav-page>Mit Seiteninhalten löschen</button>` : ''}
+              </div>
             </div>`;
           }).join('')}</div>
           ${draft.length < 12 ? '<button type="button" class="btn block" data-navadd>+ Menüpunkt hinzufügen</button>' : ''}
+          ${removals.size ? `<div class="ed-hint"><p>Zum Löschen vorgemerkt</p><ul>${[...removals.values()].map(removal => `<li>${esc(removalLabel(removal))}</li>`).join('')}</ul><p>Beim Speichern bestätigst du das Löschen erneut.</p></div>` : ''}
           <p class="form-error" role="alert"></p>
           <div class="ed-actions"><button type="submit" class="btn primary block">Speichern</button></div>
           <button type="button" class="link center" data-navreset>Auf Standard zurücksetzen</button>
@@ -1027,41 +1060,105 @@
         x.label = form.elements[`label_${i}`].value.trim();
         x.hidden = !form.elements[`show_${i}`].checked;
         const t = form.elements[`target_${i}`].value.trim();
+        x.website = form.elements[`target_${i}`].type === 'url';
         x.target = t && !/^(https?:\/\/|#)/i.test(t) ? 'https://' + t : t;
       });
+      form.addEventListener('change', e => {
+        if (!e.target.matches('select[name^="target_"]')) return;
+        collect();
+        const index = Number(e.target.name.slice(7));
+        const button = e.target.closest('.nav-row').querySelector('[data-nav-page]');
+        if (button) button.disabled = !deletablePage(draft[index]);
+      });
       form.addEventListener('click', (e) => {
+        if (saving) return;
         const mv = e.target.closest('[data-navmove]');
         if (mv) { collect(); const a = Number(mv.dataset.i); const b = a + Number(mv.dataset.navmove); [draft[a], draft[b]] = [draft[b], draft[a]]; render(); return; }
         const kind = e.target.closest('[data-navkind]');
         if (kind) {
           collect(); const x = draft[Number(kind.dataset.i)];
           const web = kind.dataset.navkind === 'web';
-          if (web !== /^https?:/i.test(x.target || '')) { x.memo = { ...(x.memo || {}), [web ? 'app' : 'web']: x.target }; x.target = web ? (x.memo.web || '') : (x.memo.app || '#home'); }
+          if (web !== x.website) { x.memo = { ...(x.memo || {}), [web ? 'app' : 'web']: x.target }; x.target = web ? (x.memo.web || '') : (x.memo.app || '#home'); x.website = web; }
           render(); return;
         }
         const del = e.target.closest('[data-navdel]');
-        if (del) { collect(); draft.splice(Number(del.dataset.navdel), 1); render(); return; }
+        if (del) {
+          collect();
+          const index = Number(del.dataset.navdel);
+          const item = draft[index];
+          const page = del.hasAttribute('data-nav-page') && deletablePage(item);
+          if (del.hasAttribute('data-nav-page') && !page) { render(); return; }
+          const removal = { label: item.label || originals.get(item.id)?.label || 'Neuer Menüpunkt', page };
+          if (!confirm(`${removalLabel(removal)} zum Löschen vormerken?\n\nDie Änderung wird erst beim Speichern übernommen.`)) return;
+          if (originals.has(item.id)) removals.set(item.id, removal);
+          draft.splice(index, 1);
+          render();
+          return;
+        }
         if (e.target.closest('[data-navadd]')) { collect(); draft.push({ id: 'n-' + Date.now().toString(36), label: 'Neu', target: '#home', custom: true }); render(); return; }
-        if (e.target.closest('[data-navreset]')) { if (confirm('Menü auf den Standard zurücksetzen?')) { draft.splice(0, draft.length, ...TFB.defaultNav()); render(); } }
+        if (e.target.closest('[data-navreset]') && confirm('Menü auf den Standard zurücksetzen?')) {
+          const defaults = navDefaults();
+          removals.clear();
+          for (const [id, item] of originals) {
+            if (!defaults.some(x => x.id === id)) removals.set(id, { label: item.label });
+          }
+          draft.splice(0, draft.length, ...defaults);
+          render();
+        }
       });
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
+        if (saving) return;
         collect();
         const err = form.querySelector('.form-error');
         const shown = draft.filter((x) => !x.hidden);
-        if (!shown.length) { err.textContent = 'Mindestens ein Menüpunkt muss sichtbar sein.'; return; }
         if (shown.length > MAX_NAV) { err.textContent = `Höchstens ${MAX_NAV} sichtbare Menüpunkte – bitte einen ausblenden.`; return; }
-        const bad = draft.find((x) => !x.label || !/^(#|https?:\/\/\S+\.\S+)/i.test(x.target || ''));
+        const bad = draft.find(x => !x.label || (x.website ? !/^https?:\/\/\S+\.\S+$/i.test(x.target) : !x.target.startsWith('#')));
         if (bad) { err.textContent = bad.label ? `Bitte für „${bad.label}“ ein gültiges Ziel angeben.` : 'Bitte jedem Menüpunkt einen Namen geben.'; return; }
+        const removedPages = new Set([...removals.values()].map(x => x.page).filter(Boolean));
+        const remaining = draft.find(x => removedPages.has(navPage(x.target)) || !navTargetAvailable(x.target));
+        if (remaining) { err.textContent = `„${remaining.label}“ verweist auf eine entfernte oder zum Löschen vorgemerkte Seite. Bitte ändere das Ziel oder lösche den Menüpunkt.`; return; }
+        if (removals.size && !confirm(`Jetzt speichern und folgende Einträge löschen?\n\n${[...removals.values()].map(removalLabel).join('\n')}`)) return;
+        saving = true;
+        const controls = [...form.elements].filter(el => !el.disabled);
+        controls.forEach(el => { el.disabled = true; });
+        err.textContent = '';
         try {
-          site = await api.saveSite({ ...JSON.parse(JSON.stringify(site)), nav: draft.map(({ memo, ...x }) => x) });
-          closeSheet();
+          const next = await api.site();
+          const changed = (key, before, current) => originalSite._cms
+            ? next._cms?.versions[key] !== originalSite._cms.versions[key]
+            : JSON.stringify(before) !== JSON.stringify(current);
+          if (changed('global:nav', originalSite.nav, next.nav) ||
+              [...removedPages].some(page => changed('page:' + page, originalSite.pages[page], next.pages[page]))) {
+            throw Error('Das Menü oder eine betroffene Seite wurde inzwischen geändert. Bitte schließe den Editor und öffne ihn erneut.');
+          }
+          next.nav = draft.map(({ memo, website, ...x }) => {
+            if (x.id === 'treffen' && x.target === '#treffen') x.customLabel = true;
+            return x;
+          });
+          for (const page of removedPages) next.pages[page] = { title: originalSite.pages[page].title, blocks: [], deleted: true };
+          site = await api.saveSite(next);
+          if (form.isConnected) closeSheet();
           TFB.refreshNav();
           toast('Menü gespeichert', true);
           ui().renderView();
-        } catch (ex) { err.textContent = ex.message; }
+        } catch (ex) {
+          if (form.isConnected) err.textContent = ex.message;
+          else toast(ex.message);
+        } finally {
+          saving = false;
+          controls.forEach(el => { el.disabled = false; });
+        }
       });
     };
+    function deletablePage(item) {
+      const page = navPage(item.target);
+      return page && !item.target.includes('/') && originals.get(item.id)?.target === item.target
+        && originalSite.pages[page] && !originalSite.pages[page].deleted ? page : null;
+    }
+    function removalLabel({label, page}) {
+      return page ? `„${label}“ und die Seite „${originalSite.pages[page].title}“ mit allen redaktionellen Seiteninhalten` : `Menüpunkt „${label}“`;
+    }
     render();
   }
 
@@ -2101,11 +2198,11 @@
   function appTargets() {
     const list = [['#home', 'Home'], ['#kiosk', 'Kiosk'], ['#strichliste', 'Kiosk · Strichliste'], ['#abrechnungen', 'Kiosk · Abrechnungen'],
       ['#chat', 'Chat'], ['#chat/alle', 'Chat · Alle Beiträge'], ['#aktuell', 'Aktuell'], ['#sport', 'Sport'], ['#sport/training', 'Sport · Training'], ['#sport/platzbelegung', 'Sport · Platzbelegung'], ['#sport/regelwerk', 'Sport · Regelwerk'], ['#club', 'Club'], ['#club/history', 'Club · History'], ['#impressum', 'Impressum'], ['#satzung', 'Satzung']];
-    if (TFB.config.features && TFB.config.features.treffen) list.push(['#treffen', 'Verabreden']);
+    if (TFB.config.features && TFB.config.features.treffen) list.push(['#treffen', navAll().find(x => x.target === '#treffen')?.label || 'Dating 2.0']);
     (site.pages.home.blocks || []).filter((x) => x.type === 'feature' && hasMore(x) && (!x.navigation || x.navigation === 'detail'))
       .forEach((x) => list.push([`#home/${x.id}`, `Home · ${x.title}`]));
     (site.pages.home.blocks || []).filter(x => x.album?.enabled).forEach(x => list.push([`#home/${x.id}/fotos`, `Fotos · ${x.title}`]));
-    return list;
+    return list.filter(([target]) => navTargetAvailable(target));
   }
   function linkTargetField(url, prefix = 'link', label = 'Ziel') {
     const isApp = /^#/.test(url || '');
@@ -3168,7 +3265,14 @@
       } catch (error) { form.querySelector('.form-error').textContent = error.message; button.disabled = false; }
     });
   }
-  TFB.refreshSite = async (reloadImages = false) => { site = null; if (reloadImages) imagesLoaded = false; await ui().renderView(); };
+  TFB.refreshSite = async (reloadImages = false) => {
+    if (siteLoad) await siteLoad.catch(() => {});
+    site = null;
+    if (reloadImages) imagesLoaded = false;
+    const loading = TFB.loadSite().catch(() => {});
+    await ui().renderView();
+    await loading;
+  };
   Object.assign(TFB.actions, {
     'photo-frame': async (el) => {
       await ensure();
@@ -3210,7 +3314,38 @@
       if (ui().currentView() === routeOf(editing)) await ui().renderView(); else location.hash = '#' + routeOf(editing);
       window.scrollTo(0, el.dataset.keepScroll ? y : 0);
     },
-    'nav-edit': () => openNavEditor(),
+    'kiosk-toggle-availability': async el => {
+      const { api, state, toast, renderView } = ui();
+      if (!state.member?.isAdmin) return;
+      const active = el.getAttribute('aria-pressed') === 'true';
+      if (active && !confirm('Kiosk deaktivieren? Der Menüpunkt verschwindet und digitale Bestellungen werden gesperrt.')) return;
+      el.disabled = true;
+      try {
+        const saved = await api.site();
+        if ((saved.kioskActive !== false) === active) {
+          saved.kioskActive = !active;
+          site = await api.saveSite(saved);
+        } else {
+          site = saved;
+        }
+        TFB.refreshNav();
+        await renderView();
+        toast(TFB.kioskActive() ? 'Kiosk aktiviert' : 'Kiosk deaktiviert', true);
+      } catch (error) { toast(error.message); }
+      finally { el.disabled = false; }
+    },
+    'nav-edit': async el => {
+      if (!ui().state.member?.isAdmin) return;
+      el.disabled = true;
+      try {
+        const latest = await ui().api.site();
+        if (!el.isConnected || ui().currentView() !== 'home') return;
+        site = latest;
+        TFB.refreshNav();
+        openNavEditor();
+      } catch (error) { ui().toast(error.message); }
+      finally { el.disabled = false; }
+    },
     'site-done': () => { editing = null; ui().renderView(); window.scrollTo(0, 0); },
     'block-move': (el) => {
       const list = blocksOf();

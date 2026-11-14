@@ -175,6 +175,7 @@
     const created = [];
     const now = today();
     (data.series || []).forEach((s) => {
+      if (s.active === false) return;
       for (let d = s.from, i = 0; d <= s.until && i < 200; d = addDays(d, 7), i += 1) {
         if (d < now) continue;
         if (addDays(d, -s.leadDays) > now) break;            // noch nicht dran
@@ -189,11 +190,12 @@
         created.push(m);
       }
     });
-    save();
+    if (created.length) persist();
     return created;
   }
   // Wann geht die nächste Einladung einer Serie raus – und für welchen Termin?
   function nextSend(s) {
+    if (s.active === false) return null;
     const now = today();
     for (let d = s.from, i = 0; d <= s.until && i < 200; d = addDays(d, 7), i += 1) {
       if (d < now || (s.skipped || []).includes(d) || data.meets.some((m) => m.seriesId === s.id && m.date === d)) continue;
@@ -305,16 +307,67 @@
     });
   }
 
+  const defaultPageText = {
+    title: 'Verabreden',
+    subtitle: 'Einzel, Doppel, Training – wer ist dabei?',
+    welcome: 'Gemeinsam auf den Platz',
+    invitations: 'Einladungen für mich',
+    matches: 'Meine kommenden Matches',
+    training: 'Regelmäßige Trainingsgruppen',
+    groups: 'Meine Gruppen',
+  };
+  const pageTextFields = {
+    title: 'Überschrift', subtitle: 'Unterüberschrift', welcome: 'Einführung für Gäste',
+    invitations: 'Einladungen', matches: 'Kommende Matches', training: 'Trainingsserien', groups: 'Gruppen',
+  };
+  const pageText = site => ({ ...defaultPageText, ...site.meetText });
+  async function editPageText() {
+    const { state, api, openSheet, closeSheet, toast } = ui();
+    if (!state.member?.isAdmin) return;
+    const site = await api.site();
+    if (ui().currentView() !== 'treffen') return;
+    const copy = pageText(site);
+    openSheet(`<form class="editor" data-meet-text>
+      <h2>Dating-Seite bearbeiten</h2>
+      ${Object.entries(pageTextFields).map(([key, label]) => `<label class="field"><span>${label}</span><input name="copy_${key}" value="${esc(copy[key])}" maxlength="160" ${key === 'subtitle' ? '' : 'required'}></label>`).join('')}
+      <p class="form-error" role="alert"></p>
+      <button class="btn primary block" type="submit">Speichern</button>
+    </form>`);
+    const form = document.querySelector('[data-meet-text]');
+    const button = form.querySelector('button');
+    form.addEventListener('submit', async event => {
+      event.preventDefault();
+      if (button.disabled) return;
+      const values = Object.fromEntries(Object.keys(pageTextFields).map(key => [key, form.elements['copy_' + key].value.trim()]));
+      if (Object.keys(values).some(key => key !== 'subtitle' && !values[key])) {
+        form.querySelector('.form-error').textContent = 'Bitte alle Überschriften ausfüllen.';
+        return;
+      }
+      button.disabled = true;
+      try {
+        site.meetText = values;
+        await api.saveSite(site);
+        if (form.isConnected) closeSheet();
+        await TFB.refreshSite();
+        toast('Dating-Texte gespeichert', true);
+      } catch (error) { form.querySelector('.form-error').textContent = error.message; }
+      finally { button.disabled = false; }
+    });
+  }
+
   // ---------- Übersicht ----------
   async function view() {
     const { state, icon } = ui();
+    const text = pageText(await TFB.loadSite());
+    const head = `<header class="view-head"><div><h1>${esc(text.title)}</h1>${text.subtitle ? `<p class="muted">${esc(text.subtitle)}</p>` : ''}</div>
+      ${state.member?.isAdmin ? `<button type="button" class="view-close" data-action="meet-text-edit" aria-label="Dating-Seite bearbeiten">${icon.pencil}</button>` : ''}</header>`;
     if (!state.member) {
-      return `${ui().viewHead('Verabreden', 'Einzel, Doppel, Training – wer ist dabei?', false)}
+      return `${head}
         <section class="meet-new-row">${Object.entries(KINDS).map(([k,v])=>`<button type="button" class="meet-kind-tile" data-action="login"><span class="meet-kind-icon">${kindIcon(k)}</span><strong>${v.label}</strong><small>${v.hint}</small></button>`).join('')}</section>
-        <h2 class="block-heading">Gemeinsam auf den Platz</h2><p>Verabrede Dich zum Match, lade Mitspieler ein und organisiere regelmäßige Trainingsrunden.</p>
-        <h2 class="block-heading">Meine kommenden Matches</h2><p class="muted">Nach der Anmeldung findest Du hier Deine Termine und Einladungen.</p>
-        <h2 class="block-heading">Regelmäßige Trainingsgruppen</h2><p class="small muted meet-section-intro">Wiederkehrende Einladungen mit festem Tag und fester Uhrzeit.</p><button type="button" class="btn meet-gap" data-action="login">Trainingsserie anlegen</button>
-        <h2 class="block-heading">Meine Gruppen</h2><div class="meet-groups"><button type="button" class="meet-group add" data-action="login">${icon.plus}<strong>Gruppe anlegen</strong></button></div>
+        <h2 class="block-heading">${esc(text.welcome)}</h2><p>Verabrede Dich zum Match, lade Mitspieler ein und organisiere regelmäßige Trainingsrunden.</p>
+        <h2 class="block-heading">${esc(text.matches)}</h2><p class="muted">Nach der Anmeldung findest Du hier Deine Termine und Einladungen.</p>
+        <h2 class="block-heading">${esc(text.training)}</h2><p class="small muted meet-section-intro">Wiederkehrende Einladungen mit festem Tag und fester Uhrzeit.</p><button type="button" class="btn meet-gap" data-action="login">Trainingsserie anlegen</button>
+        <h2 class="block-heading">${esc(text.groups)}</h2><div class="meet-groups"><button type="button" class="meet-group add" data-action="login">${icon.plus}<strong>Gruppe anlegen</strong></button></div>
         ${ui().partnerSlot('treffen', 'Verabreden wird dir präsentiert von')}`;
     }
     const fresh = materialize();
@@ -327,7 +380,7 @@
       .sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
     const waiting = mine.filter((m) => m.invitees.includes(me().id) && !m.responses[me().id]);
     const rest = mine.filter((m) => !waiting.includes(m));
-    const mySeries = (data.series || []).filter((s) => s.until >= today() && (s.createdBy === me().id || s.invitees.includes(me().id)));
+    const mySeries = (data.series || []).filter(s => s.createdBy === me().id || (s.active !== false && s.until >= today() && s.invitees.includes(me().id)));
     const allIds = [...new Set(mine.flatMap((m) => m.invitees).concat(mySeries.map((s) => s.createdBy)))];
     const playerIds = [...new Set(mine.flatMap(m => lineup(m).players.slice(0, 7)))];
     const [names, photos] = await Promise.all([
@@ -339,7 +392,7 @@
     const groupAsks = data.groups.filter((g) => (g.pending || []).includes(me().id));
     const gNames = await ui().api.memberNames(groupAsks.map((g) => g.createdBy));
     return `
-      ${ui().viewHead('Verabreden', 'Einzel, Doppel, Training – wer ist dabei?', false)}
+      ${head}
       <section class="meet-new-row">
         ${Object.entries(KINDS).map(([k, v]) => `
           <button type="button" class="meet-kind-tile" data-action="meet-new" data-kind="${k}">
@@ -347,20 +400,20 @@
           </button>`).join('')}
       </section>
       ${waiting.length || groupAsks.length ? `
-        <h2 class="block-heading">Einladungen für mich</h2>
+        <h2 class="block-heading">${esc(text.invitations)}</h2>
         <div class="meet-list">${groupAsks.map((g) => `
           <button type="button" class="card meet-card meet-series" data-action="group-answer" data-id="${g.id}">
             <span class="meet-series-icon">${kindIcon('training')}</span>
             <span class="meet-card-text"><strong>Gruppe ${esc(g.name)}</strong><small>${esc(firstName(gNames[g.createdBy]))} hat dich hinzugefügt · ${g.members.length} bestätigt</small></span>
             <span class="meet-mine open">Bestätigen</span>
           </button>`).join('')}${waiting.map((m) => card(m, names, photos)).join('')}</div>` : ''}
-      <h2 class="block-heading">Meine kommenden Matches</h2>
+      <h2 class="block-heading">${esc(text.matches)}</h2>
       ${rest.length ? `<div class="meet-list">${rest.map((m) => card(m, names, photos)).join('')}</div>` : '<p class="muted">Gerade keine weiteren Verabredungen.</p>'}
-      <h2 class="block-heading">Regelmäßige Trainingsgruppen</h2>
+      <h2 class="block-heading">${esc(text.training)}</h2>
       <p class="small muted meet-section-intro">Wiederkehrende Einladungen mit festem Tag und fester Uhrzeit.</p>
       <div class="meet-series-list">${mySeries.map((s) => seriesCard(s, names)).join('')}</div>
       <button type="button" class="btn meet-gap" data-action="meet-new" data-kind="training" data-repeat="weekly">Trainingsserie anlegen</button>
-      <h2 class="block-heading">Meine Gruppen</h2>
+      <h2 class="block-heading">${esc(text.groups)}</h2>
       <p class="small muted meet-section-intro">Gespeicherte Mitgliederlisten, die du beim Einladen auswählen und kombinieren kannst.</p>
       <div class="meet-groups">
         ${myGroups.map((g) => `<button type="button" class="meet-group" data-action="meet-group" data-id="${g.id}"><strong>${esc(g.name)}</strong><small>${everyone(g).length} ${everyone(g).length === 1 ? 'Mitglied' : 'Mitglieder'}</small>${(g.pending || []).length ? `<small class="meet-unconfirmed">${g.pending.length} unbestätigt</small>` : ''}</button>`).join('')}
@@ -429,7 +482,7 @@
   function seriesCard(s, names) {
     const nx = nextSend(s);
     const own = s.createdBy === me().id;
-    const nextLine = nx ? `Nächste Einladung ${sendText(nx.send)} für ${shortDate(nx.date)}` : 'Alle Termine sind verschickt';
+    const nextLine = s.active === false ? 'Inaktiv' : s.until < today() ? 'Abgelaufen' : nx ? `Nächste Einladung ${sendText(nx.send)} für ${shortDate(nx.date)}` : 'Alle Termine sind verschickt';
     const inner = `
         <span class="meet-series-icon">${kindIcon(s.kind)}</span>
         <span class="meet-card-text">
@@ -624,6 +677,7 @@
       place: preset.place || initialGroup?.place || PLACE,
       note: preset.note || '', meetAt: preset.meetAt || '', departAt: preset.departAt || '',
       weekly: preset.weekly === true,
+      active: preset.active !== false,
       until: preset.until || '', leadDays: preset.leadDays || 3,
       slots: kind === 'frei' ? preset.slots || null : KINDS[kind].slots,
       picked: (preset.picked || (initialGroup ? [initialGroup.id] : [])).slice(),
@@ -666,7 +720,8 @@
               <label class="field"><span>Bis einschließlich</span><input name="until" type="date" value="${esc(draft.until)}" min="${esc(draft.date)}"></label>
               <label class="field"><span>Einladung geht raus</span><select name="leadDays">${LEADS.map((n) => `<option value="${n}" ${n === draft.leadDays ? 'selected' : ''}>${n} ${n === 1 ? 'Tag' : 'Tage'} vorher</option>`).join('')}</select></label>
             </div>
-            <p class="small muted meet-rule">Jede Woche ${esc(WD_LONG[draft.weekday])} bis ${esc(longDate(draft.until))}. Die Einladung zum jeweiligen Termin landet automatisch ${draft.leadDays} ${draft.leadDays === 1 ? 'Tag' : 'Tage'} vorher (${esc(sendDay)}) im Postfach aller Eingeladenen${firstSend <= today() ? ' – die erste sofort' : ` – die erste am ${esc(shortDate(firstSend))}`}. Jede Woche wird neu zu- oder abgesagt.</p>` : ''}
+            <label class="meet-check"><input name="active" type="checkbox" ${draft.active ? 'checked' : ''}> Serie aktiv</label>
+            <p class="small muted meet-rule">Jede Woche ${esc(WD_LONG[draft.weekday])} bis ${esc(longDate(draft.until))}. Bei einer aktiven Serie landet die Einladung zum jeweiligen Termin automatisch ${draft.leadDays} ${draft.leadDays === 1 ? 'Tag' : 'Tage'} vorher (${esc(sendDay)}) im Postfach aller Eingeladenen${firstSend <= today() ? ' – die erste sofort' : ` – die erste am ${esc(shortDate(firstSend))}`}. Jede Woche wird neu zu- oder abgesagt.</p>` : ''}
           <label class="field"><span>Anlage</span><input name="place" value="${esc(draft.place)}"></label>
           <div class="field"><span>Spieler auswählen · ${draft.invitees.length} ${draft.invitees.length === 1 ? 'Person' : 'Personen'} inkl. dir</span>
             ${rule ? `<p class="small muted meet-rule">${rule} Wer später zusagt, steht auf der Ersatzbank und rückt automatisch nach.</p>` : ''}
@@ -692,6 +747,7 @@
         </form>`);
       const form = document.querySelector('[data-meet-form]');
       const collect = () => {
+        if (form.elements.active) draft.active = form.elements.active.checked;
         ['title', 'date', 'time', 'place', 'note', 'until', 'meetAt', 'departAt'].forEach((k) => { if (form.elements[k]) draft[k] = form.elements[k].value.trim(); });
         if (form.elements.leadDays) draft.leadDays = Number(form.elements.leadDays.value) || 3;
         if (form.elements.slots) draft.slots = parseInt(form.elements.slots.value, 10) || null;
@@ -777,12 +833,12 @@
           createdBy: me().id, invitees: draft.invitees, slots: draft.slots };
         let target, message;
         if (draft.weekly) {
-          const s = { id: uid('sr-'), ...base, from: draft.date, until: draft.until, leadDays: draft.leadDays, skipped: [], createdAt: new Date().toISOString() };
+          const s = { id: uid('sr-'), ...base, from: draft.date, until: draft.until, leadDays: draft.leadDays, active: draft.active, skipped: [], createdAt: new Date().toISOString() };
           data.series.push(s);
           const made = materialize();
           made.forEach((m) => simulateReplies(m));
           target = made[0] ? '#treffen/' + made[0].id : '#treffen';
-          message=TFB.api.centralSync?'Regelmäßige Einladung gespeichert':made.length ? `Eingerichtet – die erste Einladung ist im Postfach von ${draft.invitees.length - 1} ${draft.invitees.length === 2 ? 'Person' : 'Personen'}` : `Eingerichtet – die erste Einladung geht am ${shortDate(addDays(draft.date, -draft.leadDays))} raus`;
+          message=!draft.active?'Serie inaktiv gespeichert':TFB.api.centralSync?'Regelmäßige Einladung gespeichert':made.length ? `Eingerichtet – die erste Einladung ist im Postfach von ${draft.invitees.length - 1} ${draft.invitees.length === 2 ? 'Person' : 'Personen'}` : `Eingerichtet – die erste Einladung geht am ${shortDate(addDays(draft.date, -draft.leadDays))} raus`;
         } else {
           const meet = { id: uid(), ...base, date: draft.date, responses: { [me().id]: ans('yes', 0) }, createdAt: new Date().toISOString() };
           data.meets.push(meet);
@@ -801,50 +857,91 @@
     render();
   }
 
-  // ---------- Regelmäßige Einladung ändern oder beenden (nur der Einladende) ----------
+  // ---------- Regelmäßige Einladung verwalten ----------
   async function openSeries(seriesId) {
-    const { openSheet, closeSheet } = ui();
+    const { openSheet, closeSheet, api, toast } = ui();
     const s = seriesById(seriesId);
-    if (!s) return;
-    const names = await ui().api.memberNames(s.invitees);
+    if (!s || s.createdBy !== me()?.id) return;
+    const opened = JSON.stringify(s);
+    const names = await api.memberNames(s.invitees);
     const nx = nextSend(s);
     openSheet(`
       <form class="editor meet-editor" data-series-form novalidate>
         <h2>${esc(s.title)}</h2>
-        <label class="field"><span>Wochentag</span><input name="weekday" value="${WD_NAMES[weekdayOf(s.from)]}" readonly></label>
-        <p class="small muted">${esc(rhythm(s))} · ${esc(s.time)} Uhr · ${esc(s.place)}<br>
-          ${nx ? `Nächste Einladung ${esc(sendText(nx.send))} für ${esc(shortDate(nx.date))}` : 'Alle Termine sind verschickt'}<br>
-          Eingeladen: ${esc(s.invitees.map((i) => firstName(names[i])).join(', '))}</p>
+        <label class="field"><span>Name der Serie</span><input name="title" value="${esc(s.title)}" maxlength="120"></label>
+        <p class="small muted">${esc(rhythm(s))}<br>
+          ${nx ? `Nächste Einladung ${esc(sendText(nx.send))} für ${esc(shortDate(nx.date))}` : s.active === false ? 'Versand pausiert' : 'Keine weiteren Einladungen geplant'}<br>
+          Eingeladen: ${esc(s.invitees.map(i => firstName(names[i])).join(', '))}</p>
         <div class="field-row">
+          <label class="field"><span>Erster Termin</span><input name="from" type="date" value="${esc(s.from)}"></label>
+          <label class="field"><span>Bis einschließlich</span><input name="until" type="date" value="${esc(s.until)}"></label>
           <label class="field"><span>Uhrzeit</span><input name="time" type="time" value="${esc(s.time)}"></label>
-          <label class="field"><span>Bis einschließlich</span><input name="until" type="date" value="${esc(s.until)}" min="${esc(today())}"></label>
         </div>
-        <label class="field"><span>Anlage</span><input name="place" value="${esc(s.place)}"></label>
-        <label class="field"><span>Einladung geht raus</span><select name="leadDays">${LEADS.map((n) => `<option value="${n}" ${n === s.leadDays ? 'selected' : ''}>${n} ${n === 1 ? 'Tag' : 'Tage'} vorher</option>`).join('')}</select></label>
-        <p class="small muted meet-rule">Änderungen gelten für alle Termine, deren Einladung noch nicht verschickt ist.</p>
+        <label class="field"><span>Anlage</span><input name="place" value="${esc(s.place)}" maxlength="200"></label>
+        <label class="field"><span>Einladung geht raus</span><select name="leadDays">${LEADS.map(n => `<option value="${n}" ${n === s.leadDays ? 'selected' : ''}>${n} ${n === 1 ? 'Tag' : 'Tage'} vorher</option>`).join('')}</select></label>
+        <label class="field"><span>Status</span><select name="active"><option value="yes">Aktiv</option><option value="no" ${s.active === false ? 'selected' : ''}>Inaktiv</option></select></label>
+        <p class="small muted">Inaktiv pausiert neue Einladungen. Bereits verschickte Einladungen und Zusagen bleiben gültig. Beim Löschen werden bereits eingeladene kommende Termine abgesagt und die Teilnehmenden im Postfach informiert.</p>
         <p class="form-error" role="alert"></p>
         <button type="submit" class="btn primary block big">Speichern</button>
-        <button type="button" class="link center danger-link" data-end>Regelmäßige Einladung beenden</button>
+        <button type="button" class="btn danger block" data-end>Serie löschen und kommende Termine absagen</button>
       </form>`);
     const form = document.querySelector('[data-series-form]');
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const until = form.elements.until.value;
-      if (!until) { form.querySelector('.form-error').textContent = 'Bitte ein Enddatum wählen.'; return; }
-      Object.assign(s, { time: form.elements.time.value, place: form.elements.place.value.trim() || s.place, until, leadDays: Number(form.elements.leadDays.value) || s.leadDays });
-      materialize().forEach((m) => simulateReplies(m));
-      if(!await save())return; closeSheet(); refreshBell(); ui().toast('Regelmäßige Einladung gespeichert', true); ui().renderView();
+    const error = form.querySelector('.form-error');
+    let busy = false;
+    async function apply(update, message) {
+      if (busy) return;
+      const current = seriesById(seriesId);
+      if (JSON.stringify(current) !== opened || current?.createdBy !== me()?.id) {
+        error.textContent = 'Die Serie wurde inzwischen geändert. Bitte öffne sie erneut.';
+        return;
+      }
+      busy = true;
+      const before = structuredClone(data);
+      for (const control of form.elements) control.disabled = true;
+      try {
+        update(current);
+        if (!await save()) {
+          if (!api.centralSync) data = before;
+          return;
+        }
+        if (form.isConnected) closeSheet();
+        refreshBell();
+        toast(message, true);
+        rerender();
+      } finally {
+        busy = false;
+        for (const control of form.elements) control.disabled = false;
+      }
+    }
+    form.addEventListener('submit', async event => {
+      event.preventDefault();
+      const f = form.elements;
+      const update = { title: f.title.value.trim(), from: f.from.value, until: f.until.value, time: f.time.value,
+        place: f.place.value.trim(), leadDays: Number(f.leadDays.value), active: f.active.value === 'yes' };
+      if (!update.title || !update.place || !update.time || !update.from || !update.until || update.until < update.from
+          || Date.parse(update.until) - Date.parse(update.from) > 732 * DAY) {
+        error.textContent = 'Bitte Namen, Anlage, Uhrzeit und einen gültigen Zeitraum von bis zu zwei Jahren angeben.';
+        return;
+      }
+      if (update.active && update.until < today()) {
+        error.textContent = 'Bitte das Enddatum in die Zukunft verschieben oder die Serie inaktiv speichern.';
+        return;
+      }
+      await apply(current => Object.assign(current, update), update.active ? 'Aktive Serie gespeichert' : 'Serie pausiert');
     });
-    form.querySelector('[data-end]').addEventListener('click', async (e) => {
-      const b = e.currentTarget;
-      if (!b.dataset.armed) { b.dataset.armed = '1'; b.textContent = 'Wirklich beenden? Kommende Termine werden abgesagt – nochmal tippen'; return; }
-      data.series = data.series.filter((x) => x.id !== s.id);
-      data.meets.filter((m) => m.seriesId === s.id && m.date >= today()).forEach((m) => {
-        m.invitees.filter((p) => p !== m.createdBy).forEach((p) => note(p, 'cancel', m, m.createdBy));
-      });
-      data.meets = data.meets.filter((m) => !(m.seriesId === s.id && m.date >= today()));
-      if(!await save())return; closeSheet(); ui().toast('Beendet – alle Eingeladenen haben es im Postfach', true);
-      location.hash = '#treffen'; ui().renderView();
+    form.querySelector('[data-end]').addEventListener('click', async () => {
+      if (busy || !confirm(`„${s.title}“ löschen? Kommende Termine werden abgesagt und die Teilnehmenden im Postfach informiert.`)) return;
+      if (!confirm('Serie jetzt endgültig löschen?')) return;
+      await apply(() => {
+        data.series = data.series.filter(x => x.id !== seriesId);
+        if (api.centralSync) return;
+        const upcoming = m => m.seriesId === seriesId && m.date >= today();
+        for (const m of data.meets.filter(upcoming)) {
+          for (const id of m.invitees.filter(id => id !== m.createdBy)) note(id, 'cancel', m, m.createdBy);
+        }
+        data.meets = data.meets.filter(m => !upcoming(m));
+      }, 'Serie gelöscht. Bereits eingeladene kommende Termine wurden abgesagt.');
+      if (!seriesById(seriesId) && ui().currentView() === 'treffen') location.hash = '#treffen';
     });
   }
 
@@ -1109,6 +1206,7 @@
   // ---------- Aktionen ----------
   Object.assign(TFB.actions, {
     inbox: () => openInbox(),
+    'meet-text-edit': () => editPageText().catch(error => ui().toast(error.message)),
     'meet-new': (el) => openCreate(el.dataset.kind || 'einzel', { weekly: el.dataset.repeat === 'weekly' }),
     'meet-photo': async (el) => {
       const preview = el.querySelector('img')?.getAttribute('src');

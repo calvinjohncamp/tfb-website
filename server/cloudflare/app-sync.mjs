@@ -336,9 +336,13 @@ export async function syncCommit(env,member,data) {
   for(const op of data.operations){if(!op||typeof op!=='object')fail(400,'Ungültiger Datensatz.');if(seen.has(key(op)))fail(400,'Doppelter Datensatz.');seen.add(key(op));ops.push(await validate(env,member,c,op,data.operations,Boolean(data.importing)));}
   // A single SQLite transaction gates EVERY write on ALL expected revisions.
   // Chunked payloads allow high-resolution photos without exceeding D1 row limits.
-  const catalogGuard=!data.importing&&ops.some(o=>o.kind==='item'&&!c.map.has(key(o)))&&!ops.some(o=>o.kind==='catalog')?` AND COALESCE((SELECT revision FROM app_records WHERE kind='catalog' AND id='club'),0)=${c.map.get('catalog:club')?.revision||0}`:'';
+  const newPurchase = !data.importing && ops.some(o => o.kind === 'item' && !c.map.has(key(o)));
+  const kioskGuard = newPurchase
+    ? " AND COALESCE((SELECT payload FROM cms_documents WHERE key='global:kioskActive'),'true') <> 'false'"
+    : '';
+  const catalogGuard=newPurchase&&!ops.some(o=>o.kind==='catalog')?` AND COALESCE((SELECT revision FROM app_records WHERE kind='catalog' AND id='club'),0)=${c.map.get('catalog:club')?.revision||0}`:'';
   const checks=ops.map(()=>`COALESCE((SELECT revision FROM app_records WHERE kind=? AND id=?),0)=?`).join(' AND ');
-  const statements=[env.DB.prepare(`INSERT INTO app_commits(id,member_id,signature,created_at) SELECT ?,?,?,? WHERE ${checks}${catalogGuard}`).bind(data.id,member.id,signature,Date.now(),...ops.flatMap(o=>[o.kind,o.id,o.revision]))];
+  const statements=[env.DB.prepare(`INSERT INTO app_commits(id,member_id,signature,created_at) SELECT ?,?,?,? WHERE ${checks}${catalogGuard}${kioskGuard}`).bind(data.id,member.id,signature,Date.now(),...ops.flatMap(o=>[o.kind,o.id,o.revision]))];
   for(const o of ops){
     const payloadId=crypto.randomUUID(), json=JSON.stringify(o.value);
     for(let i=0;i<json.length;i+=250000)statements.push(env.DB.prepare('INSERT INTO app_payloads(payload_id,part,data) SELECT ?,?,? WHERE EXISTS(SELECT 1 FROM app_commits WHERE id=? AND signature=?)').bind(payloadId,i/250000,json.slice(i,i+250000),data.id,signature));
@@ -348,10 +352,23 @@ export async function syncCommit(env,member,data) {
     // Superseded data includes old photos; delete it atomically after pointer swap.
     statements.push(env.DB.prepare('DELETE FROM app_payloads WHERE payload_id=? AND NOT EXISTS(SELECT 1 FROM app_records WHERE payload_id=?)').bind(c.map.get(key(o))?.payload_id||'',c.map.get(key(o))?.payload_id||''));
   }
+  for (const series of ops.filter(op => op.kind === 'series' && op.deleted)) {
+    // Include invitations generated after the planning snapshot but before the delete transaction.
+    statements.push(env.DB.prepare(`UPDATE app_records SET deleted=1, revision=revision+1, updated_at=?
+      WHERE kind='meet' AND owner_id=? AND deleted=0
+      AND EXISTS (SELECT 1 FROM app_payloads p WHERE p.payload_id=app_records.payload_id AND p.part=0
+        AND json_extract(p.data,'$.seriesId')=? AND json_extract(p.data,'$.date')>=?)
+      AND EXISTS (SELECT 1 FROM app_commits WHERE id=? AND signature=?)`)
+      .bind(Date.now(),member.id,series.id,berlinDay(),data.id,signature));
+  }
   statements.push(...kioskCommitStatements(env,member,ops,c,data.id,signature));
   if (!data.importing && env.RESEND_API_KEY && env.AUTH_EMAIL_FROM) statements.push(...meetingMailStatements(env,ops,c.map,data.id,signature));
   let result;try{result=await env.DB.batch(statements);}catch(e){if(String(e.message).includes('KIOSK_CREDIT_EXCEEDS_PURCHASE'))fail(409,'Diese Buchung wurde inzwischen korrigiert. Bitte die Abrechnung neu laden.');throw e;}
-  if(!result[0].meta.changes)fail(409,'Die Daten wurden auf einem anderen Gerät geändert. Bitte neu laden.');
+  if(!result[0].meta.changes){
+    const setting = newPurchase && await env.DB.prepare("SELECT payload FROM cms_documents WHERE key='global:kioskActive'").first();
+    if(setting?.payload==='false')fail(409,'Der Kiosk ist derzeit geschlossen.');
+    fail(409,'Die Daten wurden auf einem anderen Gerät geändert. Bitte neu laden.');
+  }
   // Catalog-only saves acknowledge the exact normalized catalog. No full app/media reload needed.
   if(ops.length===1&&ops[0].kind==='catalog'){const o=ops[0];return {ok:true,catalogRecord:{kind:o.kind,id:o.id,ownerId:o.ownerId,scope:o.scope,revision:o.revision+1,deleted:false,value:o.value}};}
   return {ok:true};

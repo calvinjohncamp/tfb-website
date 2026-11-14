@@ -1446,6 +1446,7 @@
 
     // Striche auf den eigenen Bierdeckel setzen. Preis kommt immer aus dem Katalog.
     async addToTab(productId, quantity = 1, expected = null) {
+      if (db.site?.kioskActive === false) throw new Error('Der Kiosk ist derzeit geschlossen.');
       const member = requireMember();
       if (!publicMember(member).hasConsent) throw new Error('Bitte zuerst der Kioskordnung zustimmen.');
       const product = db.catalog.products.find((p) => p.id === productId && p.active);

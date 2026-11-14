@@ -144,3 +144,9 @@ body .shared-kiosk-scope [data-kb-admin-view] :is(button, select, input):focus-v
 body .shared-kiosk-scope [data-kb-admin-view] .kb-calendar-head :focus-visible {
   outline-color: var(--admin-on-accent);
 }
+
+.shared-kiosk-scope .kb-head:has(.kb-availability) { position: relative; }
+.shared-kiosk-scope .kb-availability { position: absolute; top: 0; right: 0; }
+@media (max-width: 440px) {
+  .shared-kiosk-scope .kb-availability { position: static; margin-top: 8px; }
+}

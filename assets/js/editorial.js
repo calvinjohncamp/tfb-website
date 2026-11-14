@@ -5,7 +5,7 @@
  const api=TFB.api,call=TFB.directoryCall,base=cfg.url.replace(/\/$/,''),cacheKey='tfb_editorial_public_v1';
  const local={site:api.site.bind(api),images:api.images.bind(api),setPhotoFrame:api.setPhotoFrame.bind(api)};
  const clone=x=>JSON.parse(JSON.stringify(x)),ui=()=>TFB.ui,admin=()=>Boolean(ui()?.isAdmin());
- const pages=new Set(['home','aktuell','sport','verein','satzung','impressum']),globals=new Set(['version','teams','applied','chatText','homeLook','homeColorMode','nav','stories','photoFrames','focusStrip']);
+ const pages=new Set(['home','aktuell','sport','verein','satzung','impressum']),globals=new Set(['version','teams','applied','chatText','homeLook','homeColorMode','nav','meetText','kioskActive','stories','photoFrames','focusStrip']);
  let state=null,privateState=null,pending=null,images={},busy=0,lastError='',lastCheck=0;
  const split=s=>{const docs={};for(const [k,v] of Object.entries(s)){if(k==='pages'){for(const [p,x] of Object.entries(v))if(pages.has(p))docs['page:'+p]=x;}else if(globals.has(k))docs['global:'+k]=v;}return docs;};
  const join=docs=>{const site={pages:{}};for(const [key,item] of Object.entries(docs)){if(key.startsWith('page:'))site.pages[key.slice(5)]=clone(item.value);else site[key.slice(7)]=clone(item.value);}return site;};
@@ -53,7 +53,7 @@
  api.boardPeople=async()=>{await ready;const source=ref=>images[ref]||ref;return clone((privateState&&admin()?privateState:state)?.boardPeople||[]).map(p=>({...p,avatar:source(p.avatar),avatarLarge:source(p.avatarLarge)}));};
  async function poll(){if(Date.now()-lastCheck<10000||busy||document.hidden||document.querySelector('#sheet-root.open,.editing-page,.editing-team'))return;lastCheck=Date.now();try{const r=await fetch(base+'/public/site-revision',{cache:'no-store'});if(r.ok&&(await r.json()).revision!==state?.revision){await refresh();await TFB.refreshSite?.(true);}}catch{/* Last confirmed content remains visible. */}}
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)poll();});setInterval(poll,15000);
- const esc=x=>ui().esc(x),labels={'page:home':'Home','page:aktuell':'Aktuell','page:sport':'Sport','page:verein':'Club','page:satzung':'Satzung','page:impressum':'Impressum','global:teams':'Mannschaftsinhalte','global:photoFrames':'Bildausschnitte','global:nav':'Navigation','global:homeLook':'Home-Layout','global:homeColorMode':'Home-Farben','global:stories':'Club-History','global:chatText':'Chat-Texte'};
+ const esc=x=>ui().esc(x),labels={'page:home':'Home','page:aktuell':'Aktuell','page:sport':'Sport','page:verein':'Club','page:satzung':'Satzung','page:impressum':'Impressum','global:teams':'Mannschaftsinhalte','global:photoFrames':'Bildausschnitte','global:nav':'Navigation','global:meetText':'Dating-Texte','global:kioskActive':'Kiosk-Verfügbarkeit','global:homeLook':'Home-Layout','global:homeColorMode':'Home-Farben','global:stories':'Club-History','global:chatText':'Chat-Texte'};
  const stamp=()=>new Date().toISOString().slice(0,19).replaceAll(':','-');
  function download(blob,name){const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),10000);}
  async function exported(id){return call('/admin/site/export'+(id?'?id='+encodeURIComponent(id):''));}

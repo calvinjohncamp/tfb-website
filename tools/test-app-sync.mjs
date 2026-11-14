@@ -57,7 +57,7 @@ test('comments and attachments synchronize, preserve authorship, and cannot atta
 });
 test('prices and timestamps come from server; migration keeps dated demo amounts and skips duplicate IDs',async()=>{
   const f=await fixture();await f.commit([account(f.admin.id)]);
-  await f.commit([{kind:'item',id:'new-item',revision:0,value:{productId:'koelsch',priceCents:1,memberId:f.otherId,createdAt:'2020-01-01',status:'closed'}}]);
+  await f.commit([{kind:'item',id:'new-item',revision:0,value:{productId:'koelsch',memberId:f.otherId,createdAt:'2020-01-01',status:'closed'}}]);
   const item=(await f.state()).body.records.find(r=>r.kind==='item').value;
   assert.equal(item.priceCents,180);assert.equal(item.memberId,f.admin.id);assert.equal(item.status,'open');assert.ok(item.createdAt.startsWith(new Date().toISOString().slice(0,10)));
   const old={kind:'item',id:'old-item',revision:0,value:{productId:'koelsch',priceCents:170,createdAt:'2026-09-01T12:00:00.000Z',status:'open'}};

@@ -109,3 +109,21 @@ test('one-time reset clears only club statistics and starts Home and Splash at t
  await collectSimpleUsage(f.env,{id:crypto.randomUUID(),page:'splash',app:false},f.admin,'192.0.2.1');await collectSimpleUsage(f.env,{id:crypto.randomUUID(),page:'home',app:false},f.admin,'192.0.2.1');
  assert.equal(f.env.DB.sqlite.prepare("SELECT views FROM usage_nc_pages WHERE page='splash'").get().views,1);assert.equal(f.env.DB.sqlite.prepare("SELECT views FROM usage_nc_pages WHERE page='home'").get().views,1);
 });
+
+test('the central kiosk switch blocks purchases and preserves existing bookings', async () => {
+  const f = await fixture();
+  f.env.CMS_BUCKET = new Bucket();
+  assert.equal((await save(f, [change('page:home', 0, { title: 'Home', blocks: [] })])).status, 200);
+  const account = { kind: 'account', id: f.admin.id, revision: 0, value: {
+    consentVersion: 'tfb-kiosk-v3', consentedAt: new Date().toISOString(),
+  } };
+  const buy = id => ({ kind: 'item', id, revision: 0, value: { productId: 'koelsch' } });
+  assert.equal((await f.commit([account, buy('before-close')])).status, 200);
+  assert.equal((await save(f, [change('global:kioskActive', 0, false)])).status, 200);
+  const closed = await f.commit([buy('while-closed')]);
+  assert.equal(closed.status, 409);
+  assert.match(closed.body.error, /Kiosk.*geschlossen/);
+  assert.deepEqual((await f.state()).body.records.filter(r => r.kind === 'item').map(r => r.id), ['before-close']);
+  assert.equal((await save(f, [change('global:kioskActive', 1, true)])).status, 200);
+  assert.equal((await f.commit([buy('after-open')])).status, 200);
+});

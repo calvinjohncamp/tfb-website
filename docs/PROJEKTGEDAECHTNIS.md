@@ -1,5 +1,16 @@
 # TFB-Kiosk – Projektgedächtnis und Übergabe
 
+## Veröffentlichungsfreigabe für die TFB-Website · bestätigt am 14.11.2026
+
+Der Nutzer hat dauerhaft freigegeben, dass beauftragte Änderungen an der
+TFB-Website nach der Prüfung direkt auf der Live-Website veröffentlicht
+werden. Die Freigabe gilt auch für bereits konkret beauftragte Änderungen,
+die noch auf ihre Veröffentlichung warten. Umsetzung, Prüfung und Deployment
+gehören zum Auftrag. Dafür ist keine erneute Bestätigung erforderlich. Eine
+ausdrückliche Anweisung für einen Entwurf oder eine reine Prüfung bestimmt den Umfang des
+jeweiligen Auftrags. Nach der Veröffentlichung den betroffenen Bereich live
+prüfen und den bestätigten Stand in der Übergabe festhalten.
+
 ## 13.11.2026 – E-Mails zu Spielverabredungen
 
 Für Einzel und Doppel sind ergänzende Einladungs- und Bestätigungsmails

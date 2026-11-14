@@ -336,6 +336,7 @@
         <p>© ${new Date().getFullYear()} Tennisfreunde Bielstein e.V. · Inhalte, Gestaltung &amp; App-Konzept. Alle Rechte vorbehalten.</p>
       </footer>`;
     alignHeader();
+    TFB.loadSite().catch(() => {});
     return renderView(view);
   }
 
@@ -365,7 +366,18 @@
   window.addEventListener('resize', () => requestAnimationFrame(alignHeader));
 
   function toggleAdminTools(button) {
-    if (!rawMember?.isAdmin || api.mode !== 'demo') return;
+    if (!rawMember?.isAdmin) return;
+    if (currentView() === 'home' && !$app.querySelector('.editing-page')) {
+      hideAdmin = false;
+      viewMember = null;
+      document.body.classList.remove('admin-hidden');
+      button.setAttribute('aria-pressed', 'true');
+      return TFB.actions['site-edit']({ dataset: { page: 'home' } });
+    }
+    if (api.mode !== 'demo') {
+      if (currentView() === 'home') TFB.actions['site-done']();
+      return;
+    }
     hideAdmin = !hideAdmin;
     viewMember = null;
     state.editMode = false;
@@ -386,20 +398,20 @@
     { id: 'padel', label: 'Padel', target: cfg.padelUrl },
   ];
   function navLinks(area) {
-    const configured = (TFB.navItems && TFB.navItems()) || defaultNav();
-    const items = [...configured];
-    for(const item of defaultNav().filter(x=>['kiosk','chat','treffen'].includes(x.id)))if(!items.some(x=>x.target===item.target))items.splice(Math.min(defaultNav().findIndex(x=>x.id===item.id),items.length),0,item);
+    const items = (TFB.navItems() || defaultNav()).filter(item => TFB.kioskActive() || !/^#(?:kiosk|strichliste|abrechnungen)(?:\/|$)/.test(item.target));
     return items.map((it) => {
       const t = String(it.target || '');
       if (/^https?:\/\//i.test(t)) return `<a href="${esc(t)}" class="tab external" target="_blank" rel="noopener" aria-label="${esc(it.label)} (öffnet in neuem Fenster)">${esc(it.label)}</a>`;
       const page = t.replace(/^#/, '').split('/')[0] || 'home';
       const on = page === area;
-      const label=page==='treffen'&&['Verabreden','Dating'].includes(it.label)?'Dating 2.0':it.label;
-      return `<a href="${esc(t || '#home')}" class="tab tab-${esc(page)} ${on ? 'active' : ''}" ${on ? 'aria-current="page"' : ''}>${esc(label)}</a>`;
+      return `<a href="${esc(t || '#home')}" class="tab tab-${esc(page)} ${on ? 'active' : ''}" ${on ? 'aria-current="page"' : ''}>${esc(it.label)}</a>`;
     }).join('');
   }
   TFB.defaultNav = defaultNav;
-  TFB.refreshNav = () => { const n = document.querySelector('.topnav'); if (n) n.innerHTML = navLinks(navArea); };
+  TFB.refreshNav = () => {
+    const n = document.querySelector('.topnav');
+    if (n) { n.innerHTML = navLinks(navArea); alignHeader(); }
+  };
 
   // Kopf der Unterseiten mit Schließen-Kreuz oben rechts (zurück zum Kiosk).
   const viewHead = (title, sub, close = true) => `
@@ -442,7 +454,11 @@
     const $view = document.getElementById('view');
     if (!$view) return;
     try {
-      if (KIOSK_AREA.includes(view)) {
+      if (view === 'kiosk' || view === 'kioskabrechnung') await TFB.loadSite();
+      if (request !== viewRender) return;
+      if (view === 'kiosk' && !TFB.kioskActive()) {
+        $view.innerHTML = '<section class="card"><h1>Kiosk geschlossen</h1><p>Digitale Bestellungen sind derzeit pausiert.</p><a href="#home" class="btn">Zur Startseite</a></section>';
+      } else if (KIOSK_AREA.includes(view)) {
         if (!state.member && view !== 'kiosk') { $view.innerHTML = viewHead(view==='strichliste'?'Strichliste':'Abrechnungen','Deine persönlichen Kioskdaten findest du nach der Anmeldung.',false)+'<button class="btn primary" data-action="login">Anmelden</button>'; return; }
         const body = state.member && !state.member.hasConsent ? consentMarkup() : view === 'kiosk' ? await kioskView() : view === 'strichliste' ? await tallyView() : await statementsView();
         const shop = view === 'kiosk' && (!state.member || state.member.hasConsent)
@@ -459,9 +475,8 @@
         $view.innerHTML=['kioskabrechnung','produktbibliothek'].includes(view)?'<div class="shared-kiosk-scope">'+body+'</div>':body;
       }
       if (state.member?.isAdmin) {
-        const editHome = '<button type="button" class="btn small" data-action="site-edit" data-page="home">Home</button>';
         $view.insertAdjacentHTML('afterbegin', `<div class="tfb-admin-design">
-          <div class="tfb-admin-links"><button type="button" class="btn small" data-action="splash-edit">Splash</button>${editHome}<a class="btn small" href="#partner">Partner</a>
+          <div class="tfb-admin-links"><button type="button" class="btn small" data-action="splash-edit">Splash</button><a class="btn small" href="#partner">Partner</a>
             <button type="button" class="btn small" data-action="members-manage">Mitglieder</button>
             <a class="btn small" href="#clubstatistik">Statistik</a>
             <a class="btn small" href="#kioskabrechnung">Kiosk</a>
@@ -469,7 +484,7 @@
         const activeAdmin = $view.querySelector(`.tfb-admin-links a[href="#${view==='produktbibliothek'?'kioskabrechnung':view}"]`);
         if(activeAdmin) activeAdmin.setAttribute('aria-current','page');
         const homeEditShortcut = view === 'home' && $view.querySelector('.site-page[data-page="home"]') && !$view.querySelector('.editing-page')
-          ? $view.querySelector('.tfb-admin-links [data-action="site-edit"]') : null;
+          ? Object.assign(document.createElement('button'), { type: 'button' }) : null;
         const edit = homeEditShortcut || $view.querySelector('.view-close[data-action="site-edit"], .view-close[data-action="edit-start"], .view-close[data-action="feature-edit"], .view-close[data-action="album-edit"], .view-close[data-action="portrait-edit"], .view-close[data-action="chat-text-edit"]');
         if (edit) {
           const tools = document.createElement('div');
@@ -478,6 +493,8 @@
           if (homeEditShortcut) {
             button.className = 'view-close';
             button.innerHTML = icon.pencil;
+            button.dataset.action = 'site-edit';
+            button.dataset.page = 'home';
             button.setAttribute('aria-label', 'Home bearbeiten');
           }
           button.dataset.keepScroll = '1';

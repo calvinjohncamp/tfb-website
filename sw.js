@@ -1,8 +1,8 @@
 // TFB-Kiosk – Service Worker.
 // Netz zuerst, damit Änderungen sofort ankommen; ohne Netz startet die App aus dem Zwischenspeicher.
-const CACHE = 'tfb-admin-signature-20261113-1';
+const CACHE = 'tfb-20261114-dating-kiosk-1';
 const SHELL = [
-  './assets/css/admin-signature.css?v=20261113-admin-signature',
+  './assets/css/admin-signature.css?v=20261114-dating-kiosk-1',
   './assets/css/product-library.css?v=20261113-kiosk-signature',
   './assets/css/backup.css?v=20261110-unified-backup-1',
   './assets/css/pdf-viewer.css?v=20261110-pdf-return-1',
@@ -26,7 +26,7 @@ const SHELL = [
 
   './assets/css/kiosk-external-shop.css?v=20261110-mitgliederinfos-1',
   './assets/js/kiosk-external-shop.js?v=20261113-kiosk-signature',
-  './assets/js/app.js?v=20261113-kiosk-signature',
+  './assets/js/app.js?v=20261114-dating-kiosk-1',
   './assets/jako/jako-logo.png',
   './assets/jako/tfb-jako-sortiment-v2.png',
   './assets/css/bielstein-open.css?v=20261110-search-pdfs-1',
@@ -36,7 +36,7 @@ const SHELL = [
   './assets/css/club-history.css?v=20261110-mail-freehand-1',
   './assets/css/sport-rulebook.css?v=20261110-search-pdfs-1',
   './assets/js/sport-rulebook.js?v=20261110-search-pdfs-1',
-  './assets/js/site.js?v=20261113-retina-carousel',
+  './assets/js/site.js?v=20261114-dating-kiosk-1',
   './assets/docs/tfb-chronik-25-jahre-cover.png',
   './assets/css/statement-layout.css?v=20261109-statement-layout-1',
   './assets/docs/tfb-platzbelegung-sommer-2027-black-crail.pdf', './assets/docs/tfb-platzbelegung-sommer-2027-black-crail.pdf?v=20261109-statement-layout-1', './assets/docs/tfb-platzbelegung-sommer-2027-black-crail.jpg', './assets/docs/tfb-platzbelegung-sommer-2027-black-crail.jpg?v=20261109-statement-layout-1',
@@ -46,7 +46,7 @@ const SHELL = [
   './assets/shared-kiosk/20261109-shared-1/asset-base.js',
   './assets/shared-kiosk/20261109-shared-1/art.js',
   './assets/shared-kiosk/20261109-shared-1/kiosk.js?v=20261113-admin-signature',
-  './assets/shared-kiosk/20261109-shared-1/billing.js',
+  './assets/shared-kiosk/20261109-shared-1/billing.js?v=20261114-dating-kiosk-1',
   './assets/shared-kiosk/20261109-shared-1/standalone.css',
   './assets/shared-kiosk/20261109-shared-1/native.css',
   './assets/shared-kiosk/20261109-shared-1/fonts.css',
@@ -60,8 +60,8 @@ const SHELL = [
   './assets/css/club-usage.css', './assets/js/club-usage.js',
   './assets/css/member-access.css', './assets/js/app-install.js',
   './assets/css/yellow-editorial.css', './assets/brand/tfb-highlight-freihand.svg',
-  './assets/js/member-directory.js?v=20261110-unified-backup-1', './assets/js/member-directory.js', './assets/js/cloud-sync.js',
-  './assets/js/snapshot-zip.js', './assets/js/editorial.js?v=20261110-backup-preview-1',
+  './assets/js/member-directory.js?v=20261110-unified-backup-1', './assets/js/member-directory.js', './assets/js/cloud-sync.js?v=20261114-dating-kiosk-1',
+  './assets/js/snapshot-zip.js', './assets/js/editorial.js?v=20261114-dating-kiosk-1',
   './assets/data/public-content.js',
   './assets/docs/tfb-mitgliedsanmeldung-muster.pdf',
   './assets/docs/tfb-mitgliedsanmeldung-muster.html', './assets/docs/tfb-mitgliedsanmeldung-muster-gelb.html', './assets/docs/tfb-mail-logo.png',
@@ -79,9 +79,9 @@ const SHELL = [
   './assets/css/design-preview.css?v=20261110-gallery-complete-1', './assets/js/design-preview.js?v=20261113-brand-gallery-4k',
   './assets/css/partner-visibility.css', './assets/css/partner-visibility.css?v=20261109-statement-layout-1', './assets/js/partner-visibility.js?v=20261113-brand-gallery-4k', './assets/js/partner-content.js', './assets/js/partner-admin.js?v=20261110-search-pdfs-1',
   './assets/fonts/editorial/bricolage-grotesque.ttf', './assets/fonts/editorial/dm-sans.ttf',
-  './assets/js/config.js', './assets/data/partners.js', './assets/data/teams.js', './assets/data/site-seed.js', './assets/js/partner-rotation.js', './assets/js/site.js?v=20261113-retina-carousel', './assets/js/meet.js?v=20261113-invite-label', './assets/js/demo-backend.js', './assets/js/brand-data.js', './assets/js/art.js', './assets/js/app.js?v=20261113-kiosk-signature', './assets/js/app.js?v=20261113-kiosk-signature',
+  './assets/js/config.js', './assets/data/partners.js', './assets/data/teams.js', './assets/data/site-seed.js', './assets/js/partner-rotation.js', './assets/js/site.js?v=20261114-dating-kiosk-1', './assets/js/meet.js?v=20261114-dating-kiosk-1', './assets/js/demo-backend.js?v=20261114-dating-kiosk-1', './assets/js/brand-data.js', './assets/js/art.js', './assets/js/app.js?v=20261114-dating-kiosk-1', './assets/js/app.js?v=20261114-dating-kiosk-1',
   './assets/icons/favicon-64.png', './assets/icons/icon-192.png',
-  './assets/js/membership.js', './assets/js/membership-fees.js', './assets/js/site.js?v=20261113-retina-carousel',
+  './assets/js/membership.js', './assets/js/membership-fees.js', './assets/js/site.js?v=20261114-dating-kiosk-1',
   './assets/js/photo-drop.js',
   './assets/js/photo-frame.js',
   './assets/js/photo-viewer.js?v=20261113-home-gallery',
