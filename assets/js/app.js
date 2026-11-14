@@ -367,6 +367,13 @@
 
   function toggleAdminTools(button) {
     if (!rawMember?.isAdmin) return;
+    if (currentView() === 'aktuell') {
+      if ($sheet.querySelector('[data-editor=block], [data-hm-editor]')) return closeSheet();
+      hideAdmin = false;
+      viewMember = null;
+      document.body.classList.remove('admin-hidden');
+      return TFB.actions['aktuell-edit']();
+    }
     if (currentView() === 'home' && !$app.querySelector('.editing-page')) {
       hideAdmin = false;
       viewMember = null;
@@ -502,6 +509,16 @@
           tools.appendChild(button);
           $view.appendChild(tools);
         }
+      }
+      const headerEdit = $app.querySelector('.header-admin-edit');
+      if (headerEdit) {
+        const aktuellEdit = view === 'aktuell' && Boolean($view.querySelector('.site-page[data-page="aktuell"].editing-page'));
+        const label = view === 'aktuell'
+          ? (aktuellEdit ? 'Aktuell-Bearbeitung schließen' : 'Aktuell bearbeiten')
+          : 'Admin-Werkzeuge';
+        headerEdit.setAttribute('aria-label', label);
+        headerEdit.title = label;
+        headerEdit.setAttribute('aria-pressed', String(view === 'aktuell' ? aktuellEdit : state.member?.isAdmin === true));
       }
       renderPartnerSlot($view, view);
       TFB.fitChatReplies?.(view === 'chat' ? $view : null);

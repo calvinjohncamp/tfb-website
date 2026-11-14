@@ -13,6 +13,7 @@ try{
    await page.route('**/assets/tests/' + format + '.svg', route => route.fulfill({contentType:'image/svg+xml',
      body:`<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="100"><rect width="100%" height="100%" fill="gold"/></svg>`}));
  }
+ await page.addInitScript(() => localStorage.setItem('tfb_kiosk_demo_session_v1', 'm-demo'));
  await page.goto(origin+'/?tfbPresentation=1#home');await page.waitForFunction(()=>TFB.ui&&TFB.homeMedia);
  await page.evaluate(async()=>{TFB.ui.state.member=TFB.api.attachDirectoryMember({id:'home-media-admin',firstName:'Home',lastName:'Test',isAdmin:true,active:true,email:'home@example.invalid',teams:[]});TFB.api.secureDirectory=true;TFB.api.mode='test';location.hash='#home';await TFB.ui.renderView('home');});
  if(await page.evaluate(()=>TFB.ui.state.member?.adminHidden))await page.locator('[data-action="admin-toggle"]').click();
@@ -182,7 +183,7 @@ try{
  assert.deepEqual(moved.album,topic.album);
  assert.deepEqual(moved.more,topic.more);
  await page.evaluate(() => location.hash = '#aktuell');
- await page.locator('[data-action=site-edit][data-page=aktuell]').first().click();
+ await page.locator('.topbar [data-action=admin-toggle]').click();
  const article = page.locator('[data-edit-block="' + topic.id + '"]');
  await article.getByRole('button',{name:'Bearbeiten'}).click();
  await editor.locator('[data-edtab=sub]').click();

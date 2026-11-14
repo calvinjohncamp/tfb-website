@@ -727,7 +727,7 @@
     const title = isNews ? String(b.title || '').trim().replace(/\.+$/u, '') : b.title;
     return `<article class="post card media-news" data-site-content="${esc(b.id)}">${TFB.homeMedia.cover(b,href,ref=>images[ref]||ref)}<div class="post-body">${TFB.newsroom.creationDate(b)?`<p class="post-date">${signatureText(fmt(TFB.newsroom.creationDate(b),{day:'numeric',month:'long',year:'numeric'}))}</p>`:''}${!isNews&&b.kicker?`<p class="media-news-kicker">${signatureText(b.kicker)}</p>`:''}<h3><a class="post-title-link" href="${href}">${esc(title)}</a></h3>${!isNews&&b.subtitle?`<p class="media-news-subtitle">${signatureText(b.subtitle)}</p>`:''}${paragraphs(b.text)}${isNews ? newsLinkMarkup(b) : ''}<p><a class="media-news-link" href="${href}">${esc(b.mediaButtonLabel||'Beitrag ansehen')}</a></p></div></article>`;
   }
-  const mediaDetail = (block,page='aktuell',backHref,readonly=false) => TFB.homeMedia.detail(block,{imageOf:ref=>images[ref]||ref,paragraphs,admin:!readonly&&ui().state.member?.isAdmin,page,backHref,links:page === 'aktuell' ? newsLinkMarkup(block) : ''});
+  const mediaDetail = (block,page='aktuell',backHref,readonly=false) => TFB.homeMedia.detail(block,{imageOf:ref=>images[ref]||ref,paragraphs,admin:!readonly&&page !== 'aktuell'&&ui().state.member?.isAdmin,page,backHref,links:page === 'aktuell' ? newsLinkMarkup(block) : ''});
 
   async function newsArticleDetail(block, archive = false, draftPreview = false) {
     if (block.archived && !archive) return `<p>Dieser Artikel ist im Clubarchiv.</p><a class="btn" href="${archiveHref(block)}">Zum Artikel im Clubarchiv</a>`;
@@ -739,7 +739,7 @@
     if (block.mediaCollection) return (await mediaDetail(block, 'aktuell', archive ? back : undefined, archive)) + remove;
     if (!photoStudio && showInlineCarousel(block)) photoStudio = await import('./chat-media.js?v=20261114-home-editor-1');
     return storyHtml({ ...block, text: block.showText === false ? '' : block.text, title: block.title || photoDisplays.get(block.type) || 'News', noPlaceholder: true }, {closeHref:back, backLabel:archive ? 'Zum Clubarchiv' : 'Zu Aktuell',
-      editHtml: editable && !archive ? `<button type="button" class="view-close" data-action="feature-edit" data-page="aktuell" data-id="${esc(block.id)}" aria-label="Bearbeiten">${ui().icon.pencil}</button>` : remove,
+      editHtml: remove,
       gallery: photoTypes.includes(block.type) || photoDisplays.has(block.photoDisplay) ? photoDisplay(block, (block.images || []).filter(shownImage), block.photoDisplay || block.type, 'gallery-open') : '',
       linkPage: 'aktuell', topicHero: block.type === 'post' && (Boolean(block.sourceHomeId) || homePhotoRefs(block).length === 1),
       simpleNews: !block.sourceHomeId, draftPreview,
@@ -1103,7 +1103,7 @@
           ? ''
           : `<header class="view-head page-head">
           <div><h1>${esc(page.title)}</h1>${page.intro ? `<p class="muted">${esc(page.intro)}</p>` : ''}</div>
-          ${key === 'aktuell' ? '<div class="page-head-tools">' : ''}${admin && (!edit || key === 'aktuell') && !courtPlan && !rulebook ? `<button type="button" class="view-close" data-action="site-edit" data-page="${key}" aria-label="${edit ? 'Bearbeitung schließen' : 'Seite bearbeiten'}" aria-pressed="${Boolean(edit)}">${icon.pencil}</button>` : ''}${key === 'aktuell' ? `${!edit ? contentOverviewLink(key) : ''}</div>` : ''}
+          ${key === 'aktuell' ? '<div class="page-head-tools">' : ''}${admin && !edit && key !== 'aktuell' && !courtPlan && !rulebook ? `<button type="button" class="view-close" data-action="site-edit" data-page="${key}" aria-label="${edit ? 'Bearbeitung schließen' : 'Seite bearbeiten'}" aria-pressed="${Boolean(edit)}">${icon.pencil}</button>` : ''}${key === 'aktuell' ? `${!edit ? contentOverviewLink(key) : ''}</div>` : ''}
         </header>`}
         ${key === 'sport' ? `<nav class="seg sport-switch" aria-label="Sportbereiche">
           <a class="${training || courtPlan || rulebook ? '' : 'on'}" href="#sport" ${training || courtPlan || rulebook ? '' : 'aria-current="page"'}>Mannschaften</a>
@@ -1117,7 +1117,7 @@
         ${key === 'home' && edit ? `
           <section class="home-editor-settings" aria-label="Menü oben">${navCard()}</section>
           ${homeAddButtons(list)}` : ''}
-        ${key==='aktuell'&&admin?newsroomTools():''}
+        ${key === 'aktuell' && edit ? newsroomTools() : ''}
         ${blocks}
 
         ${edit && !['home','aktuell'].includes(key) && (key !== 'sport' || training) ? `<button type="button" class="btn block add-section" data-action="block-new">${icon.plus} Baustein hinzufügen</button>` : ''}
@@ -3754,11 +3754,26 @@
       const person = people[Number(el.dataset.index)];
       if (person && person.avatar && person.avatarLarge) ui().openLightbox(person.avatarLarge, person.name);
     },
+    'aktuell-edit': async () => {
+      if (!ui().state.member?.isAdmin) return;
+      const [, section, segment] = location.hash.split('/');
+      if (!section) return TFB.actions['site-edit']({ dataset: { page: 'aktuell' } });
+      let id;
+      try { id = decodeURIComponent((section === 'beitrag' ? segment : section) || ''); } catch (_) { return; }
+      const article = site?.pages.aktuell.blocks.find(b => b.id === id && !b.archived && !b._new);
+      if (article) {
+        editing = 'aktuell';
+        detailEditing = true;
+        return openBlockEditor(id, false, segment === 'fotos' ? 'album' : 'sub');
+      }
+      editing = 'aktuell';
+      location.hash = '#aktuell';
+    },
     'site-edit': async (el) => {
       const y = window.scrollY;
       const page = el.dataset.page;
+      if (ui().closeSheet() === false) return;
       editing = editing === 'aktuell' && page === 'aktuell' ? null : page;
-      ui().closeSheet();
       if (ui().currentView() === routeOf(page)) await ui().renderView(); else location.hash = '#' + routeOf(page);
       window.scrollTo(0, el.dataset.keepScroll ? y : 0);
     },

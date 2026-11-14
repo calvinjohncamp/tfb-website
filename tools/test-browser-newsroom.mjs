@@ -9,13 +9,19 @@ try{
  const page=await browser.newPage({serviceWorkers:'block',viewport:{width:1440,height:1050}}),errors=[];
  page.setDefaultTimeout(10000);page.on('pageerror',e=>errors.push(e.message));
  await page.route('**/*',route=>{const u=new URL(route.request().url());if(u.origin!==origin && !(u.origin==='https://joern-kaemper.de' && u.pathname.startsWith('/assets/shared-kiosk/')))return route.abort();const f=resolve(root,'.'+decodeURIComponent(u.pathname==='/'?'/index.html':u.pathname));if(!f.startsWith(root))return route.abort();try{return route.fulfill({body:readFileSync(f),contentType:({'.html':'text/html','.js':'text/javascript','.css':'text/css','.png':'image/png','.jpg':'image/jpeg','.webp':'image/webp','.ttf':'font/ttf'})[extname(f)]||'application/octet-stream'});}catch{return route.fulfill({status:404,body:''});}});
+ await page.addInitScript(() => localStorage.setItem('tfb_kiosk_demo_session_v1', 'm-demo'));
  await page.goto(origin+'/?tfbPresentation=1#home');await page.waitForFunction(()=>TFB.ui&&TFB.homeMedia);
  await page.evaluate(async()=>{TFB.ui.state.member=TFB.api.attachDirectoryMember({id:'home-media-admin',firstName:'Home',lastName:'Test',isAdmin:true,active:true,email:'home@example.invalid',teams:[]});TFB.api.secureDirectory=true;TFB.api.mode='test';location.hash='#home';await TFB.ui.renderView('home');});
  if(await page.evaluate(()=>TFB.ui.state.member?.adminHidden))await page.locator('[data-action="admin-toggle"]').click();
 
  const image='assets/images/board/kai-eichmann.jpg';
  await page.evaluate(async image=>{const site=await TFB.api.site();site.pages.home.blocks=[{id:'home-source',type:'feature',title:'Unsere Signature-Umkleide',kicker:'Konzept',subtitle:'Ausblick',text:'Originaltext bleibt.',mediaButtonLabel:'Zeig her!',mediaCollection:{entries:[{id:'entry',title:'Nach dem Match',kicker:'Signature',subtitle:'Wohlfühlen',text:'Originaler Detailtext',date:'2026-11-07',format:'4:5',images:Array(5).fill(image),instagramUrl:'https://instagram.com/p/example'}]}}];site.pages.aktuell.blocks=[{id:'dates-head',type:'heading',title:'Save the Date'},{id:'future',type:'event',date:'2027-05-15',title:'Späterer Termin'},{id:'news-head',type:'heading',title:'News'},{id:'old-news',type:'post',date:'2026-07-04',title:'Ältere News',text:'Bleibt erhalten'}];await TFB.api.saveSite(site);await TFB.refreshSite(true);location.hash='#aktuell';await TFB.ui.renderView('aktuell');},image);
- const tools=page.locator('.newsroom-tools');await tools.waitFor();assert((await tools.boundingBox()).y<450,'Create controls are at the top');assert.equal(await page.locator('[data-action="block-new"]').count(),0);
+ const tools=page.locator('.newsroom-tools');
+ const headerPencil=page.locator('.topbar [data-action=admin-toggle]');
+ assert.equal(await tools.count(),0);
+ assert.equal(await page.locator('[data-action=site-edit][data-page=aktuell]').count(),0);
+ await headerPencil.click();
+ await tools.waitFor();assert((await tools.boundingBox()).y<450,'Create controls are at the top');assert.equal(await page.locator('[data-action="block-new"]').count(),0);
  // A simple appointment opens directly, without the general block picker.
  await tools.locator('[data-kind=event]').click();let form=page.locator('[data-editor=block]');await form.locator('[name=title]').fill('Neuer früher Termin');await form.locator('[name=date]').fill('2026-11-20');await form.locator('[name=time]').fill('18:00');await form.locator('[type=submit]').click();await form.waitFor({state:'detached'});await tools.waitFor();
  assert.deepEqual(await page.locator('.col-dates .event h3').allTextContents(),['Neuer früher Termin','Späterer Termin']);
@@ -51,7 +57,7 @@ try{
  assert.equal(await page.getByRole('link',{name:'Externer News-Link'}).getAttribute('target'),'_blank');
  await page.locator('.story-tools a[href="#aktuell"]').click();
  await page.evaluate(async()=>{TFB.ui.state.member=TFB.api.attachDirectoryMember({id:'home-media-admin',firstName:'Home',lastName:'Test',isAdmin:true,active:true,email:'home@example.invalid',teams:[]});TFB.api.secureDirectory=true;TFB.api.mode='test';await TFB.ui.renderView('aktuell');});
- if(await page.evaluate(()=>TFB.ui.state.member?.adminHidden))await page.locator('[data-action=admin-toggle]').click();
+ await headerPencil.click();
 
  const png=await page.evaluate(()=>{const c=document.createElement('canvas');c.width=108;c.height=135;c.getContext('2d').fillRect(0,0,108,135);return c.toDataURL().split(',')[1];});
  const photos=n=>Array.from({length:n},(_,i)=>({name:`bild-${i}.png`,mimeType:'image/png',buffer:Buffer.from(png,'base64')}));
@@ -119,14 +125,14 @@ try{
  await page.evaluate(async()=>{location.hash='#club/archiv';await TFB.ui.renderView('club');});await page.locator('.archive-home').waitFor();assert.equal(await page.locator('.archive-home .media-news').count(),1);assert.equal(await page.locator('.archive-home .media-news .hm-card').count(),5);
  await page.evaluate(async()=>{location.hash='#club/archiv/beitrag/home-home-source';await TFB.ui.renderView('club');});await page.locator('.hm-entry').waitFor();assert.equal(await page.locator('.hm-entry-copy h1').innerText(),'Nach dem Match');assert.equal(await page.locator('.story-tools a[href="#club/archiv"]').count(),1);
  // Management retains the normal two-column layout and simple terminology.
- await page.evaluate(async()=>{TFB.ui.state.member=TFB.api.attachDirectoryMember({id:'home-media-admin',firstName:'Home',lastName:'Test',isAdmin:true,active:true,email:'home@example.invalid',teams:[]});TFB.api.secureDirectory=true;TFB.api.mode='test';location.hash='#aktuell';await TFB.ui.renderView('aktuell');});if(await page.evaluate(()=>TFB.ui.state.member?.adminHidden))await page.locator('[data-action=admin-toggle]').click();await page.locator('[data-action=site-edit][data-page=aktuell]').first().click();await tools.waitFor();assert.equal(await page.locator('.news-dates').count(),1);assert.equal(await page.locator('.col-news .block-edit').count()>0,true);assert.equal(await page.locator('[data-action=block-move]').count(),0);assert.equal(await page.locator('[data-action=block-new]').count(),0);
+ await page.evaluate(async()=>{TFB.ui.state.member=TFB.api.attachDirectoryMember({id:'home-media-admin',firstName:'Home',lastName:'Test',isAdmin:true,active:true,email:'home@example.invalid',teams:[]});TFB.api.secureDirectory=true;TFB.api.mode='test';location.hash='#aktuell';await TFB.ui.renderView('aktuell');});if(await page.evaluate(()=>TFB.ui.state.member?.adminHidden))await page.locator('[data-action=admin-toggle]').click();await page.locator('.topbar [data-action=admin-toggle]').click();await tools.waitFor();assert.equal(await page.locator('.news-dates').count(),1);assert.equal(await page.locator('.col-news .block-edit').count()>0,true);assert.equal(await page.locator('[data-action=block-move]').count(),0);assert.equal(await page.locator('[data-action=block-new]').count(),0);
  for(const width of [1440,390]){await page.setViewportSize({width,height:1050});assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));await page.screenshot({path:`/tmp/tfb-aktuell-admin-${width}.png`,fullPage:true});}await page.locator('[data-action=aktuell-tab][data-tab=dates]').click();assert.equal(await page.locator('.col-dates').isVisible(),true);
  assert.equal(await page.getByRole('button',{name:'Fertig',exact:true}).count(),0);
- await page.locator('.page-head').getByRole('button',{name:'Bearbeitung schließen'}).click();
+ await page.locator('.topbar').getByRole('button',{name:'Aktuell-Bearbeitung schließen'}).click();
  await page.locator('.editing-page').waitFor({state:'detached'});
  await page.locator('[data-action=aktuell-tab][data-tab=news]').click();
  await page.getByRole('link',{name:'Neue News'}).click();
- await page.locator('.story [data-action=feature-edit]').click();
+ await page.locator('.topbar [data-action=admin-toggle]').click();
  assert.equal(await form.locator('[type=submit]').innerText(),'Änderungen speichern');
  await form.locator('[name=title]').fill('Nicht veröffentlichte Änderung');
  page.once('dialog',dialog=>dialog.dismiss());
