@@ -1,5 +1,23 @@
 # TFB – Übergabe für die nächste Sitzung
 
+## Dropbox-Ordner mit GitHub abgeglichen · 14.11.2026 (Claude)
+
+Die Aufgabenliste steht ab jetzt in `00 START HIER/OFFENE_PUNKTE.md` im Projektstamm;
+diese Datei bleibt die Chronik. `01 Software` steht auf `main` und entspricht GitHub
+und der Live-Seite. Künftig nur noch aus diesem Ordner arbeiten und veröffentlichen,
+nicht aus temporären Kopien.
+
+- Der frühere Arbeitsstand (Zweig `codex/editorial-snapshots`, 399 ungesicherte
+  Änderungen) liegt als Kopie unter `90 Archiv/2026-11-14 Dropbox-Stand vor Abgleich
+  mit GitHub/` und als lokaler Zweig `lokal/dropbox-stand-2026-11-14-NICHT-PUSHEN`.
+  Das Repository ist öffentlich; dieser Zweig wird nicht übertragen.
+- Commit `e4d5141` überträgt die aktuelle Dokumentation und fünf nur lokal vorhandene
+  Dateien (Migration 0014, `tools/run-tests.py`, zwei Kiosk-Brückentests,
+  `tools/import-club-archive.py`). Kein neuer Pages-Lauf, Website und Worker unverändert.
+- Offen: Die Server-Teile der Padel-Kiosk-Brücke in `app-sync.mjs` und `schema.sql`
+  fehlen in `main` und liegen nur im Sicherungszweig. Ob Padel-Käufe im TFB-Bierdeckel
+  noch erscheinen, ist ungeprüft.
+
 ## Mannschaftsporträt in Signature Gelb · live am 14.11.2026
 
 Die Porträtkarte hat jetzt einen dunkelblauen Hintergrund, weiße Schrift und
