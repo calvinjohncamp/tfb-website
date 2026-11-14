@@ -96,9 +96,12 @@ const editorialTypes = new Set(['feature', 'post', 'gallery', 'collage', 'carous
 const articleId = /^b-[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i;
 const legacyTestId = 'b-be4ed120-57fb-45f4-9666-2d5205f3ef34';
 
-// These edits were matched to the articles in the saved redaction snapshots.
+// The revision author identifies the original account. Older Home articles were also confirmed by the site owner.
 const legacyHomeCreations = [
- [57, '2026-11-07T09:54:05.080Z', ['b-457826b0-1ea5-4e36-9781-247da537c072', 'b-mw6709j0']],
+ [57, '2026-11-07T09:54:05.080Z', [
+  'b-457826b0-1ea5-4e36-9781-247da537c072', 'b-mw6709j0',
+  'h-50', 'b-mvbv3jog', 'h-padel', 'h-kiosk', 'b-mv68xqgs',
+ ]],
  [86, '2026-11-09T20:53:14.973Z', ['b-mw9qi1yd']],
  [87, '2026-11-13T04:23:01.350Z', ['b-mwegtef2']],
 ];
@@ -107,10 +110,13 @@ async function restoreLegacyArticleAuthors(env, documents) {
  const home = documents['page:home']?.value?.blocks || [];
  const news = documents['page:aktuell']?.value?.blocks || [];
  const test = news.find(block => block.id === legacyTestId && !block.editorialAuthor && block.createdAt === '2026-11-14T08:26:11.204Z');
+ // The site owner confirmed the older Home content and the 7 November original.
+ const novemberIdea = news.filter(block => block.id === 'b-mw61khx5' && block.date === '2026-11-07' && !block.archived && !block.editorialAuthor);
  const fromHome = [...home, ...news.filter(block => block.sourceHomeId === block.id && !block.archived)];
  const restores = legacyHomeCreations.map(([revision, at, ids]) => [
   revision, at, fromHome.filter(block => ids.includes(block.id) && !block.editorialAuthor),
  ]);
+ restores[0][2].push(...novemberIdea);
  if (test) restores.push([124, '2026-11-14T08:26:15.328Z', [test]]);
  await Promise.all(restores.filter(([, , blocks]) => blocks.length).map(async ([revision, at, blocks]) => {
   const edit = await env.DB.prepare("SELECT author FROM cms_history WHERE revision=? AND kind='edit' AND created_at=?").bind(revision, at).first();

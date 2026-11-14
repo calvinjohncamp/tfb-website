@@ -145,8 +145,8 @@ body .shared-kiosk-scope [data-kb-admin-view] .kb-calendar-head :focus-visible {
   outline-color: var(--admin-on-accent);
 }
 
-.shared-kiosk-scope .kb-head:has(.kb-availability) { position: relative; }
-.shared-kiosk-scope .kb-availability { position: absolute; top: 0; right: 0; }
-@media (max-width: 440px) {
-  .shared-kiosk-scope .kb-availability { position: static; margin-top: 8px; }
-}
+.kiosk-tools.kiosk-admin-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 16px; }
+.kiosk-availability { display: inline-flex; gap: 3px; padding: 3px; border-radius: 10px; background: var(--bg); }
+.kiosk-availability .btn { display: inline-flex; align-items: center; gap: 4px; margin: 0; }
+.kiosk-availability .btn span { width: 1em; }
+.kiosk-availability [aria-pressed="true"] { border-color: var(--signal); background: var(--card); }

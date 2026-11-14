@@ -1226,7 +1226,12 @@
     return item;
   });
   TFB.kioskActive = () => site?.kioskActive !== false;
-  TFB.navItems = () => site ? navAll().filter(x => !x.hidden && navTargetAvailable(x.target)) : null;
+  TFB.navItems = () => {
+    if (!site) return null;
+    const items = navAll().filter(item => (!item.hidden || item.target === '#kiosk') && navTargetAvailable(item.target));
+    if (TFB.kioskActive() && !items.some(item => item.target === '#kiosk')) items.unshift(navDefaults().find(item => item.target === '#kiosk'));
+    return items.filter(item => TFB.kioskActive() || !/^#(?:kiosk|strichliste|abrechnungen)(?:\/|$)/.test(item.target));
+  };
   function navCard() {
     const shown = TFB.navItems();
     return `<section class="look-picker nav-card" aria-label="Menü oben">
@@ -1251,12 +1256,13 @@
           <p class="ed-hint">Name ändern, mit den Pfeilen sortieren und das Ziel wählen: eine <b>Seite der App</b> oder eine <b>Website</b> (öffnet in neuem Fenster). Höchstens ${MAX_NAV} sichtbare Punkte – dann passt das Menü auch aufs Handy.</p>
           <div class="nav-rows">${draft.map((x, i) => {
             const web = x.website ?? /^https?:/i.test(x.target || '');
-            return `<div class="nav-row ${x.hidden ? 'is-hidden' : ''}">
+            const hidden = x.target === '#kiosk' ? !TFB.kioskActive() : x.hidden;
+            return `<div class="nav-row ${hidden ? 'is-hidden' : ''}">
               <div class="nav-row-top">
                 <input name="label_${i}" value="${esc(x.label)}" maxlength="20" aria-label="Name im Menü">
                 <button type="button" data-navmove="-1" data-i="${i}" ${i === 0 ? 'disabled' : ''} aria-label="Nach vorne">${icon.up}</button>
                 <button type="button" data-navmove="1" data-i="${i}" ${i === draft.length - 1 ? 'disabled' : ''} aria-label="Nach hinten">${icon.down}</button>
-                <label class="nav-show"><input type="checkbox" name="show_${i}" ${x.hidden ? '' : 'checked'}><span>zeigen</span></label>
+                <label class="nav-show"><input type="checkbox" name="show_${i}" ${x.target === '#kiosk' ? (TFB.kioskActive() ? 'checked disabled' : 'disabled') : x.hidden ? '' : 'checked'}><span>${x.target === '#kiosk' ? 'Über Kiosk-Status' : 'zeigen'}</span></label>
               </div>
               <div class="nav-row-target">
                 <div class="seg"><button type="button" class="${web ? '' : 'on'}" data-navkind="app" data-i="${i}">Seite der App</button><button type="button" class="${web ? 'on' : ''}" data-navkind="web" data-i="${i}">Externe Website</button></div>
@@ -1331,8 +1337,9 @@
         if (saving) return;
         collect();
         const err = form.querySelector('.form-error');
-        const shown = draft.filter((x) => !x.hidden);
-        if (shown.length > MAX_NAV) { err.textContent = `Höchstens ${MAX_NAV} sichtbare Menüpunkte – bitte einen ausblenden.`; return; }
+        const shown = draft.filter(item => !item.hidden || item.target === '#kiosk');
+        const kioskSlots = shown.some(item => item.target === '#kiosk') ? 0 : 1;
+        if (shown.length + kioskSlots > MAX_NAV) { err.textContent = `Höchstens ${MAX_NAV} sichtbare Menüpunkte – bitte einen ausblenden.`; return; }
         const bad = draft.find(x => !x.label || (x.website ? !/^https?:\/\/\S+\.\S+$/i.test(x.target) : !x.target.startsWith('#')));
         if (bad) { err.textContent = bad.label ? `Bitte für „${bad.label}“ ein gültiges Ziel angeben.` : 'Bitte jedem Menüpunkt einen Namen geben.'; return; }
         const removedPages = new Set([...removals.values()].map(x => x.page).filter(Boolean));
@@ -4197,23 +4204,23 @@
     },
     'kiosk-toggle-availability': async el => {
       const { api, state, toast, renderView } = ui();
-      if (!state.member?.isAdmin) return;
-      const active = el.getAttribute('aria-pressed') === 'true';
-      if (active && !confirm('Kiosk deaktivieren? Der Menüpunkt verschwindet und digitale Bestellungen werden gesperrt.')) return;
-      el.disabled = true;
+      if (!state.member?.isAdmin || !state.editMode || ui().currentView() !== 'kiosk') return;
+      const active = el.dataset.active === 'true';
+      if (active === TFB.kioskActive()) return;
+      const buttons = el.closest('.kiosk-availability').querySelectorAll('button');
+      buttons.forEach(button => { button.disabled = true; });
       try {
         const saved = await api.site();
-        if ((saved.kioskActive !== false) === active) {
-          saved.kioskActive = !active;
+        if ((saved.kioskActive !== false) !== active) {
+          saved.kioskActive = active;
           site = await api.saveSite(saved);
-        } else {
-          site = saved;
-        }
+        } else site = saved;
         TFB.refreshNav?.();
         await renderView();
-        toast(TFB.kioskActive() ? 'Kiosk aktiviert' : 'Kiosk deaktiviert', true);
+        document.querySelector('.kiosk-availability [aria-pressed="true"]')?.focus({preventScroll:true});
+        toast(active ? 'Kiosk aktiv und sichtbar' : 'Kiosk inaktiv und ausgeblendet', true);
       } catch (error) { toast(error.message); }
-      finally { el.disabled = false; }
+      finally { buttons.forEach(button => { button.disabled = false; }); }
     },
     'nav-edit': async el => {
       if (!ui().state.member?.isAdmin) return;

@@ -436,6 +436,7 @@
         }
         return TFB.actions['aktuell-edit']();
       }
+      if (view === 'kiosk') state.editMode = true;
       const page = DIRECT_EDIT.get(route);
       if (page) return TFB.actions['site-edit']({ dataset: { page } });
     }
@@ -443,7 +444,16 @@
   }
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => alignHeader());
 
-  // Menü oben: Standard oder – sobald geladen – die im Admin gepflegten Punkte (Name + Ziel: Seite der App oder Website)
+  function kioskAvailabilityTools() {
+    const active = TFB.kioskActive();
+    return `<div class="kiosk-tools kiosk-admin-tools">
+      <div class="kiosk-availability" role="group" aria-label="Kiosk-Status">
+        ${[[true, 'Aktiv'], [false, 'Inaktiv']].map(([value,label]) => `<button type="button" class="btn small" data-action="kiosk-toggle-availability" data-active="${value}" aria-pressed="${active === value}"><span aria-hidden="true">${active === value ? '✓' : ''}</span>${label}</button>`).join('')}
+      </div>
+      <a class="btn small" href="#produktbibliothek">Produktbibliothek</a>
+    </div>`;
+  }
+  // Menü oben: Standard oder die im Admin gepflegten Punkte
   let navArea = '';
   const defaultNav = () => [
     { id: 'kiosk', label: 'Kiosk', target: '#kiosk' }, { id: 'chat', label: 'Chat', target: '#chat' },
@@ -516,7 +526,9 @@
       if (view === 'kiosk' || view === 'kioskabrechnung') await TFB.loadSite();
       if (request !== viewRender) return;
       if (view === 'kiosk' && !TFB.kioskActive()) {
-        $view.innerHTML = '<section class="card"><h1>Kiosk geschlossen</h1><p>Digitale Bestellungen sind derzeit pausiert.</p><a href="#home" class="btn">Zur Startseite</a></section>';
+        $view.innerHTML = isEditing()
+          ? `<section class="card"><h1>Kiosk bearbeiten</h1>${kioskAvailabilityTools()}<p>Der Kiosk ist ausgeblendet. Digitale Bestellungen sind gesperrt.</p><button type="button" class="btn" data-action="edit-done">Fertig</button></section>`
+          : '<section class="card"><h1>Kiosk geschlossen</h1><p>Digitale Bestellungen sind derzeit pausiert.</p><a href="#home" class="btn">Zur Startseite</a></section>';
       } else if (KIOSK_AREA.includes(view)) {
         if (!state.member && view !== 'kiosk') { $view.innerHTML = viewHead(view==='strichliste'?'Strichliste':'Abrechnungen','Deine persönlichen Kioskdaten findest du nach der Anmeldung.',false)+'<button class="btn primary" data-action="login">Anmelden</button>'; return; }
         const body = state.member && !state.member.hasConsent ? consentMarkup() : view === 'kiosk' ? await kioskView() : view === 'strichliste' ? await tallyView() : await statementsView();
@@ -525,6 +537,7 @@
         if(request!==viewRender)return;
         $view.innerHTML = '<div class="shared-kiosk-scope">'+body+'</div>' + shop;
         if (view === 'kiosk') {
+          if (isEditing()) $view.querySelector('.kiosk-main')?.insertAdjacentHTML('afterbegin', kioskAvailabilityTools());
           const partner = $view.querySelector('.shared-kiosk-scope > .pbsp-slot');
           if (partner) $view.appendChild(partner);
         }
@@ -539,6 +552,7 @@
             <button type="button" class="btn small" data-action="members-manage">Mitglieder</button>
             <a class="btn small" href="#clubstatistik">Statistik</a>
             <a class="btn small" href="#kioskabrechnung">Kiosk-Buchungen</a>
+            ${TFB.kioskActive() ? '' : '<button type="button" class="btn small" data-action="edit-start">Kiosk bearbeiten</button>'}
             <a class="btn small" href="#membermail">E-Mail an alle Mitglieder</a><button type="button" class="btn small tfb-backup-button" data-action="admin-backup">Datensicherung / Time Machine</button></div></div>`);
         const activeAdmin = $view.querySelector(`.tfb-admin-links a[href="#${view==='produktbibliothek'?'kioskabrechnung':view}"]`);
         if(activeAdmin) activeAdmin.setAttribute('aria-current','page');
@@ -1048,6 +1062,7 @@
         toast(`Gesichert: ${Object.keys(data.images).length} Fotos – Datei liegt in „Downloads“`, true);
       } catch (err) { toast(err.message); } finally { el.disabled = false; }
     } else if (action === 'edit-start') {
+      if (!state.member?.isAdmin) return;
       const y = window.scrollY;
       state.editMode = true;
       if (currentView() === 'kiosk') { await renderView(); if (el.dataset.keepScroll) window.scrollTo(0, y); } else location.hash = '#kiosk';
