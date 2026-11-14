@@ -25,17 +25,34 @@ try{
  assert.equal(await form.locator('[name=date]').count(),0);
  await form.locator('[data-rich-for=text]').fill('Unser neuer Bericht.');
  await form.getByRole('button',{name:'Link hinzufügen'}).click();
+ await form.getByRole('button',{name:'Link hinzufügen'}).click();
  await form.locator('[data-linkfor=link][data-linkkind=app]').click();
  await form.locator('[name=linkApp]').selectOption('#sport');
  await form.locator('[name=linkLabel]').fill('Zum Sport');
- await form.locator('[name=link2Url]').fill('https://example.org/news');
+ await form.locator('[name=link2Url]').fill('ungültige Adresse');
+ await form.locator('[type=submit]').click();
+ await form.getByText('Bitte eine gültige Website-Adresse eingeben.').waitFor();
+ await form.locator('[name=link2Url]').fill('www.example.org/news');
  await form.locator('[name=link2Label]').fill('Externer News-Link');
+ await page.locator('.news-draft-preview .post').getByRole('link',{name:'Zum Sport'}).waitFor();
+ await form.getByRole('button',{name:'Artikelansicht'}).click();
+ const draftStory = page.locator('.news-draft-preview .story');
+ await draftStory.getByRole('link',{name:'Externer News-Link'}).waitFor();
+ assert.equal(await draftStory.locator('.lead-letters').count(),0);
+ assert.equal(await form.locator('[type=submit]').innerText(),'Veröffentlichen');
  await form.locator('[type=submit]').click();
  await form.waitFor({state:'detached'});
+ await page.locator('.col-news .post').filter({hasText:'Neue News'}).getByRole('link',{name:'Zum Sport'}).waitFor();
+ assert.equal(await page.getByRole('link',{name:'Externer News-Link'}).getAttribute('href'),'https://www.example.org/news');
+ await page.reload();
+ assert.equal(await page.locator('.col-news .post').filter({hasText:'Neue News'}).getByRole('link',{name:'Zum Sport'}).getAttribute('href'),'#sport');
  await page.getByRole('link',{name:'Neue News'}).click();
  assert.equal(await page.getByRole('link',{name:'Zum Sport'}).getAttribute('href'),'#sport');
  assert.equal(await page.getByRole('link',{name:'Externer News-Link'}).getAttribute('target'),'_blank');
  await page.locator('.story-tools a[href="#aktuell"]').click();
+ await page.evaluate(async()=>{TFB.ui.state.member=TFB.api.attachDirectoryMember({id:'home-media-admin',firstName:'Home',lastName:'Test',isAdmin:true,active:true,email:'home@example.invalid',teams:[]});TFB.api.secureDirectory=true;TFB.api.mode='test';await TFB.ui.renderView('aktuell');});
+ if(await page.evaluate(()=>TFB.ui.state.member?.adminHidden))await page.locator('[data-action=admin-toggle]').click();
+
  const png=await page.evaluate(()=>{const c=document.createElement('canvas');c.width=108;c.height=135;c.getContext('2d').fillRect(0,0,108,135);return c.toDataURL().split(',')[1];});
  const photos=n=>Array.from({length:n},(_,i)=>({name:`bild-${i}.png`,mimeType:'image/png',buffer:Buffer.from(png,'base64')}));
  for(const [kind,title,count] of [['carousel','Unser neues Karussell',15],['collage','Unsere Collage',5],['gallery','Unsere Galerie',5]]) {
@@ -107,5 +124,34 @@ try{
  assert.equal(await page.getByRole('button',{name:'Fertig',exact:true}).count(),0);
  await page.locator('.page-head').getByRole('button',{name:'Bearbeitung schließen'}).click();
  await page.locator('.editing-page').waitFor({state:'detached'});
+ await page.locator('[data-action=aktuell-tab][data-tab=news]').click();
+ await page.getByRole('link',{name:'Neue News'}).click();
+ await page.locator('.story [data-action=feature-edit]').click();
+ assert.equal(await form.locator('[type=submit]').innerText(),'Änderungen speichern');
+ await form.locator('[name=title]').fill('Nicht veröffentlichte Änderung');
+ page.once('dialog',dialog=>dialog.dismiss());
+ await page.locator('.sheet-close').click();
+ await form.waitFor();
+ await form.locator('[name=title]').fill('Neue News');
+ page.once('dialog',dialog=>dialog.accept());
+ await form.getByRole('button',{name:'Ins Clubarchiv verschieben'}).click();
+ await form.waitFor({state:'detached'});
+ const savedNews=await page.evaluate(async()=> (await TFB.api.site()).pages.aktuell.blocks.find(b=>b.title==='Neue News'));
+ assert.ok(savedNews.archived);
+ await page.evaluate(id=> location.hash='#club/archiv/beitrag/aktuell-'+id,savedNews.id);
+ await page.getByRole('link',{name:'Externer News-Link'}).waitFor();
+ const permanent=page.getByRole('button',{name:'Endgültig löschen'});
+ const confirmDelete=async acceptSecond => {
+   let count=0;
+   const answer=dialog=>{count++;return count===1||acceptSecond?dialog.accept():dialog.dismiss();};
+   page.on('dialog',answer);
+   try { await permanent.click(); } finally { page.off('dialog',answer); }
+   assert.equal(count,2);
+ };
+ await confirmDelete(false);
+ await permanent.waitFor();
+ await confirmDelete(true);
+ await page.locator('.archive-home').waitFor();
+ assert.equal(await page.evaluate(async id=>(await TFB.api.site()).pages.aktuell.blocks.some(b=>b.id===id),savedNews.id),false);
  assert.deepEqual(errors,[]);console.log('PASS: News links, dates and three photo formats, 15-photo cap, compact collage, original dates on transfer, archive and mobile admin.');
 }finally{await browser.close();}

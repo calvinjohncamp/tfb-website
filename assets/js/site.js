@@ -132,7 +132,7 @@
       if (tag === 'I' || tag === 'EM') return wrapIf(kids(n), '*', '*');
       if (tag === 'U') return wrapIf(kids(n), '__', '__');
       if (tag === 'A') {
-        const href = n.getAttribute('href') || '';
+        const href = (n.getAttribute('href') || '').replaceAll('(', '%28').replaceAll(')', '%29');
         const t = n.textContent.replace(/↗/g, '').trim();
         return /^(https?:\/\/|#)/.test(href) && t ? `[${t}](${href})` : t;
       }
@@ -419,7 +419,7 @@
     site = await ui().api.saveSite(TFB.newsroom.archiveNews(fresh, id));
     const inDetail = detailEditing || location.hash.split('/').length > 1;
     detailEditing = false;
-    if (inDetail) { editing = null; location.hash = '#aktuell'; }
+    if (inDetail) { ui().closeSheet(true); editing = null; location.hash = '#aktuell'; }
     await ui().renderView();
     ui().toast('Im Clubarchiv gespeichert', true);
     return true;
@@ -609,9 +609,9 @@
   let previewTimer = null;
   let readDraft = null;
   let lastTab = null;
-  function startLive(id, draft, read) {
+  function startLive(id, draft, read, page) {
     readDraft = read;
-    preview = { id, draft, tab: read() };
+    preview = { id, draft, tab: read(), page };
     document.getElementById('sheet-root').classList.add('side-mode');
     document.body.classList.add('side-editing');
     document.body.classList.remove('no-scroll');
@@ -628,9 +628,12 @@
     lastTab = preview.tab;
     const y = window.scrollY;
     await ui().renderView();
+    if (!preview) return;
     if (jump || tabChanged) {
       if (preview.tab === 'album') { window.scrollTo(0, 0); return; }
-      const el = preview.tab === 'sub' ? document.querySelector('.story') : document.querySelector(`[data-feature="${preview.id}"]`);
+      const el = preview.page === 'aktuell'
+        ? document.querySelector('.news-draft-preview .story, .news-draft-preview .post')
+        : preview.tab === 'sub' ? document.querySelector('.story') : document.querySelector(`[data-feature="${preview.id}"]`);
       if (el) window.scrollTo(0, Math.max(0, el.getBoundingClientRect().top + window.scrollY - 150));
     } else window.scrollTo(0, y);
   }
@@ -644,6 +647,10 @@
     document.body.classList.remove('side-editing');
   }
   // Handy: Editor-Blatt nach unten wegschieben (Vorschau) – oben bleibt die Kopfzeile sichtbar
+  document.addEventListener('click', event => {
+    if (event.target.closest('.news-draft-preview a')) event.preventDefault();
+  });
+
   function togglePeek(btn) {
     const root = document.getElementById('sheet-root');
     const sheet = root.querySelector('.sheet');
@@ -662,7 +669,11 @@
   // Wird das Fenster geschlossen (Kreuz, Abbrechen), endet die Vorschau und der gespeicherte Stand erscheint wieder.
   new MutationObserver(() => {
     const root = document.getElementById('sheet-root');
-    if (preview && root && !root.querySelector('[data-editor=block]')) { endLive(); ui().renderView(); }
+    if (preview && root && !root.querySelector('[data-editor=block]')) {
+      if (preview.page === 'aktuell') dropUnsaved();
+      endLive();
+      ui().renderView();
+    }
     if (photoPreview && root && !root.querySelector('[data-editor=block]')) { photoPreview = null; ui().renderView(); }
   }).observe(document.getElementById('sheet-root') || document.body, { childList: true });
 
@@ -718,16 +729,20 @@
   }
   const mediaDetail = (block,page='aktuell',backHref,readonly=false) => TFB.homeMedia.detail(block,{imageOf:ref=>images[ref]||ref,paragraphs,admin:!readonly&&ui().state.member?.isAdmin,page,backHref,links:page === 'aktuell' ? newsLinkMarkup(block) : ''});
 
-  async function newsArticleDetail(block, archive = false) {
+  async function newsArticleDetail(block, archive = false, draftPreview = false) {
     if (block.archived && !archive) return `<p>Dieser Artikel ist im Clubarchiv.</p><a class="btn" href="${archiveHref(block)}">Zum Artikel im Clubarchiv</a>`;
     const back = archive ? '#club/archiv' : '#aktuell';
     if (block.type === 'event') return `<div class="site-page archive-reading">${ui().viewHead(esc(block.title), 'Termin', false)}${eventCard(block)}<a class="btn" href="${back}">Zurück</a></div>`;
-    if (block.mediaCollection) return mediaDetail(block, 'aktuell', archive ? back : undefined, archive);
+    const editable = !draftPreview && ui().state.member?.isAdmin;
+    const remove = editable && archive && block.archived
+      ? `<button type="button" class="btn small danger" data-action="aktuell-delete-archived" data-id="${esc(block.id)}">Endgültig löschen</button>` : '';
+    if (block.mediaCollection) return (await mediaDetail(block, 'aktuell', archive ? back : undefined, archive)) + remove;
     if (!photoStudio && showInlineCarousel(block)) photoStudio = await import('./chat-media.js?v=20261114-home-editor-1');
     return storyHtml({ ...block, text: block.showText === false ? '' : block.text, title: block.title || photoDisplays.get(block.type) || 'News', noPlaceholder: true }, {closeHref:back, backLabel:archive ? 'Zum Clubarchiv' : 'Zu Aktuell',
-      editHtml: !archive && ui().state.member?.isAdmin ? `<button type="button" class="view-close" data-action="feature-edit" data-page="aktuell" data-id="${esc(block.id)}" aria-label="Bearbeiten">${ui().icon.pencil}</button>` : '',
+      editHtml: editable && !archive ? `<button type="button" class="view-close" data-action="feature-edit" data-page="aktuell" data-id="${esc(block.id)}" aria-label="Bearbeiten">${ui().icon.pencil}</button>` : remove,
       gallery: photoTypes.includes(block.type) || photoDisplays.has(block.photoDisplay) ? photoDisplay(block, (block.images || []).filter(shownImage), block.photoDisplay || block.type, 'gallery-open') : '',
-      linkPage: 'aktuell', topicHero: Boolean(block.sourceHomeId && block.type === 'post'),
+      linkPage: 'aktuell', topicHero: block.type === 'post' && (Boolean(block.sourceHomeId) || homePhotoRefs(block).length === 1),
+      simpleNews: !block.sourceHomeId, draftPreview,
     });
   }
 
@@ -808,7 +823,7 @@
   const topicHeroRatio = more => topicHeroFormats.some(([ratio]) => ratio === more.heroRatio) ? more.heroRatio : 'original';
   const topicCover = b => homePhotoRefs(b)[0] || b.image;
 
-  function storyHtml(b, { n = '', editHtml = '', closeHref = '#home', backLabel = 'Zur Startseite', partner = '', gallery = '', linkPage = 'home', topicHero = false } = {}) {
+  function storyHtml(b, { n = '', editHtml = '', closeHref = '#home', backLabel = 'Zur Startseite', partner = '', gallery = '', linkPage = 'home', topicHero = false, simpleNews = false, draftPreview = false } = {}) {
     const { icon } = ui();
     storyIndex[b.id] = b;
     const more = b.more || {};
@@ -840,23 +855,25 @@
     const detailLinks = (more.links || []).filter(link => safeLink(link.url)).map(link => linkMarkup(link)).join('');
     const extraLinks = linkPage === 'aktuell' ? featureLinks(b, linkPage).map(({link}) => linkMarkup(link)).join('') : '';
     return `
-      <article class="story">
-        <div class="story-tools">
+      <article class="story${simpleNews ? ' story-news' : ''}">
+        ${draftPreview ? '' : `<div class="story-tools">
           ${editHtml}
           <a class="view-close" href="${esc(closeHref)}" aria-label="Zurück">${icon.close}</a>
-        </div>
+        </div>`}
         ${heroHtml}
         <div class="story-grid ${sideImage ? 'with-side' : ''}">
           <header class="story-head">
             ${sideImage ? `<div class="story-side-img ${esc(String(b.layout).replace('-right', ''))}">${picture(b.image, b.id, b.title)}</div>` : ''}
-            <p class="feature-kicker">${n ? `<span>${esc(n)}</span>` : ''}${esc(b.kicker || '')}</p>
+            ${simpleNews
+              ? (b.date ? `<p class="post-date"><time datetime="${esc(b.date)}">${esc(fmt(b.date,{day:'numeric',month:'long',year:'numeric'}))}</time></p>` : '')
+              : `<p class="feature-kicker">${n ? `<span>${esc(n)}</span>` : ''}${esc(b.kicker || '')}</p>`}
             <h1>${esc(b.title)}</h1>
             ${b.subtitle ? `<p class="feature-sub">${signatureText(b.subtitle)}</p>` : ''}
             ${linkPage === 'home' && b.link && b.link.url ? `<div class="story-link">${linkMarkup(b.link)}</div>` : ''}
           </header>
           <div class="story-body">
             ${(() => {
-              const drop = more.dropcap == null ? 1 : Number(more.dropcap);
+              const drop = more.dropcap == null ? (simpleNews ? 0 : 1) : Number(more.dropcap);
               const secs = storySections(more).filter((x) => (x.text || '').trim());
               if (!secs.some((x) => x.type === 'text') && b.text) secs.unshift({ type: 'text', text: b.text });
               let first = true;
@@ -1001,6 +1018,13 @@
       });
     }
     if (['home', 'aktuell'].includes(key) && section === 'alle') { editing = null; return contentOverview(key); }
+    if (key === 'aktuell' && preview?.page === 'aktuell') {
+      const { draft, tab } = preview;
+      if (!photoStudio && showInlineCarousel(draft)) photoStudio = await import('./chat-media.js?v=20261114-home-editor-1');
+      const article = { ...draft, title: draft.title || 'Ohne Überschrift', date: draft.date || (draft._new ? today() : '') };
+      return `<section class="news-draft-preview"><p class="muted small">Vorschau · ${tab === 'sub' ? 'Artikelansicht' : 'News-Übersicht'}</p>
+        ${tab === 'sub' ? await newsArticleDetail(article, false, true) : `<div class="news-preview-card">${newsPost(article, null, false, true)}</div>`}</section>`;
+    }
     if (key === 'aktuell' && section === 'beitrag') aktuellTab = 'news';
     if (key === 'aktuell' && section) {
       const parts = location.hash.split('/');
@@ -1149,7 +1173,7 @@
                 <label class="nav-show"><input type="checkbox" name="show_${i}" ${x.hidden ? '' : 'checked'}><span>zeigen</span></label>
               </div>
               <div class="nav-row-target">
-                <div class="seg"><button type="button" class="${web ? '' : 'on'}" data-navkind="app" data-i="${i}">Seite der App</button><button type="button" class="${web ? 'on' : ''}" data-navkind="web" data-i="${i}">Website</button></div>
+                <div class="seg"><button type="button" class="${web ? '' : 'on'}" data-navkind="app" data-i="${i}">Seite der App</button><button type="button" class="${web ? 'on' : ''}" data-navkind="web" data-i="${i}">Externe Website</button></div>
                 ${web ? `<input name="target_${i}" type="url" value="${esc(x.target)}" placeholder="https://www.beispiel.de">`
                   : `<select name="target_${i}">${targets.map(([v, l]) => `<option value="${esc(v)}" ${v === x.target ? 'selected' : ''}>${esc(l)}</option>`).join('')}${targets.some(([v]) => v === x.target) ? '' : `<option value="${esc(x.target)}" selected>${esc(x.target)}</option>`}</select>`}
               </div>
@@ -2329,7 +2353,7 @@
           <button type="button" data-rich="hervorheben" aria-label="${emphasisLabel}" title="${emphasisLabel}"><span class="highlight-sample">${yellowBrand ? 'M' : 'R'}</span> ${yellowBrand ? 'Textmarker' : 'Rot'}</button>
         </span>
         <span class="rich-group" role="group" aria-label="Verlinkung">
-          <button type="button" data-rich="link" title="Link"><svg class="link-arrow" viewBox="0 0 806 1000" aria-hidden="true" focusable="false"><path transform="translate(0 755) scale(1 -1)" d="M528 -14 448 66 546 164 587 189 581 206 533 198H50V312H533L581 304L587 321L546 346L448 444L528 524L756 296V214Z"/></svg> Link</button>
+          <button type="button" data-rich="link" title="Markierten Text verlinken"><svg class="link-arrow" viewBox="0 0 806 1000" aria-hidden="true" focusable="false"><path transform="translate(0 755) scale(1 -1)" d="M528 -14 448 66 546 164 587 189 581 206 533 198H50V312H533L581 304L587 321L546 346L448 444L528 524L756 296V214Z"/></svg> Text verlinken</button>
         </span>` : `
         <span class="rich-group" role="group" aria-label="Schrift">
           <button type="button" data-rich="bold" aria-label="Fett umschalten" title="Fett (unabhängig von der Hervorhebung)"><b>F</b></button>
@@ -2350,7 +2374,7 @@
         </span>
         <span class="rich-group" role="group" aria-label="Absatz">
           <button type="button" data-rich="h" title="Markierten Absatz zur Zwischenüberschrift machen (nochmal = zurück)">Überschrift</button>
-          <button type="button" data-rich="link" title="Link"><svg class="link-arrow" viewBox="0 0 806 1000" aria-hidden="true" focusable="false"><path transform="translate(0 755) scale(1 -1)" d="M528 -14 448 66 546 164 587 189 581 206 533 198H50V312H533L581 304L587 321L546 346L448 444L528 524L756 296V214Z"/></svg> Link</button>
+          <button type="button" data-rich="link" title="Markierten Text verlinken"><svg class="link-arrow" viewBox="0 0 806 1000" aria-hidden="true" focusable="false"><path transform="translate(0 755) scale(1 -1)" d="M528 -14 448 66 546 164 587 189 581 206 533 198H50V312H533L581 304L587 321L546 346L448 444L528 524L756 296V214Z"/></svg> Text verlinken</button>
         </span>`}
         <span class="rich-group rich-history" role="group" aria-label="Textänderungen">
           <button type="button" data-rich="undo" aria-label="Rückgängig" title="Rückgängig" disabled>${historyArrow()}</button>
@@ -2378,13 +2402,13 @@
     return `
       <div class="field link-target"><span>${label}</span>
         <div class="seg link-kind-seg">
-          <button type="button" class="${isApp ? '' : 'on'}" data-linkkind="web" data-linkfor="${prefix}">Website</button>
+          <button type="button" class="${isApp ? '' : 'on'}" data-linkkind="web" data-linkfor="${prefix}">Externe Website</button>
           <button type="button" class="${isApp ? 'on' : ''}" data-linkkind="app" data-linkfor="${prefix}">Seite der App</button>
         </div>
         ${isApp
-          ? `<select name="${prefix}App">${targets.map(([v, l]) => `<option value="${esc(v)}" ${v === url ? 'selected' : ''}>${esc(l)}</option>`).join('')}${targets.some(([v]) => v === url) ? '' : `<option value="${esc(url)}" selected>${esc(url)}</option>`}</select>
+          ? `<select name="${prefix}App" aria-label="Seite der App">${targets.map(([v, l]) => `<option value="${esc(v)}" ${v === url ? 'selected' : ''}>${esc(l)}</option>`).join('')}${targets.some(([v]) => v === url) ? '' : `<option value="${esc(url)}" selected>${esc(url)}</option>`}</select>
              <input type="hidden" name="${prefix}Url" value="${esc(url)}">`
-          : `<input name="${prefix}Url" type="url" inputmode="url" value="${esc(url || '')}" placeholder="https://www.beispiel.de">`}
+          : `<input name="${prefix}Url" type="url" aria-label="Website-Adresse" inputmode="url" value="${esc(url || '')}" placeholder="https://www.beispiel.de">`}
       </div>`;
   }
   function newsLinkFields(draft) {
@@ -2394,15 +2418,49 @@
   function readEditorialLink(formFields, draft, key) {
     if (!formFields[key + 'Url']) return;
     const url = formFields[key + 'App']?.value ?? formFields[key + 'Url'].value.trim();
-    draft[key] = { ...draft[key], url: url && !/^(https?:\/\/|#)/i.test(url) ? 'https://' + url : url,
-      label: formFields[key + 'Label'].value.trim() };
+    const isNews = Boolean(formFields[key + 'Url'].closest('.news-link-row'));
+    draft[key] = { ...draft[key], url: isNews ? editorialUrl(url) : url && !/^(https?:\/\/|#)/i.test(url) ? 'https://' + url : url,
+      label: formFields[key + 'Label'].value.trim(), ...(isNews ? {pendingUrl: url} : {}) };
+  }
+  function editorialUrl(value) {
+    const target = value.trim();
+    if (/^#[a-z0-9][^\s]*$/i.test(target)) return target;
+    if (!target || /\s/.test(target) || (/^[a-z][\w+.-]*:/i.test(target) && !/^https?:\/\//i.test(target))) return '';
+    try {
+      const url = new URL(/^https?:\/\//i.test(target) ? target : 'https://' + target);
+      return url.hostname.includes('.') ? url.href : '';
+    } catch (_) { return ''; }
+  }
+  function validateNewsLinks(form, draft, keys) {
+    let invalid;
+    for (const key of keys) {
+      const input = form.elements[key + 'App'] || form.elements[key + 'Url'];
+      if (!input) continue;
+      const link = draft[key];
+      const target = editorialUrl(input.value);
+      const error = (!target && (input.value.trim() || link?.label))
+        ? (form.elements[key + 'App'] ? 'Bitte eine Seite auswählen.' : 'Bitte eine gültige Website-Adresse eingeben.') : '';
+      input.toggleAttribute('aria-invalid', Boolean(error));
+      const message = form.querySelector(`[data-link-error="${key}"]`);
+      if (message) {
+        message.id = 'news-error-' + key;
+        message.textContent = error;
+        if (error) input.setAttribute('aria-describedby', message.id);
+        else input.removeAttribute('aria-describedby');
+      }
+      if (error) invalid ||= input;
+      else if (link) { link.url = target; delete link.pendingUrl; }
+    }
+    invalid?.focus();
+    return !invalid;
   }
   function switchEditorialLink(links, key, app, defaultTarget = '#home') {
     const link = links[key] || {};
-    const url = link.url || '';
+    const url = link.pendingUrl ?? link.url ?? '';
     if (app === url.startsWith('#')) return;
     const memo = { ...link.memo, [url.startsWith('#') ? 'app' : 'web']: url };
     links[key] = { ...link, memo, url: app ? memo.app || defaultTarget : memo.web || '' };
+    delete links[key].pendingUrl;
   }
 
   // Foto in einer Fotoliste des Editors: × entfernen, ‹ › verschieben, mit der Maus ziehen
@@ -2481,13 +2539,23 @@
       draft.detailEnabled = !['none', 'link'].includes(draft.navigation);
     }
     let albumOpen = startTab === 'album' || Boolean(draft.album?.enabled || draft.album?.images?.length);
-    const live = editing === 'home' && homeFeature;   // Themen: Seitenleiste mit Live-Vorschau
     const photoModule = photoTypes.includes(draft.type);
     const newsroom = editing === 'aktuell';
+    const liveNews = newsroom && (draft.type === 'post' || photoModule);
+    const live = (editing === 'home' && homeFeature) || liveNews;
+    let newsPreviewTab = isNew || !location.hash.includes('/') ? 'home' : 'sub';
+    const articleLinksOpen = new Set(['link','link2'].filter(key => draft[key]?.url || draft[key]?.label));
+    let formBaseline;
     const articleDateField = () => TFB.newsroom.creationDate(draft) ? `<p class="muted small">Erstellt am ${esc(fmt(TFB.newsroom.creationDate(draft),{day:'numeric',month:'long',year:'numeric'}))}</p>` : '';
-    const articleLinks = () => linksOpen
-      ? '<h3 class="editor-sub">Links</h3>' + newsLinkFields(draft)
-      : '<button type="button" class="btn small" data-topic-open="links">Link hinzufügen</button>';
+    const articleLinks = () => `<fieldset class="news-editor-links"><legend>Links</legend>
+      ${[...articleLinksOpen].map(key => `<div class="news-link-row">
+        ${linkTargetField(draft[key]?.pendingUrl ?? draft[key]?.url, key, 'Linkziel')}
+        ${field('Linktext', key + 'Label', draft[key]?.label)}
+        <p class="form-error" data-link-error="${key}" role="alert"></p>
+        <button type="button" class="btn small" data-news-link-remove="${key}">Link entfernen</button>
+      </div>`).join('')}
+      ${articleLinksOpen.size < 2 ? '<button type="button" class="btn small" data-news-link-add>+ Link hinzufügen</button>' : ''}
+    </fieldset>`;
     const refreshPhotoPreview = () => {
       if (!photoModule || editing === 'home' || newsroom) return;
       photoPreview = { id, draft };
@@ -2524,12 +2592,13 @@
             + (homeFeature && homePhotoRefs(draft).length > 1 ? photoFormatField('photoDisplay', draft.photoDisplay || 'single', true, homePhotoRefs(draft).length) : '')
             + (homeFeature && draft.photoDisplay === 'carousel' && homePhotoRefs(draft).length > 1 ? photoStartField('animationStart', draft.animationStart) : '')
             + (ui().state.member?.isAdmin ? cover4kField(draft, homeFeature) : '')
+            + (liveNews ? articleLinks() : '')
             + `<div class="home-topic-actions">
-              ${linksOpen ? '' : '<button type="button" class="btn small" data-topic-open="links">Link hinzufügen</button>'}
+              ${linksOpen || liveNews ? '' : '<button type="button" class="btn small" data-topic-open="links">Link hinzufügen</button>'}
               <button type="button" class="btn small" data-topic-open="sub">${detailOpen ? 'Unterseite bearbeiten' : 'Unterseite anlegen'}</button>
               <button type="button" class="btn small" data-topic-open="album">${albumOpen ? 'Fotoseite bearbeiten' : 'Fotoseite anlegen'}</button>
             </div>`
-            + (linksOpen ? '<h3 class="editor-sub">Links</h3>'
+            + (linksOpen && !liveNews ? '<h3 class="editor-sub">Links</h3>'
               + linkTargetField(lk.url, 'link', 'Link 1')
               + field('Link-Text', 'linkLabel', lk.label, { placeholder: 'z. B. Jetzt Platz buchen' })
               + linkTargetField((draft.link2 || {}).url, 'link2', 'Link 2 (freiwillig)')
@@ -2621,7 +2690,8 @@
             </div>`;
         case 'post': return field('Überschrift', 'title', draft.title) + (newsroom ? articleDateField() : field('Veröffentlichungsdatum', 'date', draft.date, { type: 'date' }))
           + field('Text', 'text', draft.text, { area: true, rich: true, simple: true, rows: 9, placeholder: 'Text schreiben – Wort markieren, dann Fett, Kursiv oder Rot' }) + postPhotosField(draft)
-          + (ui().state.member?.isAdmin ? cover4kField(draft) : '') + (newsroom ? articleLinks() : '');
+          + (newsroom ? articleLinks() : '')
+          + (ui().state.member?.isAdmin ? (newsroom ? `<details class="news-photo-options"><summary>Weitere Fotoeinstellungen</summary>${cover4kField(draft)}</details>` : cover4kField(draft)) : '');
         case 'image': return imageField(draft.image, draft.id) + field('Bildunterschrift', 'caption', draft.caption)
           + `<label class="meet-check"><input type="checkbox" name="imgOriginal" data-rerender ${draft.original ? 'checked' : ''}><span>Originalformat (nicht zuschneiden)</span></label>`
           + (draft.original ? `<div class="field"><span>Ausrichtung</span><div class="seg align-seg">${[['left', 'Links'], ['center', 'Mitte'], ['right', 'Rechts']].map(([v, l]) =>
@@ -2663,14 +2733,18 @@
     const render = () => {
       const keepScroll = document.querySelector('#sheet-root .sheet') ? document.querySelector('#sheet-root .sheet').scrollTop : 0;
       openSheet(`
-        <form class="editor ${live ? 'editor-live' : ''}" data-editor="block" novalidate>
-          <h2>${isNew ? (live ? 'Neues Thema' : `${esc(label)} hinzufügen`) : live ? 'Thema bearbeiten' : `${esc(label)} bearbeiten`}</h2>
+        <form class="editor ${live ? 'editor-live' : ''} ${liveNews ? 'news-editor' : ''}" data-editor="block" novalidate>
+          <h2>${isNew ? (live && !liveNews ? 'Neues Thema' : `${esc(label)} hinzufügen`) : live && !liveNews ? 'Thema bearbeiten' : `${esc(label)} bearbeiten`}</h2>
+          ${liveNews ? `<div class="seg news-preview-tabs" role="group" aria-label="Vorschau wählen">
+            ${[['home','News-Übersicht'],['sub','Artikelansicht']].map(([key,label]) => `<button type="button" data-news-preview="${key}" aria-pressed="${key === newsPreviewTab}" class="${key === newsPreviewTab ? 'on' : ''}">${label}</button>`).join('')}
+          </div>` : ''}
           ${body()}
-          <p class="form-error" role="alert"></p>
+          <p class="form-error" data-block-error role="alert"></p>
           <div class="ed-actions">
-            <button type="submit" class="btn primary block">Speichern</button>
+            <button type="submit" class="btn primary block">${liveNews ? (isNew ? 'Veröffentlichen' : 'Änderungen speichern') : 'Speichern'}</button>
             ${live ? '<button type="button" class="btn block ed-peek" data-ed-peek>Vorschau ansehen</button>' : ''}
           </div>
+          ${liveNews && isNew ? '<button type="button" class="btn block" data-action="close-sheet">Entwurf verwerfen</button>' : ''}
           ${isNew || editing === 'home' || (editing === 'aktuell' && !TFB.newsroom.canArchive(draft)) ? '' : `<button type="button" class="btn block danger" data-delete>${editing === 'aktuell' ? 'Ins Clubarchiv verschieben' : 'Baustein löschen'}</button>`}
         </form>`);
       const form = document.querySelector('[data-editor=block]');
@@ -2767,7 +2841,14 @@
       });
       form.addEventListener('dragstart', e => { if (e.target.closest('.gallery-thumb.sortable')) e.preventDefault(); });
       if (live) {
-        startLive(id, draft, () => { collect(form); return edTab; });
+        startLive(id, draft, () => { collect(form); return liveNews ? newsPreviewTab : edTab; }, editing);
+        if (liveNews) {
+          formBaseline ??= JSON.stringify(draft);
+          form.confirmClose = () => {
+            collect(form);
+            return formBaseline === JSON.stringify(draft) || confirm('Ungespeicherte Änderungen verwerfen?');
+          };
+        }
         document.querySelector('#sheet-root .sheet').scrollTop = keepScroll;
         form.addEventListener('input', () => schedulePreview());
         form.addEventListener('change', () => schedulePreview());
@@ -2795,8 +2876,8 @@
         if (del) {
           if (editing === 'aktuell') {
             del.disabled = true;
-            try { if (await archiveNewsItem(id, original)) closeSheet(); }
-            catch (error) { form.querySelector('.form-error').textContent = error.message; }
+            try { if (await archiveNewsItem(id, original)) closeSheet(true); }
+            catch (error) { form.querySelector('[data-block-error]').textContent = error.message; }
             finally { del.disabled = false; }
             return;
           }
@@ -2819,6 +2900,27 @@
         }
         const mv = e.target.closest('[data-move-list]');
         if (mv) { collect(form); moveInList(mv.dataset.moveList, Number(mv.dataset.moveIndex), Number(mv.dataset.moveIndex) + Number(mv.dataset.moveDir)); render(); return; }
+        const view = e.target.closest('[data-news-preview]');
+        if (view) {
+          newsPreviewTab = view.dataset.newsPreview;
+          form.querySelectorAll('[data-news-preview]').forEach(button => {
+            button.classList.toggle('on', button === view);
+            button.setAttribute('aria-pressed', String(button === view));
+          });
+          refreshPreview(true);
+          return;
+        }
+        const addLink = e.target.closest('[data-news-link-add]');
+        const removeLink = e.target.closest('[data-news-link-remove]');
+        if (addLink || removeLink) {
+          collect(form);
+          const key = removeLink ? removeLink.dataset.newsLinkRemove : ['link','link2'].find(key => !articleLinksOpen.has(key));
+          if (removeLink) { articleLinksOpen.delete(key); if (draft[key]) draft[key] = { ...draft[key], url: '', label: '', memo: {}, pendingUrl: '' }; }
+          else articleLinksOpen.add(key);
+          render();
+          if (addLink) document.querySelector(`[data-editor=block] [name="${key}Url"]`)?.focus();
+          return;
+        }
         const option = e.target.closest('[data-topic-open]');
         if (option) {
           collect(form);
@@ -3077,6 +3179,7 @@
           throw Error(`Auf Home sind bereits ${MAX_HOME_FEATURES} Themen veröffentlicht.`);
         }
         const { _new, ...saved } = value;
+        for (const link of [saved.link, saved.link2]) if (link) delete link.pendingUrl;
         if (isNew && saved.type !== 'event') {
           saved.createdAt = new Date().toISOString();
           saved.createdOn = today();
@@ -3089,24 +3192,25 @@
         if (isNew && page === 'home') highlightHome(id);
         if (detailEditing) { editing = null; detailEditing = false; }
         endLive();
-        if (form.isConnected) closeSheet();
+        if (form.isConnected) closeSheet(true);
         await ui().renderView();
         ui().toast(isNew && page === 'home' ? 'Oben auf Home hinzugefügt' : 'Gespeichert', true);
       } catch (error) {
-        form.querySelector('.form-error').textContent = error.message;
+        form.querySelector('[data-block-error]').textContent = error.message;
       } finally { for (const control of controls) control.disabled = false; }
     }
     const save = (form) => {
       collect(form);
-      if (['event', 'post', 'feature'].includes(draft.type) && !draft.title) { form.querySelector('.form-error').textContent = 'Bitte einen Titel eingeben.'; return; }
-      if(newsroom && draft.type === 'event' && !TFB.newsroom.validDate(draft.date)){form.querySelector('.form-error').textContent='Bitte ein gültiges Datum wählen.';return;}
-      if (photoModule && (isNew || draft.photoBlock) && !(draft.images || []).length) { form.querySelector('.form-error').textContent = 'Bitte mindestens ein Foto hinzufügen.'; return; }
-      if (draft.album?.enabled && !draft.album.images?.length && (albumOpen || isNew)) { form.querySelector('.form-error').textContent = 'Bitte auf der Fotoseite mindestens ein Foto hinzufügen oder die Verlinkung ausschalten.'; return; }
+      if (['event', 'post', 'feature'].includes(draft.type) && !draft.title) { form.querySelector('[data-block-error]').textContent = 'Bitte einen Titel eingeben.'; return; }
+      if(newsroom && draft.type === 'event' && !TFB.newsroom.validDate(draft.date)){form.querySelector('[data-block-error]').textContent='Bitte ein gültiges Datum wählen.';return;}
+      if (photoModule && (isNew || draft.photoBlock) && !(draft.images || []).length) { form.querySelector('[data-block-error]').textContent = 'Bitte mindestens ein Foto hinzufügen.'; return; }
+      if (draft.album?.enabled && !draft.album.images?.length && (albumOpen || isNew)) { form.querySelector('[data-block-error]').textContent = 'Bitte auf der Fotoseite mindestens ein Foto hinzufügen oder die Verlinkung ausschalten.'; return; }
+      if (liveNews && !validateNewsLinks(form, draft, articleLinksOpen)) return;
       const groups = block => [[photoTypes.includes(block.type) ? block.type : block.photoDisplay, block.images], [block.more?.photoDisplay, block.more?.images], [block.album?.photoDisplay, block.album?.images]];
       const before = groups(original);
       if (groups(draft).some(([format, refs], i) => format === 'carousel' && (refs?.length || 0) > carouselLimit()
         && (before[i][0] !== 'carousel' || refs.length > (before[i][1]?.length || 0)))) {
-        form.querySelector('.form-error').textContent = `Ein Karussell kann höchstens ${carouselLimit()} Fotos enthalten.`;
+        form.querySelector('[data-block-error]').textContent = `Ein Karussell kann höchstens ${carouselLimit()} Fotos enthalten.`;
         return;
       }
       if (editing === 'home' || newsroom) return saveEditorialBlock(form, draft, isNew);
@@ -3717,6 +3821,23 @@
         return fresh;
       }, 'Artikel von Home gelöscht');
     },
+    'aktuell-delete-archived': async el => {
+      if (!ui().state.member?.isAdmin || !location.hash.startsWith('#club/archiv/beitrag/')) return;
+      const original = site.pages.aktuell.blocks.find(b => b.id === el.dataset.id && b.archived);
+      if (!original || !confirm(`„${original.title || 'Ohne Überschrift'}“ endgültig löschen? Der Beitrag wird aus dem Clubarchiv entfernt.`)) return;
+      if (!confirm('Endgültig löschen bestätigen.')) return;
+      el.disabled = true;
+      try {
+        const fresh = await ui().api.site();
+        const blocks = fresh.pages.aktuell.blocks;
+        if (JSON.stringify(blocks.find(b => b.id === original.id)) !== JSON.stringify(original)) throw Error('Der Beitrag wurde inzwischen geändert.');
+        fresh.pages.aktuell.blocks = blocks.filter(b => b.id !== original.id);
+        site = await ui().api.saveSite(fresh);
+        location.hash = '#club/archiv';
+        ui().toast('Artikel gelöscht', true);
+      } catch (error) { ui().toast(error.message); }
+      finally { el.disabled = false; }
+    },
     'aktuell-archive': async el => {
       const block = site.pages.aktuell.blocks.find(b => b.id === el.dataset.id);
       el.disabled = true;
@@ -3834,7 +3955,8 @@
         return;
       }
       const b = Object.values(site.pages).flatMap(p => p.blocks).find(b => b.id === el.dataset.block);
-      if (b) openGallery((b.images || []).slice(0, 100), b.title, true);
+      const block = preview?.page === 'aktuell' && preview.id === el.dataset.block ? preview.draft : b;
+      if (block) openGallery(homePhotoRefs(block).slice(0, 100), block.title, true);
     },
     'feed-more': (el) => { feedOpen[el.dataset.scope] = true; ui().renderView(); },
     'att-open': (el) => openViewer(el.dataset.ref, el.dataset.kind, el.dataset.title, el.dataset.filename),
@@ -3850,7 +3972,8 @@
     },
     'team-post': (el) => openTeamPost(el.dataset.team, el.dataset.id),
     'gallery-open': (el) => {
-      const block = Object.values(site.pages).flatMap((p) => p.blocks).find((b) => b.id === el.dataset.block);
+      const block = preview?.page === 'aktuell' && preview.id === el.dataset.block ? preview.draft
+        : Object.values(site.pages).flatMap((p) => p.blocks).find((b) => b.id === el.dataset.block);
       if (!block) return;
       const list = (block.images || []).filter(shownImage).slice(0, 100);
       openGallery(list, block.title || 'Galerie', true, el.hasAttribute('data-overview') ? null : Number(el.dataset.index) || 0);
@@ -3858,9 +3981,10 @@
   });
 
   // Bearbeitungsmodus verlassen, wenn eine andere Seite geöffnet wird.
-  window.addEventListener('hashchange', () => {
+  window.addEventListener('hashchange', event => queueMicrotask(() => {
+    if (event.newURL !== location.href) return;
     if (detailEditing || (editing && location.hash.replace('#', '') !== routeOf(editing))) { editing = null; detailEditing = false; }
-  });
+  }));
 
   // Link eines Home-Themas an den anderen Platz setzen
   function moveLink(blockId, slotName, key = 'main', beforeKey = null) {
@@ -4051,8 +4175,27 @@
     const area = e.target.closest && e.target.closest('.rich-area');
     if (!area) return;
     e.preventDefault();
-    const text = (e.clipboardData || window.clipboardData).getData('text/plain');
-    document.execCommand('insertText', false, text);
+    const clipboard = e.clipboardData || window.clipboardData;
+    const html = area.closest('.news-editor') && clipboard.getData('text/html');
+    if (html) {
+      const fragment = new DOMParser().parseFromString(html, 'text/html');
+      if (fragment.querySelector('a[href]')) {
+        const clean = node => {
+          if (node.nodeType === 3) return esc(node.textContent);
+          if (node.nodeType !== 1 || /^(SCRIPT|STYLE|TEMPLATE)$/.test(node.tagName)) return '';
+          const content = [...node.childNodes].map(clean).join('');
+          if (node.tagName === 'A') {
+            const url = editorialUrl(node.getAttribute('href') || '');
+            return url ? `<a class="inline-link" href="${esc(url)}">${content}</a>` : content;
+          }
+          if (node.tagName === 'BR') return '<br>';
+          return /^(P|DIV|LI|H[1-6])$/.test(node.tagName) ? `<p>${content}</p>` : content;
+        };
+        document.execCommand('insertHTML', false, [...fragment.body.childNodes].map(clean).join(''));
+        return;
+      }
+    }
+    document.execCommand('insertText', false, clipboard.getData('text/plain'));
   });
   // Toolbar-Knöpfe dürfen die Auswahl im Textfeld nicht aufheben
   document.addEventListener('mousedown', (e) => { if (e.target.closest('.rich-tools button')) e.preventDefault(); });
@@ -4166,17 +4309,22 @@
         if (!target.trim()) {
           existing.querySelector('.inline-ext')?.remove();
           existing.replaceWith(...existing.childNodes);
-        } else if (/^(https?:\/\/|#)/.test(target.trim())) {
-          existing.setAttribute('href', target.trim());
+        } else {
+          const link = editorialUrl(target);
+          if (link) existing.setAttribute('href', link);
+          else ui().toast('Bitte eine gültige Linkadresse eingeben.');
         }
         return;
       }
-      const url = prompt('Wohin soll der Link führen?\n(Website mit https://… oder eine Seite wie #kiosk, #sport, #club)', 'https://');
-      if (!url || url === 'https://' || !/^(https?:\/\/|#)/.test(url.trim())) return;
+      if (area.closest('.news-editor') && !chosen.trim()) { ui().toast('Bitte zuerst den Text markieren, den du verlinken möchtest.'); return; }
+      const target = prompt('Wohin soll der Link führen? Gib eine Website oder eine Seite wie #sport ein.', '');
+      if (target === null) return;
+      const url = editorialUrl(target);
+      if (!url) { ui().toast('Bitte eine gültige Linkadresse eingeben.'); return; }
       const label = chosen || prompt('Welcher Text soll im Fließtext stehen?', '') || url.replace(/^https?:\/\/(www\.)?/, '');
       const a = document.createElement('a');
       a.className = 'inline-link';
-      a.href = url.trim();
+      a.setAttribute('href', url);
       a.textContent = label;
       if (range && area.contains(range.commonAncestorContainer)) { range.deleteContents(); range.insertNode(a); } else area.appendChild(a);
     }

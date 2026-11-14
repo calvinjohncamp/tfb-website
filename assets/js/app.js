@@ -486,7 +486,7 @@
         const homeEditShortcut = view === 'home' && $view.querySelector('.site-page[data-page="home"]') && !$view.querySelector('.editing-page')
           ? Object.assign(document.createElement('button'), { type: 'button' }) : null;
         const edit = homeEditShortcut || $view.querySelector('.view-close[data-action="site-edit"], .view-close[data-action="edit-start"], .view-close[data-action="feature-edit"], .view-close[data-action="album-edit"], .view-close[data-action="portrait-edit"], .view-close[data-action="chat-text-edit"]');
-        if (edit) {
+        if (edit && !$view.querySelector('.story-news')) {
           const tools = document.createElement('div');
           tools.className = 'page-bottom-tools';
           const button = edit.cloneNode(true);
@@ -722,13 +722,15 @@
     requestAnimationFrame(() => $sheet.classList.add('open'));
     document.body.classList.add('no-scroll');
   }
-  function closeSheet() {
+  function closeSheet(force = false) {
+    if (force !== true && $sheet.querySelector('[data-editor=block]')?.confirmClose?.() === false) return false;
     $sheet.classList.remove('shared-kiosk-scope');
     const mailPreview = $sheet.querySelector('.membership-mail-dialog');
     $sheet.classList.remove('open');
     $sheet.innerHTML = '';
     document.body.classList.remove('no-scroll');
     if (mailPreview) document.querySelector('[data-action="membership-mail-preview"]')?.focus({ preventScroll: true });
+    return true;
   }
 
   let toastTimer = null;
@@ -1025,7 +1027,11 @@
     if (document.querySelector('.lightbox')) closeLightbox(); else closeSheet();
   });
 
-  window.addEventListener('hashchange', () => {
+  window.addEventListener('hashchange', event => {
+    if (closeSheet() === false) {
+      history.replaceState(history.state, '', event.oldURL);
+      return;
+    }
     partnerVisit++;
     const view = currentView();
     navArea = areaOf(view);
@@ -1036,7 +1042,6 @@
     });
     document.getElementById('view').dataset.view = view;
     if (view !== 'kiosk') state.editMode = false;
-    closeSheet();
     window.scrollTo(0, 0);
     renderView(view);
   });
