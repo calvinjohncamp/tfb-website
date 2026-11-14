@@ -1,5 +1,19 @@
 # TFB – Übergabe für die nächste Sitzung
 
+## Bildansichten und Fotos unter dem Artikeltext · live am 14.11.2026
+
+GitHub Pages hat Commit `84bab09` veröffentlicht (Lauf 43574541208).
+In der normalen Fotogroßansicht und beim vergrößerten Home-Karussell
+schließt ein Klick neben dem Bild die Ansicht. Artikel 1 und 3 wurden
+live bei 1440 und 390 px geprüft. Die veröffentlichten Dateien stimmen
+mit dem vorbereiteten Pages-Paket überein.
+
+Im Reiter „Unterseite“ stehen nach dem Hochladen unter „Fotos unter
+dem Text“ Collage, Galerie und Karussell zur Wahl. Pro Fotobereich
+können wie auf der separaten Fotoseite bis zu 100 Bilder hinzugefügt
+werden. Bestehende Collagen behalten ihr Format. Die Auswahl, die
+Vorschau und der Erhalt beim Archivieren wurden mit Testdaten geprüft.
+
 ## Home-Unterseiten und Sortierpfeile · live am 14.11.2026
 
 GitHub Pages hat Commit `a5fd9fe` veröffentlicht (Lauf 43573754335).
