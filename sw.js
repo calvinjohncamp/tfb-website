@@ -1,6 +1,6 @@
 // TFB-Kiosk – Service Worker.
 // Netz zuerst, damit Änderungen sofort ankommen; ohne Netz startet die App aus dem Zwischenspeicher.
-const CACHE = 'tfb-20261114-training-status-1';
+const CACHE = 'tfb-20261114-portrait-contrast-1';
 const SHELL = [
   './assets/css/admin-signature.css?v=20261114-auto-photo-fit-1',
   './assets/css/product-library.css?v=20261113-kiosk-signature',
@@ -59,7 +59,7 @@ const SHELL = [
   './assets/css/kiosk-billing.css', './assets/js/kiosk-billing.js', './assets/js/kiosk-export.js', './assets/js/kiosk-day-image.js',
   './assets/css/club-usage.css', './assets/js/club-usage.js',
   './assets/css/member-access.css', './assets/js/app-install.js',
-  './assets/css/yellow-editorial.css?v=20261114-training-status-1', './assets/brand/tfb-highlight-freihand.svg',
+  './assets/css/yellow-editorial.css?v=20261114-portrait-contrast-1', './assets/brand/tfb-highlight-freihand.svg',
   './assets/js/member-directory.js?v=20261110-unified-backup-1', './assets/js/member-directory.js', './assets/js/cloud-sync.js?v=20261114-admin-home-fast-1',
   './assets/js/snapshot-zip.js', './assets/js/editorial.js?v=20261114-home-start-2',
   './assets/data/public-content.js',

@@ -198,3 +198,15 @@ body .app .topbar .topnav .tab.active::before {
   opacity: 1;
 }
 .meet-series-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+
+/* Mannschaftsporträt: helle Schrift und gelber Akzent auf dunkler Karte. */
+:root.tfb-logo-midnight-amber body a.portrait-cta {
+  background: var(--tfb-midnight-blue);
+  color: #fff;
+}
+:root.tfb-logo-midnight-amber body a.portrait-cta .portrait-cta-body :is(b, span, em) {
+  color: #fff;
+}
+:root.tfb-logo-midnight-amber body a.portrait-cta .portrait-cta-body :is(small, i) {
+  color: var(--tfb-signature-yellow);
+}
